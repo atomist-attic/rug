@@ -1,0 +1,3955 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/js/interop/jsSafeCommittingProxy.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.js.interop
+</span>2 <span style=''>
+</span>3 <span style=''>import java.util
+</span>4 <span style=''>import java.util.Objects
+</span>5 <span style=''>
+</span>6 <span style=''>import com.atomist.graph.GraphNode
+</span>7 <span style=''>import com.atomist.rug.spi._
+</span>8 <span style=''>import com.atomist.rug.ts.Cardinality
+</span>9 <span style=''>import com.atomist.tree._
+</span>10 <span style=''>import com.atomist.tree.utils.NodeUtils
+</span>11 <span style=''>import com.atomist.util.lang.JavaScriptArray
+</span>12 <span style=''>import com.atomist.util.misc.SerializationFriendlyLazyLogging
+</span>13 <span style=''>import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
+</span>14 <span style=''>import jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED
+</span>15 <span style=''>
+</span>16 <span style=''>/**
+</span>17 <span style=''>  * Proxy fronting tree nodes (including MutableView objects) exposed to JavaScript
+</span>18 <span style=''>  * that (a) checks whether an invoked method is exposed on the relevant Type
+</span>19 <span style=''>  * object and vetoes invocation otherwise and (b) calls the commit() method of the node if found on all invocations of a
+</span>20 <span style=''>  * method that isn't read-only.
+</span>21 <span style=''>  *
+</span>22 <span style=''>  * @param node node we are fronting
+</span>23 <span style=''>  */
+</span>24 <span style=''>class jsSafeCommittingProxy(
+</span>25 <span style=''>                             val node: GraphNode,
+</span>26 <span style=''>                             typeRegistry: TypeRegistry)
+</span>27 <span style=''>  extends AbstractJSObject
+</span>28 <span style=''>    with TreeNode with SerializationFriendlyLazyLogging {
+</span>29 <span style=''>
+</span>30 <span style=''>  import jsSafeCommittingProxy._
+</span>31 <span style=''>
+</span>32 <span style=''>  override def toString: String = </span><span style='background: #AEF1AE'>s&quot;SafeCommittingProxy#$hashCode around $node&quot;</span><span style=''>
+</span>33 <span style=''>
+</span>34 <span style=''>  private val typ: Typed = </span><span style='background: #AEF1AE'>Typed.typeFor(node, typeRegistry)</span><span style=''>
+</span>35 <span style=''>
+</span>36 <span style=''>  // Members the user has added dynamically in JavaScript,
+</span>37 <span style=''>  // for example in mixins
+</span>38 <span style=''>  private var additionalMembers: Map[String, Object] = </span><span style='background: #AEF1AE'>Map()</span><span style=''>
+</span>39 <span style=''>
+</span>40 <span style=''>  //-----------------------------------------------------
+</span>41 <span style=''>  // Delegate GraphNode and TreeNode methods to backing node
+</span>42 <span style=''>  // We need to override all of them to wrap the results in ourselves
+</span>43 <span style=''>
+</span>44 <span style=''>  override def nodeName: String = </span><span style='background: #F0ADAD'>node.nodeName</span><span style=''>
+</span>45 <span style=''>
+</span>46 <span style=''>  override def value: String = </span><span style='background: #F0ADAD'>NodeUtils.value(node)</span><span style=''>
+</span>47 <span style=''>
+</span>48 <span style=''>  override def childNodeNames: Set[String] = </span><span style='background: #F0ADAD'>node.relatedNodeNames</span><span style=''>
+</span>49 <span style=''>
+</span>50 <span style=''>  override def childNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>node.relatedNodeTypes</span><span style=''>
+</span>51 <span style=''>
+</span>52 <span style=''>  override def childrenNamed(key: String): Seq[TreeNode] =
+</span>53 <span style=''>    </span><span style='background: #F0ADAD'>node</span><span style=''> match {
+</span>54 <span style=''>      case tn: TreeNode =&gt;
+</span>55 <span style=''>        </span><span style='background: #F0ADAD'>tn.childrenNamed(key).map(wrapOne(_)).map(_.asInstanceOf[TreeNode])</span><span style=''>
+</span>56 <span style=''>      case unTreeNode =&gt;
+</span>57 <span style=''>        </span><span style='background: #F0ADAD'>throw new IllegalStateException(s&quot;Attempt to invoke TreeNode navigation method on non TreeNode [$unTreeNode]&quot;)</span><span style=''>
+</span>58 <span style=''>    }
+</span>59 <span style=''>
+</span>60 <span style=''>  override def relatedNodes: Seq[GraphNode] =
+</span>61 <span style=''>    </span><span style='background: #F0ADAD'>node.relatedNodes.map(wrapOne)</span><span style=''>
+</span>62 <span style=''>
+</span>63 <span style=''>  override def relatedNodesNamed(key: String): Seq[GraphNode] =
+</span>64 <span style=''>    </span><span style='background: #F0ADAD'>node.relatedNodesNamed(key).map(wrapOne)</span><span style=''>
+</span>65 <span style=''>
+</span>66 <span style=''>  private def wrapOne(n: GraphNode) = </span><span style='background: #AEF1AE'>jsSafeCommittingProxy.wrapOne(n, typeRegistry)</span><span style=''>
+</span>67 <span style=''>
+</span>68 <span style=''>  /**
+</span>69 <span style=''>    * A user is adding a named member e.g.
+</span>70 <span style=''>    * shouldTerm.dispatch_me = function(name) { ...
+</span>71 <span style=''>    * We want to save it and invoke it in getMember if necessary.
+</span>72 <span style=''>    *
+</span>73 <span style=''>    * @param name  name of the member
+</span>74 <span style=''>    * @param value function the user is adding in JavaScript
+</span>75 <span style=''>    */
+</span>76 <span style=''>  override def setMember(name: String, value: Object): Unit = value match {
+</span>77 <span style=''>    case som: ScriptObjectMirror =&gt;
+</span>78 <span style=''>      logger.debug(s&quot;JavaScript code has added function member [$name]&quot;)
+</span>79 <span style=''>      </span><span style='background: #AEF1AE'>additionalMembers = additionalMembers ++ Map(name -&gt; som)</span><span style=''>
+</span>80 <span style=''>    case x =&gt;
+</span>81 <span style=''>      logger.debug(s&quot;JavaScript code has added non-function member [$name]&quot;)
+</span>82 <span style=''>      </span><span style='background: #AEF1AE'>additionalMembers = additionalMembers ++ Map(name -&gt; x)</span><span style=''>
+</span>83 <span style=''>  }
+</span>84 <span style=''>
+</span>85 <span style=''>  override def getMember(name: String): AnyRef = {
+</span>86 <span style=''>    // First, look for a member added in JavaScript
+</span>87 <span style=''>    val member = </span><span style='background: #AEF1AE'>additionalMembers.get(name)</span><span style=''> match {
+</span>88 <span style=''>      case Some(som: ScriptObjectMirror) =&gt;
+</span>89 <span style=''>        som
+</span>90 <span style=''>      case Some(x) =&gt;
+</span>91 <span style=''>        x
+</span>92 <span style=''>      case None if </span><span style='background: #AEF1AE'>MagicJavaScriptMethods.contains(name)</span><span style=''> =&gt;
+</span>93 <span style=''>        </span><span style='background: #F0ADAD'>super.getMember(name)</span><span style=''>
+</span>94 <span style=''>      case None if </span><span style='background: #AEF1AE'>name == &quot;toString&quot;</span><span style=''> =&gt;
+</span>95 <span style=''>        </span><span style='background: #F0ADAD'>new AlwaysReturns(toString)</span><span style=''>
+</span>96 <span style=''>      case None if </span><span style='background: #AEF1AE'>name == &quot;$jumpInto&quot;</span><span style=''> =&gt;
+</span>97 <span style=''>        </span><span style='background: #AEF1AE'>new SquirrelFunction(array = true)</span><span style=''>
+</span>98 <span style=''>      case None if </span><span style='background: #AEF1AE'>name == &quot;$jumpIntoOne&quot;</span><span style=''> =&gt;
+</span>99 <span style=''>        </span><span style='background: #AEF1AE'>new SquirrelFunction(array = false)</span><span style=''>
+</span>100 <span style=''>      case _ =&gt;
+</span>101 <span style=''>        // Invoke using navigation on underlying node or reflection
+</span>102 <span style=''>        </span><span style='background: #AEF1AE'>invokeConsideringTypeInformation(name)</span><span style=''>
+</span>103 <span style=''>    }
+</span>104 <span style=''>    logger.debug(s&quot;Returning member [$member] for $name in $this&quot;)
+</span>105 <span style=''>    member
+</span>106 <span style=''>  }
+</span>107 <span style=''>
+</span>108 <span style=''>  /**
+</span>109 <span style=''>    * Type jump function
+</span>110 <span style=''>    *
+</span>111 <span style=''>    * @param array whether to return an array or a scalar
+</span>112 <span style=''>    */
+</span>113 <span style=''>  private class SquirrelFunction(array: Boolean) extends AbstractJSObject {
+</span>114 <span style=''>
+</span>115 <span style=''>    override def isFunction: Boolean = </span><span style='background: #F0ADAD'>true</span><span style=''>
+</span>116 <span style=''>
+</span>117 <span style=''>    override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>118 <span style=''>      val typeName = </span><span style='background: #AEF1AE'>Objects.toString(args.head)</span><span style=''>
+</span>119 <span style=''>      val rawSeq = (</span><span style='background: #AEF1AE'>typeRegistry.findByName(typeName) match {
+</span>120 <span style=''></span><span style='background: #AEF1AE'>        case Some(t: Type) =&gt;
+</span>121 <span style=''></span><span style='background: #AEF1AE'>          t.findAllIn(node)
+</span>122 <span style=''></span><span style='background: #AEF1AE'>        case Some(_) =&gt;
+</span>123 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Attempt to resolve type [$typeName], which does not support resolution under a GraphNode&quot;)</span><span style='background: #AEF1AE'>
+</span>124 <span style=''></span><span style='background: #AEF1AE'>        case None =&gt;
+</span>125 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Attempt to resolve type [$typeName], which is not registered&quot;)</span><span style='background: #AEF1AE'>
+</span>126 <span style=''></span><span style='background: #AEF1AE'>      }).getOrElse(</span><span style='background: #F0ADAD'>Nil</span><span style='background: #AEF1AE'>)</span><span style=''>
+</span>127 <span style=''>      if (</span><span style='background: #AEF1AE'>array</span><span style=''>)
+</span>128 <span style=''>        </span><span style='background: #AEF1AE'>new JavaScriptArray(wrapIfNecessary(rawSeq, typeRegistry))</span><span style=''>
+</span>129 <span style=''>      else </span><span style='background: #AEF1AE'>{
+</span>130 <span style=''></span><span style='background: #AEF1AE'>        require(rawSeq.size &lt; 2, </span><span style='background: #F0ADAD'>s&quot;Needed 0 or 1 returns for type [$typeName] under $this, got ${rawSeq.size}. Call $$jumpInto to get an array&quot;</span><span style='background: #AEF1AE'>)
+</span>131 <span style=''></span><span style='background: #AEF1AE'>        val wrappedSeq = wrapIfNecessary(rawSeq, typeRegistry)
+</span>132 <span style=''></span><span style='background: #AEF1AE'>        import scala.collection.JavaConverters._
+</span>133 <span style=''></span><span style='background: #AEF1AE'>        wrappedSeq.asScala.headOption.orNull
+</span>134 <span style=''></span><span style='background: #AEF1AE'>      }</span><span style=''>
+</span>135 <span style=''>    }
+</span>136 <span style=''>
+</span>137 <span style=''>  }
+</span>138 <span style=''>
+</span>139 <span style=''>
+</span>140 <span style=''>  private def invokeConsideringTypeInformation(name: String): AnyRef = {
+</span>141 <span style=''>    val possibleOps = </span><span style='background: #AEF1AE'>typ.allOperations.filter(op =&gt; name == op.name)</span><span style=''>
+</span>142 <span style=''>    if (</span><span style='background: #AEF1AE'>possibleOps.nonEmpty</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>143 <span style=''></span><span style='background: #AEF1AE'>      val op = possibleOps.head //TODO seems fragile
+</span>144 <span style=''></span><span style='background: #AEF1AE'>      if (op.invocable) {
+</span>145 <span style=''></span><span style='background: #AEF1AE'>        val function = new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
+</span>146 <span style=''></span><span style='background: #AEF1AE'>        if (op.exposeAsProperty) {
+</span>147 <span style=''></span><span style='background: #AEF1AE'>          // Reuse the logic we have in the function implementation by simply creating and invoking it
+</span>148 <span style=''></span><span style='background: #AEF1AE'>          function.call(&quot;whatever&quot;)
+</span>149 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>150 <span style=''></span><span style='background: #AEF1AE'>        else {
+</span>151 <span style=''></span><span style='background: #AEF1AE'>          function
+</span>152 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>153 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>154 <span style=''></span><span style='background: #AEF1AE'>      else
+</span>155 <span style=''></span><span style='background: #AEF1AE'>        nodeNavigationPropertyAccess(node, name)
+</span>156 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>157 <span style=''>    else
+</span>158 <span style=''>      </span><span style='background: #AEF1AE'>invokeGivenNoMatchingOperationInTypeInformation(name, typ)</span><span style=''>
+</span>159 <span style=''>  }
+</span>160 <span style=''>
+</span>161 <span style=''>  private def invokeGivenNoMatchingOperationInTypeInformation(name: String, st: Typed): AnyRef = {
+</span>162 <span style=''>    if (</span><span style='background: #AEF1AE'>node.hasTag(TreeNode.Dynamic)</span><span style=''>) </span><span style='background: #AEF1AE'>name match {
+</span>163 <span style=''></span><span style='background: #AEF1AE'>      case navigation if node.relatedNodeNames.contains(navigation) =&gt;
+</span>164 <span style=''></span><span style='background: #AEF1AE'>        nodeNavigationPropertyAccess(node, navigation)
+</span>165 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt;
+</span>166 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>UNDEFINED</span><span style='background: #AEF1AE'>
+</span>167 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>168 <span style=''>    else </span><span style='background: #AEF1AE'>node match {
+</span>169 <span style=''></span><span style='background: #AEF1AE'>      case sobtn: ScriptObjectBackedTreeNode =&gt;
+</span>170 <span style=''></span><span style='background: #AEF1AE'>        // This object is wholly defined in JavaScript
+</span>171 <span style=''></span><span style='background: #AEF1AE'>        sobtn.invoke(name)
+</span>172 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt;
+</span>173 <span style=''></span><span style='background: #AEF1AE'>        logger.warn(
+</span>174 <span style=''></span><span style='background: #AEF1AE'>          s&quot;Attempt to invoke method [$name] on type [${typ.description}]: &quot; +
+</span>175 <span style=''></span><span style='background: #AEF1AE'>            s&quot;Wrapping node named ${node.nodeName}; &quot; +
+</span>176 <span style=''></span><span style='background: #AEF1AE'>            s&quot;No exported method with that name: Found ${st.allOperations.map(_.name).sorted}. Node tags are ${node.nodeTags}&quot;)
+</span>177 <span style=''></span><span style='background: #AEF1AE'>        UNDEFINED
+</span>178 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>179 <span style=''>  }
+</span>180 <span style=''>
+</span>181 <span style=''>  /**
+</span>182 <span style=''>    * Nashorn proxy for a method invocation that delegates to the
+</span>183 <span style=''>    * underlying node using reflection.
+</span>184 <span style=''>    */
+</span>185 <span style=''>  private class FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name: String, possibleOps: Seq[TypeOperation])
+</span>186 <span style=''>    extends AbstractJSObject {
+</span>187 <span style=''>
+</span>188 <span style=''>    override def isFunction: Boolean = </span><span style='background: #F0ADAD'>true</span><span style=''>
+</span>189 <span style=''>
+</span>190 <span style=''>    override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>191 <span style=''>      </span><span style='background: #AEF1AE'>possibleOps.find(op =&gt; op.parameters.size == args.size)</span><span style=''> match {
+</span>192 <span style=''>        case None =&gt;
+</span>193 <span style=''>          logger.warn(
+</span>194 <span style=''>            s&quot;Attempt to invoke method [$name] on type [${typ.description}] with ${args.size} arguments: No matching signature&quot;)
+</span>195 <span style=''>          </span><span style='background: #F0ADAD'>UNDEFINED</span><span style=''>
+</span>196 <span style=''>        case Some(op) =&gt;
+</span>197 <span style=''>          // Reflective invocation
+</span>198 <span style=''>          val returned = </span><span style='background: #AEF1AE'>op.invoke(node, args.toSeq)</span><span style=''>
+</span>199 <span style=''>          </span><span style='background: #AEF1AE'>node</span><span style=''> match {
+</span>200 <span style=''>            case c: MutableView[_] if </span><span style='background: #AEF1AE'>!op.readOnly</span><span style=''> =&gt; </span><span style='background: #AEF1AE'>c.commit()</span><span style=''>
+</span>201 <span style=''>            case _ </span><span style='background: #AEF1AE'>=&gt;</span><span style=''>
+</span>202 <span style=''>          }
+</span>203 <span style=''>          // The returned type needs to be wrapped if it's a collection
+</span>204 <span style=''>          </span><span style='background: #AEF1AE'>wrapJVMReturn(returned, op)</span><span style=''>
+</span>205 <span style=''>      }
+</span>206 <span style=''>    }
+</span>207 <span style=''>
+</span>208 <span style=''>    import scala.collection.JavaConverters._
+</span>209 <span style=''>
+</span>210 <span style=''>    private def wrapJVMReturn(returned: AnyRef, op: TypeOperation): AnyRef = {
+</span>211 <span style=''>      returned match {
+</span>212 <span style=''>        case l: util.List[_] =&gt; </span><span style='background: #AEF1AE'>new JavaScriptArray(wrapIfNecessary(l.asScala, typeRegistry))</span><span style=''>
+</span>213 <span style=''>        case s: Seq[_] =&gt; </span><span style='background: #F0ADAD'>new JavaScriptArray(wrapIfNecessary(s, typeRegistry))</span><span style=''>
+</span>214 <span style=''>        case s: Set[_] =&gt; </span><span style='background: #AEF1AE'>new JavaScriptArray(s.toSeq.asJava)</span><span style=''>
+</span>215 <span style=''>        case r =&gt;
+</span>216 <span style=''>          // Be sure to proxy all the way down
+</span>217 <span style=''>          val wrapped = </span><span style='background: #AEF1AE'>wrapIfNecessary(Seq(r), typeRegistry).get(0)</span><span style=''>
+</span>218 <span style=''>          if (</span><span style='background: #AEF1AE'>op.exposeResultDirectlyToNashorn</span><span style=''>)
+</span>219 <span style=''>            </span><span style='background: #AEF1AE'>jsScalaHidingProxy(wrapped, returnNotToProxy = DoNotProxy)</span><span style=''>
+</span>220 <span style=''>          else
+</span>221 <span style=''>            </span><span style='background: #AEF1AE'>wrapped</span><span style=''>
+</span>222 <span style=''>      }
+</span>223 <span style=''>    }
+</span>224 <span style=''>  }
+</span>225 <span style=''>
+</span>226 <span style=''>  /**
+</span>227 <span style=''>    * Nashorn property access using navigation methods on TreeNode.
+</span>228 <span style=''>    */
+</span>229 <span style=''>  private def nodeNavigationPropertyAccess(node: GraphNode, name: String): AnyRef = {
+</span>230 <span style=''>
+</span>231 <span style=''>    import scala.language.reflectiveCalls
+</span>232 <span style=''>    val nodesAccessedThroughThisFunctionCall: Seq[GraphNode] = </span><span style='background: #AEF1AE'>node.relatedNodesNamed(name)</span><span style=''>
+</span>233 <span style=''>    </span><span style='background: #AEF1AE'>nodesAccessedThroughThisFunctionCall.toList</span><span style=''> match {
+</span>234 <span style=''>      case Nil =&gt;
+</span>235 <span style=''>        logger.warn(name,
+</span>236 <span style=''>          s&quot;No children or function found for property '$name' on $node&quot;)
+</span>237 <span style=''>        </span><span style='background: #AEF1AE'>UNDEFINED</span><span style=''>
+</span>238 <span style=''>      case null :: Nil =&gt; </span><span style='background: #F0ADAD'>null</span><span style=''>
+</span>239 <span style=''>      case (ttn: TerminalTreeNode) :: Nil if </span><span style='background: #AEF1AE'>ttn.hasTag(Cardinality.One2Many)</span><span style=''> =&gt;
+</span>240 <span style=''>        // Pull out the value and put in an array
+</span>241 <span style=''>        </span><span style='background: #AEF1AE'>JavaScriptArray.fromSeq(Seq(ttn.value))</span><span style=''>
+</span>242 <span style=''>      case (ttn: TerminalTreeNode) :: Nil =&gt;
+</span>243 <span style=''>        // Pull out the value
+</span>244 <span style=''>        </span><span style='background: #AEF1AE'>ttn.value</span><span style=''>
+</span>245 <span style=''>      case head :: Nil if </span><span style='background: #AEF1AE'>!head.hasTag(Cardinality.One2Many)</span><span style=''> =&gt;
+</span>246 <span style=''>        // Only one entry and we know it's not marked as an array
+</span>247 <span style=''>        </span><span style='background: #AEF1AE'>wrapOne(head)</span><span style=''>
+</span>248 <span style=''>      case more =&gt; </span><span style='background: #AEF1AE'>new JavaScriptArray(wrapIfNecessary(more, typeRegistry))</span><span style=''>
+</span>249 <span style=''>    }
+</span>250 <span style=''>  }
+</span>251 <span style=''>
+</span>252 <span style=''>}
+</span>253 <span style=''>
+</span>254 <span style=''>object jsSafeCommittingProxy {
+</span>255 <span style=''>
+</span>256 <span style=''>  import scala.collection.JavaConverters._
+</span>257 <span style=''>
+</span>258 <span style=''>  /** To not proxy in scala hiding proxy */
+</span>259 <span style=''>  val DoNotProxy: Any =&gt; Boolean = r =&gt;
+</span>260 <span style=''>    </span><span style='background: #AEF1AE'>r.isInstanceOf[jsPathExpressionEngine] || r.isInstanceOf[GraphNode]</span><span style=''>
+</span>261 <span style=''>
+</span>262 <span style=''>  /**
+</span>263 <span style=''>    * Set of JavaScript magic methods that we should let Nashorn superclass handle.
+</span>264 <span style=''>    */
+</span>265 <span style=''>  private[interop] def MagicJavaScriptMethods = </span><span style='background: #AEF1AE'>Set(&quot;valueOf&quot;)</span><span style=''>
+</span>266 <span style=''>
+</span>267 <span style=''>  /**
+</span>268 <span style=''>    * Wrap the given sequence of nodes so they can be accessed from
+</span>269 <span style=''>    * TypeScript. Intended for use from Scala, not TypeScript.
+</span>270 <span style=''>    *
+</span>271 <span style=''>    * @param nodes sequence to wrap
+</span>272 <span style=''>    * @return TypeScript and JavaScript-friendly list
+</span>273 <span style=''>    */
+</span>274 <span style=''>  def wrap(nodes: Seq[GraphNode], typeRegistry: TypeRegistry): java.util.List[GraphNode] =
+</span>275 <span style=''>    </span><span style='background: #AEF1AE'>new JavaScriptArray(nodes.map(wrapOne(_, typeRegistry)).asJava)</span><span style=''>
+</span>276 <span style=''>
+</span>277 <span style=''>  def wrapIfNecessary(nodes: Seq[_], typeRegistry: TypeRegistry): java.util.List[Object] = {
+</span>278 <span style=''>    val wrapped = </span><span style='background: #AEF1AE'>nodes map {
+</span>279 <span style=''></span><span style='background: #AEF1AE'>      case n: GraphNode =&gt; wrapOne(n, typeRegistry)
+</span>280 <span style=''></span><span style='background: #AEF1AE'>      case x =&gt; x
+</span>281 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>282 <span style=''>    </span><span style='background: #AEF1AE'>wrapped.map(_.asInstanceOf[Object]).asJava</span><span style=''>
+</span>283 <span style=''>  }
+</span>284 <span style=''>
+</span>285 <span style=''>  def wrapOne(n: GraphNode, typeRegistry: TypeRegistry): GraphNode = n match {
+</span>286 <span style=''>    case jsp: jsSafeCommittingProxy =&gt;
+</span>287 <span style=''>      jsp
+</span>288 <span style=''>    case _ =&gt;
+</span>289 <span style=''>      </span><span style='background: #AEF1AE'>new jsSafeCommittingProxy(n, typeRegistry)</span><span style=''>
+</span>290 <span style=''>  }
+</span>291 <span style=''>
+</span>292 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4416
+        </td>
+        <td>
+          1152
+          -
+          1197
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;SafeCommittingProxy#&quot;, &quot; around &quot;, &quot;&quot;).s(jsSafeCommittingProxy.this.hashCode(), jsSafeCommittingProxy.this.node)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4413
+        </td>
+        <td>
+          1196
+          -
+          1197
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4412
+        </td>
+        <td>
+          1183
+          -
+          1192
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; around &quot;
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4415
+        </td>
+        <td>
+          1192
+          -
+          1196
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.node
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.node
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4411
+        </td>
+        <td>
+          1154
+          -
+          1175
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;SafeCommittingProxy#&quot;
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4414
+        </td>
+        <td>
+          1175
+          -
+          1183
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.hashCode
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.hashCode()
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          4419
+        </td>
+        <td>
+          1226
+          -
+          1259
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeFor
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeFor(jsSafeCommittingProxy.this.node, jsSafeCommittingProxy.this.typeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          4418
+        </td>
+        <td>
+          1246
+          -
+          1258
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.typeRegistry
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.typeRegistry
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          4417
+        </td>
+        <td>
+          1240
+          -
+          1244
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.node
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.node
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          4420
+        </td>
+        <td>
+          1402
+          -
+          1407
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenMapFactory.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Map.apply[String, Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          4421
+        </td>
+        <td>
+          1633
+          -
+          1646
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #F0ADAD">
+          jsSafeCommittingProxy.this.node.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          4422
+        </td>
+        <td>
+          1695
+          -
+          1699
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.node
+        </td>
+        <td style="background: #F0ADAD">
+          jsSafeCommittingProxy.this.node
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          4423
+        </td>
+        <td>
+          1679
+          -
+          1700
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.NodeUtils.value
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.NodeUtils.value(jsSafeCommittingProxy.this.node)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          4424
+        </td>
+        <td>
+          1747
+          -
+          1768
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.relatedNodeNames
+        </td>
+        <td style="background: #F0ADAD">
+          jsSafeCommittingProxy.this.node.relatedNodeNames
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          4425
+        </td>
+        <td>
+          1815
+          -
+          1836
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.relatedNodeTypes
+        </td>
+        <td style="background: #F0ADAD">
+          jsSafeCommittingProxy.this.node.relatedNodeTypes
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          4426
+        </td>
+        <td>
+          1901
+          -
+          1905
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.node
+        </td>
+        <td style="background: #F0ADAD">
+          jsSafeCommittingProxy.this.node
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          4431
+        </td>
+        <td>
+          1949
+          -
+          2016
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #F0ADAD">
+          tn.childrenNamed(key).map[com.atomist.graph.GraphNode, Seq[com.atomist.graph.GraphNode]](((x$1: com.atomist.tree.TreeNode) =&gt; jsSafeCommittingProxy.this.wrapOne(x$1)))(collection.this.Seq.canBuildFrom[com.atomist.graph.GraphNode]).map[com.atomist.tree.TreeNode, Seq[com.atomist.tree.TreeNode]](((x$2: com.atomist.graph.GraphNode) =&gt; x$2.asInstanceOf[com.atomist.tree.TreeNode]))(collection.this.Seq.canBuildFrom[com.atomist.tree.TreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          4428
+        </td>
+        <td>
+          1974
+          -
+          1974
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[com.atomist.graph.GraphNode]
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          4430
+        </td>
+        <td>
+          1990
+          -
+          1990
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.TreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          4427
+        </td>
+        <td>
+          1975
+          -
+          1985
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.wrapOne
+        </td>
+        <td style="background: #F0ADAD">
+          jsSafeCommittingProxy.this.wrapOne(x$1)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          4429
+        </td>
+        <td>
+          1991
+          -
+          2015
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          x$2.asInstanceOf[com.atomist.tree.TreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          4432
+        </td>
+        <td>
+          2050
+          -
+          2160
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;Attempt to invoke TreeNode navigation method on non TreeNode [&quot;, &quot;]&quot;).s(unTreeNode))
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4434
+        </td>
+        <td>
+          2239
+          -
+          2239
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[com.atomist.graph.GraphNode]
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4433
+        </td>
+        <td>
+          2240
+          -
+          2247
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.wrapOne
+        </td>
+        <td style="background: #F0ADAD">
+          jsSafeCommittingProxy.this.wrapOne(n)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4435
+        </td>
+        <td>
+          2218
+          -
+          2248
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #F0ADAD">
+          jsSafeCommittingProxy.this.node.relatedNodes.map[com.atomist.graph.GraphNode, Seq[com.atomist.graph.GraphNode]]({
+  ((n: com.atomist.graph.GraphNode) =&gt; jsSafeCommittingProxy.this.wrapOne(n))
+})(collection.this.Seq.canBuildFrom[com.atomist.graph.GraphNode])
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          4437
+        </td>
+        <td>
+          2349
+          -
+          2349
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[com.atomist.graph.GraphNode]
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          4436
+        </td>
+        <td>
+          2350
+          -
+          2357
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.wrapOne
+        </td>
+        <td style="background: #F0ADAD">
+          jsSafeCommittingProxy.this.wrapOne(n)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          4438
+        </td>
+        <td>
+          2318
+          -
+          2358
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #F0ADAD">
+          jsSafeCommittingProxy.this.node.relatedNodesNamed(key).map[com.atomist.graph.GraphNode, Seq[com.atomist.graph.GraphNode]]({
+  ((n: com.atomist.graph.GraphNode) =&gt; jsSafeCommittingProxy.this.wrapOne(n))
+})(collection.this.Seq.canBuildFrom[com.atomist.graph.GraphNode])
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          4440
+        </td>
+        <td>
+          2398
+          -
+          2444
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.wrapOne
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.wrapOne(n, jsSafeCommittingProxy.this.typeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          4439
+        </td>
+        <td>
+          2431
+          -
+          2443
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.typeRegistry
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.typeRegistry
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          4443
+        </td>
+        <td>
+          2936
+          -
+          2973
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.MapLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.additionalMembers.++[Object](scala.this.Predef.Map.apply[String, jdk.nashorn.api.scripting.ScriptObjectMirror](scala.this.Predef.ArrowAssoc[String](name).-&gt;[jdk.nashorn.api.scripting.ScriptObjectMirror](som)))
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          4442
+        </td>
+        <td>
+          2957
+          -
+          2973
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenMapFactory.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Map.apply[String, jdk.nashorn.api.scripting.ScriptObjectMirror](scala.this.Predef.ArrowAssoc[String](name).-&gt;[jdk.nashorn.api.scripting.ScriptObjectMirror](som))
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          4444
+        </td>
+        <td>
+          2916
+          -
+          2973
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.additionalMembers_=
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.additionalMembers_=(jsSafeCommittingProxy.this.additionalMembers.++[Object](scala.this.Predef.Map.apply[String, jdk.nashorn.api.scripting.ScriptObjectMirror](scala.this.Predef.ArrowAssoc[String](name).-&gt;[jdk.nashorn.api.scripting.ScriptObjectMirror](som))))
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          4441
+        </td>
+        <td>
+          2961
+          -
+          2972
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.ArrowAssoc[String](name).-&gt;[jdk.nashorn.api.scripting.ScriptObjectMirror](som)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          4446
+        </td>
+        <td>
+          3112
+          -
+          3126
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenMapFactory.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Map.apply[String, Object](scala.this.Predef.ArrowAssoc[String](name).-&gt;[Object](x))
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          4445
+        </td>
+        <td>
+          3116
+          -
+          3125
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.ArrowAssoc[String](name).-&gt;[Object](x)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          4448
+        </td>
+        <td>
+          3071
+          -
+          3126
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.additionalMembers_=
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.additionalMembers_=(jsSafeCommittingProxy.this.additionalMembers.++[Object](scala.this.Predef.Map.apply[String, Object](scala.this.Predef.ArrowAssoc[String](name).-&gt;[Object](x))))
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          4447
+        </td>
+        <td>
+          3091
+          -
+          3126
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.MapLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.additionalMembers.++[Object](scala.this.Predef.Map.apply[String, Object](scala.this.Predef.ArrowAssoc[String](name).-&gt;[Object](x)))
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          4449
+        </td>
+        <td>
+          3252
+          -
+          3279
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.get
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.additionalMembers.get(name)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          4450
+        </td>
+        <td>
+          3395
+          -
+          3432
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.MagicJavaScriptMethods.contains(name)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          4451
+        </td>
+        <td>
+          3444
+          -
+          3465
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.AbstractJSObject.getMember
+        </td>
+        <td style="background: #F0ADAD">
+          jsSafeCommittingProxy.super.getMember(name)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          4452
+        </td>
+        <td>
+          3485
+          -
+          3503
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          name.==(&quot;toString&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          4454
+        </td>
+        <td>
+          3515
+          -
+          3542
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.AlwaysReturns.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new AlwaysReturns(jsSafeCommittingProxy.this.toString())
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          4453
+        </td>
+        <td>
+          3533
+          -
+          3541
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.toString
+        </td>
+        <td style="background: #F0ADAD">
+          jsSafeCommittingProxy.this.toString()
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          4455
+        </td>
+        <td>
+          3562
+          -
+          3581
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          name.==(&quot;$jumpInto&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          4456
+        </td>
+        <td>
+          3593
+          -
+          3627
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.SquirrelFunction.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new jsSafeCommittingProxy.this.SquirrelFunction(true)
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          4457
+        </td>
+        <td>
+          3647
+          -
+          3669
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          name.==(&quot;$jumpIntoOne&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          4458
+        </td>
+        <td>
+          3681
+          -
+          3716
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.SquirrelFunction.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new jsSafeCommittingProxy.this.SquirrelFunction(false)
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          4459
+        </td>
+        <td>
+          3809
+          -
+          3847
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.invokeConsideringTypeInformation
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.invokeConsideringTypeInformation(name)
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          4460
+        </td>
+        <td>
+          4155
+          -
+          4159
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          4461
+        </td>
+        <td>
+          4265
+          -
+          4274
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          args.head
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          4462
+        </td>
+        <td>
+          4248
+          -
+          4275
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Objects.toString
+        </td>
+        <td style="background: #AEF1AE">
+          java.util.Objects.toString(args.head)
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          4463
+        </td>
+        <td>
+          4296
+          -
+          4329
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeRegistry.findByName
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.typeRegistry.findByName(typeName)
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          4464
+        </td>
+        <td>
+          4390
+          -
+          4394
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.node
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.node
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          4465
+        </td>
+        <td>
+          4378
+          -
+          4395
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.dynamic.ChildResolver.findAllIn
+        </td>
+        <td style="background: #AEF1AE">
+          t.findAllIn(jsSafeCommittingProxy.this.node)
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          4466
+        </td>
+        <td>
+          4430
+          -
+          4557
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Attempt to resolve type [&quot;, &quot;], which does not support resolution under a GraphNode&quot;).s(typeName))
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          4467
+        </td>
+        <td>
+          4589
+          -
+          4688
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Attempt to resolve type [&quot;, &quot;], which is not registered&quot;).s(typeName))
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          4469
+        </td>
+        <td>
+          4296
+          -
+          4712
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.typeRegistry.findByName(typeName) match {
+  case (x: com.atomist.rug.spi.Typed)Some[com.atomist.rug.spi.Typed]((t @ (_: com.atomist.rug.spi.Type))) =&gt; t.findAllIn(jsSafeCommittingProxy.this.node)
+  case (x: com.atomist.rug.spi.Typed)Some[com.atomist.rug.spi.Typed](_) =&gt; throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Attempt to resolve type [&quot;, &quot;], which does not support resolution under a GraphNode&quot;).s(typeName))
+  case scala.None =&gt; throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Attempt to resolve type [&quot;, &quot;], which is not registered&quot;).s(typeName))
+}.getOrElse[Seq[com.atomist.tree.TreeNode]](immutable.this.Nil)
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          4468
+        </td>
+        <td>
+          4708
+          -
+          4711
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          4470
+        </td>
+        <td>
+          4723
+          -
+          4728
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.SquirrelFunction.array
+        </td>
+        <td style="background: #AEF1AE">
+          SquirrelFunction.this.array
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          4473
+        </td>
+        <td>
+          4738
+          -
+          4796
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.JavaScriptArray[Object](jsSafeCommittingProxy.wrapIfNecessary(rawSeq, jsSafeCommittingProxy.this.typeRegistry))
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          4472
+        </td>
+        <td>
+          4758
+          -
+          4795
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.wrapIfNecessary
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.wrapIfNecessary(rawSeq, jsSafeCommittingProxy.this.typeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          4471
+        </td>
+        <td>
+          4782
+          -
+          4794
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.typeRegistry
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.typeRegistry
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          4474
+        </td>
+        <td>
+          4738
+          -
+          4796
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.JavaScriptArray[Object](jsSafeCommittingProxy.wrapIfNecessary(rawSeq, jsSafeCommittingProxy.this.typeRegistry))
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          4487
+        </td>
+        <td>
+          4808
+          -
+          5119
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  scala.this.Predef.require(rawSeq.size.&lt;(2), scala.StringContext.apply(&quot;Needed 0 or 1 returns for type [&quot;, &quot;] under &quot;, &quot;, got &quot;, &quot;. Call $jumpInto to get an array&quot;).s(typeName, this, rawSeq.size));
+  val wrappedSeq: java.util.List[Object] = jsSafeCommittingProxy.wrapIfNecessary(rawSeq, jsSafeCommittingProxy.this.typeRegistry);
+  import scala.collection.JavaConverters._;
+  scala.collection.JavaConverters.asScalaBufferConverter[Object](wrappedSeq).asScala.headOption.orNull[AnyRef](scala.this.Predef.$conforms[Null])
+}
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          4482
+        </td>
+        <td>
+          4818
+          -
+          4954
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.require
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.require(rawSeq.size.&lt;(2), scala.StringContext.apply(&quot;Needed 0 or 1 returns for type [&quot;, &quot;] under &quot;, &quot;, got &quot;, &quot;. Call $jumpInto to get an array&quot;).s(typeName, this, rawSeq.size))
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          4476
+        </td>
+        <td>
+          4845
+          -
+          4878
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Needed 0 or 1 returns for type [&quot;
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          4479
+        </td>
+        <td>
+          4919
+          -
+          4953
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;. Call $jumpInto to get an array&quot;
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          4481
+        </td>
+        <td>
+          4843
+          -
+          4953
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Needed 0 or 1 returns for type [&quot;, &quot;] under &quot;, &quot;, got &quot;, &quot;. Call $jumpInto to get an array&quot;).s(typeName, this, rawSeq.size)
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          4475
+        </td>
+        <td>
+          4826
+          -
+          4841
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          rawSeq.size.&lt;(2)
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          4478
+        </td>
+        <td>
+          4899
+          -
+          4906
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;, got &quot;
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          4477
+        </td>
+        <td>
+          4886
+          -
+          4895
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;] under &quot;
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          4480
+        </td>
+        <td>
+          4907
+          -
+          4918
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #F0ADAD">
+          rawSeq.size
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          4484
+        </td>
+        <td>
+          4980
+          -
+          5017
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.wrapIfNecessary
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.wrapIfNecessary(rawSeq, jsSafeCommittingProxy.this.typeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          4483
+        </td>
+        <td>
+          5004
+          -
+          5016
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.typeRegistry
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.typeRegistry
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          4485
+        </td>
+        <td>
+          5105
+          -
+          5105
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.$conforms[Null]
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          4486
+        </td>
+        <td>
+          5075
+          -
+          5111
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.Option.orNull
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[Object](wrappedSeq).asScala.headOption.orNull[AnyRef](scala.this.Predef.$conforms[Null])
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          4488
+        </td>
+        <td>
+          5267
+          -
+          5274
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.name
+        </td>
+        <td style="background: #AEF1AE">
+          op.name
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          4490
+        </td>
+        <td>
+          5228
+          -
+          5275
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.typ.allOperations.filter(((op: com.atomist.rug.spi.TypeOperation) =&gt; name.==(op.name)))
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          4489
+        </td>
+        <td>
+          5259
+          -
+          5274
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          name.==(op.name)
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          4491
+        </td>
+        <td>
+          5284
+          -
+          5304
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          possibleOps.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          4503
+        </td>
+        <td>
+          5306
+          -
+          5789
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val op: com.atomist.rug.spi.TypeOperation = possibleOps.head;
+  if (op.invocable)
+    {
+      val function: jsSafeCommittingProxy.this.FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode = new jsSafeCommittingProxy.this.FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps);
+      if (op.exposeAsProperty)
+        function.call(&quot;whatever&quot;)
+      else
+        function
+    }
+  else
+    jsSafeCommittingProxy.this.nodeNavigationPropertyAccess(jsSafeCommittingProxy.this.node, name)
+}
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          4492
+        </td>
+        <td>
+          5323
+          -
+          5339
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          possibleOps.head
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          4499
+        </td>
+        <td>
+          5385
+          -
+          5723
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val function: jsSafeCommittingProxy.this.FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode = new jsSafeCommittingProxy.this.FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps);
+  if (op.exposeAsProperty)
+    function.call(&quot;whatever&quot;)
+  else
+    function
+}
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          4493
+        </td>
+        <td>
+          5371
+          -
+          5383
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.invocable
+        </td>
+        <td style="background: #AEF1AE">
+          op.invocable
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          4494
+        </td>
+        <td>
+          5410
+          -
+          5487
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new jsSafeCommittingProxy.this.FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          4495
+        </td>
+        <td>
+          5500
+          -
+          5519
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.exposeAsProperty
+        </td>
+        <td style="background: #AEF1AE">
+          op.exposeAsProperty
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          4497
+        </td>
+        <td>
+          5636
+          -
+          5661
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode.call
+        </td>
+        <td style="background: #AEF1AE">
+          function.call(&quot;whatever&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          4496
+        </td>
+        <td>
+          5636
+          -
+          5661
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode.call
+        </td>
+        <td style="background: #AEF1AE">
+          function.call(&quot;whatever&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          4498
+        </td>
+        <td>
+          5697
+          -
+          5705
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.function
+        </td>
+        <td style="background: #AEF1AE">
+          function
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          4500
+        </td>
+        <td>
+          5772
+          -
+          5776
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.node
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.node
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          4502
+        </td>
+        <td>
+          5743
+          -
+          5783
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.nodeNavigationPropertyAccess
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.nodeNavigationPropertyAccess(jsSafeCommittingProxy.this.node, name)
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          4501
+        </td>
+        <td>
+          5743
+          -
+          5783
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.nodeNavigationPropertyAccess
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.nodeNavigationPropertyAccess(jsSafeCommittingProxy.this.node, name)
+        </td>
+      </tr><tr>
+        <td>
+          158
+        </td>
+        <td>
+          4506
+        </td>
+        <td>
+          5805
+          -
+          5863
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.invokeGivenNoMatchingOperationInTypeInformation
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.invokeGivenNoMatchingOperationInTypeInformation(name, jsSafeCommittingProxy.this.typ)
+        </td>
+      </tr><tr>
+        <td>
+          158
+        </td>
+        <td>
+          4505
+        </td>
+        <td>
+          5805
+          -
+          5863
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.invokeGivenNoMatchingOperationInTypeInformation
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.invokeGivenNoMatchingOperationInTypeInformation(name, jsSafeCommittingProxy.this.typ)
+        </td>
+      </tr><tr>
+        <td>
+          158
+        </td>
+        <td>
+          4504
+        </td>
+        <td>
+          5859
+          -
+          5862
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.typ
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.typ
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          4508
+        </td>
+        <td>
+          5976
+          -
+          6005
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.hasTag
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.node.hasTag(com.atomist.tree.TreeNode.Dynamic)
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          4513
+        </td>
+        <td>
+          6007
+          -
+          6185
+        </td>
+        <td>
+          Match
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          name match {
+  case (navigation @ _) if jsSafeCommittingProxy.this.node.relatedNodeNames.contains(navigation) =&gt; jsSafeCommittingProxy.this.nodeNavigationPropertyAccess(jsSafeCommittingProxy.this.node, navigation)
+  case _ =&gt; jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED
+}
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          4507
+        </td>
+        <td>
+          5988
+          -
+          6004
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Dynamic
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Dynamic
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          4509
+        </td>
+        <td>
+          6045
+          -
+          6087
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.node.relatedNodeNames.contains(navigation)
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          4511
+        </td>
+        <td>
+          6099
+          -
+          6145
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.nodeNavigationPropertyAccess
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.nodeNavigationPropertyAccess(jsSafeCommittingProxy.this.node, navigation)
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          4510
+        </td>
+        <td>
+          6128
+          -
+          6132
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.node
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.node
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          4512
+        </td>
+        <td>
+          6170
+          -
+          6179
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED
+        </td>
+        <td style="background: #F0ADAD">
+          jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          4514
+        </td>
+        <td>
+          6195
+          -
+          6199
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.node
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.node
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          4517
+        </td>
+        <td>
+          6195
+          -
+          6661
+        </td>
+        <td>
+          Match
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.node match {
+  case (sobtn @ (_: com.atomist.rug.runtime.js.interop.ScriptObjectBackedTreeNode)) =&gt; sobtn.invoke(name)
+  case _ =&gt; {
+    (if (jsSafeCommittingProxy.this.logger.underlying.isWarnEnabled())
+      jsSafeCommittingProxy.this.logger.underlying.warn(scala.StringContext.apply(&quot;Attempt to invoke method [&quot;, &quot;] on type [&quot;, &quot;]: &quot;).s(name, jsSafeCommittingProxy.this.typ.description).+(scala.StringContext.apply(&quot;Wrapping node named &quot;, &quot;; &quot;).s(jsSafeCommittingProxy.this.node.nodeName)).+(scala.StringContext.apply(&quot;No exported method with that name: Found &quot;, &quot;. Node tags are &quot;, &quot;&quot;).s(st.allOperations.map[String, Seq[String]](((x$3: com.atomist.rug.spi.TypeOperation) =&gt; x$3.name))(collection.this.Seq.canBuildFrom[String]).sorted[String](math.this.Ordering.String), jsSafeCommittingProxy.this.node.nodeTags)))
+    else
+      (): Unit);
+    jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED
+  }
+}
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          4515
+        </td>
+        <td>
+          6319
+          -
+          6337
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.ScriptObjectBackedTreeNode.invoke
+        </td>
+        <td style="background: #AEF1AE">
+          sobtn.invoke(name)
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          4516
+        </td>
+        <td>
+          6646
+          -
+          6655
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED
+        </td>
+        <td style="background: #AEF1AE">
+          jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          4518
+        </td>
+        <td>
+          6975
+          -
+          6979
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          191
+        </td>
+        <td>
+          4521
+        </td>
+        <td>
+          7053
+          -
+          7108
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #AEF1AE">
+          FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode.this.possibleOps.find(((op: com.atomist.rug.spi.TypeOperation) =&gt; op.parameters.size.==(args.size)))
+        </td>
+      </tr><tr>
+        <td>
+          191
+        </td>
+        <td>
+          4520
+        </td>
+        <td>
+          7076
+          -
+          7107
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          op.parameters.size.==(args.size)
+        </td>
+      </tr><tr>
+        <td>
+          191
+        </td>
+        <td>
+          4519
+        </td>
+        <td>
+          7098
+          -
+          7107
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #AEF1AE">
+          args.size
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          4522
+        </td>
+        <td>
+          7300
+          -
+          7309
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED
+        </td>
+        <td style="background: #F0ADAD">
+          jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED
+        </td>
+      </tr><tr>
+        <td>
+          198
+        </td>
+        <td>
+          4524
+        </td>
+        <td>
+          7411
+          -
+          7421
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          args.toSeq
+        </td>
+      </tr><tr>
+        <td>
+          198
+        </td>
+        <td>
+          4523
+        </td>
+        <td>
+          7405
+          -
+          7409
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.node
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.node
+        </td>
+      </tr><tr>
+        <td>
+          198
+        </td>
+        <td>
+          4525
+        </td>
+        <td>
+          7395
+          -
+          7422
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.invoke
+        </td>
+        <td style="background: #AEF1AE">
+          op.invoke(jsSafeCommittingProxy.this.node, args.toSeq)
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          4526
+        </td>
+        <td>
+          7433
+          -
+          7437
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.node
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.node
+        </td>
+      </tr><tr>
+        <td>
+          200
+        </td>
+        <td>
+          4527
+        </td>
+        <td>
+          7484
+          -
+          7496
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          op.readOnly.unary_!
+        </td>
+      </tr><tr>
+        <td>
+          200
+        </td>
+        <td>
+          4528
+        </td>
+        <td>
+          7500
+          -
+          7510
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.MutableView.commit
+        </td>
+        <td style="background: #AEF1AE">
+          c.commit()
+        </td>
+      </tr><tr>
+        <td>
+          201
+        </td>
+        <td>
+          4529
+        </td>
+        <td>
+          7530
+          -
+          7532
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          4530
+        </td>
+        <td>
+          7627
+          -
+          7654
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode.wrapJVMReturn
+        </td>
+        <td style="background: #AEF1AE">
+          FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode.this.wrapJVMReturn(returned, op)
+        </td>
+      </tr><tr>
+        <td>
+          212
+        </td>
+        <td>
+          4533
+        </td>
+        <td>
+          7870
+          -
+          7910
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.wrapIfNecessary
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.wrapIfNecessary(scala.collection.JavaConverters.asScalaBufferConverter[_](l).asScala, jsSafeCommittingProxy.this.typeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          212
+        </td>
+        <td>
+          4532
+        </td>
+        <td>
+          7897
+          -
+          7909
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.typeRegistry
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.typeRegistry
+        </td>
+      </tr><tr>
+        <td>
+          212
+        </td>
+        <td>
+          4531
+        </td>
+        <td>
+          7886
+          -
+          7895
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsScala.asScala
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[_](l).asScala
+        </td>
+      </tr><tr>
+        <td>
+          212
+        </td>
+        <td>
+          4534
+        </td>
+        <td>
+          7850
+          -
+          7911
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.JavaScriptArray[Object](jsSafeCommittingProxy.wrapIfNecessary(scala.collection.JavaConverters.asScalaBufferConverter[_](l).asScala, jsSafeCommittingProxy.this.typeRegistry))
+        </td>
+      </tr><tr>
+        <td>
+          213
+        </td>
+        <td>
+          4536
+        </td>
+        <td>
+          7958
+          -
+          7990
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.wrapIfNecessary
+        </td>
+        <td style="background: #F0ADAD">
+          jsSafeCommittingProxy.wrapIfNecessary(s, jsSafeCommittingProxy.this.typeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          213
+        </td>
+        <td>
+          4535
+        </td>
+        <td>
+          7977
+          -
+          7989
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.typeRegistry
+        </td>
+        <td style="background: #F0ADAD">
+          jsSafeCommittingProxy.this.typeRegistry
+        </td>
+      </tr><tr>
+        <td>
+          213
+        </td>
+        <td>
+          4537
+        </td>
+        <td>
+          7938
+          -
+          7991
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new com.atomist.util.lang.JavaScriptArray[Object](jsSafeCommittingProxy.wrapIfNecessary(s, jsSafeCommittingProxy.this.typeRegistry))
+        </td>
+      </tr><tr>
+        <td>
+          214
+        </td>
+        <td>
+          4539
+        </td>
+        <td>
+          8038
+          -
+          8052
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsJava.asJava
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.seqAsJavaListConverter[_](s.toSeq).asJava
+        </td>
+      </tr><tr>
+        <td>
+          214
+        </td>
+        <td>
+          4538
+        </td>
+        <td>
+          8038
+          -
+          8045
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SetLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          s.toSeq
+        </td>
+      </tr><tr>
+        <td>
+          214
+        </td>
+        <td>
+          4540
+        </td>
+        <td>
+          8018
+          -
+          8053
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.JavaScriptArray[_](scala.collection.JavaConverters.seqAsJavaListConverter[_](s.toSeq).asJava)
+        </td>
+      </tr><tr>
+        <td>
+          217
+        </td>
+        <td>
+          4541
+        </td>
+        <td>
+          8143
+          -
+          8187
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.List.get
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.wrapIfNecessary(collection.this.Seq.apply[AnyRef](r), jsSafeCommittingProxy.this.typeRegistry).get(0)
+        </td>
+      </tr><tr>
+        <td>
+          218
+        </td>
+        <td>
+          4542
+        </td>
+        <td>
+          8202
+          -
+          8234
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.exposeResultDirectlyToNashorn
+        </td>
+        <td style="background: #AEF1AE">
+          op.exposeResultDirectlyToNashorn
+        </td>
+      </tr><tr>
+        <td>
+          219
+        </td>
+        <td>
+          4545
+        </td>
+        <td>
+          8248
+          -
+          8248
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          jsScalaHidingProxy.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          219
+        </td>
+        <td>
+          4544
+        </td>
+        <td>
+          8248
+          -
+          8248
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          jsScalaHidingProxy.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          219
+        </td>
+        <td>
+          4547
+        </td>
+        <td>
+          8248
+          -
+          8306
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  &lt;artifact&gt; val x$6: Object = wrapped;
+  &lt;artifact&gt; val x$7: Any =&gt; Boolean @scala.reflect.internal.annotations.uncheckedBounds = jsSafeCommittingProxy.DoNotProxy;
+  &lt;artifact&gt; val x$8: Set[String] @scala.reflect.internal.annotations.uncheckedBounds = jsScalaHidingProxy.apply$default$2;
+  &lt;artifact&gt; val x$9: com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.MethodValidator = jsScalaHidingProxy.apply$default$3;
+  jsScalaHidingProxy.apply(x$6, x$8, x$9, x$7)
+}
+        </td>
+      </tr><tr>
+        <td>
+          219
+        </td>
+        <td>
+          4546
+        </td>
+        <td>
+          8248
+          -
+          8306
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply
+        </td>
+        <td style="background: #AEF1AE">
+          jsScalaHidingProxy.apply(x$6, x$8, x$9, x$7)
+        </td>
+      </tr><tr>
+        <td>
+          219
+        </td>
+        <td>
+          4543
+        </td>
+        <td>
+          8295
+          -
+          8305
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.DoNotProxy
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.DoNotProxy
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          4548
+        </td>
+        <td>
+          8334
+          -
+          8341
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode.wrapped
+        </td>
+        <td style="background: #AEF1AE">
+          wrapped
+        </td>
+      </tr><tr>
+        <td>
+          232
+        </td>
+        <td>
+          4549
+        </td>
+        <td>
+          8634
+          -
+          8662
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.relatedNodesNamed
+        </td>
+        <td style="background: #AEF1AE">
+          node.relatedNodesNamed(name)
+        </td>
+      </tr><tr>
+        <td>
+          233
+        </td>
+        <td>
+          4550
+        </td>
+        <td>
+          8667
+          -
+          8710
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toList
+        </td>
+        <td style="background: #AEF1AE">
+          nodesAccessedThroughThisFunctionCall.toList
+        </td>
+      </tr><tr>
+        <td>
+          237
+        </td>
+        <td>
+          4551
+        </td>
+        <td>
+          8845
+          -
+          8854
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED
+        </td>
+        <td style="background: #AEF1AE">
+          jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED
+        </td>
+      </tr><tr>
+        <td>
+          238
+        </td>
+        <td>
+          4552
+        </td>
+        <td>
+          8881
+          -
+          8885
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          239
+        </td>
+        <td>
+          4554
+        </td>
+        <td>
+          8931
+          -
+          8963
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.hasTag
+        </td>
+        <td style="background: #AEF1AE">
+          ttn.hasTag(com.atomist.rug.ts.Cardinality.One2Many)
+        </td>
+      </tr><tr>
+        <td>
+          239
+        </td>
+        <td>
+          4553
+        </td>
+        <td>
+          8942
+          -
+          8962
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.Cardinality.One2Many
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.ts.Cardinality.One2Many
+        </td>
+      </tr><tr>
+        <td>
+          241
+        </td>
+        <td>
+          4557
+        </td>
+        <td>
+          9025
+          -
+          9064
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.fromSeq
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.lang.JavaScriptArray.fromSeq[String](collection.this.Seq.apply[String](ttn.value))
+        </td>
+      </tr><tr>
+        <td>
+          241
+        </td>
+        <td>
+          4556
+        </td>
+        <td>
+          9049
+          -
+          9063
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[String](ttn.value)
+        </td>
+      </tr><tr>
+        <td>
+          241
+        </td>
+        <td>
+          4555
+        </td>
+        <td>
+          9053
+          -
+          9062
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.value
+        </td>
+        <td style="background: #AEF1AE">
+          ttn.value
+        </td>
+      </tr><tr>
+        <td>
+          244
+        </td>
+        <td>
+          4558
+        </td>
+        <td>
+          9148
+          -
+          9157
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.value
+        </td>
+        <td style="background: #AEF1AE">
+          ttn.value
+        </td>
+      </tr><tr>
+        <td>
+          245
+        </td>
+        <td>
+          4560
+        </td>
+        <td>
+          9184
+          -
+          9218
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          head.hasTag(com.atomist.rug.ts.Cardinality.One2Many).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          245
+        </td>
+        <td>
+          4559
+        </td>
+        <td>
+          9197
+          -
+          9217
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.Cardinality.One2Many
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.ts.Cardinality.One2Many
+        </td>
+      </tr><tr>
+        <td>
+          247
+        </td>
+        <td>
+          4561
+        </td>
+        <td>
+          9296
+          -
+          9309
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.wrapOne
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.wrapOne(head)
+        </td>
+      </tr><tr>
+        <td>
+          248
+        </td>
+        <td>
+          4563
+        </td>
+        <td>
+          9349
+          -
+          9384
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.wrapIfNecessary
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.wrapIfNecessary(more, jsSafeCommittingProxy.this.typeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          248
+        </td>
+        <td>
+          4562
+        </td>
+        <td>
+          9371
+          -
+          9383
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.typeRegistry
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.typeRegistry
+        </td>
+      </tr><tr>
+        <td>
+          248
+        </td>
+        <td>
+          4564
+        </td>
+        <td>
+          9329
+          -
+          9385
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.JavaScriptArray[Object](jsSafeCommittingProxy.wrapIfNecessary(more, jsSafeCommittingProxy.this.typeRegistry))
+        </td>
+      </tr><tr>
+        <td>
+          260
+        </td>
+        <td>
+          4566
+        </td>
+        <td>
+          9564
+          -
+          9631
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          r.isInstanceOf[com.atomist.rug.runtime.js.interop.jsPathExpressionEngine].||(r.isInstanceOf[com.atomist.graph.GraphNode])
+        </td>
+      </tr><tr>
+        <td>
+          260
+        </td>
+        <td>
+          4565
+        </td>
+        <td>
+          9606
+          -
+          9631
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.isInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          r.isInstanceOf[com.atomist.graph.GraphNode]
+        </td>
+      </tr><tr>
+        <td>
+          265
+        </td>
+        <td>
+          4567
+        </td>
+        <td>
+          9778
+          -
+          9792
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](&quot;valueOf&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          275
+        </td>
+        <td>
+          4569
+        </td>
+        <td>
+          10158
+          -
+          10158
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.graph.GraphNode]
+        </td>
+      </tr><tr>
+        <td>
+          275
+        </td>
+        <td>
+          4572
+        </td>
+        <td>
+          10129
+          -
+          10192
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.JavaScriptArray[com.atomist.graph.GraphNode](scala.collection.JavaConverters.seqAsJavaListConverter[com.atomist.graph.GraphNode](nodes.map[com.atomist.graph.GraphNode, Seq[com.atomist.graph.GraphNode]](((x$4: com.atomist.graph.GraphNode) =&gt; jsSafeCommittingProxy.this.wrapOne(x$4, typeRegistry)))(collection.this.Seq.canBuildFrom[com.atomist.graph.GraphNode])).asJava)
+        </td>
+      </tr><tr>
+        <td>
+          275
+        </td>
+        <td>
+          4568
+        </td>
+        <td>
+          10159
+          -
+          10183
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.wrapOne
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.wrapOne(x$4, typeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          275
+        </td>
+        <td>
+          4571
+        </td>
+        <td>
+          10149
+          -
+          10191
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsJava.asJava
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.seqAsJavaListConverter[com.atomist.graph.GraphNode](nodes.map[com.atomist.graph.GraphNode, Seq[com.atomist.graph.GraphNode]](((x$4: com.atomist.graph.GraphNode) =&gt; jsSafeCommittingProxy.this.wrapOne(x$4, typeRegistry)))(collection.this.Seq.canBuildFrom[com.atomist.graph.GraphNode])).asJava
+        </td>
+      </tr><tr>
+        <td>
+          275
+        </td>
+        <td>
+          4570
+        </td>
+        <td>
+          10149
+          -
+          10184
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          nodes.map[com.atomist.graph.GraphNode, Seq[com.atomist.graph.GraphNode]](((x$4: com.atomist.graph.GraphNode) =&gt; jsSafeCommittingProxy.this.wrapOne(x$4, typeRegistry)))(collection.this.Seq.canBuildFrom[com.atomist.graph.GraphNode])
+        </td>
+      </tr><tr>
+        <td>
+          278
+        </td>
+        <td>
+          4575
+        </td>
+        <td>
+          10305
+          -
+          10392
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          nodes.map[Any, Seq[Any]](((x0$1: _$1) =&gt; x0$1 match {
+  case (n @ (_: com.atomist.graph.GraphNode)) =&gt; jsSafeCommittingProxy.this.wrapOne(n, typeRegistry)
+  case (x @ _) =&gt; x
+}))(collection.this.Seq.canBuildFrom[Any])
+        </td>
+      </tr><tr>
+        <td>
+          278
+        </td>
+        <td>
+          4574
+        </td>
+        <td>
+          10311
+          -
+          10311
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Any]
+        </td>
+      </tr><tr>
+        <td>
+          279
+        </td>
+        <td>
+          4573
+        </td>
+        <td>
+          10344
+          -
+          10368
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.wrapOne
+        </td>
+        <td style="background: #AEF1AE">
+          jsSafeCommittingProxy.this.wrapOne(n, typeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          282
+        </td>
+        <td>
+          4578
+        </td>
+        <td>
+          10397
+          -
+          10432
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          wrapped.map[Object, Seq[Object]](((x$5: Any) =&gt; x$5.asInstanceOf[Object]))(collection.this.Seq.canBuildFrom[Object])
+        </td>
+      </tr><tr>
+        <td>
+          282
+        </td>
+        <td>
+          4577
+        </td>
+        <td>
+          10408
+          -
+          10408
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Object]
+        </td>
+      </tr><tr>
+        <td>
+          282
+        </td>
+        <td>
+          4576
+        </td>
+        <td>
+          10409
+          -
+          10431
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          x$5.asInstanceOf[Object]
+        </td>
+      </tr><tr>
+        <td>
+          282
+        </td>
+        <td>
+          4579
+        </td>
+        <td>
+          10397
+          -
+          10439
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsJava.asJava
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.seqAsJavaListConverter[Object](wrapped.map[Object, Seq[Object]](((x$5: Any) =&gt; x$5.asInstanceOf[Object]))(collection.this.Seq.canBuildFrom[Object])).asJava
+        </td>
+      </tr><tr>
+        <td>
+          289
+        </td>
+        <td>
+          4580
+        </td>
+        <td>
+          10593
+          -
+          10635
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new jsSafeCommittingProxy(n, typeRegistry)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

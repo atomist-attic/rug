@@ -1,0 +1,218 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/marshal/JsonBackedContainerGraphNode.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.marshal
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>
+</span>5 <span style=''>/**
+</span>6 <span style=''>  * Allows us to return a ContainerTreeNode that encapsulates a json representation
+</span>7 <span style=''>  * of the object tree.
+</span>8 <span style=''>  *
+</span>9 <span style=''>  * @param innerNode The ContainerTreeNode that we are encapsulating
+</span>10 <span style=''>  * @param backingJson the json string that also represents this object tree
+</span>11 <span style=''>  */
+</span>12 <span style=''>class JsonBackedContainerGraphNode(val innerNode: GraphNode,
+</span>13 <span style=''>                                   val backingJson: String,
+</span>14 <span style=''>                                   val version: String)
+</span>15 <span style=''>  extends GraphNode {
+</span>16 <span style=''>
+</span>17 <span style=''>  override def nodeName: String = </span><span style='background: #AEF1AE'>innerNode.nodeName</span><span style=''>
+</span>18 <span style=''>
+</span>19 <span style=''>  override def nodeTags: Set[String] = </span><span style='background: #AEF1AE'>innerNode.nodeTags</span><span style=''>
+</span>20 <span style=''>
+</span>21 <span style=''>  override def relatedNodes: Seq[GraphNode] = </span><span style='background: #F0ADAD'>innerNode.relatedNodes</span><span style=''>
+</span>22 <span style=''>
+</span>23 <span style=''>  override def relatedNodeNames: Set[String] = </span><span style='background: #F0ADAD'>innerNode.relatedNodeNames</span><span style=''>
+</span>24 <span style=''>
+</span>25 <span style=''>  override def relatedNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>innerNode.relatedNodeTypes</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>  override def relatedNodesNamed(key: String): Seq[GraphNode] = </span><span style='background: #F0ADAD'>innerNode.relatedNodesNamed(key)</span><span style=''>
+</span>28 <span style=''>
+</span>29 <span style=''>  def jsonRepresentation: String = </span><span style='background: #F0ADAD'>backingJson</span><span style=''>
+</span>30 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          7888
+        </td>
+        <td>
+          571
+          -
+          589
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          JsonBackedContainerGraphNode.this.innerNode.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          7889
+        </td>
+        <td>
+          630
+          -
+          648
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeTags
+        </td>
+        <td style="background: #AEF1AE">
+          JsonBackedContainerGraphNode.this.innerNode.nodeTags
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          7890
+        </td>
+        <td>
+          696
+          -
+          718
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.relatedNodes
+        </td>
+        <td style="background: #F0ADAD">
+          JsonBackedContainerGraphNode.this.innerNode.relatedNodes
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          7891
+        </td>
+        <td>
+          767
+          -
+          793
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.relatedNodeNames
+        </td>
+        <td style="background: #F0ADAD">
+          JsonBackedContainerGraphNode.this.innerNode.relatedNodeNames
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          7892
+        </td>
+        <td>
+          842
+          -
+          868
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.relatedNodeTypes
+        </td>
+        <td style="background: #F0ADAD">
+          JsonBackedContainerGraphNode.this.innerNode.relatedNodeTypes
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          7893
+        </td>
+        <td>
+          934
+          -
+          966
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.relatedNodesNamed
+        </td>
+        <td style="background: #F0ADAD">
+          JsonBackedContainerGraphNode.this.innerNode.relatedNodesNamed(key)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          7894
+        </td>
+        <td>
+          1003
+          -
+          1014
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.JsonBackedContainerGraphNode.backingJson
+        </td>
+        <td style="background: #F0ADAD">
+          JsonBackedContainerGraphNode.this.backingJson
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

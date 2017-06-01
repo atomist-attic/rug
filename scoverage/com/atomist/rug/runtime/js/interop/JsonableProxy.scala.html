@@ -1,0 +1,495 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/js/interop/JsonableProxy.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.js.interop
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.util.lang.JavaScriptArray
+</span>4 <span style=''>import jdk.nashorn.api.scripting.ScriptObjectMirror
+</span>5 <span style=''>
+</span>6 <span style=''>/**
+</span>7 <span style=''>  * Consistent JSON-based toString stringification
+</span>8 <span style=''>  */
+</span>9 <span style=''>private[interop] trait JsonableProxy {
+</span>10 <span style=''>
+</span>11 <span style=''>  override def toString: String = {
+</span>12 <span style=''>    val typeKey = </span><span style='background: #AEF1AE'>s&quot;&quot;&quot;&quot;__backingObject__&quot;: &quot;${getClass.getSimpleName}#$hashCode&quot;&quot;&quot;&quot;</span><span style=''>
+</span>13 <span style=''>    </span><span style='background: #AEF1AE'>&quot;{&quot; + (propsToJsonPairs :+ typeKey).mkString(&quot;, &quot;) + &quot;}&quot;</span><span style=''>
+</span>14 <span style=''>  }
+</span>15 <span style=''>
+</span>16 <span style=''>  protected def propertyMap: Map[String,Any]
+</span>17 <span style=''>
+</span>18 <span style=''>  import scala.collection.JavaConverters._
+</span>19 <span style=''>
+</span>20 <span style=''>  private def propsToJsonPairs: Seq[String] =
+</span>21 <span style=''>    (</span><span style='background: #AEF1AE'>propertyMap map {
+</span>22 <span style=''></span><span style='background: #AEF1AE'>      case (k, som: ScriptObjectMirror) =&gt;
+</span>23 <span style=''></span><span style='background: #AEF1AE'>        s&quot;&quot;&quot;&quot;$k&quot;: ${som.eval(&quot;JSON.stringify(this)&quot;)}&quot;&quot;&quot;
+</span>24 <span style=''></span><span style='background: #AEF1AE'>      case (k, js: JavaScriptArray[_]) =&gt;
+</span>25 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>s&quot;&quot;&quot;&quot;$k&quot;: [${js.lyst.asScala.mkString(&quot;, &quot;)}]&quot;&quot;&quot;</span><span style='background: #AEF1AE'>
+</span>26 <span style=''></span><span style='background: #AEF1AE'>      case (k, v) =&gt;
+</span>27 <span style=''></span><span style='background: #AEF1AE'>        s&quot;&quot;&quot;&quot;$k&quot;: &quot;$v&quot;&quot;&quot;&quot;
+</span>28 <span style=''></span><span style='background: #AEF1AE'>    }).toSeq</span><span style=''>
+</span>29 <span style=''>
+</span>30 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          4093
+        </td>
+        <td>
+          357
+          -
+          361
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\&quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          4096
+        </td>
+        <td>
+          296
+          -
+          361
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;\&quot;__backingObject__\&quot;: \&quot;&quot;, &quot;#&quot;, &quot;\&quot;&quot;).s(JsonableProxy.this.getClass().getSimpleName(), JsonableProxy.this.hashCode())
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          4092
+        </td>
+        <td>
+          347
+          -
+          349
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;#&quot;
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          4095
+        </td>
+        <td>
+          349
+          -
+          357
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.hashCode
+        </td>
+        <td style="background: #AEF1AE">
+          JsonableProxy.this.hashCode()
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          4094
+        </td>
+        <td>
+          324
+          -
+          346
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getSimpleName
+        </td>
+        <td style="background: #AEF1AE">
+          JsonableProxy.this.getClass().getSimpleName()
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          4091
+        </td>
+        <td>
+          300
+          -
+          323
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\&quot;__backingObject__\&quot;: \&quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          4097
+        </td>
+        <td>
+          366
+          -
+          422
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;{&quot;.+(JsonableProxy.this.propsToJsonPairs.:+[String, Seq[String]](typeKey)(collection.this.Seq.canBuildFrom[String]).mkString(&quot;, &quot;)).+(&quot;}&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          4109
+        </td>
+        <td>
+          581
+          -
+          581
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Iterable.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          4102
+        </td>
+        <td>
+          638
+          -
+          686
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;\&quot;&quot;, &quot;\&quot;: &quot;, &quot;&quot;).s(k, som.eval(&quot;JSON.stringify(this)&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          4099
+        </td>
+        <td>
+          645
+          -
+          649
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\&quot;: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          4098
+        </td>
+        <td>
+          642
+          -
+          644
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\&quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          4101
+        </td>
+        <td>
+          650
+          -
+          682
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.eval
+        </td>
+        <td style="background: #AEF1AE">
+          som.eval(&quot;JSON.stringify(this)&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          4100
+        </td>
+        <td>
+          683
+          -
+          686
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          4105
+        </td>
+        <td>
+          781
+          -
+          785
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          4107
+        </td>
+        <td>
+          737
+          -
+          785
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;\&quot;&quot;, &quot;\&quot;: [&quot;, &quot;]&quot;).s(k, scala.collection.JavaConverters.asScalaBufferConverter[_](js.lyst).asScala.mkString(&quot;, &quot;))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          4104
+        </td>
+        <td>
+          744
+          -
+          749
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;\&quot;: [&quot;
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          4103
+        </td>
+        <td>
+          741
+          -
+          743
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;\&quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          4106
+        </td>
+        <td>
+          750
+          -
+          780
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.JavaConverters.asScalaBufferConverter[_](js.lyst).asScala.mkString(&quot;, &quot;)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          4108
+        </td>
+        <td>
+          815
+          -
+          832
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;\&quot;&quot;, &quot;\&quot;: \&quot;&quot;, &quot;\&quot;&quot;).s(k, v)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          4110
+        </td>
+        <td>
+          569
+          -
+          845
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          JsonableProxy.this.propertyMap.map[String, scala.collection.immutable.Iterable[String]](((x0$1: (String, Any)) =&gt; x0$1 match {
+  case (_1: String, _2: Any)(String, Any)((k @ _), (som @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror))) =&gt; scala.StringContext.apply(&quot;\&quot;&quot;, &quot;\&quot;: &quot;, &quot;&quot;).s(k, som.eval(&quot;JSON.stringify(this)&quot;))
+  case (_1: String, _2: Any)(String, Any)((k @ _), (js @ (_: com.atomist.util.lang.JavaScriptArray[_]))) =&gt; scala.StringContext.apply(&quot;\&quot;&quot;, &quot;\&quot;: [&quot;, &quot;]&quot;).s(k, scala.collection.JavaConverters.asScalaBufferConverter[_](js.lyst).asScala.mkString(&quot;, &quot;))
+  case (_1: String, _2: Any)(String, Any)((k @ _), (v @ _)) =&gt; scala.StringContext.apply(&quot;\&quot;&quot;, &quot;\&quot;: \&quot;&quot;, &quot;\&quot;&quot;).s(k, v)
+}))(immutable.this.Iterable.canBuildFrom[String]).toSeq
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

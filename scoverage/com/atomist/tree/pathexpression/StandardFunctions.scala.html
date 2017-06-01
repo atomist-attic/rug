@@ -1,0 +1,223 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/pathexpression/StandardFunctions.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.pathexpression
+</span>2 <span style=''>
+</span>3 <span style=''>/**
+</span>4 <span style=''>  * Defines default functions. Simply add functions here and type conversion will be automatic
+</span>5 <span style=''>  */
+</span>6 <span style=''>object StandardFunctions {
+</span>7 <span style=''>
+</span>8 <span style=''>  def contains(a: String, b: String): Boolean =
+</span>9 <span style=''>    </span><span style='background: #AEF1AE'>a != null &amp;&amp; b != null &amp;&amp; a.contains(b)</span><span style=''>
+</span>10 <span style=''>
+</span>11 <span style=''>  def startsWith(a: String, b: String): Boolean =
+</span>12 <span style=''>    </span><span style='background: #AEF1AE'>a != null &amp;&amp; b != null &amp;&amp; a.startsWith(b)</span><span style=''>
+</span>13 <span style=''>
+</span>14 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          8591
+        </td>
+        <td>
+          238
+          -
+          247
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          b.!=(null)
+        </td>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          8590
+        </td>
+        <td>
+          230
+          -
+          234
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          8593
+        </td>
+        <td>
+          225
+          -
+          264
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          a.!=(null).&amp;&amp;(b.!=(null)).&amp;&amp;(a.contains(b))
+        </td>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          8592
+        </td>
+        <td>
+          251
+          -
+          264
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.contains
+        </td>
+        <td style="background: #AEF1AE">
+          a.contains(b)
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          8594
+        </td>
+        <td>
+          325
+          -
+          329
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          8597
+        </td>
+        <td>
+          320
+          -
+          361
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          a.!=(null).&amp;&amp;(b.!=(null)).&amp;&amp;(a.startsWith(b))
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          8596
+        </td>
+        <td>
+          346
+          -
+          361
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.startsWith
+        </td>
+        <td style="background: #AEF1AE">
+          a.startsWith(b)
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          8595
+        </td>
+        <td>
+          333
+          -
+          342
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          b.!=(null)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

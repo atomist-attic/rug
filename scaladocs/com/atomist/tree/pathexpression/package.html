@@ -1,0 +1,858 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>pathexpression - rug 1.0.0-m.4 API - com.atomist.tree.pathexpression</title>
+          <meta name="description" content="pathexpression - rug 1.0.0 - m.4 API - com.atomist.tree.pathexpression" />
+          <meta name="keywords" content="pathexpression rug 1.0.0 m.4 API com.atomist.tree.pathexpression" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.atomist.tree.pathexpression.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.atomist">atomist</a>.<a href="../package.html" class="extype" name="com.atomist.tree">tree</a></p>
+        <h1>pathexpression</h1><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">pathexpression</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="com.atomist.tree.pathexpression.AndPredicate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AndPredicateextendsPredicatewithProductwithSerializable"></a>
+      <a id="AndPredicate:AndPredicate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="AndPredicate.html"><span class="name">AndPredicate</span></a><span class="params">(<span name="a">a: <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a></span>, <span name="b">b: <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a></span>)</span><span class="result"> extends <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@AndPredicateextendsPredicatewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.pathexpression.AxisSpecifier" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="AxisSpecifierextendsAnyRef"></a>
+      <a id="AxisSpecifier:AxisSpecifier"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="AxisSpecifier.html"><span class="name">AxisSpecifier</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@AxisSpecifierextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Inspire by XPath axis specifier concept.</p><div class="fullcomment"><div class="comment cmt"><p>Inspire by XPath axis specifier concept. Represents a direction
+of navigation from a node.
+</p></div></div>
+    </li><li name="com.atomist.tree.pathexpression.ExpressionEngine" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ExpressionEngineextendsAnyRef"></a>
+      <a id="ExpressionEngine:ExpressionEngine"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ExpressionEngine.html"><span class="name">ExpressionEngine</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@ExpressionEngineextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Evaluates path expressions, whether as raw strings or parsed.</p>
+    </li><li name="com.atomist.tree.pathexpression.Function" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="FunctionextendsAnyRef"></a>
+      <a id="Function:Function"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Function.html"><span class="name">Function</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@FunctionextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Represents an XPath style function.</p>
+    </li><li name="com.atomist.tree.pathexpression.FunctionArg" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="FunctionArgextendsAnyRef"></a>
+      <a id="FunctionArg:FunctionArg"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="FunctionArg.html"><span class="name">FunctionArg</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@FunctionArgextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.pathexpression.FunctionPredicate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="FunctionPredicateextendsPredicatewithProductwithSerializable"></a>
+      <a id="FunctionPredicate:FunctionPredicate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="FunctionPredicate.html"><span class="name">FunctionPredicate</span></a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="f">f: (<a href="../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a>, <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a>]) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result"> extends <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@FunctionPredicateextendsPredicatewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Needs to run against JVM objects.</p><div class="fullcomment"><div class="comment cmt"><p>Needs to run against JVM objects. Can't be used to
+generate queries, but needs to be executed against materialized tree
+</p></div><dl class="paramcmts block"><dt class="param">name</dt><dd class="cmt"><p>name of the predicate</p></dd><dt class="param">f</dt><dd class="cmt"><p>function to run against returned classes</p></dd></dl></div>
+    </li><li name="com.atomist.tree.pathexpression.FunctionRegistry" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="FunctionRegistryextendsAnyRef"></a>
+      <a id="FunctionRegistry:FunctionRegistry"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="FunctionRegistry.html"><span class="name">FunctionRegistry</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@FunctionRegistryextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Registry of known XPath style functions.</p>
+    </li><li name="com.atomist.tree.pathexpression.IndexPredicate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="IndexPredicateextendsPredicatewithProductwithSerializable"></a>
+      <a id="IndexPredicate:IndexPredicate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="IndexPredicate.html"><span class="name">IndexPredicate</span></a><span class="params">(<span name="i">i: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result"> extends <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@IndexPredicateextendsPredicatewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Test for the index of the given node among all returned nodes.</p><div class="fullcomment"><div class="comment cmt"><p>Test for the index of the given node among all returned nodes.
+XPath indexes from 1, and unfortunately we need to do that also.
+</p></div></div>
+    </li><li name="com.atomist.tree.pathexpression.LocationStep" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="LocationStepextendsProductwithSerializable"></a>
+      <a id="LocationStep:LocationStep"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LocationStep.html"><span class="name">LocationStep</span></a><span class="params">(<span name="axis">axis: <a href="AxisSpecifier.html" class="extype" name="com.atomist.tree.pathexpression.AxisSpecifier">AxisSpecifier</a></span>, <span name="test">test: <a href="NodeTest.html" class="extype" name="com.atomist.tree.pathexpression.NodeTest">NodeTest</a></span>, <span name="predicates">predicates: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@LocationStepextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">A step within a path expression
+</p><div class="fullcomment"><div class="comment cmt"><p>A step within a path expression
+</p></div><dl class="paramcmts block"><dt class="param">axis</dt><dd class="cmt"><p>AxisSpecificer: direction of navigation</p></dd><dt class="param">test</dt><dd class="cmt"><p>node test: Narrows nodes</p></dd><dt class="param">predicates</dt><dd class="cmt"><p>predicates that will be combined to filter nodes.
+                  Use the predicateToEvaluate field if you wish to evaluate</p></dd></dl></div>
+    </li><li name="com.atomist.tree.pathexpression.NamedNodeTest" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="NamedNodeTestextendsNodeTestwithProductwithSerializable"></a>
+      <a id="NamedNodeTest:NamedNodeTest"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="NamedNodeTest.html"><span class="name">NamedNodeTest</span></a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="NodeTest.html" class="extype" name="com.atomist.tree.pathexpression.NodeTest">NodeTest</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@NamedNodeTestextendsNodeTestwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Follow children of the given name.</p><div class="fullcomment"><div class="comment cmt"><p>Follow children of the given name. If not, methods of that name.
+</p></div><dl class="paramcmts block"><dt class="param">name</dt><dd class="cmt"><p>name of the node or relationship to try</p></dd></dl></div>
+    </li><li name="com.atomist.tree.pathexpression.NavigationAxis" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="NavigationAxisextendsAxisSpecifierwithProductwithSerializable"></a>
+      <a id="NavigationAxis:NavigationAxis"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="NavigationAxis.html"><span class="name">NavigationAxis</span></a><span class="params">(<span name="propertyName">propertyName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="AxisSpecifier.html" class="extype" name="com.atomist.tree.pathexpression.AxisSpecifier">AxisSpecifier</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@NavigationAxisextendsAxisSpecifierwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Navigation via the node property with the given name.</p><div class="fullcomment"><div class="comment cmt"><p>Navigation via the node property with the given name.
+</p></div><dl class="paramcmts block"><dt class="param">propertyName</dt><dd class="cmt"><p>name to navigate into</p></dd></dl></div>
+    </li><li name="com.atomist.tree.pathexpression.NegationOfPredicate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="NegationOfPredicateextendsPredicatewithProductwithSerializable"></a>
+      <a id="NegationOfPredicate:NegationOfPredicate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="NegationOfPredicate.html"><span class="name">NegationOfPredicate</span></a><span class="params">(<span name="p">p: <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a></span>)</span><span class="result"> extends <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@NegationOfPredicateextendsPredicatewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.pathexpression.NestedPathExpressionPredicate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="NestedPathExpressionPredicateextendsPredicatewithProductwithSerializable"></a>
+      <a id="NestedPathExpressionPredicate:NestedPathExpressionPredicate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="NestedPathExpressionPredicate.html"><span class="name">NestedPathExpressionPredicate</span></a><span class="params">(<span name="expression">expression: <a href="PathExpression.html" class="extype" name="com.atomist.tree.pathexpression.PathExpression">PathExpression</a></span>)</span><span class="result"> extends <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@NestedPathExpressionPredicateextendsPredicatewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.pathexpression.NodeNamePredicate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="NodeNamePredicateextendsPredicatewithProductwithSerializable"></a>
+      <a id="NodeNamePredicate:NodeNamePredicate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="NodeNamePredicate.html"><span class="name">NodeNamePredicate</span></a><span class="params">(<span name="expectedName">expectedName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@NodeNamePredicateextendsPredicatewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Match the node name or a name property
+</p>
+    </li><li name="com.atomist.tree.pathexpression.NodeTest" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="NodeTestextendsAnyRef"></a>
+      <a id="NodeTest:NodeTest"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="NodeTest.html"><span class="name">NodeTest</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@NodeTestextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">One of the three core elements of a LocationStep.</p><div class="fullcomment"><div class="comment cmt"><p>One of the three core elements of a LocationStep. Inspired by XPath NodeTest.
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@JsonTypeInfo</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.tree.pathexpression.NodeTypePredicate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="NodeTypePredicateextendsPredicatewithProductwithSerializable"></a>
+      <a id="NodeTypePredicate:NodeTypePredicate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="NodeTypePredicate.html"><span class="name">NodeTypePredicate</span></a><span class="params">(<span name="expectedType">expectedType: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@NodeTypePredicateextendsPredicatewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.pathexpression.NodesWithTag" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="NodesWithTagextendsNodeTestwithSerializationFriendlyLazyLoggingwithProductwithSerializable"></a>
+      <a id="NodesWithTag:NodesWithTag"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="NodesWithTag.html"><span class="name">NodesWithTag</span></a><span class="params">(<span name="tag">tag: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="NodeTest.html" class="extype" name="com.atomist.tree.pathexpression.NodeTest">NodeTest</a> with <a href="../../util/misc/SerializationFriendlyLazyLogging.html" class="extype" name="com.atomist.util.misc.SerializationFriendlyLazyLogging">SerializationFriendlyLazyLogging</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@NodesWithTagextendsNodeTestwithSerializationFriendlyLazyLoggingwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Return all nodes of the given type
+</p><div class="fullcomment"><div class="comment cmt"><p>Return all nodes of the given type
+</p></div><dl class="paramcmts block"><dt class="param">tag</dt><dd class="cmt"><p>name of the type we're looking into. An incorrect
+           type name will result in error evaluations of
+           path expressions unless the node name starts with lower case,
+           in which case it may be a local type (microgrammars used to be these, I don't know what is now)</p></dd></dl></div>
+    </li><li name="com.atomist.tree.pathexpression.OptionalPredicate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="OptionalPredicateextendsPredicatewithProductwithSerializable"></a>
+      <a id="OptionalPredicate:OptionalPredicate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="OptionalPredicate.html"><span class="name">OptionalPredicate</span></a><span class="params">(<span name="optionalPredicate">optionalPredicate: <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a></span>)</span><span class="result"> extends <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@OptionalPredicateextendsPredicatewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Predicate that may or may not exist.</p><div class="fullcomment"><div class="comment cmt"><p>Predicate that may or may not exist.  This is typically used with
+NestedPathExpressionPredicates so they get materialized in the returned
+node tree.
+</p></div></div>
+    </li><li name="com.atomist.tree.pathexpression.OrPredicate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OrPredicateextendsPredicatewithProductwithSerializable"></a>
+      <a id="OrPredicate:OrPredicate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="OrPredicate.html"><span class="name">OrPredicate</span></a><span class="params">(<span name="a">a: <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a></span>, <span name="b">b: <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a></span>)</span><span class="result"> extends <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@OrPredicateextendsPredicatewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.pathexpression.PathExpression" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PathExpressionextendsProductwithSerializable"></a>
+      <a id="PathExpression:PathExpression"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="PathExpression.html"><span class="name">PathExpression</span></a><span class="params">(<span name="locationSteps">locationSteps: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="LocationStep.html" class="extype" name="com.atomist.tree.pathexpression.LocationStep">LocationStep</a>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@PathExpressionextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Result of parsing a path expression.</p>
+    </li><li name="com.atomist.tree.pathexpression.PathExpressionEngine" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PathExpressionEngineextendsExpressionEngine"></a>
+      <a id="PathExpressionEngine:PathExpressionEngine"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="PathExpressionEngine.html"><span class="name">PathExpressionEngine</span></a><span class="result"> extends <a href="ExpressionEngine.html" class="extype" name="com.atomist.tree.pathexpression.ExpressionEngine">ExpressionEngine</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@PathExpressionEngineextendsExpressionEngine" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Expression engine implementation for our path format
+</p>
+    </li><li name="com.atomist.tree.pathexpression.PathExpressionParser" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="PathExpressionParserextendsCommonTypesParser"></a>
+      <a id="PathExpressionParser:PathExpressionParser"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="PathExpressionParser.html"><span class="name">PathExpressionParser</span></a><span class="result"> extends <a href="../../util/scalaparsing/CommonTypesParser.html" class="extype" name="com.atomist.util.scalaparsing.CommonTypesParser">CommonTypesParser</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@PathExpressionParserextendsCommonTypesParser" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Scala parser combinator for path expressions
+</p>
+    </li><li name="com.atomist.tree.pathexpression.Predicate" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="PredicateextendsAnyRef"></a>
+      <a id="Predicate:Predicate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Predicate.html"><span class="name">Predicate</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@PredicateextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Based on the XPath concept of a predicate.</p><div class="fullcomment"><div class="comment cmt"><p>Based on the XPath concept of a predicate. A predicate acts on a sequence of nodes
+returned from navigation to filter them.
+Predicates can be evaluated against materialized objects, and most predicates expose enough information
+to generate queries against external systems to retrieve data.
+</p></div></div>
+    </li><li name="com.atomist.tree.pathexpression.PredicatedNodeTest" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="PredicatedNodeTestextendsNodeTest"></a>
+      <a id="PredicatedNodeTest:PredicatedNodeTest"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="PredicatedNodeTest.html"><span class="name">PredicatedNodeTest</span></a><span class="result"> extends <a href="NodeTest.html" class="extype" name="com.atomist.tree.pathexpression.NodeTest">NodeTest</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@PredicatedNodeTestextendsNodeTest" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Convenience superclass that uses a predicate to handle sourced nodes
+</p>
+    </li><li name="com.atomist.tree.pathexpression.PropertyValuePredicate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PropertyValuePredicateextendsPredicatewithProductwithSerializable"></a>
+      <a id="PropertyValuePredicate:PropertyValuePredicate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="PropertyValuePredicate.html"><span class="name">PropertyValuePredicate</span></a><span class="params">(<span name="property">property: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="expectedValue">expectedValue: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@PropertyValuePredicateextendsPredicatewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.pathexpression.ReflectiveFunctionRegistry" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ReflectiveFunctionRegistryextendsFunctionRegistry"></a>
+      <a id="ReflectiveFunctionRegistry:ReflectiveFunctionRegistry"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ReflectiveFunctionRegistry.html"><span class="name">ReflectiveFunctionRegistry</span></a><span class="result"> extends <a href="FunctionRegistry.html" class="extype" name="com.atomist.tree.pathexpression.FunctionRegistry">FunctionRegistry</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@ReflectiveFunctionRegistryextendsFunctionRegistry" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Uses reflection to load functions from designated classes
+</p>
+    </li><li name="com.atomist.tree.pathexpression.RelativePathFunctionArg" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RelativePathFunctionArgextendsFunctionArgwithProductwithSerializable"></a>
+      <a id="RelativePathFunctionArg:RelativePathFunctionArg"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="RelativePathFunctionArg.html"><span class="name">RelativePathFunctionArg</span></a><span class="params">(<span name="pe">pe: <a href="PathExpression.html" class="extype" name="com.atomist.tree.pathexpression.PathExpression">PathExpression</a></span>)</span><span class="result"> extends <a href="FunctionArg.html" class="extype" name="com.atomist.tree.pathexpression.FunctionArg">FunctionArg</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@RelativePathFunctionArgextendsFunctionArgwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.pathexpression.StringLiteralFunctionArg" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="StringLiteralFunctionArgextendsFunctionArgwithProductwithSerializable"></a>
+      <a id="StringLiteralFunctionArg:StringLiteralFunctionArg"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="StringLiteralFunctionArg.html"><span class="name">StringLiteralFunctionArg</span></a><span class="params">(<span name="s">s: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="FunctionArg.html" class="extype" name="com.atomist.tree.pathexpression.FunctionArg">FunctionArg</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@StringLiteralFunctionArgextendsFunctionArgwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.pathexpression.XPathStyleFunctionPredicate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="XPathStyleFunctionPredicateextendsPredicatewithProductwithSerializable"></a>
+      <a id="XPathStyleFunctionPredicate:XPathStyleFunctionPredicate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="XPathStyleFunctionPredicate.html"><span class="name">XPathStyleFunctionPredicate</span></a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="args">args: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="FunctionArg.html" class="extype" name="com.atomist.tree.pathexpression.FunctionArg">FunctionArg</a>]</span>, <span name="functionRegistry">functionRegistry: <a href="FunctionRegistry.html" class="extype" name="com.atomist.tree.pathexpression.FunctionRegistry">FunctionRegistry</a> = <span class="symbol"><span class="name"><a href="DefaultFunctionRegistry$.html">DefaultFunctionRegistry</a></span></span></span>)</span><span class="result"> extends <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@XPathStyleFunctionPredicateextendsPredicatewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Handles an XPath predicate based on a function call
+</p><div class="fullcomment"><div class="comment cmt"><p>Handles an XPath predicate based on a function call
+</p></div><dl class="paramcmts block"><dt class="param">name</dt><dd class="cmt"><p>function</p></dd><dt class="param">args</dt><dd class="cmt"><p>arguments to the function</p></dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="com.atomist.tree.pathexpression.All" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="All"></a>
+      <a id="All:All"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="All$.html"><span class="name">All</span></a><span class="result"> extends <a href="PredicatedNodeTest.html" class="extype" name="com.atomist.tree.pathexpression.PredicatedNodeTest">PredicatedNodeTest</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@All" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Return all nodes on the given axis.</p>
+    </li><li name="com.atomist.tree.pathexpression.Attribute" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Attribute"></a>
+      <a id="Attribute:Attribute"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Attribute$.html"><span class="name">Attribute</span></a><span class="result"> extends <a href="AxisSpecifier.html" class="extype" name="com.atomist.tree.pathexpression.AxisSpecifier">AxisSpecifier</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@Attribute" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.pathexpression.Child" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Child"></a>
+      <a id="Child:Child"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Child$.html"><span class="name">Child</span></a><span class="result"> extends <a href="AxisSpecifier.html" class="extype" name="com.atomist.tree.pathexpression.AxisSpecifier">AxisSpecifier</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@Child" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Any child of the current node
+</p>
+    </li><li name="com.atomist.tree.pathexpression.DefaultFunctionRegistry" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DefaultFunctionRegistry"></a>
+      <a id="DefaultFunctionRegistry:DefaultFunctionRegistry"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DefaultFunctionRegistry$.html"><span class="name">DefaultFunctionRegistry</span></a><span class="result"> extends <a href="ReflectiveFunctionRegistry.html" class="extype" name="com.atomist.tree.pathexpression.ReflectiveFunctionRegistry">ReflectiveFunctionRegistry</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@DefaultFunctionRegistry" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.pathexpression.Descendant" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Descendant"></a>
+      <a id="Descendant:Descendant"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Descendant$.html"><span class="name">Descendant</span></a><span class="result"> extends <a href="AxisSpecifier.html" class="extype" name="com.atomist.tree.pathexpression.AxisSpecifier">AxisSpecifier</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@Descendant" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Any descendant of the current node.</p>
+    </li><li name="com.atomist.tree.pathexpression.ExecutionResult" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ExecutionResult"></a>
+      <a id="ExecutionResult:ExecutionResult"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ExecutionResult$.html"><span class="name">ExecutionResult</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@ExecutionResult" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Result type and utility methods of a node navigation.</p>
+    </li><li name="com.atomist.tree.pathexpression.ExpressionEngine" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ExpressionEngine"></a>
+      <a id="ExpressionEngine:ExpressionEngine"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ExpressionEngine$.html"><span class="name">ExpressionEngine</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@ExpressionEngine" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.pathexpression.FalsePredicate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FalsePredicate"></a>
+      <a id="FalsePredicate:FalsePredicate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="FalsePredicate$.html"><span class="name">FalsePredicate</span></a><span class="result"> extends <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@FalsePredicate" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.pathexpression.PathExpressionParser" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="PathExpressionParser"></a>
+      <a id="PathExpressionParser:PathExpressionParser"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="PathExpressionParser$.html"><span class="name">PathExpressionParser</span></a><span class="result"> extends <a href="../../util/scalaparsing/CommonTypesParser.html" class="extype" name="com.atomist.util.scalaparsing.CommonTypesParser">CommonTypesParser</a> with <a href="PathExpressionParser.html" class="extype" name="com.atomist.tree.pathexpression.PathExpressionParser">PathExpressionParser</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@PathExpressionParser" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Default implementation of PathExpressionParser.</p><div class="fullcomment"><div class="comment cmt"><p>Default implementation of PathExpressionParser. Import this
+class for default conversion from Strings to path expressions.
+</p></div></div>
+    </li><li name="com.atomist.tree.pathexpression.Self" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Self"></a>
+      <a id="Self:Self"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Self$.html"><span class="name">Self</span></a><span class="result"> extends <a href="AxisSpecifier.html" class="extype" name="com.atomist.tree.pathexpression.AxisSpecifier">AxisSpecifier</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@Self" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The current node
+</p>
+    </li><li name="com.atomist.tree.pathexpression.StandardFunctions" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="StandardFunctions"></a>
+      <a id="StandardFunctions:StandardFunctions"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="StandardFunctions$.html"><span class="name">StandardFunctions</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@StandardFunctions" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Defines default functions.</p><div class="fullcomment"><div class="comment cmt"><p>Defines default functions. Simply add functions here and type conversion will be automatic
+</p></div></div>
+    </li><li name="com.atomist.tree.pathexpression.TruePredicate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TruePredicate"></a>
+      <a id="TruePredicate:TruePredicate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TruePredicate$.html"><span class="name">TruePredicate</span></a><span class="result"> extends <a href="Predicate.html" class="extype" name="com.atomist.tree.pathexpression.Predicate">Predicate</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@TruePredicate" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.pathexpression.XPathTypes" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="XPathTypes"></a>
+      <a id="XPathTypes:XPathTypes"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="XPathTypes$.html"><span class="name">XPathTypes</span></a><span class="result"> extends <span class="extype" name="scala.Enumeration">Enumeration</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.pathexpression.package@XPathTypes" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Core supported types.</p><div class="fullcomment"><div class="comment cmt"><p>Core supported types. Inspired by XPath spec.
+</p></div></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

@@ -1,0 +1,519 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/plans/PlanResultLogger.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.plans
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.spi.Handlers.Status.Failure
+</span>4 <span style=''>import com.atomist.rug.spi.Handlers._
+</span>5 <span style=''>import org.slf4j.Logger
+</span>6 <span style=''>
+</span>7 <span style=''>import scala.annotation.tailrec
+</span>8 <span style=''>import scala.concurrent.Await
+</span>9 <span style=''>import scala.concurrent.duration.DurationInt
+</span>10 <span style=''>
+</span>11 <span style=''>class PlanResultLogger(val logger: Logger) {
+</span>12 <span style=''>
+</span>13 <span style=''>  def log(planResult: PlanResult): Unit = {
+</span>14 <span style=''>    </span><span style='background: #AEF1AE'>logEvents(planResult.log)</span><span style=''>
+</span>15 <span style=''>  }
+</span>16 <span style=''>
+</span>17 <span style=''>  @tailrec
+</span>18 <span style=''>  private def logEvents(log: Seq[PlanLogEvent]): Unit = {
+</span>19 <span style=''>    </span><span style='background: #AEF1AE'>log.headOption</span><span style=''> match {
+</span>20 <span style=''>      case Some(head) =&gt;
+</span>21 <span style=''>        val remainingEvents = head match {
+</span>22 <span style=''>          case logError: PlanLogError =&gt;
+</span>23 <span style=''>            </span><span style='background: #AEF1AE'>logger.error(&quot;Error running plan.&quot;, logError.error)</span><span style=''>
+</span>24 <span style=''>            </span><span style='background: #AEF1AE'>log.tail</span><span style=''>
+</span>25 <span style=''>          case result: InstructionResult if </span><span style='background: #AEF1AE'>result.response.status == Failure</span><span style=''> =&gt;
+</span>26 <span style=''>            </span><span style='background: #AEF1AE'>logger.error(&quot;Failure running plan.&quot;, result)</span><span style=''>
+</span>27 <span style=''>            </span><span style='background: #AEF1AE'>log.tail</span><span style=''>
+</span>28 <span style=''>          case result: NestedPlanRun =&gt;
+</span>29 <span style=''>            val planResult = </span><span style='background: #AEF1AE'>Await.result(result.planResult, 5.minutes)</span><span style=''>
+</span>30 <span style=''>            </span><span style='background: #AEF1AE'>log.tail ++ planResult.log</span><span style=''>
+</span>31 <span style=''>          case _ =&gt; </span><span style='background: #AEF1AE'>log.tail</span><span style=''>
+</span>32 <span style=''>        }
+</span>33 <span style=''>        </span><span style='background: #AEF1AE'>logEvents(remainingEvents)</span><span style=''>
+</span>34 <span style=''>      case None </span><span style='background: #AEF1AE'>=&gt;</span><span style=''>
+</span>35 <span style=''>    }
+</span>36 <span style=''>  }
+</span>37 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          4971
+        </td>
+        <td>
+          355
+          -
+          380
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanResultLogger.logEvents
+        </td>
+        <td style="background: #AEF1AE">
+          PlanResultLogger.this.logEvents(planResult.log)
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          4970
+        </td>
+        <td>
+          365
+          -
+          379
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.PlanResult.log
+        </td>
+        <td style="background: #AEF1AE">
+          planResult.log
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          4972
+        </td>
+        <td>
+          459
+          -
+          473
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #AEF1AE">
+          log.headOption
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          4973
+        </td>
+        <td>
+          616
+          -
+          637
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Error running plan.&quot;
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          4975
+        </td>
+        <td>
+          603
+          -
+          654
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.error
+        </td>
+        <td style="background: #AEF1AE">
+          PlanResultLogger.this.logger.error(&quot;Error running plan.&quot;, logError.error)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          4974
+        </td>
+        <td>
+          639
+          -
+          653
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.PlanLogError.error
+        </td>
+        <td style="background: #AEF1AE">
+          logError.error
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          4976
+        </td>
+        <td>
+          667
+          -
+          675
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.tail
+        </td>
+        <td style="background: #AEF1AE">
+          log.tail
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          4978
+        </td>
+        <td>
+          720
+          -
+          753
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          result.response.status.==(com.atomist.rug.spi.Handlers.Status.Failure)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          4977
+        </td>
+        <td>
+          746
+          -
+          753
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Status.Failure
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Status.Failure
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          4979
+        </td>
+        <td>
+          769
+          -
+          814
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.error
+        </td>
+        <td style="background: #AEF1AE">
+          PlanResultLogger.this.logger.error(&quot;Failure running plan.&quot;, result)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          4980
+        </td>
+        <td>
+          827
+          -
+          835
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.tail
+        </td>
+        <td style="background: #AEF1AE">
+          log.tail
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          4982
+        </td>
+        <td>
+          937
+          -
+          938
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          5
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          4984
+        </td>
+        <td>
+          905
+          -
+          947
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Await.result
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Await.result[com.atomist.rug.spi.Handlers.PlanResult](result.planResult, scala.concurrent.duration.`package`.DurationInt(5).minutes)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          4981
+        </td>
+        <td>
+          918
+          -
+          935
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.NestedPlanRun.planResult
+        </td>
+        <td style="background: #AEF1AE">
+          result.planResult
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          4983
+        </td>
+        <td>
+          937
+          -
+          946
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.concurrent.duration.DurationConversions.minutes
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.duration.`package`.DurationInt(5).minutes
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          4987
+        </td>
+        <td>
+          960
+          -
+          986
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          log.tail.++[com.atomist.rug.spi.Handlers.PlanLogEvent, Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](planResult.log)(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.PlanLogEvent])
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          4986
+        </td>
+        <td>
+          969
+          -
+          969
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.PlanLogEvent]
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          4985
+        </td>
+        <td>
+          972
+          -
+          986
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.PlanResult.log
+        </td>
+        <td style="background: #AEF1AE">
+          planResult.log
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          4988
+        </td>
+        <td>
+          1007
+          -
+          1015
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.tail
+        </td>
+        <td style="background: #AEF1AE">
+          log.tail
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          4989
+        </td>
+        <td>
+          1034
+          -
+          1060
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanResultLogger.logEvents
+        </td>
+        <td style="background: #AEF1AE">
+          PlanResultLogger.this.logEvents(remainingEvents)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          4990
+        </td>
+        <td>
+          1077
+          -
+          1079
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

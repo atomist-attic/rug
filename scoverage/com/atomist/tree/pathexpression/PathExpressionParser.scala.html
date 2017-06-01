@@ -1,0 +1,4822 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/pathexpression/PathExpressionParser.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.pathexpression
+</span>2 <span style=''>
+</span>3 <span style=''>import java.util.Objects
+</span>4 <span style=''>
+</span>5 <span style=''>import com.atomist.source.StringFileArtifact
+</span>6 <span style=''>import com.atomist.tree.utils.NodeUtils._
+</span>7 <span style=''>import com.atomist.tree.pathexpression.PathExpressionParsingConstants._
+</span>8 <span style=''>import com.atomist.util.scalaparsing.CommonTypesParser
+</span>9 <span style=''>
+</span>10 <span style=''>/**
+</span>11 <span style=''>  * Scala parser combinator for path expressions
+</span>12 <span style=''>  */
+</span>13 <span style=''>trait PathExpressionParser extends CommonTypesParser {
+</span>14 <span style=''>
+</span>15 <span style=''>  /**
+</span>16 <span style=''>    * We allow - and _ in navigation axis, as they are valid in
+</span>17 <span style=''>    * GitHub branch names, and . as it may be used in files
+</span>18 <span style=''>    */
+</span>19 <span style=''>  private def legalNavigationOrChild: Parser[String] =
+</span>20 <span style=''>    </span><span style='background: #AEF1AE'>&quot;&quot;&quot;[\.a-zA-Z0-9_\-\$#]+&quot;&quot;&quot;.r</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>  private def nodeName: Parser[String] = </span><span style='background: #AEF1AE'>identifierRefString(Set.empty, legalNavigationOrChild)</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>  private def functionName: Parser[String] = </span><span style='background: #AEF1AE'>identifierRefString(Set.empty, &quot;[a-zA-Z][a-zA-Z0-9\\-]+&quot;.r)</span><span style=''>
+</span>25 <span style=''>
+</span>26 <span style=''>  private def objectType: Parser[String] = </span><span style='background: #AEF1AE'>identifierRefString(Set.empty, ident)</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>  private def child: Parser[AxisSpecifier] = </span><span style='background: #AEF1AE'>opt(s&quot;$ChildAxis::&quot;) ^^ {
+</span>29 <span style=''></span><span style='background: #AEF1AE'>    case Some(_) =&gt; Child
+</span>30 <span style=''></span><span style='background: #AEF1AE'>    case _ =&gt; Child
+</span>31 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>  private def navigationAxis: Parser[AxisSpecifier] =
+</span>34 <span style=''>    </span><span style='background: #AEF1AE'>identifierRefString(StandardAxes, legalNavigationOrChild) &lt;~ &quot;::&quot; ^^
+</span>35 <span style=''></span><span style='background: #AEF1AE'>      (s =&gt; NavigationAxis(s))</span><span style=''>
+</span>36 <span style=''>
+</span>37 <span style=''>  private def nodeTypeTest: Parser[NodesWithTag] = </span><span style='background: #AEF1AE'>objectType &lt;~ &quot;()&quot; ^^ (p =&gt; NodesWithTag(p))</span><span style=''>
+</span>38 <span style=''>
+</span>39 <span style=''>  private def propertyTest: Parser[Predicate] =
+</span>40 <span style=''>    </span><span style='background: #AEF1AE'>&quot;@&quot; ~&gt; nodeName ~ EqualsToken ~ (singleQuotedString | doubleQuotedString) ^^ {
+</span>41 <span style=''></span><span style='background: #AEF1AE'>      case prop ~ op ~ literal =&gt; prop match {
+</span>42 <span style=''></span><span style='background: #AEF1AE'>        case &quot;name&quot; =&gt;
+</span>43 <span style=''></span><span style='background: #AEF1AE'>          NodeNamePredicate(literal)
+</span>44 <span style=''></span><span style='background: #AEF1AE'>        case &quot;type&quot; =&gt;
+</span>45 <span style=''></span><span style='background: #AEF1AE'>          NodeTypePredicate(literal)
+</span>46 <span style=''></span><span style='background: #AEF1AE'>        case propName: String =&gt;
+</span>47 <span style=''></span><span style='background: #AEF1AE'>          PropertyValuePredicate(propName, literal)
+</span>48 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>49 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>50 <span style=''>
+</span>51 <span style=''>  private def nullLiteral: Parser[Object] = </span><span style='background: #AEF1AE'>&quot;null&quot; ^^ (_ =&gt; null)</span><span style=''>
+</span>52 <span style=''>
+</span>53 <span style=''>  private def integer: Parser[Integer] = </span><span style='background: #AEF1AE'>decimalNumber ^^ (s =&gt; s.toInt)</span><span style=''>
+</span>54 <span style=''>
+</span>55 <span style=''>  private def literal: Parser[Any] = </span><span style='background: #AEF1AE'>nullLiteral | singleQuotedString | integer</span><span style=''>
+</span>56 <span style=''>
+</span>57 <span style=''>  private def methodInvocationTest: Parser[Predicate] = </span><span style='background: #AEF1AE'>&quot;.&quot; ~&gt; nodeName ~ args ~ EqualsToken ~ literal ^^ {
+</span>58 <span style=''></span><span style='background: #AEF1AE'>    case methodName ~ args ~ _ ~ literal =&gt;
+</span>59 <span style=''></span><span style='background: #AEF1AE'>      FunctionPredicate(s&quot;.$methodName&quot;, (n, among) =&gt; {
+</span>60 <span style=''></span><span style='background: #AEF1AE'>        val rO = invokeMethodIfPresent[Any](n, methodName, args)
+</span>61 <span style=''></span><span style='background: #AEF1AE'>        rO.exists(invoked =&gt; Objects.equals(literal, invoked))
+</span>62 <span style=''></span><span style='background: #AEF1AE'>      })
+</span>63 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>64 <span style=''>
+</span>65 <span style=''>  private def arg: Parser[String] = </span><span style='background: #AEF1AE'>singleQuotedString</span><span style=''>
+</span>66 <span style=''>
+</span>67 <span style=''>  private def args: Parser[Seq[String]] = </span><span style='background: #AEF1AE'>&quot;(&quot; ~&gt; repsep(arg, </span><span style='background: #F0ADAD'>&quot;,&quot;</span><span style='background: #AEF1AE'>) &lt;~ &quot;)&quot;</span><span style=''>
+</span>68 <span style=''>
+</span>69 <span style=''>  private def stringLiteralFunctionArg: Parser[StringLiteralFunctionArg] =
+</span>70 <span style=''>    </span><span style='background: #AEF1AE'>(singleQuotedString | doubleQuotedString) ^^ (
+</span>71 <span style=''></span><span style='background: #AEF1AE'>      s =&gt; StringLiteralFunctionArg(s)
+</span>72 <span style=''></span><span style='background: #AEF1AE'>      )</span><span style=''>
+</span>73 <span style=''>
+</span>74 <span style=''>  private def relativePathFunctionArg: Parser[RelativePathFunctionArg] =
+</span>75 <span style=''>    </span><span style='background: #AEF1AE'>nonEmptyRelativePathExpression ^^ (
+</span>76 <span style=''></span><span style='background: #AEF1AE'>      s =&gt; RelativePathFunctionArg(s)
+</span>77 <span style=''></span><span style='background: #AEF1AE'>      )</span><span style=''>
+</span>78 <span style=''>
+</span>79 <span style=''>  private def functionArg: Parser[FunctionArg] =
+</span>80 <span style=''>    </span><span style='background: #AEF1AE'>stringLiteralFunctionArg |
+</span>81 <span style=''></span><span style='background: #AEF1AE'>      relativePathFunctionArg</span><span style=''>
+</span>82 <span style=''>
+</span>83 <span style=''>  private def functionArgs: Parser[Seq[FunctionArg]] = </span><span style='background: #AEF1AE'>&quot;(&quot; ~&gt; rep1sep(functionArg, &quot;,&quot;) &lt;~ &quot;)&quot;</span><span style=''>
+</span>84 <span style=''>
+</span>85 <span style=''>  private def booleanMethodInvocation: Parser[Predicate] = </span><span style='background: #AEF1AE'>&quot;.&quot; ~&gt; functionName ~ args ^^ {
+</span>86 <span style=''></span><span style='background: #AEF1AE'>    case methodName ~ args =&gt;
+</span>87 <span style=''></span><span style='background: #AEF1AE'>      FunctionPredicate(s&quot;.$methodName&quot;, (n, among) =&gt;
+</span>88 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>invokeMethodIfPresent[Boolean](n, methodName, args).getOrElse(false)</span><span style='background: #AEF1AE'>
+</span>89 <span style=''></span><span style='background: #AEF1AE'>      )
+</span>90 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>91 <span style=''>
+</span>92 <span style=''>  private def functionCall: Parser[Predicate] = </span><span style='background: #AEF1AE'>functionName ~ functionArgs ^^ {
+</span>93 <span style=''></span><span style='background: #AEF1AE'>    case functionName ~ args =&gt;
+</span>94 <span style=''></span><span style='background: #AEF1AE'>      XPathStyleFunctionPredicate(functionName, args)
+</span>95 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>96 <span style=''>
+</span>97 <span style=''>  private def index: Parser[Predicate] = </span><span style='background: #AEF1AE'>integer ^^ {
+</span>98 <span style=''></span><span style='background: #AEF1AE'>    n =&gt; IndexPredicate(n)</span><span style=''>
+</span>99 <span style=''>  }
+</span>100 <span style=''>
+</span>101 <span style=''>  private def truePredicate: Parser[Predicate] = </span><span style='background: #AEF1AE'>&quot;true&quot; ^^ (_ =&gt; TruePredicate)</span><span style=''>
+</span>102 <span style=''>
+</span>103 <span style=''>  private def falsePredicate: Parser[Predicate] = </span><span style='background: #AEF1AE'>&quot;false&quot; ^^ (_ =&gt; FalsePredicate)</span><span style=''>
+</span>104 <span style=''>
+</span>105 <span style=''>  private def nestedPathExpressionPredicate: Parser[Predicate] =
+</span>106 <span style=''>    </span><span style='background: #AEF1AE'>pathExpression ^^ (pe =&gt; NestedPathExpressionPredicate(pe))</span><span style=''>
+</span>107 <span style=''>
+</span>108 <span style=''>  private def predicateTerm: Parser[Predicate] =
+</span>109 <span style=''>    </span><span style='background: #AEF1AE'>methodInvocationTest |
+</span>110 <span style=''></span><span style='background: #AEF1AE'>      propertyTest |
+</span>111 <span style=''></span><span style='background: #AEF1AE'>      booleanMethodInvocation |
+</span>112 <span style=''></span><span style='background: #AEF1AE'>      truePredicate |
+</span>113 <span style=''></span><span style='background: #AEF1AE'>      falsePredicate |
+</span>114 <span style=''></span><span style='background: #AEF1AE'>      functionCall |
+</span>115 <span style=''></span><span style='background: #AEF1AE'>      index |
+</span>116 <span style=''></span><span style='background: #AEF1AE'>      nestedPathExpressionPredicate</span><span style=''>
+</span>117 <span style=''>
+</span>118 <span style=''>  private def negatedPredicate: Parser[Predicate] = </span><span style='background: #AEF1AE'>&quot;not&quot; ~&gt; &quot;(&quot; ~&gt; predicateExpression &lt;~ &quot;)&quot; ^^ {
+</span>119 <span style=''></span><span style='background: #AEF1AE'>    pred =&gt; NegationOfPredicate(pred)</span><span style=''>
+</span>120 <span style=''>  }
+</span>121 <span style=''>
+</span>122 <span style=''>  private def logicalOp: Parser[String] = </span><span style='background: #AEF1AE'>&quot;and&quot; | &quot;or&quot;</span><span style=''>
+</span>123 <span style=''>
+</span>124 <span style=''>  private def predicateAnd: Parser[Predicate] = </span><span style='background: #AEF1AE'>predicateTerm ~ logicalOp ~ predicateExpression ^^ {
+</span>125 <span style=''></span><span style='background: #AEF1AE'>    case a ~ &quot;and&quot; ~ b =&gt; a and b
+</span>126 <span style=''></span><span style='background: #AEF1AE'>    case a ~ &quot;or&quot; ~ b =&gt; a or b
+</span>127 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>128 <span style=''>
+</span>129 <span style=''>  private def predicateExpression: Parser[Predicate] = </span><span style='background: #AEF1AE'>predicateAnd | negatedPredicate | predicateTerm</span><span style=''>
+</span>130 <span style=''>
+</span>131 <span style=''>  private def predicate: Parser[Predicate] =
+</span>132 <span style=''>    </span><span style='background: #AEF1AE'>PredicateOpen ~&gt; predicateExpression ~ PredicateClose ~ opt(PredicateOptional) ^^ {
+</span>133 <span style=''></span><span style='background: #AEF1AE'>      case p ~ _ ~ Some(_) =&gt; OptionalPredicate(p)
+</span>134 <span style=''></span><span style='background: #AEF1AE'>      case p ~ _ ~ None =&gt; p
+</span>135 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>136 <span style=''>
+</span>137 <span style=''>  private def nodeNameTest: Parser[NodeTest] = </span><span style='background: #AEF1AE'>nodeName ^^
+</span>138 <span style=''></span><span style='background: #AEF1AE'>    (s =&gt; NamedNodeTest(s))</span><span style=''>
+</span>139 <span style=''>
+</span>140 <span style=''>  private def allNodes: Parser[NodeTest] = </span><span style='background: #AEF1AE'>&quot;*&quot; ^^ (_ =&gt; All)</span><span style=''>
+</span>141 <span style=''>
+</span>142 <span style=''>  private def nodeTest: Parser[NodeTest] = </span><span style='background: #AEF1AE'>nodeTypeTest | nodeNameTest | allNodes</span><span style=''>
+</span>143 <span style=''>
+</span>144 <span style=''>  private def property: Parser[AxisSpecifier] = </span><span style='background: #AEF1AE'>(s&quot;$PropertyAxis::&quot; | &quot;@&quot;) ^^ (s =&gt; Attribute)</span><span style=''>
+</span>145 <span style=''>
+</span>146 <span style=''>  private def descendant: Parser[AxisSpecifier] = </span><span style='background: #AEF1AE'>(s&quot;$DescendantAxis::&quot; | &quot;/&quot;) ^^
+</span>147 <span style=''></span><span style='background: #AEF1AE'>    (s =&gt; Descendant)</span><span style=''>
+</span>148 <span style=''>
+</span>149 <span style=''>  private def selfAxis: Parser[AxisSpecifier] = </span><span style='background: #AEF1AE'>(s&quot;$SelfAxis::&quot; | &quot;.&quot;) ^^
+</span>150 <span style=''></span><span style='background: #AEF1AE'>    (s =&gt; Self)</span><span style=''>
+</span>151 <span style=''>
+</span>152 <span style=''>  private def axis: Parser[AxisSpecifier] =
+</span>153 <span style=''>    </span><span style='background: #AEF1AE'>property |
+</span>154 <span style=''></span><span style='background: #AEF1AE'>      navigationAxis |
+</span>155 <span style=''></span><span style='background: #AEF1AE'>      descendant |
+</span>156 <span style=''></span><span style='background: #AEF1AE'>      selfAxis |
+</span>157 <span style=''></span><span style='background: #AEF1AE'>      child</span><span style=''>
+</span>158 <span style=''>
+</span>159 <span style=''>  private def locationStep: Parser[LocationStep] = </span><span style='background: #AEF1AE'>axis ~ nodeTest ~ rep(predicate) ^^ {
+</span>160 <span style=''></span><span style='background: #AEF1AE'>    case a ~ t ~ preds =&gt; LocationStep(a, t, preds)
+</span>161 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>162 <span style=''>
+</span>163 <span style=''>  private val slashSeparator = </span><span style='background: #AEF1AE'>&quot;/&quot;</span><span style=''>
+</span>164 <span style=''>
+</span>165 <span style=''>  def relativePathExpression: Parser[PathExpression] = </span><span style='background: #AEF1AE'>(selfAxis | repsep(locationStep, slashSeparator)) ^^ {
+</span>166 <span style=''></span><span style='background: #AEF1AE'>    case Self =&gt; PathExpression(List(LocationStep(Self, All, Nil)))
+</span>167 <span style=''></span><span style='background: #AEF1AE'>    case steps: List[LocationStep]@unchecked =&gt; PathExpression(steps)
+</span>168 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>169 <span style=''>
+</span>170 <span style=''>  private def nonEmptyRelativePathExpression: Parser[PathExpression] = </span><span style='background: #AEF1AE'>new</span><span style=''> Parser[PathExpression] {
+</span>171 <span style=''>
+</span>172 <span style=''>    override def apply(in: Input): ParseResult[PathExpression] = {
+</span>173 <span style=''>      </span><span style='background: #AEF1AE'>relativePathExpression(in)</span><span style=''> match {
+</span>174 <span style=''>        case s: Success[PathExpression]@unchecked if </span><span style='background: #AEF1AE'>s.result.locationSteps.nonEmpty</span><span style=''> =&gt; s
+</span>175 <span style=''>        case s: Success[PathExpression]@unchecked =&gt; </span><span style='background: #AEF1AE'>Failure(s&quot;Path expression has no steps: [${s.result}]&quot;, in)</span><span style=''>
+</span>176 <span style=''>        case x =&gt; x
+</span>177 <span style=''>      }
+</span>178 <span style=''>    }
+</span>179 <span style=''>  }
+</span>180 <span style=''>
+</span>181 <span style=''>  def absolutePathExpression: Parser[PathExpression] = </span><span style='background: #AEF1AE'>slashSeparator ~&gt; relativePathExpression</span><span style=''>
+</span>182 <span style=''>
+</span>183 <span style=''>  def pathExpression: Parser[PathExpression] = </span><span style='background: #AEF1AE'>absolutePathExpression | relativePathExpression</span><span style=''>
+</span>184 <span style=''>
+</span>185 <span style=''>  def parsePathExpression(expr: String): PathExpression = {
+</span>186 <span style=''>    try {
+</span>187 <span style=''>      </span><span style='background: #AEF1AE'>parseTo(StringFileArtifact(&quot;&lt;input&gt;&quot;, expr), phrase(absolutePathExpression))</span><span style=''>
+</span>188 <span style=''>    } catch {
+</span>189 <span style=''>      case e: IllegalArgumentException =&gt;
+</span>190 <span style=''>        </span><span style='background: #AEF1AE'>throw new IllegalArgumentException(s&quot;Path expression '$expr' is invalid: [${e.getMessage}]&quot;, e)</span><span style=''>
+</span>191 <span style=''>    }
+</span>192 <span style=''>  }
+</span>193 <span style=''>}
+</span>194 <span style=''>
+</span>195 <span style=''>/**
+</span>196 <span style=''>  * Default implementation of PathExpressionParser. Import this
+</span>197 <span style=''>  * class for default conversion from Strings to path expressions. 
+</span>198 <span style=''>  */
+</span>199 <span style=''>object PathExpressionParser extends PathExpressionParser {
+</span>200 <span style=''>
+</span>201 <span style=''>  implicit def parseString(expr: String): PathExpression = </span><span style='background: #AEF1AE'>PathExpressionParser.parsePathExpression(expr)</span><span style=''>
+</span>202 <span style=''>
+</span>203 <span style=''>}
+</span>204 <span style=''>
+</span>205 <span style=''>private object PathExpressionParsingConstants {
+</span>206 <span style=''>
+</span>207 <span style=''>  val DotSeparator = </span><span style='background: #AEF1AE'>&quot;.&quot;</span><span style=''>
+</span>208 <span style=''>
+</span>209 <span style=''>  val SlashSeparator = </span><span style='background: #AEF1AE'>&quot;/&quot;</span><span style=''>
+</span>210 <span style=''>
+</span>211 <span style=''>  val AmongSeparator = </span><span style='background: #AEF1AE'>&quot;$&quot;</span><span style=''>
+</span>212 <span style=''>
+</span>213 <span style=''>  val SlashSlash = </span><span style='background: #AEF1AE'>&quot;//&quot;</span><span style=''>
+</span>214 <span style=''>
+</span>215 <span style=''>  val PredicateOpen = </span><span style='background: #AEF1AE'>&quot;[&quot;</span><span style=''>
+</span>216 <span style=''>
+</span>217 <span style=''>  val PredicateClose = </span><span style='background: #AEF1AE'>&quot;]&quot;</span><span style=''>
+</span>218 <span style=''>
+</span>219 <span style=''>  val PredicateOptional = </span><span style='background: #AEF1AE'>&quot;?&quot;</span><span style=''>
+</span>220 <span style=''>
+</span>221 <span style=''>  val PropertyAxis = </span><span style='background: #AEF1AE'>&quot;property&quot;</span><span style=''>
+</span>222 <span style=''>
+</span>223 <span style=''>  val ChildAxis = </span><span style='background: #AEF1AE'>&quot;child&quot;</span><span style=''>
+</span>224 <span style=''>
+</span>225 <span style=''>  val DescendantAxis = </span><span style='background: #AEF1AE'>&quot;descendant&quot;</span><span style=''>
+</span>226 <span style=''>
+</span>227 <span style=''>  val SelfAxis = </span><span style='background: #AEF1AE'>&quot;self&quot;</span><span style=''>
+</span>228 <span style=''>
+</span>229 <span style=''>  /**
+</span>230 <span style=''>    * Axes that can't be a property
+</span>231 <span style=''>    */
+</span>232 <span style=''>  val StandardAxes = </span><span style='background: #AEF1AE'>Set(PropertyAxis, ChildAxis, DescendantAxis, SelfAxis)</span><span style=''>
+</span>233 <span style=''>
+</span>234 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          8244
+        </td>
+        <td>
+          592
+          -
+          620
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.r
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(&quot;[\\.a-zA-Z0-9_\\-\\$#]+&quot;).r
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          8243
+        </td>
+        <td>
+          592
+          -
+          618
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;[\\.a-zA-Z0-9_\\-\\$#]+&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          8245
+        </td>
+        <td>
+          592
+          -
+          620
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.regex
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.regex(scala.this.Predef.augmentString(&quot;[\\.a-zA-Z0-9_\\-\\$#]+&quot;).r)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          8247
+        </td>
+        <td>
+          694
+          -
+          716
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.legalNavigationOrChild
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.legalNavigationOrChild
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          8246
+        </td>
+        <td>
+          683
+          -
+          692
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.generic.ImmutableSetFactory.empty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.empty[String]
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          8248
+        </td>
+        <td>
+          663
+          -
+          717
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.CommonTypesParser.identifierRefString
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.identifierRefString(scala.this.Predef.Set.empty[String], PathExpressionParser.this.legalNavigationOrChild)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          8253
+        </td>
+        <td>
+          764
+          -
+          823
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.CommonTypesParser.identifierRefString
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.identifierRefString(scala.this.Predef.Set.empty[String], PathExpressionParser.this.regex(scala.this.Predef.augmentString(&quot;[a-zA-Z][a-zA-Z0-9\\-]+&quot;).r))
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          8250
+        </td>
+        <td>
+          795
+          -
+          820
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;[a-zA-Z][a-zA-Z0-9\\-]+&quot;
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          8252
+        </td>
+        <td>
+          795
+          -
+          822
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.regex
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.regex(scala.this.Predef.augmentString(&quot;[a-zA-Z][a-zA-Z0-9\\-]+&quot;).r)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          8249
+        </td>
+        <td>
+          784
+          -
+          793
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.generic.ImmutableSetFactory.empty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.empty[String]
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          8251
+        </td>
+        <td>
+          795
+          -
+          822
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.r
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(&quot;[a-zA-Z][a-zA-Z0-9\\-]+&quot;).r
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          8256
+        </td>
+        <td>
+          868
+          -
+          905
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.CommonTypesParser.identifierRefString
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.identifierRefString(scala.this.Predef.Set.empty[String], PathExpressionParser.this.ident)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          8255
+        </td>
+        <td>
+          899
+          -
+          904
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.parsing.combinator.JavaTokenParsers.ident
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.ident
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          8254
+        </td>
+        <td>
+          888
+          -
+          897
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.generic.ImmutableSetFactory.empty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.empty[String]
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8262
+        </td>
+        <td>
+          952
+          -
+          1027
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.opt[String](PathExpressionParser.this.literal(scala.StringContext.apply(&quot;&quot;, &quot;::&quot;).s(com.atomist.tree.pathexpression.PathExpressionParsingConstants.ChildAxis))).^^[com.atomist.tree.pathexpression.AxisSpecifier](((x0$1: Option[String]) =&gt; x0$1 match {
+  case (x: String)Some[String](_) =&gt; Child
+  case _ =&gt; Child
+}))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8259
+        </td>
+        <td>
+          959
+          -
+          968
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.ChildAxis
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.ChildAxis
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8261
+        </td>
+        <td>
+          956
+          -
+          971
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(scala.StringContext.apply(&quot;&quot;, &quot;::&quot;).s(com.atomist.tree.pathexpression.PathExpressionParsingConstants.ChildAxis))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8258
+        </td>
+        <td>
+          968
+          -
+          971
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;::&quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8257
+        </td>
+        <td>
+          958
+          -
+          959
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8260
+        </td>
+        <td>
+          956
+          -
+          971
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;::&quot;).s(com.atomist.tree.pathexpression.PathExpressionParsingConstants.ChildAxis)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          8265
+        </td>
+        <td>
+          1148
+          -
+          1152
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;::&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          8267
+        </td>
+        <td>
+          1087
+          -
+          1186
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.identifierRefString(com.atomist.tree.pathexpression.PathExpressionParsingConstants.StandardAxes, PathExpressionParser.this.legalNavigationOrChild).&lt;~[String](PathExpressionParser.this.literal(&quot;::&quot;)).^^[com.atomist.tree.pathexpression.NavigationAxis](((s: String) =&gt; NavigationAxis.apply(s)))
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          8264
+        </td>
+        <td>
+          1121
+          -
+          1143
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.legalNavigationOrChild
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.legalNavigationOrChild
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          8263
+        </td>
+        <td>
+          1107
+          -
+          1119
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.StandardAxes
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.StandardAxes
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          8266
+        </td>
+        <td>
+          1168
+          -
+          1185
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NavigationAxis.apply
+        </td>
+        <td style="background: #AEF1AE">
+          NavigationAxis.apply(s)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          8268
+        </td>
+        <td>
+          1253
+          -
+          1257
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;()&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          8270
+        </td>
+        <td>
+          1239
+          -
+          1283
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.objectType.&lt;~[String](PathExpressionParser.this.literal(&quot;()&quot;)).^^[com.atomist.tree.pathexpression.NodesWithTag](((p: String) =&gt; NodesWithTag.apply(p)))
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          8269
+        </td>
+        <td>
+          1267
+          -
+          1282
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NodesWithTag.apply
+        </td>
+        <td style="background: #AEF1AE">
+          NodesWithTag.apply(p)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          8280
+        </td>
+        <td>
+          1337
+          -
+          1681
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;@&quot;).~&gt;[String](PathExpressionParser.this.nodeName).~[String](PathExpressionParser.this.literal(PathExpressionParser.this.EqualsToken)).~[String](PathExpressionParser.this.singleQuotedString.|[String](PathExpressionParser.this.doubleQuotedString)).^^[com.atomist.tree.pathexpression.Predicate](((x0$2: PathExpressionParser.this.~[PathExpressionParser.this.~[String,String],String]) =&gt; x0$2 match {
+  case (_1: PathExpressionParser.this.~[String,String], _2: String)PathExpressionParser.this.~[PathExpressionParser.this.~[String,String],String]((_1: String, _2: String)PathExpressionParser.this.~[String,String]((prop @ _), (op @ _)), (literal @ _)) =&gt; prop match {
+    case &quot;name&quot; =&gt; NodeNamePredicate.apply(literal)
+    case &quot;type&quot; =&gt; NodeTypePredicate.apply(literal)
+    case (propName @ (_: String)) =&gt; PropertyValuePredicate.apply(propName, literal)
+  }
+}))
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          8271
+        </td>
+        <td>
+          1337
+          -
+          1340
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;@&quot;
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          8274
+        </td>
+        <td>
+          1355
+          -
+          1366
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(PathExpressionParser.this.EqualsToken)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          8276
+        </td>
+        <td>
+          1370
+          -
+          1409
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.|
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.singleQuotedString.|[String](PathExpressionParser.this.doubleQuotedString)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          8273
+        </td>
+        <td>
+          1355
+          -
+          1366
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.CommonTypesParser.EqualsToken
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.EqualsToken
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          8275
+        </td>
+        <td>
+          1391
+          -
+          1409
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.CommonTypesParser.doubleQuotedString
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.doubleQuotedString
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          8272
+        </td>
+        <td>
+          1344
+          -
+          1352
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          8277
+        </td>
+        <td>
+          1496
+          -
+          1522
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NodeNamePredicate.apply
+        </td>
+        <td style="background: #AEF1AE">
+          NodeNamePredicate.apply(literal)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          8278
+        </td>
+        <td>
+          1556
+          -
+          1582
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NodeTypePredicate.apply
+        </td>
+        <td style="background: #AEF1AE">
+          NodeTypePredicate.apply(literal)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          8279
+        </td>
+        <td>
+          1626
+          -
+          1667
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PropertyValuePredicate.apply
+        </td>
+        <td style="background: #AEF1AE">
+          PropertyValuePredicate.apply(propName, literal)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          8283
+        </td>
+        <td>
+          1727
+          -
+          1748
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;null&quot;).^^[Null](((x$1: String) =&gt; null))
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          8282
+        </td>
+        <td>
+          1743
+          -
+          1747
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          8281
+        </td>
+        <td>
+          1727
+          -
+          1733
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;null&quot;
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          8286
+        </td>
+        <td>
+          1791
+          -
+          1822
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.decimalNumber.^^[Integer](((s: String) =&gt; scala.this.Predef.int2Integer(scala.this.Predef.augmentString(s).toInt)))
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          8285
+        </td>
+        <td>
+          1814
+          -
+          1821
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Predef.int2Integer
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.int2Integer(scala.this.Predef.augmentString(s).toInt)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          8284
+        </td>
+        <td>
+          1814
+          -
+          1821
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.toInt
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(s).toInt
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8289
+        </td>
+        <td>
+          1861
+          -
+          1903
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.|
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.nullLiteral.|[Object](PathExpressionParser.this.singleQuotedString).|[Object](PathExpressionParser.this.integer)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8288
+        </td>
+        <td>
+          1896
+          -
+          1903
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.integer
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.integer
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8287
+        </td>
+        <td>
+          1875
+          -
+          1893
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.CommonTypesParser.singleQuotedString
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.singleQuotedString
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          8292
+        </td>
+        <td>
+          1979
+          -
+          1983
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.args
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.args
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          8301
+        </td>
+        <td>
+          1961
+          -
+          2254
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;.&quot;).~&gt;[String](PathExpressionParser.this.nodeName).~[Seq[String]](PathExpressionParser.this.args).~[String](PathExpressionParser.this.literal(PathExpressionParser.this.EqualsToken)).~[Any](PathExpressionParser.this.literal).^^[com.atomist.tree.pathexpression.Predicate](((x0$3: PathExpressionParser.this.~[PathExpressionParser.this.~[PathExpressionParser.this.~[String,Seq[String]],String],Any]) =&gt; x0$3 match {
+  case (_1: PathExpressionParser.this.~[PathExpressionParser.this.~[String,Seq[String]],String], _2: Any)PathExpressionParser.this.~[PathExpressionParser.this.~[PathExpressionParser.this.~[String,Seq[String]],String],Any]((_1: PathExpressionParser.this.~[String,Seq[String]], _2: String)PathExpressionParser.this.~[PathExpressionParser.this.~[String,Seq[String]],String]((_1: String, _2: Seq[String])PathExpressionParser.this.~[String,Seq[String]]((methodName @ _), (args @ _)), _), (literal @ _)) =&gt; FunctionPredicate.apply(scala.StringContext.apply(&quot;.&quot;, &quot;&quot;).s(methodName), ((n: com.atomist.graph.GraphNode, among: Seq[com.atomist.graph.GraphNode]) =&gt; {
+    val rO: Option[Any] = com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent[Any](n, methodName, args)((ClassTag.Any: scala.reflect.ClassTag[Any]));
+    rO.exists(((invoked: Any) =&gt; java.util.Objects.equals(literal, invoked)))
+  }))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          8295
+        </td>
+        <td>
+          2000
+          -
+          2007
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          8294
+        </td>
+        <td>
+          1986
+          -
+          1997
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(PathExpressionParser.this.EqualsToken)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          8291
+        </td>
+        <td>
+          1968
+          -
+          1976
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          8290
+        </td>
+        <td>
+          1961
+          -
+          1964
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;.&quot;
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          8293
+        </td>
+        <td>
+          1986
+          -
+          1997
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.CommonTypesParser.EqualsToken
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.EqualsToken
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          8300
+        </td>
+        <td>
+          2063
+          -
+          2250
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.FunctionPredicate.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FunctionPredicate.apply(scala.StringContext.apply(&quot;.&quot;, &quot;&quot;).s(methodName), ((n: com.atomist.graph.GraphNode, among: Seq[com.atomist.graph.GraphNode]) =&gt; {
+  val rO: Option[Any] = com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent[Any](n, methodName, args)((ClassTag.Any: scala.reflect.ClassTag[Any]));
+  rO.exists(((invoked: Any) =&gt; java.util.Objects.equals(literal, invoked)))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          8296
+        </td>
+        <td>
+          2081
+          -
+          2096
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;.&quot;, &quot;&quot;).s(methodName)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          8297
+        </td>
+        <td>
+          2131
+          -
+          2178
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent[Any](n, methodName, args)((ClassTag.Any: scala.reflect.ClassTag[Any]))
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          8298
+        </td>
+        <td>
+          2208
+          -
+          2240
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Objects.equals
+        </td>
+        <td style="background: #AEF1AE">
+          java.util.Objects.equals(literal, invoked)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          8299
+        </td>
+        <td>
+          2187
+          -
+          2241
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.exists
+        </td>
+        <td style="background: #AEF1AE">
+          rO.exists(((invoked: Any) =&gt; java.util.Objects.equals(literal, invoked)))
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          8302
+        </td>
+        <td>
+          2292
+          -
+          2310
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.CommonTypesParser.singleQuotedString
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.singleQuotedString
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          8304
+        </td>
+        <td>
+          2368
+          -
+          2371
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.arg
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.arg
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          8307
+        </td>
+        <td>
+          2381
+          -
+          2384
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;)&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          8303
+        </td>
+        <td>
+          2354
+          -
+          2357
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;(&quot;
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          8306
+        </td>
+        <td>
+          2361
+          -
+          2377
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.repsep
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.repsep[String](PathExpressionParser.this.arg, PathExpressionParser.this.literal(&quot;,&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          8308
+        </td>
+        <td>
+          2354
+          -
+          2384
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.&lt;~
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;(&quot;).~&gt;[List[String]](PathExpressionParser.this.repsep[String](PathExpressionParser.this.arg, PathExpressionParser.this.literal(&quot;,&quot;))).&lt;~[String](PathExpressionParser.this.literal(&quot;)&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          8305
+        </td>
+        <td>
+          2373
+          -
+          2376
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #F0ADAD">
+          PathExpressionParser.this.literal(&quot;,&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          8309
+        </td>
+        <td>
+          2487
+          -
+          2505
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.CommonTypesParser.doubleQuotedString
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.doubleQuotedString
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          8311
+        </td>
+        <td>
+          2465
+          -
+          2558
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.singleQuotedString.|[String](PathExpressionParser.this.doubleQuotedString).^^[com.atomist.tree.pathexpression.StringLiteralFunctionArg](((s: String) =&gt; StringLiteralFunctionArg.apply(s)))
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          8310
+        </td>
+        <td>
+          2523
+          -
+          2550
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.StringLiteralFunctionArg.apply
+        </td>
+        <td style="background: #AEF1AE">
+          StringLiteralFunctionArg.apply(s)
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          8313
+        </td>
+        <td>
+          2637
+          -
+          2718
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.nonEmptyRelativePathExpression.^^[com.atomist.tree.pathexpression.RelativePathFunctionArg](((s: com.atomist.tree.pathexpression.PathExpression) =&gt; RelativePathFunctionArg.apply(s)))
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          8312
+        </td>
+        <td>
+          2684
+          -
+          2710
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.RelativePathFunctionArg.apply
+        </td>
+        <td style="background: #AEF1AE">
+          RelativePathFunctionArg.apply(s)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          8315
+        </td>
+        <td>
+          2773
+          -
+          2829
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.|
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.stringLiteralFunctionArg.|[Product with Serializable with com.atomist.tree.pathexpression.FunctionArg](PathExpressionParser.this.relativePathFunctionArg)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          8314
+        </td>
+        <td>
+          2806
+          -
+          2829
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.relativePathFunctionArg
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.relativePathFunctionArg
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          8316
+        </td>
+        <td>
+          2886
+          -
+          2889
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;(&quot;
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          8319
+        </td>
+        <td>
+          2893
+          -
+          2918
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.rep1sep
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.rep1sep[com.atomist.tree.pathexpression.FunctionArg](PathExpressionParser.this.functionArg, PathExpressionParser.this.literal(&quot;,&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          8321
+        </td>
+        <td>
+          2886
+          -
+          2925
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.&lt;~
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;(&quot;).~&gt;[List[com.atomist.tree.pathexpression.FunctionArg]](PathExpressionParser.this.rep1sep[com.atomist.tree.pathexpression.FunctionArg](PathExpressionParser.this.functionArg, PathExpressionParser.this.literal(&quot;,&quot;))).&lt;~[String](PathExpressionParser.this.literal(&quot;)&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          8318
+        </td>
+        <td>
+          2914
+          -
+          2917
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;,&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          8317
+        </td>
+        <td>
+          2901
+          -
+          2912
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.functionArg
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.functionArg
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          8320
+        </td>
+        <td>
+          2922
+          -
+          2925
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;)&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          8322
+        </td>
+        <td>
+          2986
+          -
+          2989
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;.&quot;
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          8328
+        </td>
+        <td>
+          2986
+          -
+          3191
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;.&quot;).~&gt;[String](PathExpressionParser.this.functionName).~[Seq[String]](PathExpressionParser.this.args).^^[com.atomist.tree.pathexpression.Predicate](((x0$4: PathExpressionParser.this.~[String,Seq[String]]) =&gt; x0$4 match {
+  case (_1: String, _2: Seq[String])PathExpressionParser.this.~[String,Seq[String]]((methodName @ _), (args @ _)) =&gt; FunctionPredicate.apply(scala.StringContext.apply(&quot;.&quot;, &quot;&quot;).s(methodName), ((n: com.atomist.graph.GraphNode, among: Seq[com.atomist.graph.GraphNode]) =&gt; com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent[Boolean](n, methodName, args)((ClassTag.Boolean: scala.reflect.ClassTag[Boolean])).getOrElse[Boolean](false)))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          8324
+        </td>
+        <td>
+          3008
+          -
+          3012
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.args
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.args
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          8323
+        </td>
+        <td>
+          2993
+          -
+          3005
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.functionName
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.functionName
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          8325
+        </td>
+        <td>
+          3072
+          -
+          3087
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;.&quot;, &quot;&quot;).s(methodName)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          8327
+        </td>
+        <td>
+          3054
+          -
+          3187
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.FunctionPredicate.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FunctionPredicate.apply(scala.StringContext.apply(&quot;.&quot;, &quot;&quot;).s(methodName), ((n: com.atomist.graph.GraphNode, among: Seq[com.atomist.graph.GraphNode]) =&gt; com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent[Boolean](n, methodName, args)((ClassTag.Boolean: scala.reflect.ClassTag[Boolean])).getOrElse[Boolean](false)))
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          8326
+        </td>
+        <td>
+          3111
+          -
+          3179
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent[Boolean](n, methodName, args)((ClassTag.Boolean: scala.reflect.ClassTag[Boolean])).getOrElse[Boolean](false)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          8329
+        </td>
+        <td>
+          3256
+          -
+          3268
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.functionArgs
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.functionArgs
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          8332
+        </td>
+        <td>
+          3241
+          -
+          3363
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.functionName.~[Seq[com.atomist.tree.pathexpression.FunctionArg]](PathExpressionParser.this.functionArgs).^^[com.atomist.tree.pathexpression.Predicate](((x0$5: PathExpressionParser.this.~[String,Seq[com.atomist.tree.pathexpression.FunctionArg]]) =&gt; x0$5 match {
+  case (_1: String, _2: Seq[com.atomist.tree.pathexpression.FunctionArg])PathExpressionParser.this.~[String,Seq[com.atomist.tree.pathexpression.FunctionArg]]((functionName @ _), (args @ _)) =&gt; XPathStyleFunctionPredicate.apply(functionName, args, XPathStyleFunctionPredicate.apply$default$3)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          8331
+        </td>
+        <td>
+          3312
+          -
+          3359
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.XPathStyleFunctionPredicate.apply
+        </td>
+        <td style="background: #AEF1AE">
+          XPathStyleFunctionPredicate.apply(functionName, args, XPathStyleFunctionPredicate.apply$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          8330
+        </td>
+        <td>
+          3312
+          -
+          3312
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.XPathStyleFunctionPredicate.apply$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          XPathStyleFunctionPredicate.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          8335
+        </td>
+        <td>
+          3406
+          -
+          3445
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.integer.^^[com.atomist.tree.pathexpression.IndexPredicate](((n: Integer) =&gt; IndexPredicate.apply(scala.this.Predef.Integer2int(n))))
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          8334
+        </td>
+        <td>
+          3428
+          -
+          3445
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.IndexPredicate.apply
+        </td>
+        <td style="background: #AEF1AE">
+          IndexPredicate.apply(scala.this.Predef.Integer2int(n))
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          8333
+        </td>
+        <td>
+          3443
+          -
+          3444
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Predef.Integer2int
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Integer2int(n)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          8337
+        </td>
+        <td>
+          3500
+          -
+          3530
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;true&quot;).^^[com.atomist.tree.pathexpression.TruePredicate.type](((x$2: String) =&gt; TruePredicate))
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          8336
+        </td>
+        <td>
+          3500
+          -
+          3506
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;true&quot;
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          8339
+        </td>
+        <td>
+          3582
+          -
+          3614
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;false&quot;).^^[com.atomist.tree.pathexpression.FalsePredicate.type](((x$3: String) =&gt; FalsePredicate))
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          8338
+        </td>
+        <td>
+          3582
+          -
+          3589
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;false&quot;
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          8340
+        </td>
+        <td>
+          3710
+          -
+          3743
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NestedPathExpressionPredicate.apply
+        </td>
+        <td style="background: #AEF1AE">
+          NestedPathExpressionPredicate.apply(pe)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          8341
+        </td>
+        <td>
+          3685
+          -
+          3744
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.pathExpression.^^[com.atomist.tree.pathexpression.NestedPathExpressionPredicate](((pe: com.atomist.tree.pathexpression.PathExpression) =&gt; NestedPathExpressionPredicate.apply(pe)))
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          8342
+        </td>
+        <td>
+          3828
+          -
+          3840
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.propertyTest
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.propertyTest
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          8343
+        </td>
+        <td>
+          3849
+          -
+          3872
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.booleanMethodInvocation
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.booleanMethodInvocation
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          8344
+        </td>
+        <td>
+          3881
+          -
+          3894
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.truePredicate
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.truePredicate
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          8345
+        </td>
+        <td>
+          3903
+          -
+          3917
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.falsePredicate
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.falsePredicate
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          8346
+        </td>
+        <td>
+          3926
+          -
+          3938
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.functionCall
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.functionCall
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          8349
+        </td>
+        <td>
+          3799
+          -
+          3990
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.|
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.methodInvocationTest.|[com.atomist.tree.pathexpression.Predicate](PathExpressionParser.this.propertyTest).|[com.atomist.tree.pathexpression.Predicate](PathExpressionParser.this.booleanMethodInvocation).|[com.atomist.tree.pathexpression.Predicate](PathExpressionParser.this.truePredicate).|[com.atomist.tree.pathexpression.Predicate](PathExpressionParser.this.falsePredicate).|[com.atomist.tree.pathexpression.Predicate](PathExpressionParser.this.functionCall).|[com.atomist.tree.pathexpression.Predicate](PathExpressionParser.this.index).|[com.atomist.tree.pathexpression.Predicate](PathExpressionParser.this.nestedPathExpressionPredicate)
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          8347
+        </td>
+        <td>
+          3947
+          -
+          3952
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.index
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.index
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          8348
+        </td>
+        <td>
+          3961
+          -
+          3990
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.nestedPathExpressionPredicate
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.nestedPathExpressionPredicate
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          8352
+        </td>
+        <td>
+          4060
+          -
+          4079
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.predicateExpression
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.predicateExpression
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          8355
+        </td>
+        <td>
+          4044
+          -
+          4129
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;not&quot;).~&gt;[String](PathExpressionParser.this.literal(&quot;(&quot;)).~&gt;[com.atomist.tree.pathexpression.Predicate](PathExpressionParser.this.predicateExpression).&lt;~[String](PathExpressionParser.this.literal(&quot;)&quot;)).^^[com.atomist.tree.pathexpression.NegationOfPredicate](((pred: com.atomist.tree.pathexpression.Predicate) =&gt; NegationOfPredicate.apply(pred)))
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          8351
+        </td>
+        <td>
+          4053
+          -
+          4056
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;(&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          8350
+        </td>
+        <td>
+          4044
+          -
+          4049
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;not&quot;
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          8353
+        </td>
+        <td>
+          4083
+          -
+          4086
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;)&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          8354
+        </td>
+        <td>
+          4104
+          -
+          4129
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NegationOfPredicate.apply
+        </td>
+        <td style="background: #AEF1AE">
+          NegationOfPredicate.apply(pred)
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          8358
+        </td>
+        <td>
+          4177
+          -
+          4189
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.|
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;and&quot;).|[String](PathExpressionParser.this.literal(&quot;or&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          8357
+        </td>
+        <td>
+          4185
+          -
+          4189
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;or&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          8356
+        </td>
+        <td>
+          4177
+          -
+          4182
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;and&quot;
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          8363
+        </td>
+        <td>
+          4239
+          -
+          4361
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.predicateTerm.~[String](PathExpressionParser.this.logicalOp).~[com.atomist.tree.pathexpression.Predicate](PathExpressionParser.this.predicateExpression).^^[com.atomist.tree.pathexpression.Predicate](((x0$6: PathExpressionParser.this.~[PathExpressionParser.this.~[com.atomist.tree.pathexpression.Predicate,String],com.atomist.tree.pathexpression.Predicate]) =&gt; x0$6 match {
+  case (_1: PathExpressionParser.this.~[com.atomist.tree.pathexpression.Predicate,String], _2: com.atomist.tree.pathexpression.Predicate)PathExpressionParser.this.~[PathExpressionParser.this.~[com.atomist.tree.pathexpression.Predicate,String],com.atomist.tree.pathexpression.Predicate]((_1: com.atomist.tree.pathexpression.Predicate, _2: String)PathExpressionParser.this.~[com.atomist.tree.pathexpression.Predicate,String]((a @ _), &quot;and&quot;), (b @ _)) =&gt; a.and(b)
+  case (_1: PathExpressionParser.this.~[com.atomist.tree.pathexpression.Predicate,String], _2: com.atomist.tree.pathexpression.Predicate)PathExpressionParser.this.~[PathExpressionParser.this.~[com.atomist.tree.pathexpression.Predicate,String],com.atomist.tree.pathexpression.Predicate]((_1: com.atomist.tree.pathexpression.Predicate, _2: String)PathExpressionParser.this.~[com.atomist.tree.pathexpression.Predicate,String]((a @ _), &quot;or&quot;), (b @ _)) =&gt; a.or(b)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          8360
+        </td>
+        <td>
+          4267
+          -
+          4286
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.predicateExpression
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.predicateExpression
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          8359
+        </td>
+        <td>
+          4255
+          -
+          4264
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.logicalOp
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.logicalOp
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          8361
+        </td>
+        <td>
+          4318
+          -
+          4325
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.Predicate.and
+        </td>
+        <td style="background: #AEF1AE">
+          a.and(b)
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          8362
+        </td>
+        <td>
+          4351
+          -
+          4357
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.Predicate.or
+        </td>
+        <td style="background: #AEF1AE">
+          a.or(b)
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          8364
+        </td>
+        <td>
+          4433
+          -
+          4449
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.negatedPredicate
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.negatedPredicate
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          8366
+        </td>
+        <td>
+          4418
+          -
+          4465
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.|
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.predicateAnd.|[com.atomist.tree.pathexpression.Predicate](PathExpressionParser.this.negatedPredicate).|[com.atomist.tree.pathexpression.Predicate](PathExpressionParser.this.predicateTerm)
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          8365
+        </td>
+        <td>
+          4452
+          -
+          4465
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.predicateTerm
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.predicateTerm
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          8373
+        </td>
+        <td>
+          4572
+          -
+          4594
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.opt
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.opt[String](PathExpressionParser.this.literal(com.atomist.tree.pathexpression.PathExpressionParsingConstants.PredicateOptional))
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          8367
+        </td>
+        <td>
+          4516
+          -
+          4529
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.PredicateOpen
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.PredicateOpen
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          8370
+        </td>
+        <td>
+          4555
+          -
+          4569
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(com.atomist.tree.pathexpression.PathExpressionParsingConstants.PredicateClose)
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          8372
+        </td>
+        <td>
+          4576
+          -
+          4593
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(com.atomist.tree.pathexpression.PathExpressionParsingConstants.PredicateOptional)
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          8375
+        </td>
+        <td>
+          4516
+          -
+          4685
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(com.atomist.tree.pathexpression.PathExpressionParsingConstants.PredicateOpen).~&gt;[com.atomist.tree.pathexpression.Predicate](PathExpressionParser.this.predicateExpression).~[String](PathExpressionParser.this.literal(com.atomist.tree.pathexpression.PathExpressionParsingConstants.PredicateClose)).~[Option[String]](PathExpressionParser.this.opt[String](PathExpressionParser.this.literal(com.atomist.tree.pathexpression.PathExpressionParsingConstants.PredicateOptional))).^^[com.atomist.tree.pathexpression.Predicate](((x0$7: PathExpressionParser.this.~[PathExpressionParser.this.~[com.atomist.tree.pathexpression.Predicate,String],Option[String]]) =&gt; x0$7 match {
+  case (_1: PathExpressionParser.this.~[com.atomist.tree.pathexpression.Predicate,String], _2: Option[String])PathExpressionParser.this.~[PathExpressionParser.this.~[com.atomist.tree.pathexpression.Predicate,String],Option[String]]((_1: com.atomist.tree.pathexpression.Predicate, _2: String)PathExpressionParser.this.~[com.atomist.tree.pathexpression.Predicate,String]((p @ _), _), (x: String)Some[String](_)) =&gt; OptionalPredicate.apply(p)
+  case (_1: PathExpressionParser.this.~[com.atomist.tree.pathexpression.Predicate,String], _2: Option[String])PathExpressionParser.this.~[PathExpressionParser.this.~[com.atomist.tree.pathexpression.Predicate,String],Option[String]]((_1: com.atomist.tree.pathexpression.Predicate, _2: String)PathExpressionParser.this.~[com.atomist.tree.pathexpression.Predicate,String]((p @ _), _), scala.None) =&gt; p
+}))
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          8369
+        </td>
+        <td>
+          4555
+          -
+          4569
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.PredicateClose
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.PredicateClose
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          8368
+        </td>
+        <td>
+          4533
+          -
+          4552
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.predicateExpression
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.predicateExpression
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          8371
+        </td>
+        <td>
+          4576
+          -
+          4593
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.PredicateOptional
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.PredicateOptional
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          8374
+        </td>
+        <td>
+          4630
+          -
+          4650
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.OptionalPredicate.apply
+        </td>
+        <td style="background: #AEF1AE">
+          OptionalPredicate.apply(p)
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          8377
+        </td>
+        <td>
+          4734
+          -
+          4773
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.nodeName.^^[com.atomist.tree.pathexpression.NamedNodeTest](((s: String) =&gt; NamedNodeTest.apply(s)))
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          8376
+        </td>
+        <td>
+          4756
+          -
+          4772
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NamedNodeTest.apply
+        </td>
+        <td style="background: #AEF1AE">
+          NamedNodeTest.apply(s)
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          8379
+        </td>
+        <td>
+          4818
+          -
+          4835
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;*&quot;).^^[com.atomist.tree.pathexpression.All.type](((x$4: String) =&gt; All))
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          8378
+        </td>
+        <td>
+          4818
+          -
+          4821
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;*&quot;
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          8382
+        </td>
+        <td>
+          4880
+          -
+          4918
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.|
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.nodeTypeTest.|[com.atomist.tree.pathexpression.NodeTest](PathExpressionParser.this.nodeNameTest).|[com.atomist.tree.pathexpression.NodeTest](PathExpressionParser.this.allNodes)
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          8381
+        </td>
+        <td>
+          4910
+          -
+          4918
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.allNodes
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.allNodes
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          8380
+        </td>
+        <td>
+          4895
+          -
+          4907
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.nodeNameTest
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.nodeNameTest
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          8385
+        </td>
+        <td>
+          4972
+          -
+          4984
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.PropertyAxis
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.PropertyAxis
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          8388
+        </td>
+        <td>
+          4968
+          -
+          5014
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(scala.StringContext.apply(&quot;&quot;, &quot;::&quot;).s(com.atomist.tree.pathexpression.PathExpressionParsingConstants.PropertyAxis)).|[String](PathExpressionParser.this.literal(&quot;@&quot;)).^^[com.atomist.tree.pathexpression.Attribute.type](((s: String) =&gt; Attribute))
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          8387
+        </td>
+        <td>
+          4990
+          -
+          4993
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;@&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          8384
+        </td>
+        <td>
+          4984
+          -
+          4987
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;::&quot;
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          8386
+        </td>
+        <td>
+          4969
+          -
+          4987
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;::&quot;).s(com.atomist.tree.pathexpression.PathExpressionParsingConstants.PropertyAxis)
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          8383
+        </td>
+        <td>
+          4971
+          -
+          4972
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          8391
+        </td>
+        <td>
+          5070
+          -
+          5084
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.DescendantAxis
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.DescendantAxis
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          8394
+        </td>
+        <td>
+          5066
+          -
+          5119
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(scala.StringContext.apply(&quot;&quot;, &quot;::&quot;).s(com.atomist.tree.pathexpression.PathExpressionParsingConstants.DescendantAxis)).|[String](PathExpressionParser.this.literal(&quot;/&quot;)).^^[com.atomist.tree.pathexpression.Descendant.type](((s: String) =&gt; Descendant))
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          8390
+        </td>
+        <td>
+          5084
+          -
+          5087
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;::&quot;
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          8393
+        </td>
+        <td>
+          5090
+          -
+          5093
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          8389
+        </td>
+        <td>
+          5069
+          -
+          5070
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          8392
+        </td>
+        <td>
+          5067
+          -
+          5087
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;::&quot;).s(com.atomist.tree.pathexpression.PathExpressionParsingConstants.DescendantAxis)
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          8400
+        </td>
+        <td>
+          5169
+          -
+          5210
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(scala.StringContext.apply(&quot;&quot;, &quot;::&quot;).s(com.atomist.tree.pathexpression.PathExpressionParsingConstants.SelfAxis)).|[String](PathExpressionParser.this.literal(&quot;.&quot;)).^^[com.atomist.tree.pathexpression.Self.type](((s: String) =&gt; Self))
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          8397
+        </td>
+        <td>
+          5173
+          -
+          5181
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.SelfAxis
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.SelfAxis
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          8396
+        </td>
+        <td>
+          5181
+          -
+          5184
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;::&quot;
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          8399
+        </td>
+        <td>
+          5187
+          -
+          5190
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(&quot;.&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          8395
+        </td>
+        <td>
+          5172
+          -
+          5173
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          8398
+        </td>
+        <td>
+          5170
+          -
+          5184
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;::&quot;).s(com.atomist.tree.pathexpression.PathExpressionParsingConstants.SelfAxis)
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          8401
+        </td>
+        <td>
+          5277
+          -
+          5291
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.navigationAxis
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.navigationAxis
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          8402
+        </td>
+        <td>
+          5300
+          -
+          5310
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.descendant
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.descendant
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          8403
+        </td>
+        <td>
+          5319
+          -
+          5327
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.selfAxis
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.selfAxis
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          8405
+        </td>
+        <td>
+          5260
+          -
+          5341
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.|
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.property.|[com.atomist.tree.pathexpression.AxisSpecifier](PathExpressionParser.this.navigationAxis).|[com.atomist.tree.pathexpression.AxisSpecifier](PathExpressionParser.this.descendant).|[com.atomist.tree.pathexpression.AxisSpecifier](PathExpressionParser.this.selfAxis).|[com.atomist.tree.pathexpression.AxisSpecifier](PathExpressionParser.this.child)
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          8404
+        </td>
+        <td>
+          5336
+          -
+          5341
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.child
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.child
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          8406
+        </td>
+        <td>
+          5401
+          -
+          5409
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.nodeTest
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.nodeTest
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          8408
+        </td>
+        <td>
+          5412
+          -
+          5426
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.rep
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.rep[com.atomist.tree.pathexpression.Predicate](PathExpressionParser.this.predicate)
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          8410
+        </td>
+        <td>
+          5394
+          -
+          5487
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.axis.~[com.atomist.tree.pathexpression.NodeTest](PathExpressionParser.this.nodeTest).~[List[com.atomist.tree.pathexpression.Predicate]](PathExpressionParser.this.rep[com.atomist.tree.pathexpression.Predicate](PathExpressionParser.this.predicate)).^^[com.atomist.tree.pathexpression.LocationStep](((x0$8: PathExpressionParser.this.~[PathExpressionParser.this.~[com.atomist.tree.pathexpression.AxisSpecifier,com.atomist.tree.pathexpression.NodeTest],List[com.atomist.tree.pathexpression.Predicate]]) =&gt; x0$8 match {
+  case (_1: PathExpressionParser.this.~[com.atomist.tree.pathexpression.AxisSpecifier,com.atomist.tree.pathexpression.NodeTest], _2: List[com.atomist.tree.pathexpression.Predicate])PathExpressionParser.this.~[PathExpressionParser.this.~[com.atomist.tree.pathexpression.AxisSpecifier,com.atomist.tree.pathexpression.NodeTest],List[com.atomist.tree.pathexpression.Predicate]]((_1: com.atomist.tree.pathexpression.AxisSpecifier, _2: com.atomist.tree.pathexpression.NodeTest)PathExpressionParser.this.~[com.atomist.tree.pathexpression.AxisSpecifier,com.atomist.tree.pathexpression.NodeTest]((a @ _), (t @ _)), (preds @ _)) =&gt; LocationStep.apply(a, t, preds)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          8407
+        </td>
+        <td>
+          5416
+          -
+          5425
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.predicate
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.predicate
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          8409
+        </td>
+        <td>
+          5458
+          -
+          5483
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.LocationStep.apply
+        </td>
+        <td style="background: #AEF1AE">
+          LocationStep.apply(a, t, preds)
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          8411
+        </td>
+        <td>
+          5520
+          -
+          5523
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;/&quot;
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          8412
+        </td>
+        <td>
+          5599
+          -
+          5611
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.locationStep
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.locationStep
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          8421
+        </td>
+        <td>
+          5580
+          -
+          5776
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.selfAxis.|[Object](PathExpressionParser.this.repsep[com.atomist.tree.pathexpression.LocationStep](PathExpressionParser.this.locationStep, PathExpressionParser.this.literal(PathExpressionParser.this.slashSeparator))).^^[com.atomist.tree.pathexpression.PathExpression](((x0$9: Object) =&gt; x0$9 match {
+  case Self =&gt; PathExpression.apply(immutable.this.List.apply[com.atomist.tree.pathexpression.LocationStep](LocationStep.apply(Self, All, immutable.this.Nil)))
+  case (steps @ (_: List[com.atomist.tree.pathexpression.LocationStep] @unchecked)) =&gt; PathExpression.apply(steps)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          8415
+        </td>
+        <td>
+          5592
+          -
+          5628
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.repsep
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.repsep[com.atomist.tree.pathexpression.LocationStep](PathExpressionParser.this.locationStep, PathExpressionParser.this.literal(PathExpressionParser.this.slashSeparator))
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          8414
+        </td>
+        <td>
+          5613
+          -
+          5627
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(PathExpressionParser.this.slashSeparator)
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          8413
+        </td>
+        <td>
+          5613
+          -
+          5627
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.slashSeparator
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.slashSeparator
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          8418
+        </td>
+        <td>
+          5667
+          -
+          5701
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.apply
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.apply[com.atomist.tree.pathexpression.LocationStep](LocationStep.apply(Self, All, immutable.this.Nil))
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          8417
+        </td>
+        <td>
+          5672
+          -
+          5700
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.LocationStep.apply
+        </td>
+        <td style="background: #AEF1AE">
+          LocationStep.apply(Self, All, immutable.this.Nil)
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          8419
+        </td>
+        <td>
+          5652
+          -
+          5702
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpression.apply
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpression.apply(immutable.this.List.apply[com.atomist.tree.pathexpression.LocationStep](LocationStep.apply(Self, All, immutable.this.Nil)))
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          8416
+        </td>
+        <td>
+          5696
+          -
+          5699
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          8420
+        </td>
+        <td>
+          5751
+          -
+          5772
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpression.apply
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpression.apply(steps)
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          8429
+        </td>
+        <td>
+          5849
+          -
+          5852
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          173
+        </td>
+        <td>
+          8422
+        </td>
+        <td>
+          5952
+          -
+          5978
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.apply
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.relativePathExpression.apply(in)
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          8423
+        </td>
+        <td>
+          6040
+          -
+          6071
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          s.result.locationSteps.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          8427
+        </td>
+        <td>
+          6138
+          -
+          6184
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Path expression has no steps: [&quot;, &quot;]&quot;).s(s.result)
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          8426
+        </td>
+        <td>
+          6173
+          -
+          6181
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Success.result
+        </td>
+        <td style="background: #AEF1AE">
+          s.result
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          8428
+        </td>
+        <td>
+          6130
+          -
+          6189
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Failure.apply
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.Failure.apply(scala.StringContext.apply(&quot;Path expression has no steps: [&quot;, &quot;]&quot;).s(s.result), in)
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          8425
+        </td>
+        <td>
+          6182
+          -
+          6184
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          8424
+        </td>
+        <td>
+          6140
+          -
+          6172
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Path expression has no steps: [&quot;
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          8430
+        </td>
+        <td>
+          6284
+          -
+          6298
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.slashSeparator
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.slashSeparator
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          8432
+        </td>
+        <td>
+          6284
+          -
+          6324
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.~&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.literal(PathExpressionParser.this.slashSeparator).~&gt;[com.atomist.tree.pathexpression.PathExpression](PathExpressionParser.this.relativePathExpression)
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          8431
+        </td>
+        <td>
+          6302
+          -
+          6324
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.relativePathExpression
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.relativePathExpression
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          8434
+        </td>
+        <td>
+          6373
+          -
+          6420
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.|
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.absolutePathExpression.|[com.atomist.tree.pathexpression.PathExpression](PathExpressionParser.this.relativePathExpression)
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          8433
+        </td>
+        <td>
+          6398
+          -
+          6420
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.relativePathExpression
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.relativePathExpression
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          8436
+        </td>
+        <td>
+          6550
+          -
+          6572
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.absolutePathExpression
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.absolutePathExpression
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          8439
+        </td>
+        <td>
+          6498
+          -
+          6574
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.CommonTypesParser.parseTo
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.parseTo[com.atomist.tree.pathexpression.PathExpression](com.atomist.source.StringFileArtifact.apply(&quot;&lt;input&gt;&quot;, expr), PathExpressionParser.this.phrase[com.atomist.tree.pathexpression.PathExpression](PathExpressionParser.this.absolutePathExpression))
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          8435
+        </td>
+        <td>
+          6506
+          -
+          6541
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.StringFileArtifact.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.StringFileArtifact.apply(&quot;&lt;input&gt;&quot;, expr)
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          8438
+        </td>
+        <td>
+          6498
+          -
+          6574
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.CommonTypesParser.parseTo
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.parseTo[com.atomist.tree.pathexpression.PathExpression](com.atomist.source.StringFileArtifact.apply(&quot;&lt;input&gt;&quot;, expr), PathExpressionParser.this.phrase[com.atomist.tree.pathexpression.PathExpression](PathExpressionParser.this.absolutePathExpression))
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          8437
+        </td>
+        <td>
+          6543
+          -
+          6573
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.phrase
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.this.phrase[com.atomist.tree.pathexpression.PathExpression](PathExpressionParser.this.absolutePathExpression)
+        </td>
+      </tr><tr>
+        <td>
+          190
+        </td>
+        <td>
+          8440
+        </td>
+        <td>
+          6639
+          -
+          6734
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Path expression \'&quot;, &quot;\' is invalid: [&quot;, &quot;]&quot;).s(expr, e.getMessage()), e)
+        </td>
+      </tr><tr>
+        <td>
+          201
+        </td>
+        <td>
+          8441
+        </td>
+        <td>
+          7008
+          -
+          7054
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.parsePathExpression
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParser.parsePathExpression(expr)
+        </td>
+      </tr><tr>
+        <td>
+          207
+        </td>
+        <td>
+          8442
+        </td>
+        <td>
+          7129
+          -
+          7132
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;.&quot;
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          8443
+        </td>
+        <td>
+          7157
+          -
+          7160
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;/&quot;
+        </td>
+      </tr><tr>
+        <td>
+          211
+        </td>
+        <td>
+          8444
+        </td>
+        <td>
+          7185
+          -
+          7188
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;$&quot;
+        </td>
+      </tr><tr>
+        <td>
+          213
+        </td>
+        <td>
+          8445
+        </td>
+        <td>
+          7209
+          -
+          7213
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;//&quot;
+        </td>
+      </tr><tr>
+        <td>
+          215
+        </td>
+        <td>
+          8446
+        </td>
+        <td>
+          7237
+          -
+          7240
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          217
+        </td>
+        <td>
+          8447
+        </td>
+        <td>
+          7265
+          -
+          7268
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          219
+        </td>
+        <td>
+          8448
+        </td>
+        <td>
+          7296
+          -
+          7299
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;?&quot;
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          8449
+        </td>
+        <td>
+          7322
+          -
+          7332
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;property&quot;
+        </td>
+      </tr><tr>
+        <td>
+          223
+        </td>
+        <td>
+          8450
+        </td>
+        <td>
+          7352
+          -
+          7359
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;child&quot;
+        </td>
+      </tr><tr>
+        <td>
+          225
+        </td>
+        <td>
+          8451
+        </td>
+        <td>
+          7384
+          -
+          7396
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;descendant&quot;
+        </td>
+      </tr><tr>
+        <td>
+          227
+        </td>
+        <td>
+          8452
+        </td>
+        <td>
+          7415
+          -
+          7421
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;self&quot;
+        </td>
+      </tr><tr>
+        <td>
+          232
+        </td>
+        <td>
+          8454
+        </td>
+        <td>
+          7511
+          -
+          7520
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.ChildAxis
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParsingConstants.this.ChildAxis
+        </td>
+      </tr><tr>
+        <td>
+          232
+        </td>
+        <td>
+          8457
+        </td>
+        <td>
+          7493
+          -
+          7547
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](PathExpressionParsingConstants.this.PropertyAxis, PathExpressionParsingConstants.this.ChildAxis, PathExpressionParsingConstants.this.DescendantAxis, PathExpressionParsingConstants.this.SelfAxis)
+        </td>
+      </tr><tr>
+        <td>
+          232
+        </td>
+        <td>
+          8456
+        </td>
+        <td>
+          7538
+          -
+          7546
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.SelfAxis
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParsingConstants.this.SelfAxis
+        </td>
+      </tr><tr>
+        <td>
+          232
+        </td>
+        <td>
+          8453
+        </td>
+        <td>
+          7497
+          -
+          7509
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.PropertyAxis
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParsingConstants.this.PropertyAxis
+        </td>
+      </tr><tr>
+        <td>
+          232
+        </td>
+        <td>
+          8455
+        </td>
+        <td>
+          7522
+          -
+          7536
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParsingConstants.DescendantAxis
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionParsingConstants.this.DescendantAxis
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

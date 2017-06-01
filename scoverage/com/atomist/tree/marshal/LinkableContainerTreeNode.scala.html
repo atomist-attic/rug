@@ -1,0 +1,713 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/marshal/LinkableContainerTreeNode.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.marshal
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.ts.{Cardinality, OneToM}
+</span>4 <span style=''>import com.atomist.tree.{ContainerTreeNode, TreeNode}
+</span>5 <span style=''>
+</span>6 <span style=''>private class LinkableContainerTreeNode(
+</span>7 <span style=''>                                         val nodeName: String,
+</span>8 <span style=''>                                         override val nodeTags: Set[String],
+</span>9 <span style=''>                                         private var fieldValues: Seq[TreeNode]
+</span>10 <span style=''>                                       )
+</span>11 <span style=''>  extends ContainerTreeNode {
+</span>12 <span style=''>
+</span>13 <span style=''>  def link(c: LinkableContainerTreeNode, link: String, cardinality: Cardinality): Unit = {
+</span>14 <span style=''>    // Add a child with the appropriate name
+</span>15 <span style=''>    val nn = </span><span style='background: #AEF1AE'>new WrappingLinkableContainerTreeNode(c, link, cardinality)</span><span style=''>
+</span>16 <span style=''>    </span><span style='background: #AEF1AE'>fieldValues = fieldValues :+ nn</span><span style=''>
+</span>17 <span style=''>  }
+</span>18 <span style=''>
+</span>19 <span style=''>  override def childNodeNames: Set[String] =
+</span>20 <span style=''>    </span><span style='background: #AEF1AE'>fieldValues.map(f =&gt; f.nodeName).toSet</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>  override def childNodeTypes: Set[String] =
+</span>23 <span style=''>    </span><span style='background: #F0ADAD'>fieldValues.flatMap(f =&gt; f.nodeTags).toSet</span><span style=''>
+</span>24 <span style=''>
+</span>25 <span style=''>  override def value: String = </span><span style='background: #F0ADAD'>???</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>  override def childrenNamed(key: String): Seq[TreeNode] =
+</span>28 <span style=''>    </span><span style='background: #AEF1AE'>fieldValues.filter(n =&gt; n.nodeName.equals(key))</span><span style=''>
+</span>29 <span style=''>
+</span>30 <span style=''>  // WARNING - this is a graph not a tree. We should expect cycles. As such it's not safe
+</span>31 <span style=''>  // to call toString on our child nodes
+</span>32 <span style=''>  override def toString: String = {
+</span>33 <span style=''>    </span><span style='background: #AEF1AE'>getClass.getSimpleName + s&quot;: (${nodeTags.mkString(&quot;,&quot;)}); &quot; +
+</span>34 <span style=''></span><span style='background: #AEF1AE'>      childNodeNames.map(childName =&gt; {
+</span>35 <span style=''></span><span style='background: #AEF1AE'>        childName + &quot;:[&quot; + childNodeNames.mkString(&quot;,&quot;) + &quot;]&quot;
+</span>36 <span style=''></span><span style='background: #AEF1AE'>      }).mkString(&quot;; &quot;)</span><span style=''>
+</span>37 <span style=''>  }
+</span>38 <span style=''>}
+</span>39 <span style=''>
+</span>40 <span style=''>
+</span>41 <span style=''>private class WrappingLinkableContainerTreeNode(val wrappedNode: LinkableContainerTreeNode,
+</span>42 <span style=''>                                                override val nodeName: String,
+</span>43 <span style=''>                                                cardinality: Cardinality)
+</span>44 <span style=''>  extends ContainerTreeNode {
+</span>45 <span style=''>
+</span>46 <span style=''>  override def value: String = </span><span style='background: #F0ADAD'>wrappedNode.value</span><span style=''>
+</span>47 <span style=''>
+</span>48 <span style=''>  override def nodeTags: Set[String] = </span><span style='background: #AEF1AE'>wrappedNode.nodeTags ++ (cardinality match {
+</span>49 <span style=''></span><span style='background: #AEF1AE'>    case OneToM =&gt; Set(Cardinality.One2Many)
+</span>50 <span style=''></span><span style='background: #AEF1AE'>    case _ =&gt; Set()
+</span>51 <span style=''></span><span style='background: #AEF1AE'>  })</span><span style=''>
+</span>52 <span style=''>
+</span>53 <span style=''>  override def childNodeNames: Set[String] = </span><span style='background: #AEF1AE'>wrappedNode.childNodeNames</span><span style=''>
+</span>54 <span style=''>
+</span>55 <span style=''>  override def childNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>wrappedNode.childNodeTypes</span><span style=''>
+</span>56 <span style=''>
+</span>57 <span style=''>  override def childrenNamed(key: String): Seq[TreeNode] = </span><span style='background: #AEF1AE'>wrappedNode.childrenNamed(key)</span><span style=''>
+</span>58 <span style=''>
+</span>59 <span style=''>  override def toString: String = </span><span style='background: #AEF1AE'>wrappedNode.toString</span><span style=''>
+</span>60 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          7895
+        </td>
+        <td>
+          619
+          -
+          678
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.marshal.WrappingLinkableContainerTreeNode.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new WrappingLinkableContainerTreeNode(c, link, cardinality)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          7898
+        </td>
+        <td>
+          683
+          -
+          714
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkableContainerTreeNode.fieldValues_=
+        </td>
+        <td style="background: #AEF1AE">
+          LinkableContainerTreeNode.this.fieldValues_=(LinkableContainerTreeNode.this.fieldValues.:+[com.atomist.tree.TreeNode, Seq[com.atomist.tree.TreeNode]](nn)(collection.this.Seq.canBuildFrom[com.atomist.tree.TreeNode]))
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          7897
+        </td>
+        <td>
+          697
+          -
+          714
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          LinkableContainerTreeNode.this.fieldValues.:+[com.atomist.tree.TreeNode, Seq[com.atomist.tree.TreeNode]](nn)(collection.this.Seq.canBuildFrom[com.atomist.tree.TreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          7896
+        </td>
+        <td>
+          709
+          -
+          709
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.TreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7900
+        </td>
+        <td>
+          784
+          -
+          784
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7899
+        </td>
+        <td>
+          790
+          -
+          800
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          f.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7901
+        </td>
+        <td>
+          769
+          -
+          807
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          LinkableContainerTreeNode.this.fieldValues.map[String, Seq[String]](((f: com.atomist.tree.TreeNode) =&gt; f.nodeName))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          7903
+        </td>
+        <td>
+          877
+          -
+          877
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          7902
+        </td>
+        <td>
+          883
+          -
+          893
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeTags
+        </td>
+        <td style="background: #F0ADAD">
+          f.nodeTags
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          7904
+        </td>
+        <td>
+          858
+          -
+          900
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #F0ADAD">
+          LinkableContainerTreeNode.this.fieldValues.flatMap[String, Seq[String]](((f: com.atomist.tree.TreeNode) =&gt; f.nodeTags))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          7905
+        </td>
+        <td>
+          933
+          -
+          936
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7906
+        </td>
+        <td>
+          1025
+          -
+          1047
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          n.nodeName.equals(key)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7907
+        </td>
+        <td>
+          1001
+          -
+          1048
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          LinkableContainerTreeNode.this.fieldValues.filter(((n: com.atomist.tree.TreeNode) =&gt; n.nodeName.equals(key)))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          7909
+        </td>
+        <td>
+          1276
+          -
+          1280
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;); &quot;
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          7911
+        </td>
+        <td>
+          1246
+          -
+          1280
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;: (&quot;, &quot;); &quot;).s(LinkableContainerTreeNode.this.nodeTags.mkString(&quot;,&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          7908
+        </td>
+        <td>
+          1248
+          -
+          1252
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;: (&quot;
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          7910
+        </td>
+        <td>
+          1253
+          -
+          1275
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          LinkableContainerTreeNode.this.nodeTags.mkString(&quot;,&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          7913
+        </td>
+        <td>
+          1221
+          -
+          1408
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          LinkableContainerTreeNode.this.getClass().getSimpleName().+(scala.StringContext.apply(&quot;: (&quot;, &quot;); &quot;).s(LinkableContainerTreeNode.this.nodeTags.mkString(&quot;,&quot;))).+(LinkableContainerTreeNode.this.childNodeNames.map[String, scala.collection.immutable.Set[String]](((childName: String) =&gt; childName.+(&quot;:[&quot;).+(LinkableContainerTreeNode.this.childNodeNames.mkString(&quot;,&quot;)).+(&quot;]&quot;)))(immutable.this.Set.canBuildFrom[String]).mkString(&quot;; &quot;))
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          7912
+        </td>
+        <td>
+          1289
+          -
+          1408
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          LinkableContainerTreeNode.this.childNodeNames.map[String, scala.collection.immutable.Set[String]](((childName: String) =&gt; childName.+(&quot;:[&quot;).+(LinkableContainerTreeNode.this.childNodeNames.mkString(&quot;,&quot;)).+(&quot;]&quot;)))(immutable.this.Set.canBuildFrom[String]).mkString(&quot;; &quot;)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          7914
+        </td>
+        <td>
+          1724
+          -
+          1741
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkableContainerTreeNode.value
+        </td>
+        <td style="background: #F0ADAD">
+          WrappingLinkableContainerTreeNode.this.wrappedNode.value
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          7915
+        </td>
+        <td>
+          1807
+          -
+          1818
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.WrappingLinkableContainerTreeNode.cardinality
+        </td>
+        <td style="background: #AEF1AE">
+          WrappingLinkableContainerTreeNode.this.cardinality
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          7919
+        </td>
+        <td>
+          1782
+          -
+          1896
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          WrappingLinkableContainerTreeNode.this.wrappedNode.nodeTags.++(WrappingLinkableContainerTreeNode.this.cardinality match {
+  case com.atomist.rug.ts.OneToM =&gt; scala.this.Predef.Set.apply[String](com.atomist.rug.ts.Cardinality.One2Many)
+  case _ =&gt; scala.this.Predef.Set.apply[Nothing]()
+})
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          7917
+        </td>
+        <td>
+          1846
+          -
+          1871
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](com.atomist.rug.ts.Cardinality.One2Many)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          7916
+        </td>
+        <td>
+          1850
+          -
+          1870
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.Cardinality.One2Many
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.ts.Cardinality.One2Many
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          7918
+        </td>
+        <td>
+          1886
+          -
+          1891
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          7920
+        </td>
+        <td>
+          1943
+          -
+          1969
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkableContainerTreeNode.childNodeNames
+        </td>
+        <td style="background: #AEF1AE">
+          WrappingLinkableContainerTreeNode.this.wrappedNode.childNodeNames
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          7921
+        </td>
+        <td>
+          2016
+          -
+          2042
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkableContainerTreeNode.childNodeTypes
+        </td>
+        <td style="background: #F0ADAD">
+          WrappingLinkableContainerTreeNode.this.wrappedNode.childNodeTypes
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          7922
+        </td>
+        <td>
+          2103
+          -
+          2133
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkableContainerTreeNode.childrenNamed
+        </td>
+        <td style="background: #AEF1AE">
+          WrappingLinkableContainerTreeNode.this.wrappedNode.childrenNamed(key)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          7923
+        </td>
+        <td>
+          2169
+          -
+          2189
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkableContainerTreeNode.toString
+        </td>
+        <td style="background: #AEF1AE">
+          WrappingLinkableContainerTreeNode.this.wrappedNode.toString()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

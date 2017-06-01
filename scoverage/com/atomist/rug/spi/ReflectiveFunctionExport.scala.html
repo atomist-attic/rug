@@ -1,0 +1,1249 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/spi/ReflectiveFunctionExport.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.spi
+</span>2 <span style=''>
+</span>3 <span style=''>import java.lang.reflect.Method
+</span>4 <span style=''>
+</span>5 <span style=''>import org.springframework.util.ReflectionUtils
+</span>6 <span style=''>
+</span>7 <span style=''>/**
+</span>8 <span style=''>  * Export @[[ExportFunction]] methods.
+</span>9 <span style=''>  */
+</span>10 <span style=''>object ReflectiveFunctionExport {
+</span>11 <span style=''>
+</span>12 <span style=''>  def allExportedOperations(c: Class[_]): Seq[TypeOperation] =
+</span>13 <span style=''>    if (</span><span style='background: #AEF1AE'>c == null</span><span style=''>) </span><span style='background: #F0ADAD'>Nil</span><span style=''>
+</span>14 <span style=''>    else </span><span style='background: #AEF1AE'>operations(ReflectionUtils.getAllDeclaredMethods(c))</span><span style=''>
+</span>15 <span style=''>
+</span>16 <span style=''>  def exportedOperations(c: Class[_]): Seq[TypeOperation] =
+</span>17 <span style=''>    if (</span><span style='background: #AEF1AE'>c == null</span><span style=''>) </span><span style='background: #F0ADAD'>Nil</span><span style=''>
+</span>18 <span style=''>    else </span><span style='background: #AEF1AE'>operations(c.getDeclaredMethods)</span><span style=''>
+</span>19 <span style=''>
+</span>20 <span style=''>  private def operations(methods: Array[Method]) =
+</span>21 <span style=''>    </span><span style='background: #AEF1AE'>methods
+</span>22 <span style=''></span><span style='background: #AEF1AE'>      .filter(_.getAnnotations.exists(_.isInstanceOf[ExportFunction]))
+</span>23 <span style=''></span><span style='background: #AEF1AE'>      .map(m =&gt; {
+</span>24 <span style=''></span><span style='background: #AEF1AE'>        val a = m.getAnnotation(classOf[ExportFunction])
+</span>25 <span style=''></span><span style='background: #AEF1AE'>        val params = extractExportedParametersAndDocumentation(m)
+</span>26 <span style=''></span><span style='background: #AEF1AE'>        TypeOperation(m.getName, a.description(),
+</span>27 <span style=''></span><span style='background: #AEF1AE'>          a.readOnly(),
+</span>28 <span style=''></span><span style='background: #AEF1AE'>          params,
+</span>29 <span style=''></span><span style='background: #AEF1AE'>          SimpleParameterOrReturnType.fromJavaType(m.getGenericReturnType),
+</span>30 <span style=''></span><span style='background: #AEF1AE'>          m.getDeclaringClass,
+</span>31 <span style=''></span><span style='background: #AEF1AE'>          a.example() match {
+</span>32 <span style=''></span><span style='background: #AEF1AE'>            case &quot;&quot; =&gt; None
+</span>33 <span style=''></span><span style='background: #AEF1AE'>            case ex =&gt; Some(ex)
+</span>34 <span style=''></span><span style='background: #AEF1AE'>          },
+</span>35 <span style=''></span><span style='background: #AEF1AE'>          exposeAsProperty = a.exposeAsProperty(),
+</span>36 <span style=''></span><span style='background: #AEF1AE'>          exposeResultDirectlyToNashorn = a.exposeResultDirectlyToNashorn(),
+</span>37 <span style=''></span><span style='background: #AEF1AE'>          deprecated = m.isAnnotationPresent(classOf[Deprecated]))
+</span>38 <span style=''></span><span style='background: #AEF1AE'>      })</span><span style=''>
+</span>39 <span style=''>
+</span>40 <span style=''>  private def extractExportedParametersAndDocumentation(m: Method): Array[TypeParameter] = {
+</span>41 <span style=''>    </span><span style='background: #AEF1AE'>m.getParameters.map(p =&gt;
+</span>42 <span style=''></span><span style='background: #AEF1AE'>      if (p.isAnnotationPresent(classOf[ExportFunctionParameterDescription])) {
+</span>43 <span style=''></span><span style='background: #AEF1AE'>        val annotation = p.getDeclaredAnnotation(classOf[ExportFunctionParameterDescription])
+</span>44 <span style=''></span><span style='background: #AEF1AE'>        TypeParameter(annotation.name(),
+</span>45 <span style=''></span><span style='background: #AEF1AE'>          SimpleParameterOrReturnType.fromJavaType(p.getParameterizedType),
+</span>46 <span style=''></span><span style='background: #AEF1AE'>          Some(annotation.description()))
+</span>47 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>48 <span style=''></span><span style='background: #AEF1AE'>      else
+</span>49 <span style=''></span><span style='background: #AEF1AE'>        TypeParameter(p.getName,
+</span>50 <span style=''></span><span style='background: #AEF1AE'>          SimpleParameterOrReturnType.fromJavaType(p.getParameterizedType),
+</span>51 <span style=''></span><span style='background: #AEF1AE'>          None)
+</span>52 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>53 <span style=''>  }
+</span>54 <span style=''>
+</span>55 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          5290
+        </td>
+        <td>
+          277
+          -
+          280
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          5289
+        </td>
+        <td>
+          266
+          -
+          275
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          c.==(null)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          5291
+        </td>
+        <td>
+          277
+          -
+          280
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          5292
+        </td>
+        <td>
+          301
+          -
+          341
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.springframework.util.ReflectionUtils.getAllDeclaredMethods
+        </td>
+        <td style="background: #AEF1AE">
+          org.springframework.util.ReflectionUtils.getAllDeclaredMethods(c)
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          5295
+        </td>
+        <td>
+          290
+          -
+          342
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.LowPriorityImplicits.wrapRefArray
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.wrapRefArray[com.atomist.rug.spi.TypeOperation](ReflectiveFunctionExport.this.operations(org.springframework.util.ReflectionUtils.getAllDeclaredMethods(c)))
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          5294
+        </td>
+        <td>
+          290
+          -
+          342
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.LowPriorityImplicits.wrapRefArray
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.wrapRefArray[com.atomist.rug.spi.TypeOperation](ReflectiveFunctionExport.this.operations(org.springframework.util.ReflectionUtils.getAllDeclaredMethods(c)))
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          5293
+        </td>
+        <td>
+          290
+          -
+          342
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ReflectiveFunctionExport.operations
+        </td>
+        <td style="background: #AEF1AE">
+          ReflectiveFunctionExport.this.operations(org.springframework.util.ReflectionUtils.getAllDeclaredMethods(c))
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          5296
+        </td>
+        <td>
+          412
+          -
+          421
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          c.==(null)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          5298
+        </td>
+        <td>
+          423
+          -
+          426
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          5297
+        </td>
+        <td>
+          423
+          -
+          426
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          5301
+        </td>
+        <td>
+          436
+          -
+          468
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.LowPriorityImplicits.wrapRefArray
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.wrapRefArray[com.atomist.rug.spi.TypeOperation](ReflectiveFunctionExport.this.operations(c.getDeclaredMethods()))
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          5300
+        </td>
+        <td>
+          436
+          -
+          468
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ReflectiveFunctionExport.operations
+        </td>
+        <td style="background: #AEF1AE">
+          ReflectiveFunctionExport.this.operations(c.getDeclaredMethods())
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          5299
+        </td>
+        <td>
+          447
+          -
+          467
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getDeclaredMethods
+        </td>
+        <td style="background: #AEF1AE">
+          c.getDeclaredMethods()
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          5302
+        </td>
+        <td>
+          436
+          -
+          468
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.LowPriorityImplicits.wrapRefArray
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.wrapRefArray[com.atomist.rug.spi.TypeOperation](ReflectiveFunctionExport.this.operations(c.getDeclaredMethods()))
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5305
+        </td>
+        <td>
+          547
+          -
+          602
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.exists
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[java.lang.annotation.Annotation](x$1.getAnnotations()).exists(((x$2: java.lang.annotation.Annotation) =&gt; x$2.isInstanceOf[com.atomist.rug.spi.ExportFunction]))
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5304
+        </td>
+        <td>
+          571
+          -
+          601
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.isInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.isInstanceOf[com.atomist.rug.spi.ExportFunction]
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5303
+        </td>
+        <td>
+          547
+          -
+          563
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.AccessibleObject.getAnnotations
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.getAnnotations()
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5306
+        </td>
+        <td>
+          525
+          -
+          603
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[java.lang.reflect.Method](methods).filter(((x$1: java.lang.reflect.Method) =&gt; scala.this.Predef.refArrayOps[java.lang.annotation.Annotation](x$1.getAnnotations()).exists(((x$2: java.lang.annotation.Annotation) =&gt; x$2.isInstanceOf[com.atomist.rug.spi.ExportFunction]))))
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          5323
+        </td>
+        <td>
+          614
+          -
+          614
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.Array.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Array.canBuildFrom[com.atomist.rug.spi.TypeOperation]((ClassTag.apply[com.atomist.rug.spi.TypeOperation](classOf[com.atomist.rug.spi.TypeOperation]): scala.reflect.ClassTag[com.atomist.rug.spi.TypeOperation]))
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          5324
+        </td>
+        <td>
+          525
+          -
+          1250
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[java.lang.reflect.Method](scala.this.Predef.refArrayOps[java.lang.reflect.Method](methods).filter(((x$1: java.lang.reflect.Method) =&gt; scala.this.Predef.refArrayOps[java.lang.annotation.Annotation](x$1.getAnnotations()).exists(((x$2: java.lang.annotation.Annotation) =&gt; x$2.isInstanceOf[com.atomist.rug.spi.ExportFunction]))))).map[com.atomist.rug.spi.TypeOperation, Array[com.atomist.rug.spi.TypeOperation]](((m: java.lang.reflect.Method) =&gt; {
+  val a: com.atomist.rug.spi.ExportFunction = m.getAnnotation[com.atomist.rug.spi.ExportFunction](classOf[com.atomist.rug.spi.ExportFunction]);
+  val params: Array[com.atomist.rug.spi.TypeParameter] = ReflectiveFunctionExport.this.extractExportedParametersAndDocumentation(m);
+  TypeOperation.apply(m.getName(), a.description(), a.readOnly(), scala.this.Predef.wrapRefArray[com.atomist.rug.spi.TypeParameter](params), SimpleParameterOrReturnType.fromJavaType(m.getGenericReturnType()), m.getDeclaringClass(), a.example() match {
+    case &quot;&quot; =&gt; scala.None
+    case (ex @ _) =&gt; scala.Some.apply[String](ex)
+  }, a.exposeAsProperty(), a.exposeResultDirectlyToNashorn(), m.isAnnotationPresent(classOf[java.lang.Deprecated]))
+}))(scala.this.Array.canBuildFrom[com.atomist.rug.spi.TypeOperation]((ClassTag.apply[com.atomist.rug.spi.TypeOperation](classOf[com.atomist.rug.spi.TypeOperation]): scala.reflect.ClassTag[com.atomist.rug.spi.TypeOperation])))
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          5307
+        </td>
+        <td>
+          638
+          -
+          678
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Method.getAnnotation
+        </td>
+        <td style="background: #AEF1AE">
+          m.getAnnotation[com.atomist.rug.spi.ExportFunction](classOf[com.atomist.rug.spi.ExportFunction])
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          5308
+        </td>
+        <td>
+          700
+          -
+          744
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ReflectiveFunctionExport.extractExportedParametersAndDocumentation
+        </td>
+        <td style="background: #AEF1AE">
+          ReflectiveFunctionExport.this.extractExportedParametersAndDocumentation(m)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5322
+        </td>
+        <td>
+          753
+          -
+          1241
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.apply
+        </td>
+        <td style="background: #AEF1AE">
+          TypeOperation.apply(m.getName(), a.description(), a.readOnly(), scala.this.Predef.wrapRefArray[com.atomist.rug.spi.TypeParameter](params), SimpleParameterOrReturnType.fromJavaType(m.getGenericReturnType()), m.getDeclaringClass(), a.example() match {
+  case &quot;&quot; =&gt; scala.None
+  case (ex @ _) =&gt; scala.Some.apply[String](ex)
+}, a.exposeAsProperty(), a.exposeResultDirectlyToNashorn(), m.isAnnotationPresent(classOf[java.lang.Deprecated]))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5310
+        </td>
+        <td>
+          778
+          -
+          793
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ExportFunction.description
+        </td>
+        <td style="background: #AEF1AE">
+          a.description()
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5309
+        </td>
+        <td>
+          767
+          -
+          776
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Method.getName
+        </td>
+        <td style="background: #AEF1AE">
+          m.getName()
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          5311
+        </td>
+        <td>
+          805
+          -
+          817
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ExportFunction.readOnly
+        </td>
+        <td style="background: #AEF1AE">
+          a.readOnly()
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          5312
+        </td>
+        <td>
+          829
+          -
+          835
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.LowPriorityImplicits.wrapRefArray
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.wrapRefArray[com.atomist.rug.spi.TypeParameter](params)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          5314
+        </td>
+        <td>
+          847
+          -
+          911
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.SimpleParameterOrReturnType.fromJavaType
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleParameterOrReturnType.fromJavaType(m.getGenericReturnType())
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          5313
+        </td>
+        <td>
+          888
+          -
+          910
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Method.getGenericReturnType
+        </td>
+        <td style="background: #AEF1AE">
+          m.getGenericReturnType()
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          5315
+        </td>
+        <td>
+          923
+          -
+          942
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Method.getDeclaringClass
+        </td>
+        <td style="background: #AEF1AE">
+          m.getDeclaringClass()
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          5316
+        </td>
+        <td>
+          954
+          -
+          965
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ExportFunction.example
+        </td>
+        <td style="background: #AEF1AE">
+          a.example()
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          5317
+        </td>
+        <td>
+          997
+          -
+          1001
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          5318
+        </td>
+        <td>
+          1025
+          -
+          1033
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](ex)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          5319
+        </td>
+        <td>
+          1076
+          -
+          1096
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ExportFunction.exposeAsProperty
+        </td>
+        <td style="background: #AEF1AE">
+          a.exposeAsProperty()
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          5320
+        </td>
+        <td>
+          1140
+          -
+          1173
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ExportFunction.exposeResultDirectlyToNashorn
+        </td>
+        <td style="background: #AEF1AE">
+          a.exposeResultDirectlyToNashorn()
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          5321
+        </td>
+        <td>
+          1198
+          -
+          1240
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.AccessibleObject.isAnnotationPresent
+        </td>
+        <td style="background: #AEF1AE">
+          m.isAnnotationPresent(classOf[java.lang.Deprecated])
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          5341
+        </td>
+        <td>
+          1368
+          -
+          1368
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.Array.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Array.canBuildFrom[com.atomist.rug.spi.TypeParameter]((ClassTag.apply[com.atomist.rug.spi.TypeParameter](classOf[com.atomist.rug.spi.TypeParameter]): scala.reflect.ClassTag[com.atomist.rug.spi.TypeParameter]))
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          5325
+        </td>
+        <td>
+          1349
+          -
+          1364
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Executable.getParameters
+        </td>
+        <td style="background: #AEF1AE">
+          m.getParameters()
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          5342
+        </td>
+        <td>
+          1349
+          -
+          1856
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[java.lang.reflect.Parameter](m.getParameters()).map[com.atomist.rug.spi.TypeParameter, Array[com.atomist.rug.spi.TypeParameter]](((p: java.lang.reflect.Parameter) =&gt; if (p.isAnnotationPresent(classOf[com.atomist.rug.spi.ExportFunctionParameterDescription]))
+  {
+    val annotation: com.atomist.rug.spi.ExportFunctionParameterDescription = p.getDeclaredAnnotation[com.atomist.rug.spi.ExportFunctionParameterDescription](classOf[com.atomist.rug.spi.ExportFunctionParameterDescription]);
+    TypeParameter.apply(annotation.name(), SimpleParameterOrReturnType.fromJavaType(p.getParameterizedType()), scala.Some.apply[String](annotation.description()))
+  }
+else
+  TypeParameter.apply(p.getName(), SimpleParameterOrReturnType.fromJavaType(p.getParameterizedType()), scala.None)))(scala.this.Array.canBuildFrom[com.atomist.rug.spi.TypeParameter]((ClassTag.apply[com.atomist.rug.spi.TypeParameter](classOf[com.atomist.rug.spi.TypeParameter]): scala.reflect.ClassTag[com.atomist.rug.spi.TypeParameter])))
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          5334
+        </td>
+        <td>
+          1452
+          -
+          1714
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val annotation: com.atomist.rug.spi.ExportFunctionParameterDescription = p.getDeclaredAnnotation[com.atomist.rug.spi.ExportFunctionParameterDescription](classOf[com.atomist.rug.spi.ExportFunctionParameterDescription]);
+  TypeParameter.apply(annotation.name(), SimpleParameterOrReturnType.fromJavaType(p.getParameterizedType()), scala.Some.apply[String](annotation.description()))
+}
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          5326
+        </td>
+        <td>
+          1384
+          -
+          1450
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.AnnotatedElement.isAnnotationPresent
+        </td>
+        <td style="background: #AEF1AE">
+          p.isAnnotationPresent(classOf[com.atomist.rug.spi.ExportFunctionParameterDescription])
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          5327
+        </td>
+        <td>
+          1479
+          -
+          1547
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Parameter.getDeclaredAnnotation
+        </td>
+        <td style="background: #AEF1AE">
+          p.getDeclaredAnnotation[com.atomist.rug.spi.ExportFunctionParameterDescription](classOf[com.atomist.rug.spi.ExportFunctionParameterDescription])
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          5328
+        </td>
+        <td>
+          1570
+          -
+          1587
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ExportFunctionParameterDescription.name
+        </td>
+        <td style="background: #AEF1AE">
+          annotation.name()
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          5333
+        </td>
+        <td>
+          1556
+          -
+          1706
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeParameter.apply
+        </td>
+        <td style="background: #AEF1AE">
+          TypeParameter.apply(annotation.name(), SimpleParameterOrReturnType.fromJavaType(p.getParameterizedType()), scala.Some.apply[String](annotation.description()))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          5330
+        </td>
+        <td>
+          1599
+          -
+          1663
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.SimpleParameterOrReturnType.fromJavaType
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleParameterOrReturnType.fromJavaType(p.getParameterizedType())
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          5329
+        </td>
+        <td>
+          1640
+          -
+          1662
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Parameter.getParameterizedType
+        </td>
+        <td style="background: #AEF1AE">
+          p.getParameterizedType()
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          5332
+        </td>
+        <td>
+          1675
+          -
+          1705
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](annotation.description())
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          5331
+        </td>
+        <td>
+          1680
+          -
+          1704
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ExportFunctionParameterDescription.description
+        </td>
+        <td style="background: #AEF1AE">
+          annotation.description()
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5340
+        </td>
+        <td>
+          1734
+          -
+          1850
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeParameter.apply
+        </td>
+        <td style="background: #AEF1AE">
+          TypeParameter.apply(p.getName(), SimpleParameterOrReturnType.fromJavaType(p.getParameterizedType()), scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5339
+        </td>
+        <td>
+          1734
+          -
+          1850
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeParameter.apply
+        </td>
+        <td style="background: #AEF1AE">
+          TypeParameter.apply(p.getName(), SimpleParameterOrReturnType.fromJavaType(p.getParameterizedType()), scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5335
+        </td>
+        <td>
+          1748
+          -
+          1757
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Parameter.getName
+        </td>
+        <td style="background: #AEF1AE">
+          p.getName()
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          5337
+        </td>
+        <td>
+          1769
+          -
+          1833
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.SimpleParameterOrReturnType.fromJavaType
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleParameterOrReturnType.fromJavaType(p.getParameterizedType())
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          5336
+        </td>
+        <td>
+          1810
+          -
+          1832
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Parameter.getParameterizedType
+        </td>
+        <td style="background: #AEF1AE">
+          p.getParameterizedType()
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          5338
+        </td>
+        <td>
+          1845
+          -
+          1849
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

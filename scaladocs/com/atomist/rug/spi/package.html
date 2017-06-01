@@ -1,0 +1,807 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>spi - rug 1.0.0-m.4 API - com.atomist.rug.spi</title>
+          <meta name="description" content="spi - rug 1.0.0 - m.4 API - com.atomist.rug.spi" />
+          <meta name="keywords" content="spi rug 1.0.0 m.4 API com.atomist.rug.spi" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.atomist.rug.spi.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.atomist">atomist</a>.<a href="../package.html" class="extype" name="com.atomist.rug">rug</a></p>
+        <h1>spi</h1><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">spi</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="com.atomist.rug.spi.AnnotatedRugFunction" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="AnnotatedRugFunctionextendsRugFunction"></a>
+      <a id="AnnotatedRugFunction:AnnotatedRugFunction"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="AnnotatedRugFunction.html"><span class="name">AnnotatedRugFunction</span></a><span class="result"> extends <a href="RugFunction.html" class="extype" name="com.atomist.rug.spi.RugFunction">RugFunction</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@AnnotatedRugFunctionextendsRugFunction" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Use this for a terser way to define RugFunctions in Scala.</p>
+    </li><li name="com.atomist.rug.spi.Body" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="BodyextendsProductwithSerializable"></a>
+      <a id="Body:Body"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Body.html"><span class="name">Body</span></a><span class="params">(<span name="str">str: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol"><span class="name"><a href="../../../../scala/package.html">None</a></span></span></span>, <span name="bytes">bytes: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Byte">Byte</span>]] = <span class="symbol"><span class="name"><a href="../../../../scala/package.html">None</a></span></span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@BodyextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.spi.CommonViewOperations" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="CommonViewOperations[T]extendsMutableView[T]withLazyLogging"></a>
+      <a id="CommonViewOperations[T]:CommonViewOperations[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="CommonViewOperations.html"><span class="name">CommonViewOperations</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="MutableView.html" class="extype" name="com.atomist.rug.spi.MutableView">MutableView</a>[<span class="extype" name="com.atomist.rug.spi.CommonViewOperations.T">T</span>] with <span class="extype" name="com.typesafe.scalalogging.LazyLogging">LazyLogging</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@CommonViewOperations[T]extendsMutableView[T]withLazyLogging" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Common operations on views.</p><div class="fullcomment"><div class="comment cmt"><p>Common operations on views.
+</p></div><dl class="paramcmts block"><dt class="tparam">T</dt><dd class="cmt"><p>type of the underlying object</p></dd></dl></div>
+    </li><li name="com.atomist.rug.spi.EnumParameterOrReturnType" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="EnumParameterOrReturnTypeextendsParameterOrReturnTypewithProductwithSerializable"></a>
+      <a id="EnumParameterOrReturnType:EnumParameterOrReturnType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="EnumParameterOrReturnType.html"><span class="name">EnumParameterOrReturnType</span></a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="legalValues">legalValues: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <a href="ParameterOrReturnType.html" class="extype" name="com.atomist.rug.spi.ParameterOrReturnType">ParameterOrReturnType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@EnumParameterOrReturnTypeextendsParameterOrReturnTypewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Represents an enum type that we must generate
+</p>
+    </li><li name="com.atomist.rug.spi.ExportFunction" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ExportFunctionextendsAnnotationwithAnnotationwithClassfileAnnotation"></a>
+      <a id="ExportFunction:ExportFunction"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ExportFunction.html"><span class="name">ExportFunction</span></a><span class="result"> extends <span class="extype" name="scala.annotation.Annotation">Annotation</span> with <span class="extype" name="java.lang.annotation.Annotation">Annotation</span> with <span class="extype" name="scala.annotation.ClassfileAnnotation">ClassfileAnnotation</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@ExportFunctionextendsAnnotationwithAnnotationwithClassfileAnnotation" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.spi.ExportFunctionParameterDescription" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ExportFunctionParameterDescriptionextendsAnnotationwithAnnotationwithClassfileAnnotation"></a>
+      <a id="ExportFunctionParameterDescription:ExportFunctionParameterDescription"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ExportFunctionParameterDescription.html"><span class="name">ExportFunctionParameterDescription</span></a><span class="result"> extends <span class="extype" name="scala.annotation.Annotation">Annotation</span> with <span class="extype" name="java.lang.annotation.Annotation">Annotation</span> with <span class="extype" name="scala.annotation.ClassfileAnnotation">ClassfileAnnotation</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@ExportFunctionParameterDescriptionextendsAnnotationwithAnnotationwithClassfileAnnotation" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.spi.FunctionResponse" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FunctionResponseextendsProductwithSerializable"></a>
+      <a id="FunctionResponse:FunctionResponse"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="FunctionResponse.html"><span class="name">FunctionResponse</span></a><span class="params">(<span name="status">status: <a href="Handlers$$Status.html" class="extype" name="com.atomist.rug.spi.Handlers.Status">Status</a></span>, <span name="msg">msg: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol"><span class="name"><a href="../../../../scala/package.html">None</a></span></span></span>, <span name="code">code: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>] = <span class="symbol"><span class="name"><a href="../../../../scala/package.html">None</a></span></span></span>, <span name="body">body: <span class="extype" name="scala.Option">Option</span>[<a href="Body.html" class="extype" name="com.atomist.rug.spi.Body">Body</a>] = <span class="symbol"><span class="name"><a href="../../../../scala/package.html">None</a></span></span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@FunctionResponseextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.spi.InstantEditorFailureException" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="InstantEditorFailureExceptionextendsRuntimeException"></a>
+      <a id="InstantEditorFailureException:InstantEditorFailureException"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="InstantEditorFailureException.html"><span class="name">InstantEditorFailureException</span></a><span class="result"> extends <a href="../../../../scala/package.html#RuntimeException=RuntimeException" class="extmbr" name="scala.RuntimeException">RuntimeException</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@InstantEditorFailureExceptionextendsRuntimeException" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Thrown when an editor should fail instantly
+</p>
+    </li><li name="com.atomist.rug.spi.MappedParameterizedRug" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="MappedParameterizedRugextendsParameterizedRug"></a>
+      <a id="MappedParameterizedRug:MappedParameterizedRug"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="MappedParameterizedRug.html"><span class="name">MappedParameterizedRug</span></a><span class="result"> extends <a href="../runtime/ParameterizedRug.html" class="extype" name="com.atomist.rug.runtime.ParameterizedRug">ParameterizedRug</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@MappedParameterizedRugextendsParameterizedRug" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Add Mapped parameters
+</p>
+    </li><li name="com.atomist.rug.spi.MutableView" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="MutableView[T]extendsPathAwareTreeNodewithContainerTreeNode"></a>
+      <a id="MutableView[T]:MutableView[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="MutableView.html"><span class="name">MutableView</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../../tree/PathAwareTreeNode.html" class="extype" name="com.atomist.tree.PathAwareTreeNode">PathAwareTreeNode</a> with <a href="../../tree/ContainerTreeNode.html" class="extype" name="com.atomist.tree.ContainerTreeNode">ContainerTreeNode</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@MutableView[T]extendsPathAwareTreeNodewithContainerTreeNode" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Exposed to Rug &quot;with&quot; and &quot;from&quot; blocks, and access from JavaScript.</p><div class="fullcomment"><div class="comment cmt"><p>Exposed to Rug &quot;with&quot; and &quot;from&quot; blocks, and access from JavaScript.
+Typically backed by an object from another hierarchy.
+View implementations will create their own methods for updates.</p><p>Methods annotated with @ExportFunction are exposed via views. Predicates
+should return Boolean, transform functions the view type.
+Methods can declare whatever parameters they need from local arguments in the
+rug script. An optional additional argument if declared will be populated with the
+Rug FunctionInvocationContext.</p><p>Return types should be Java, rather than Scala, as they may
+be invoked from JavaScript via Nashorn.
+</p></div><dl class="paramcmts block"><dt class="tparam">T</dt><dd class="cmt"><p>type of the underlying object</p></dd></dl></div>
+    </li><li name="com.atomist.rug.spi.ParameterOrReturnType" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ParameterOrReturnTypeextendsAnyRef"></a>
+      <a id="ParameterOrReturnType:ParameterOrReturnType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ParameterOrReturnType.html"><span class="name">ParameterOrReturnType</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@ParameterOrReturnTypeextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Represents the type of an operation parameter or parameter
+</p>
+    </li><li name="com.atomist.rug.spi.ReflectiveTypeOperationFinder" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ReflectiveTypeOperationFinderextendsAnyRef"></a>
+      <a id="ReflectiveTypeOperationFinder:ReflectiveTypeOperationFinder"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ReflectiveTypeOperationFinder.html"><span class="name">ReflectiveTypeOperationFinder</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@ReflectiveTypeOperationFinderextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Uses reflection to export type information about a type.</p><div class="fullcomment"><div class="comment cmt"><p>Uses reflection to export type information about a type.
+Types with methods with @ExportFunction annotations should
+return this type, passing their own class as argument.
+</p></div><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p>ExportFunction</p></span></dd></dl></div>
+    </li><li name="com.atomist.rug.spi.ReflectivelyTypedType" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ReflectivelyTypedTypeextendsType"></a>
+      <a id="ReflectivelyTypedType:ReflectivelyTypedType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ReflectivelyTypedType.html"><span class="name">ReflectivelyTypedType</span></a><span class="result"> extends <a href="Type.html" class="extype" name="com.atomist.rug.spi.Type">Type</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@ReflectivelyTypedTypeextendsType" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.spi.RugFunction" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="RugFunctionextendsSecretAwareRug"></a>
+      <a id="RugFunction:RugFunction"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="RugFunction.html"><span class="name">RugFunction</span></a><span class="result"> extends <a href="SecretAwareRug.html" class="extype" name="com.atomist.rug.spi.SecretAwareRug">SecretAwareRug</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@RugFunctionextendsSecretAwareRug" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Arbitrary functions to be executed as a result add 'execute' instructions to a Plan
+Should be thread safe.</p><div class="fullcomment"><div class="comment cmt"><p>Arbitrary functions to be executed as a result add 'execute' instructions to a Plan
+Should be thread safe.</p><p>Secrets should be injected as normal ParameterValues
+</p></div></div>
+    </li><li name="com.atomist.rug.spi.RugFunctionRegistry" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="RugFunctionRegistryextendsAnyRef"></a>
+      <a id="RugFunctionRegistry:RugFunctionRegistry"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="RugFunctionRegistry.html"><span class="name">RugFunctionRegistry</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@RugFunctionRegistryextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Allows Rug to dynamically find all registered Behaviour
+</p>
+    </li><li name="com.atomist.rug.spi.Secret" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="SecretextendsProductwithSerializable"></a>
+      <a id="Secret:Secret"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Secret.html"><span class="name">Secret</span></a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@SecretextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Represents some secret stored in the Atomist Secrets' Service
+</p><div class="fullcomment"><div class="comment cmt"><p>Represents some secret stored in the Atomist Secrets' Service
+</p></div><dl class="paramcmts block"><dt class="param">name</dt><dd class="cmt"><p>Name of the secret. Used as the name in the ParameterValues (if used like that)</p></dd><dt class="param">path</dt><dd class="cmt"><p>Path to the secret. Relative to some external context</p></dd></dl></div>
+    </li><li name="com.atomist.rug.spi.SecretAwareRug" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="SecretAwareRugextendsParameterizedRug"></a>
+      <a id="SecretAwareRug:SecretAwareRug"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SecretAwareRug.html"><span class="name">SecretAwareRug</span></a><span class="result"> extends <a href="../runtime/ParameterizedRug.html" class="extype" name="com.atomist.rug.runtime.ParameterizedRug">ParameterizedRug</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@SecretAwareRugextendsParameterizedRug" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Add secrets to a ParameterizedRug
+</p>
+    </li><li name="com.atomist.rug.spi.SimpleParameterOrReturnType" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SimpleParameterOrReturnTypeextendsParameterOrReturnTypewithProductwithSerializable"></a>
+      <a id="SimpleParameterOrReturnType:SimpleParameterOrReturnType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SimpleParameterOrReturnType.html"><span class="name">SimpleParameterOrReturnType</span></a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="isArray">isArray: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result"> extends <a href="ParameterOrReturnType.html" class="extype" name="com.atomist.rug.spi.ParameterOrReturnType">ParameterOrReturnType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@SimpleParameterOrReturnTypeextendsParameterOrReturnTypewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Represents a type or reference for which we don't need to generate
+anything special
+</p>
+    </li><li name="com.atomist.rug.spi.SimpleTypeRegistry" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SimpleTypeRegistryextendsTypeRegistry"></a>
+      <a id="SimpleTypeRegistry:SimpleTypeRegistry"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SimpleTypeRegistry.html"><span class="name">SimpleTypeRegistry</span></a><span class="result"> extends <a href="TypeRegistry.html" class="extype" name="com.atomist.rug.spi.TypeRegistry">TypeRegistry</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@SimpleTypeRegistryextendsTypeRegistry" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.spi.TerminalView" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="TerminalView[T]extendsMutableView[T]"></a>
+      <a id="TerminalView[T]:TerminalView[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TerminalView.html"><span class="name">TerminalView</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="MutableView.html" class="extype" name="com.atomist.rug.spi.MutableView">MutableView</a>[<span class="extype" name="com.atomist.rug.spi.TerminalView.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@TerminalView[T]extendsMutableView[T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.spi.TreeViewSupport" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="TreeViewSupport[T&lt;:com.atomist.tree.TreeNode]extendsViewSupport[T]"></a>
+      <a id="TreeViewSupport[T&lt;:TreeNode]:TreeViewSupport[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TreeViewSupport.html"><span class="name">TreeViewSupport</span></a><span class="tparams">[<span name="T">T &lt;: <a href="../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a></span>]</span><span class="result"> extends <a href="ViewSupport.html" class="extype" name="com.atomist.rug.spi.ViewSupport">ViewSupport</a>[<span class="extype" name="com.atomist.rug.spi.TreeViewSupport.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@TreeViewSupport[T&lt;:com.atomist.tree.TreeNode]extendsViewSupport[T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.spi.Type" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="TypeextendsChildResolverwithTyped"></a>
+      <a id="Type:Type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Type.html"><span class="name">Type</span></a><span class="result"> extends <a href="../kind/dynamic/ChildResolver.html" class="extype" name="com.atomist.rug.kind.dynamic.ChildResolver">ChildResolver</a> with <a href="Typed.html" class="extype" name="com.atomist.rug.spi.Typed">Typed</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@TypeextendsChildResolverwithTyped" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Support for a new Rug &quot;kind&quot; or &quot;type&quot; that can be used in path expressions
+and resolved in a context.</p>
+    </li><li name="com.atomist.rug.spi.TypeOperation" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="TypeOperationextendsProductwithSerializable"></a>
+      <a id="TypeOperation:TypeOperation"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="TypeOperation.html"><span class="name">TypeOperation</span></a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="description">description: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="readOnly">readOnly: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="parameters">parameters: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="TypeParameter.html" class="extype" name="com.atomist.rug.spi.TypeParameter">TypeParameter</a>]</span>, <span name="returnType">returnType: <a href="ParameterOrReturnType.html" class="extype" name="com.atomist.rug.spi.ParameterOrReturnType">ParameterOrReturnType</a></span>, <span name="definedOn">definedOn: <span class="extype" name="scala.Predef.Class">Class</span>[_]</span>, <span name="example">example: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="exposeAsProperty">exposeAsProperty: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="exposeResultDirectlyToNashorn">exposeResultDirectlyToNashorn: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="deprecated">deprecated: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@TypeOperationextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Operation on an exported Rug type.</p><div class="fullcomment"><div class="comment cmt"><p>Operation on an exported Rug type. Typically annotated with an <a href="ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a> annotation.
+</p></div><dl class="paramcmts block"><dt class="param">name</dt><dd class="cmt"><p>name of the type</p></dd><dt class="param">description</dt><dd class="cmt"><p>description of the type. May be used in generated code</p></dd><dt class="param">definedOn</dt><dd class="cmt"><p>type we are defined on. May be an abstract superclass.</p></dd><dt class="param">example</dt><dd class="cmt"><p>optional example of usage of the operation</p></dd><dt class="param">exposeAsProperty</dt><dd class="cmt"><p>do we expose this as a property?</p></dd><dt class="param">deprecated</dt><dd class="cmt"><p>is this operation deprecated?</p></dd></dl><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p>ExportProperty</p></span><span class="cmt"><p>ExportFunction</p></span></dd></dl></div>
+    </li><li name="com.atomist.rug.spi.TypeParameter" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TypeParameterextendsProductwithSerializable"></a>
+      <a id="TypeParameter:TypeParameter"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="TypeParameter.html"><span class="name">TypeParameter</span></a><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="parameterType">parameterType: <a href="ParameterOrReturnType.html" class="extype" name="com.atomist.rug.spi.ParameterOrReturnType">ParameterOrReturnType</a></span>, <span name="description">description: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@TypeParameterextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Parameter to a Rug type.</p>
+    </li><li name="com.atomist.rug.spi.TypeProvider" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="TypeProviderextendsTyped"></a>
+      <a id="TypeProvider:TypeProvider"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TypeProvider.html"><span class="name">TypeProvider</span></a><span class="result"> extends <a href="Typed.html" class="extype" name="com.atomist.rug.spi.Typed">Typed</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@TypeProviderextendsTyped" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Extended by classes that can describe existing types that aren't exposed to
+top level navigation
+</p>
+    </li><li name="com.atomist.rug.spi.TypeRegistry" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="TypeRegistryextendsAnyRef"></a>
+      <a id="TypeRegistry:TypeRegistry"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypeRegistry.html"><span class="name">TypeRegistry</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@TypeRegistryextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Allows extension to Rug functionality by understanding noun
+kinds, such as &quot;file&quot;, &quot;line&quot; or &quot;class&quot;
+</p>
+    </li><li name="com.atomist.rug.spi.Typed" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="TypedextendsAnyRef"></a>
+      <a id="Typed:Typed"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Typed.html"><span class="name">Typed</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@TypedextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Extended by language elements to return as much type information as
+possible to help with compile time validation and tooling.</p>
+    </li><li name="com.atomist.rug.spi.Updater" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="Updater[T]extendsAnyRef"></a>
+      <a id="Updater[T]:Updater[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Updater.html"><span class="name">Updater</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@Updater[T]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Used when we need to update a MutableView from a number of objects,
+in a particular order.</p><div class="fullcomment"><div class="comment cmt"><p>Used when we need to update a MutableView from a number of objects,
+in a particular order.
+</p></div><dl class="paramcmts block"><dt class="tparam">T</dt><dd class="cmt"><p>type of the underlying object</p></dd></dl></div>
+    </li><li name="com.atomist.rug.spi.UsageSpecificTypeRegistry" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="UsageSpecificTypeRegistryextendsTypeRegistry"></a>
+      <a id="UsageSpecificTypeRegistry:UsageSpecificTypeRegistry"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="UsageSpecificTypeRegistry.html"><span class="name">UsageSpecificTypeRegistry</span></a><span class="result"> extends <a href="TypeRegistry.html" class="extype" name="com.atomist.rug.spi.TypeRegistry">TypeRegistry</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@UsageSpecificTypeRegistryextendsTypeRegistry" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Decorating TypeRegistry
+Try to resolve from the new types first, then fallback to the shared delegate.</p><div class="fullcomment"><div class="comment cmt"><p>Decorating TypeRegistry
+Try to resolve from the new types first, then fallback to the shared delegate.
+One of these is instantiated per usage.
+</p></div></div>
+    </li><li name="com.atomist.rug.spi.ViewSupport" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ViewSupport[T]extendsCommonViewOperations[T]withChangeCounting"></a>
+      <a id="ViewSupport[T]:ViewSupport[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ViewSupport.html"><span class="name">ViewSupport</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="CommonViewOperations.html" class="extype" name="com.atomist.rug.spi.CommonViewOperations">CommonViewOperations</a>[<span class="extype" name="com.atomist.rug.spi.ViewSupport.T">T</span>] with <a href="../kind/core/ChangeCounting.html" class="extype" name="com.atomist.rug.kind.core.ChangeCounting">ChangeCounting</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@ViewSupport[T]extendsCommonViewOperations[T]withChangeCounting" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="com.atomist.rug.spi.ByteBodyOption" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ByteBodyOption"></a>
+      <a id="ByteBodyOption:ByteBodyOption"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ByteBodyOption$.html"><span class="name">ByteBodyOption</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@ByteBodyOption" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.spi.Handlers" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Handlers"></a>
+      <a id="Handlers:Handlers"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Handlers$.html"><span class="name">Handlers</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@Handlers" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Beans that map to the @atomist/rug/operations/operations/Handlers
+</p>
+    </li><li name="com.atomist.rug.spi.JsonBodyOption" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JsonBodyOption"></a>
+      <a id="JsonBodyOption:JsonBodyOption"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="JsonBodyOption$.html"><span class="name">JsonBodyOption</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@JsonBodyOption" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.spi.ReflectiveFunctionExport" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ReflectiveFunctionExport"></a>
+      <a id="ReflectiveFunctionExport:ReflectiveFunctionExport"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ReflectiveFunctionExport$.html"><span class="name">ReflectiveFunctionExport</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@ReflectiveFunctionExport" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Export @<a href="ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a> methods.</p>
+    </li><li name="com.atomist.rug.spi.SimpleParameterOrReturnType" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SimpleParameterOrReturnType"></a>
+      <a id="SimpleParameterOrReturnType:SimpleParameterOrReturnType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SimpleParameterOrReturnType$.html"><span class="name">SimpleParameterOrReturnType</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@SimpleParameterOrReturnType" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.spi.StringBodyOption" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="StringBodyOption"></a>
+      <a id="StringBodyOption:StringBodyOption"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="StringBodyOption$.html"><span class="name">StringBodyOption</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@StringBodyOption" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.spi.TypeOperation" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TypeOperation"></a>
+      <a id="TypeOperation:TypeOperation"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypeOperation$.html"><span class="name">TypeOperation</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@TypeOperation" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.spi.Typed" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Typed"></a>
+      <a id="Typed:Typed"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Typed$.html"><span class="name">Typed</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@Typed" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.spi.annotation" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="annotation"></a>
+      <a id="annotation:annotation"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="annotation/package.html"><span class="name">annotation</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.spi.package@annotation" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

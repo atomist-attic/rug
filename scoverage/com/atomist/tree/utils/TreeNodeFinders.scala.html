@@ -1,0 +1,452 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/utils/TreeNodeFinders.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.utils
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.tree.TreeNode
+</span>4 <span style=''>
+</span>5 <span style=''>/**
+</span>6 <span style=''>  * Utility methods to find things within a TreeNode structure
+</span>7 <span style=''>  */
+</span>8 <span style=''>object TreeNodeFinders {
+</span>9 <span style=''>
+</span>10 <span style=''>  def requiredSingleChild(parent: TreeNode, name: String): TreeNode = {
+</span>11 <span style=''>    val hits = </span><span style='background: #AEF1AE'>parent.childrenNamed(name)</span><span style=''>
+</span>12 <span style=''>    if (</span><span style='background: #AEF1AE'>hits.size != 1</span><span style=''>)
+</span>13 <span style=''>      </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Found ${hits.size} matches rather than 1 for [$name] in &quot; +
+</span>14 <span style=''></span><span style='background: #F0ADAD'>        s&quot;${parent.nodeName}:${parent.nodeTags}[${parent.value}] with children [${parent.childNodeNames.mkString(&quot;,&quot;)}]&quot;)</span><span style=''>
+</span>15 <span style=''>    else </span><span style='background: #AEF1AE'>hits.head</span><span style=''>
+</span>16 <span style=''>  }
+</span>17 <span style=''>
+</span>18 <span style=''>  def singleChild(parent: TreeNode, name: String): Option[TreeNode] = {
+</span>19 <span style=''>    val hits = </span><span style='background: #AEF1AE'>parent.childrenNamed(name)</span><span style=''>
+</span>20 <span style=''>    if (</span><span style='background: #AEF1AE'>hits.size == 1</span><span style=''>)
+</span>21 <span style=''>      </span><span style='background: #AEF1AE'>Some(hits.head)</span><span style=''>
+</span>22 <span style=''>    else </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>23 <span style=''>  }
+</span>24 <span style=''>
+</span>25 <span style=''>  def requiredSingleFieldValue(parent: TreeNode, name: String): String = {
+</span>26 <span style=''>    </span><span style='background: #AEF1AE'>parent.childrenNamed(name)</span><span style=''> match {
+</span>27 <span style=''>      case Seq(tn) =&gt; </span><span style='background: #AEF1AE'>tn.value</span><span style=''>
+</span>28 <span style=''>      case s if </span><span style='background: #F0ADAD'>s.isEmpty</span><span style=''> =&gt; </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Found no fields for [$name] in $parent: Needed exactly 1&quot;)</span><span style=''>
+</span>29 <span style=''>      case more =&gt; </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Found ${more.size} fields for [$name] in $parent: Needed exactly 1&quot;)</span><span style=''>
+</span>30 <span style=''>    }
+</span>31 <span style=''>  }
+</span>32 <span style=''>
+</span>33 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          8679
+        </td>
+        <td>
+          251
+          -
+          277
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.childrenNamed
+        </td>
+        <td style="background: #AEF1AE">
+          parent.childrenNamed(name)
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          8680
+        </td>
+        <td>
+          286
+          -
+          300
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.!=
+        </td>
+        <td style="background: #AEF1AE">
+          hits.size.!=(1)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          8681
+        </td>
+        <td>
+          308
+          -
+          526
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Found &quot;, &quot; matches rather than 1 for [&quot;, &quot;] in &quot;).s(hits.size, name).+(scala.StringContext.apply(&quot;&quot;, &quot;:&quot;, &quot;[&quot;, &quot;] with children [&quot;, &quot;]&quot;).s(parent.nodeName, parent.nodeTags, parent.value, parent.childNodeNames.mkString(&quot;,&quot;))))
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          8682
+        </td>
+        <td>
+          308
+          -
+          526
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Found &quot;, &quot; matches rather than 1 for [&quot;, &quot;] in &quot;).s(hits.size, name).+(scala.StringContext.apply(&quot;&quot;, &quot;:&quot;, &quot;[&quot;, &quot;] with children [&quot;, &quot;]&quot;).s(parent.nodeName, parent.nodeTags, parent.value, parent.childNodeNames.mkString(&quot;,&quot;))))
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          8684
+        </td>
+        <td>
+          536
+          -
+          545
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          hits.head
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          8683
+        </td>
+        <td>
+          536
+          -
+          545
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          hits.head
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          8685
+        </td>
+        <td>
+          638
+          -
+          664
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.childrenNamed
+        </td>
+        <td style="background: #AEF1AE">
+          parent.childrenNamed(name)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          8686
+        </td>
+        <td>
+          673
+          -
+          687
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          hits.size.==(1)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          8687
+        </td>
+        <td>
+          700
+          -
+          709
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          hits.head
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          8689
+        </td>
+        <td>
+          695
+          -
+          710
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.tree.TreeNode](hits.head)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          8688
+        </td>
+        <td>
+          695
+          -
+          710
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.tree.TreeNode](hits.head)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          8690
+        </td>
+        <td>
+          720
+          -
+          724
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          8691
+        </td>
+        <td>
+          720
+          -
+          724
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          8692
+        </td>
+        <td>
+          809
+          -
+          835
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.childrenNamed
+        </td>
+        <td style="background: #AEF1AE">
+          parent.childrenNamed(name)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          8693
+        </td>
+        <td>
+          866
+          -
+          874
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.value
+        </td>
+        <td style="background: #AEF1AE">
+          tn.value
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8695
+        </td>
+        <td>
+          904
+          -
+          999
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Found no fields for [&quot;, &quot;] in &quot;, &quot;: Needed exactly 1&quot;).s(name, parent))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8694
+        </td>
+        <td>
+          891
+          -
+          900
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #F0ADAD">
+          s.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          8696
+        </td>
+        <td>
+          1019
+          -
+          1124
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Found &quot;, &quot; fields for [&quot;, &quot;] in &quot;, &quot;: Needed exactly 1&quot;).s(more.size, name, parent))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

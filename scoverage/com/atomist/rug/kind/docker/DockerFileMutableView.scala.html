@@ -1,0 +1,1151 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/docker/DockerFileMutableView.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.docker
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
+</span>4 <span style=''>import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription}
+</span>5 <span style=''>import com.atomist.source.FileArtifact
+</span>6 <span style=''>
+</span>7 <span style=''>import scala.collection.JavaConverters._
+</span>8 <span style=''>
+</span>9 <span style=''>/**
+</span>10 <span style=''>  * Rug type for a Docker file.
+</span>11 <span style=''>  *
+</span>12 <span style=''>  * @param originalBackingObject original FileArtifact
+</span>13 <span style=''>  * @param pmv owning project
+</span>14 <span style=''>  */
+</span>15 <span style=''>class DockerFileMutableView(originalBackingObject: FileArtifact, pmv: ProjectMutableView)
+</span>16 <span style=''>  extends LazyFileArtifactBackedMutableView(originalBackingObject, pmv) {
+</span>17 <span style=''>
+</span>18 <span style=''>  var _content: Dockerfile = </span><span style='background: #AEF1AE'>DockerfileParser.parse(originalBackingObject.content)</span><span style=''>
+</span>19 <span style=''>
+</span>20 <span style=''>  def currentContent: String = </span><span style='background: #AEF1AE'>_content.toString</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>  override def childNodeNames: Set[String] = </span><span style='background: #F0ADAD'>Set()</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Node content&quot;)
+</span>25 <span style=''>  override def value: String = </span><span style='background: #F0ADAD'>currentBackingObject.path</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>  @ExportFunction(readOnly = true, description = &quot;&quot;)
+</span>28 <span style=''>  def getExposedPorts: java.util.List[Int] = {
+</span>29 <span style=''>    val exposePorts: Set[Int] = </span><span style='background: #F0ADAD'>_content.getExposePorts</span><span style=''>
+</span>30 <span style=''>    /*
+</span>31 <span style=''>    We have to export collections as Java collections, as these get passed into
+</span>32 <span style=''>    nashorn for the typescript stuff, and it doesn't understand scala.
+</span>33 <span style=''>    I'd also rather return a java.util.Set here, but so far our typescript support
+</span>34 <span style=''>    doesn't seem to like that - only java.util.List is supported
+</span>35 <span style=''>     */
+</span>36 <span style=''>    </span><span style='background: #F0ADAD'>exposePorts.toSeq.asJava</span><span style=''>
+</span>37 <span style=''>  }
+</span>38 <span style=''>
+</span>39 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add or update FROM directive&quot;)
+</span>40 <span style=''>  def addOrUpdateFrom(@ExportFunctionParameterDescription(name = &quot;fromContents&quot;,
+</span>41 <span style=''>    description = &quot;The contents of the FROM directive&quot;) fromContents: String) {
+</span>42 <span style=''>    </span><span style='background: #AEF1AE'>_content.addOrUpdateFrom(fromContents)</span><span style=''>
+</span>43 <span style=''>  }
+</span>44 <span style=''>
+</span>45 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add or update EXPOSE directive&quot;)
+</span>46 <span style=''>  def addOrUpdateExpose(@ExportFunctionParameterDescription(name = &quot;exposeContents&quot;,
+</span>47 <span style=''>    description = &quot;The contents of the EXPOSE directive&quot;) exposeContents: String) {
+</span>48 <span style=''>    </span><span style='background: #AEF1AE'>_content.addOrUpdateExpose(exposeContents)</span><span style=''>
+</span>49 <span style=''>  }
+</span>50 <span style=''>
+</span>51 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add EXPOSE directive&quot;)
+</span>52 <span style=''>  def addExpose(@ExportFunctionParameterDescription(name = &quot;exposeContents&quot;,
+</span>53 <span style=''>    description = &quot;The contents of the EXPOSE directive&quot;) exposeContents: String) {
+</span>54 <span style=''>    </span><span style='background: #AEF1AE'>_content.addExpose(exposeContents)</span><span style=''>
+</span>55 <span style=''>  }
+</span>56 <span style=''>
+</span>57 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add or update MAINTAINER directive&quot;)
+</span>58 <span style=''>  def addOrUpdateMaintainer(@ExportFunctionParameterDescription(name = &quot;maintainerName&quot;,
+</span>59 <span style=''>    description = &quot;The name of the MAINTAINER directive&quot;) maintainerName: String,
+</span>60 <span style=''>                            @ExportFunctionParameterDescription(name = &quot;maintainerEmail&quot;,
+</span>61 <span style=''>                              description = &quot;The email of the MAINTAINER directive&quot;) maintainerEmail: String) {
+</span>62 <span style=''>    maintainerEmail match {
+</span>63 <span style=''>      case s: String =&gt; </span><span style='background: #F0ADAD'>_content.addMaintainer(s&quot;$maintainerName &lt;$s&gt;&quot;)</span><span style=''>
+</span>64 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>_content.addMaintainer(maintainerName)</span><span style=''>
+</span>65 <span style=''>    }
+</span>66 <span style=''>  }
+</span>67 <span style=''>
+</span>68 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add MAINTAINER directive&quot;)
+</span>69 <span style=''>  def addMaintainer(@ExportFunctionParameterDescription(name = &quot;maintainerName&quot;,
+</span>70 <span style=''>    description = &quot;The name of the MAINTAINER directive&quot;) maintainerName: String,
+</span>71 <span style=''>                    @ExportFunctionParameterDescription(name = &quot;maintainerEmail&quot;,
+</span>72 <span style=''>                      description = &quot;The email of the MAINTAINER directive&quot;) maintainerEmail: String) {
+</span>73 <span style=''>    maintainerEmail match {
+</span>74 <span style=''>      case s: String =&gt; </span><span style='background: #F0ADAD'>_content.addMaintainer(s&quot;$maintainerName &lt;$s&gt;&quot;)</span><span style=''>
+</span>75 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>_content.addMaintainer(maintainerName)</span><span style=''>
+</span>76 <span style=''>    }
+</span>77 <span style=''>  }
+</span>78 <span style=''>
+</span>79 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add or update LABEL directive&quot;)
+</span>80 <span style=''>  def addOrUpdateLabel(@ExportFunctionParameterDescription(name = &quot;labelContents&quot;,
+</span>81 <span style=''>    description = &quot;The contents of the LABEL directive&quot;) labelContents: String) {
+</span>82 <span style=''>    </span><span style='background: #F0ADAD'>_content.addOrUpdateLabel(labelContents)</span><span style=''>
+</span>83 <span style=''>  }
+</span>84 <span style=''>
+</span>85 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add LABEL directive&quot;)
+</span>86 <span style=''>  def addLabel(@ExportFunctionParameterDescription(name = &quot;labelContents&quot;,
+</span>87 <span style=''>    description = &quot;The contents of the LABEL directive&quot;) labelContents: String) {
+</span>88 <span style=''>    </span><span style='background: #F0ADAD'>_content.addLabel(labelContents)</span><span style=''>
+</span>89 <span style=''>  }
+</span>90 <span style=''>
+</span>91 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add RUN directive&quot;)
+</span>92 <span style=''>  def addRun(@ExportFunctionParameterDescription(name = &quot;runContents&quot;,
+</span>93 <span style=''>    description = &quot;The contents of the RUN directive&quot;) runContents: String) {
+</span>94 <span style=''>    </span><span style='background: #F0ADAD'>_content.addRun(runContents)</span><span style=''>
+</span>95 <span style=''>  }
+</span>96 <span style=''>
+</span>97 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add COPY directive&quot;)
+</span>98 <span style=''>  def addCopy(@ExportFunctionParameterDescription(name = &quot;copyContents&quot;,
+</span>99 <span style=''>    description = &quot;The contents of the COPY directive&quot;) copyContents: String) {
+</span>100 <span style=''>    </span><span style='background: #F0ADAD'>_content.addCopy(copyContents)</span><span style=''>
+</span>101 <span style=''>  }
+</span>102 <span style=''>
+</span>103 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add ADD directive&quot;)
+</span>104 <span style=''>  def addAdd(@ExportFunctionParameterDescription(name = &quot;addContents&quot;,
+</span>105 <span style=''>    description = &quot;The contents of the ADD directive&quot;) addContents: String) {
+</span>106 <span style=''>    </span><span style='background: #F0ADAD'>_content.addAdd(addContents)</span><span style=''>
+</span>107 <span style=''>  }
+</span>108 <span style=''>
+</span>109 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add Env directive&quot;)
+</span>110 <span style=''>  def addEnv(@ExportFunctionParameterDescription(name = &quot;envContents&quot;,
+</span>111 <span style=''>    description = &quot;The contents of the Env directive&quot;) envContents: String) {
+</span>112 <span style=''>    </span><span style='background: #F0ADAD'>_content.addEnv(envContents)</span><span style=''>
+</span>113 <span style=''>  }
+</span>114 <span style=''>
+</span>115 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add VOLUME directive&quot;)
+</span>116 <span style=''>  def addVolume(@ExportFunctionParameterDescription(name = &quot;volumeContents&quot;,
+</span>117 <span style=''>    description = &quot;The contents of the VOLUME directive&quot;) volumeContents: String) {
+</span>118 <span style=''>    </span><span style='background: #F0ADAD'>_content.addVolume(volumeContents)</span><span style=''>
+</span>119 <span style=''>  }
+</span>120 <span style=''>
+</span>121 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add or update WORKDIR directive&quot;)
+</span>122 <span style=''>  def addOrUpdateWorkdir(@ExportFunctionParameterDescription(name = &quot;workdirContents&quot;,
+</span>123 <span style=''>    description = &quot;The contents of the WORKDIR directive&quot;) workdirContents: String) {
+</span>124 <span style=''>    </span><span style='background: #F0ADAD'>_content.addOrUpdateWorkdir(workdirContents)</span><span style=''>
+</span>125 <span style=''>  }
+</span>126 <span style=''>
+</span>127 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add or update ENTRYPOINT directive&quot;)
+</span>128 <span style=''>  def addOrUpdateEntryPoint(@ExportFunctionParameterDescription(name = &quot;entrypointContent&quot;,
+</span>129 <span style=''>    description = &quot;The contents of the ENTRYPOINT directive&quot;) entrypointContent: String) {
+</span>130 <span style=''>    </span><span style='background: #F0ADAD'>_content.addOrUpdateEntryPoint(entrypointContent)</span><span style=''>
+</span>131 <span style=''>  }
+</span>132 <span style=''>
+</span>133 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add or update CMD directive&quot;)
+</span>134 <span style=''>  def addOrUpdateCmd(@ExportFunctionParameterDescription(name = &quot;cmdContents&quot;,
+</span>135 <span style=''>    description = &quot;The contents of the CMD directive&quot;) cmdContents: String) {
+</span>136 <span style=''>    </span><span style='background: #F0ADAD'>_content.addOrUpdateCmd(cmdContents)</span><span style=''>
+</span>137 <span style=''>  }
+</span>138 <span style=''>
+</span>139 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add or update HEALTHCHECK directive&quot;)
+</span>140 <span style=''>  def addOrUpdateHealthcheck(@ExportFunctionParameterDescription(name = &quot;healthcheckContent&quot;,
+</span>141 <span style=''>    description = &quot;The contents of the HEALTHCHECK directive&quot;) healthcheckContent: String) {
+</span>142 <span style=''>    </span><span style='background: #AEF1AE'>_content.addOrUpdateHealthcheck(healthcheckContent)</span><span style=''>
+</span>143 <span style=''>  }
+</span>144 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1266
+        </td>
+        <td>
+          612
+          -
+          665
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileParser.parse
+        </td>
+        <td style="background: #AEF1AE">
+          DockerfileParser.parse(DockerFileMutableView.this.originalBackingObject.content)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1265
+        </td>
+        <td>
+          635
+          -
+          664
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          DockerFileMutableView.this.originalBackingObject.content
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1267
+        </td>
+        <td>
+          698
+          -
+          715
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.toString
+        </td>
+        <td style="background: #AEF1AE">
+          DockerFileMutableView.this._content.toString()
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1268
+        </td>
+        <td>
+          762
+          -
+          767
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.Set.apply[String]()
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1269
+        </td>
+        <td>
+          865
+          -
+          890
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.path
+        </td>
+        <td style="background: #F0ADAD">
+          DockerFileMutableView.this.currentBackingObject.path
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1270
+        </td>
+        <td>
+          1024
+          -
+          1047
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.getExposePorts
+        </td>
+        <td style="background: #F0ADAD">
+          DockerFileMutableView.this._content.getExposePorts
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1272
+        </td>
+        <td>
+          1366
+          -
+          1390
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsJava.asJava
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.JavaConverters.seqAsJavaListConverter[Int](exposePorts.toSeq).asJava
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1271
+        </td>
+        <td>
+          1366
+          -
+          1383
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SetLike.toSeq
+        </td>
+        <td style="background: #F0ADAD">
+          exposePorts.toSeq
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          1273
+        </td>
+        <td>
+          1643
+          -
+          1681
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addOrUpdateFrom
+        </td>
+        <td style="background: #AEF1AE">
+          DockerFileMutableView.this._content.addOrUpdateFrom(fromContents)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          1274
+        </td>
+        <td>
+          1667
+          -
+          1667
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1276
+        </td>
+        <td>
+          1970
+          -
+          1970
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1275
+        </td>
+        <td>
+          1944
+          -
+          1986
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addOrUpdateExpose
+        </td>
+        <td style="background: #AEF1AE">
+          DockerFileMutableView.this._content.addOrUpdateExpose(exposeContents)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1278
+        </td>
+        <td>
+          2249
+          -
+          2249
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1277
+        </td>
+        <td>
+          2231
+          -
+          2265
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addExpose
+        </td>
+        <td style="background: #AEF1AE">
+          DockerFileMutableView.this._content.addExpose(exposeContents)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1279
+        </td>
+        <td>
+          2807
+          -
+          2830
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot; &lt;&quot;, &quot;&gt;&quot;).s(maintainerName, s)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1281
+        </td>
+        <td>
+          2806
+          -
+          2806
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1280
+        </td>
+        <td>
+          2784
+          -
+          2831
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addMaintainer
+        </td>
+        <td style="background: #F0ADAD">
+          DockerFileMutableView.this._content.addMaintainer(scala.StringContext.apply(&quot;&quot;, &quot; &lt;&quot;, &quot;&gt;&quot;).s(maintainerName, s))
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          1282
+        </td>
+        <td>
+          2848
+          -
+          2886
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addMaintainer
+        </td>
+        <td style="background: #F0ADAD">
+          DockerFileMutableView.this._content.addMaintainer(maintainerName)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          1283
+        </td>
+        <td>
+          2870
+          -
+          2870
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          1285
+        </td>
+        <td>
+          3377
+          -
+          3424
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addMaintainer
+        </td>
+        <td style="background: #F0ADAD">
+          DockerFileMutableView.this._content.addMaintainer(scala.StringContext.apply(&quot;&quot;, &quot; &lt;&quot;, &quot;&gt;&quot;).s(maintainerName, s))
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          1284
+        </td>
+        <td>
+          3400
+          -
+          3423
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot; &lt;&quot;, &quot;&gt;&quot;).s(maintainerName, s)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          1286
+        </td>
+        <td>
+          3399
+          -
+          3399
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          1288
+        </td>
+        <td>
+          3463
+          -
+          3463
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          1287
+        </td>
+        <td>
+          3441
+          -
+          3479
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addMaintainer
+        </td>
+        <td style="background: #F0ADAD">
+          DockerFileMutableView.this._content.addMaintainer(maintainerName)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          1290
+        </td>
+        <td>
+          3768
+          -
+          3768
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          1289
+        </td>
+        <td>
+          3743
+          -
+          3783
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addOrUpdateLabel
+        </td>
+        <td style="background: #F0ADAD">
+          DockerFileMutableView.this._content.addOrUpdateLabel(labelContents)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          1291
+        </td>
+        <td>
+          4023
+          -
+          4055
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addLabel
+        </td>
+        <td style="background: #F0ADAD">
+          DockerFileMutableView.this._content.addLabel(labelContents)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          1292
+        </td>
+        <td>
+          4040
+          -
+          4040
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          1294
+        </td>
+        <td>
+          4300
+          -
+          4300
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          1293
+        </td>
+        <td>
+          4285
+          -
+          4313
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addRun
+        </td>
+        <td style="background: #F0ADAD">
+          DockerFileMutableView.this._content.addRun(runContents)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          1296
+        </td>
+        <td>
+          4564
+          -
+          4564
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          1295
+        </td>
+        <td>
+          4548
+          -
+          4578
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addCopy
+        </td>
+        <td style="background: #F0ADAD">
+          DockerFileMutableView.this._content.addCopy(copyContents)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          1297
+        </td>
+        <td>
+          4808
+          -
+          4836
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addAdd
+        </td>
+        <td style="background: #F0ADAD">
+          DockerFileMutableView.this._content.addAdd(addContents)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          1298
+        </td>
+        <td>
+          4823
+          -
+          4823
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          1300
+        </td>
+        <td>
+          5081
+          -
+          5081
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          1299
+        </td>
+        <td>
+          5066
+          -
+          5094
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addEnv
+        </td>
+        <td style="background: #F0ADAD">
+          DockerFileMutableView.this._content.addEnv(envContents)
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          1302
+        </td>
+        <td>
+          5357
+          -
+          5357
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          1301
+        </td>
+        <td>
+          5339
+          -
+          5373
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addVolume
+        </td>
+        <td style="background: #F0ADAD">
+          DockerFileMutableView.this._content.addVolume(volumeContents)
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          1303
+        </td>
+        <td>
+          5641
+          -
+          5685
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addOrUpdateWorkdir
+        </td>
+        <td style="background: #F0ADAD">
+          DockerFileMutableView.this._content.addOrUpdateWorkdir(workdirContents)
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          1304
+        </td>
+        <td>
+          5668
+          -
+          5668
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          1306
+        </td>
+        <td>
+          5996
+          -
+          5996
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          1305
+        </td>
+        <td>
+          5966
+          -
+          6015
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addOrUpdateEntryPoint
+        </td>
+        <td style="background: #F0ADAD">
+          DockerFileMutableView.this._content.addOrUpdateEntryPoint(entrypointContent)
+        </td>
+      </tr><tr>
+        <td>
+          136
+        </td>
+        <td>
+          1308
+        </td>
+        <td>
+          6286
+          -
+          6286
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          136
+        </td>
+        <td>
+          1307
+        </td>
+        <td>
+          6263
+          -
+          6299
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addOrUpdateCmd
+        </td>
+        <td style="background: #F0ADAD">
+          DockerFileMutableView.this._content.addOrUpdateCmd(cmdContents)
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          1309
+        </td>
+        <td>
+          6585
+          -
+          6636
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addOrUpdateHealthcheck
+        </td>
+        <td style="background: #AEF1AE">
+          DockerFileMutableView.this._content.addOrUpdateHealthcheck(healthcheckContent)
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          1310
+        </td>
+        <td>
+          6616
+          -
+          6616
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,327 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/java/JavaFieldMutableView.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.java
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.spi.{ExportFunction, TerminalView, TypeProvider}
+</span>4 <span style=''>import com.github.javaparser.ast.body.FieldDeclaration
+</span>5 <span style=''>
+</span>6 <span style=''>import scala.collection.JavaConverters._
+</span>7 <span style=''>
+</span>8 <span style=''>class JavaFieldTypeProvider extends TypeProvider(classOf[JavaFieldMutableView]) {
+</span>9 <span style=''>
+</span>10 <span style=''>  override def description: String = </span><span style='background: #AEF1AE'>&quot;Java field&quot;</span><span style=''>
+</span>11 <span style=''>}
+</span>12 <span style=''>
+</span>13 <span style=''>class JavaFieldMutableView(originalBackingObject: FieldDeclaration, parent: JavaClassOrInterfaceMutableView)
+</span>14 <span style=''>  extends BodyDeclarationView[FieldDeclaration](originalBackingObject, parent)
+</span>15 <span style=''>    with TerminalView[FieldDeclaration] {
+</span>16 <span style=''>
+</span>17 <span style=''>  override def nodeName: String = </span><span style='background: #AEF1AE'>name</span><span style=''>
+</span>18 <span style=''>
+</span>19 <span style=''>  override def nodeTags: Set[String] = </span><span style='background: #AEF1AE'>Set(JavaSourceType.FieldAlias)</span><span style=''>
+</span>20 <span style=''>
+</span>21 <span style=''>  override def childNodeNames: Set[String] = </span><span style='background: #AEF1AE'>Set()</span><span style=''>
+</span>22 <span style=''>
+</span>23 <span style=''>  @ExportFunction(readOnly = true,
+</span>24 <span style=''>    exposeAsProperty = true,
+</span>25 <span style=''>    description = &quot;Type this is on&quot;)
+</span>26 <span style=''>  def `type`: JavaClassOrInterfaceMutableView = </span><span style='background: #AEF1AE'>parent</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Return the name of the field&quot;)
+</span>29 <span style=''>  def name: String = {
+</span>30 <span style=''>    if (</span><span style='background: #AEF1AE'>currentBackingObject.getVariables.size != 1</span><span style=''>)
+</span>31 <span style=''>      </span><span style='background: #F0ADAD'>throw new UnsupportedOperationException(s&quot;Can only handle 1 variable declaration: $currentBackingObject&quot;)</span><span style=''>
+</span>32 <span style=''>    </span><span style='background: #AEF1AE'>currentBackingObject.getVariables.asScala.head.getNameAsString</span><span style=''>
+</span>33 <span style=''>  }
+</span>34 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          1895
+        </td>
+        <td>
+          325
+          -
+          337
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Java field&quot;
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1896
+        </td>
+        <td>
+          606
+          -
+          610
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaFieldMutableView.name
+        </td>
+        <td style="background: #AEF1AE">
+          JavaFieldMutableView.this.name
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1898
+        </td>
+        <td>
+          651
+          -
+          681
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](JavaSourceType.FieldAlias)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1897
+        </td>
+        <td>
+          655
+          -
+          680
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaSourceType.FieldAlias
+        </td>
+        <td style="background: #AEF1AE">
+          JavaSourceType.FieldAlias
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          1899
+        </td>
+        <td>
+          728
+          -
+          733
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String]()
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1900
+        </td>
+        <td>
+          884
+          -
+          890
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaFieldMutableView.parent
+        </td>
+        <td style="background: #AEF1AE">
+          JavaFieldMutableView.this.parent
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1901
+        </td>
+        <td>
+          1004
+          -
+          1047
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.!=
+        </td>
+        <td style="background: #AEF1AE">
+          JavaFieldMutableView.this.currentBackingObject.getVariables().size().!=(1)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1904
+        </td>
+        <td>
+          1000
+          -
+          1000
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1905
+        </td>
+        <td>
+          1000
+          -
+          1000
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1903
+        </td>
+        <td>
+          1055
+          -
+          1160
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.UnsupportedOperationException(scala.StringContext.apply(&quot;Can only handle 1 variable declaration: &quot;, &quot;&quot;).s(JavaFieldMutableView.this.currentBackingObject))
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1902
+        </td>
+        <td>
+          1055
+          -
+          1160
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.UnsupportedOperationException(scala.StringContext.apply(&quot;Can only handle 1 variable declaration: &quot;, &quot;&quot;).s(JavaFieldMutableView.this.currentBackingObject))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1906
+        </td>
+        <td>
+          1165
+          -
+          1227
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.nodeTypes.NodeWithSimpleName.getNameAsString
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.body.VariableDeclarator](JavaFieldMutableView.this.currentBackingObject.getVariables()).asScala.head.getNameAsString()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

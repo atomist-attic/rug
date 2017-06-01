@@ -1,0 +1,652 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/param/ParameterValues.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.param
+</span>2 <span style=''>
+</span>3 <span style=''>import scala.language.postfixOps
+</span>4 <span style=''>
+</span>5 <span style=''>trait ParameterValues {
+</span>6 <span style=''>
+</span>7 <span style=''>  /**
+</span>8 <span style=''>    * Parameters exposed to template. Will include input parameters
+</span>9 <span style=''>    * but there may be additional computed or other parameters.
+</span>10 <span style=''>    */
+</span>11 <span style=''>  def parameterValues: Seq[ParameterValue]
+</span>12 <span style=''>
+</span>13 <span style=''>  def parameterValueMap: Map[String, ParameterValue] = </span><span style='background: #AEF1AE'>parameterValues.map(pv =&gt; pv.getName -&gt; pv) toMap</span><span style=''>
+</span>14 <span style=''>
+</span>15 <span style=''>  /**
+</span>16 <span style=''>    * Throws exception if not found.
+</span>17 <span style=''>    */
+</span>18 <span style=''>  @throws[IllegalArgumentException]
+</span>19 <span style=''>  def paramValue(name: String): Any = {
+</span>20 <span style=''>    val matches = </span><span style='background: #AEF1AE'>parameterValues.filter(p =&gt; name.equals(p.getName))</span><span style=''>
+</span>21 <span style=''>    if (</span><span style='background: #AEF1AE'>matches.size != 1</span><span style=''>) </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Parameter '$name' not found: Had $parameterValues&quot;)</span><span style=''>
+</span>22 <span style=''>    </span><span style='background: #AEF1AE'>matches.head.getValue</span><span style=''>
+</span>23 <span style=''>  }
+</span>24 <span style=''>
+</span>25 <span style=''>  /**
+</span>26 <span style=''>    * Throws exception if not found or not a string.
+</span>27 <span style=''>    *
+</span>28 <span style=''>    * @param name the param name
+</span>29 <span style=''>    * @return a string
+</span>30 <span style=''>    * @throws IllegalArgumentException if name is not a string
+</span>31 <span style=''>    */
+</span>32 <span style=''>  @throws[IllegalArgumentException]
+</span>33 <span style=''>  def stringParamValue(name: String): String = </span><span style='background: #AEF1AE'>paramValue(name)</span><span style=''> match {
+</span>34 <span style=''>    case null =&gt; </span><span style='background: #F0ADAD'>null</span><span style=''>
+</span>35 <span style=''>    case s: String =&gt; </span><span style='background: #AEF1AE'>s.toString</span><span style=''>
+</span>36 <span style=''>    case _ =&gt; </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;'$name' is not a String&quot;)</span><span style=''>
+</span>37 <span style=''>  }
+</span>38 <span style=''>
+</span>39 <span style=''>  override def toString: String = {
+</span>40 <span style=''>    val parms = </span><span style='background: #AEF1AE'>new StringBuilder()</span><span style=''>
+</span>41 <span style=''>    </span><span style='background: #AEF1AE'>parameterValues.foreach(p =&gt; parms.append(s&quot;${p.getName} -&gt; ${p.getValue}\n&quot;))</span><span style=''>
+</span>42 <span style=''>    </span><span style='background: #AEF1AE'>parms.toString()</span><span style=''>
+</span>43 <span style=''>  }
+</span>44 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          158
+        </td>
+        <td>
+          356
+          -
+          372
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.ArrowAssoc[String](pv.getName).-&gt;[com.atomist.param.ParameterValue](pv)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          160
+        </td>
+        <td>
+          374
+          -
+          374
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.$conforms[(String, com.atomist.param.ParameterValue)]
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          159
+        </td>
+        <td>
+          349
+          -
+          349
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[(String, com.atomist.param.ParameterValue)]
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          161
+        </td>
+        <td>
+          330
+          -
+          379
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toMap
+        </td>
+        <td style="background: #AEF1AE">
+          ParameterValues.this.parameterValues.map[(String, com.atomist.param.ParameterValue), Seq[(String, com.atomist.param.ParameterValue)]](((pv: com.atomist.param.ParameterValue) =&gt; scala.this.Predef.ArrowAssoc[String](pv.getName).-&gt;[com.atomist.param.ParameterValue](pv)))(collection.this.Seq.canBuildFrom[(String, com.atomist.param.ParameterValue)]).toMap[String, com.atomist.param.ParameterValue](scala.this.Predef.$conforms[(String, com.atomist.param.ParameterValue)])
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          164
+        </td>
+        <td>
+          525
+          -
+          576
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          ParameterValues.this.parameterValues.filter(((p: com.atomist.param.ParameterValue) =&gt; name.equals(p.getName)))
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          163
+        </td>
+        <td>
+          553
+          -
+          575
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          name.equals(p.getName)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          162
+        </td>
+        <td>
+          565
+          -
+          574
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValue.getName
+        </td>
+        <td style="background: #AEF1AE">
+          p.getName
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          167
+        </td>
+        <td>
+          604
+          -
+          692
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Parameter \'&quot;, &quot;\' not found: Had &quot;, &quot;&quot;).s(name, ParameterValues.this.parameterValues))
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          166
+        </td>
+        <td>
+          604
+          -
+          692
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Parameter \'&quot;, &quot;\' not found: Had &quot;, &quot;&quot;).s(name, ParameterValues.this.parameterValues))
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          169
+        </td>
+        <td>
+          581
+          -
+          581
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          165
+        </td>
+        <td>
+          585
+          -
+          602
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.!=
+        </td>
+        <td style="background: #AEF1AE">
+          matches.size.!=(1)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          168
+        </td>
+        <td>
+          581
+          -
+          581
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          170
+        </td>
+        <td>
+          697
+          -
+          718
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValue.getValue
+        </td>
+        <td style="background: #AEF1AE">
+          matches.head.getValue
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          171
+        </td>
+        <td>
+          998
+          -
+          1014
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.ParameterValues.paramValue
+        </td>
+        <td style="background: #AEF1AE">
+          ParameterValues.this.paramValue(name)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          172
+        </td>
+        <td>
+          1040
+          -
+          1044
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          173
+        </td>
+        <td>
+          1067
+          -
+          1077
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.toString
+        </td>
+        <td style="background: #AEF1AE">
+          s.toString()
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          174
+        </td>
+        <td>
+          1092
+          -
+          1154
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;\'&quot;, &quot;\' is not a String&quot;).s(name))
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          175
+        </td>
+        <td>
+          1212
+          -
+          1231
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.`package`.StringBuilder()
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          182
+        </td>
+        <td>
+          1265
+          -
+          1313
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.append
+        </td>
+        <td style="background: #AEF1AE">
+          parms.append(scala.StringContext.apply(&quot;&quot;, &quot; -&gt; &quot;, &quot;\\n&quot;).s(p.getName, p.getValue))
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          176
+        </td>
+        <td>
+          1280
+          -
+          1281
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          178
+        </td>
+        <td>
+          1309
+          -
+          1312
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          181
+        </td>
+        <td>
+          1278
+          -
+          1312
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot; -&gt; &quot;, &quot;\\n&quot;).s(p.getName, p.getValue)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          180
+        </td>
+        <td>
+          1298
+          -
+          1308
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValue.getValue
+        </td>
+        <td style="background: #AEF1AE">
+          p.getValue
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          183
+        </td>
+        <td>
+          1236
+          -
+          1314
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          ParameterValues.this.parameterValues.foreach[StringBuilder](((p: com.atomist.param.ParameterValue) =&gt; parms.append(scala.StringContext.apply(&quot;&quot;, &quot; -&gt; &quot;, &quot;\\n&quot;).s(p.getName, p.getValue))))
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          177
+        </td>
+        <td>
+          1292
+          -
+          1297
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; -&gt; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          179
+        </td>
+        <td>
+          1282
+          -
+          1291
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValue.getName
+        </td>
+        <td style="background: #AEF1AE">
+          p.getName
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          184
+        </td>
+        <td>
+          1319
+          -
+          1335
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.toString
+        </td>
+        <td style="background: #AEF1AE">
+          parms.toString()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

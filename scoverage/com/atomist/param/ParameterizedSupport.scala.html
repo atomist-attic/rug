@@ -1,0 +1,1309 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/param/ParameterizedSupport.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.param
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.project.common.{IllformedParametersException, InvalidParametersException, MissingParametersException}
+</span>4 <span style=''>
+</span>5 <span style=''>/**
+</span>6 <span style=''>  * Support trait for implementations of Parameterized.
+</span>7 <span style=''>  */
+</span>8 <span style=''>trait ParameterizedSupport
+</span>9 <span style=''>  extends Parameterized {
+</span>10 <span style=''>
+</span>11 <span style=''>   override def parameters: Seq[Parameter] = </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>12 <span style=''>
+</span>13 <span style=''>  /**
+</span>14 <span style=''>    * Fill out any default values not present in pvs but are required.
+</span>15 <span style=''>    *
+</span>16 <span style=''>    * @param pvs parameters so far
+</span>17 <span style=''>    * @return with defaults
+</span>18 <span style=''>    */
+</span>19 <span style=''>  def addDefaultParameterValues(pvs: ParameterValues): ParameterValues = {
+</span>20 <span style=''>    val toDefault = </span><span style='background: #AEF1AE'>parameters.filter(p =&gt; !pvs.parameterValueMap.contains(p.getName) &amp;&amp; p.getDefaultValue != &quot;&quot;)</span><span style=''>
+</span>21 <span style=''>    toDefault match {
+</span>22 <span style=''>      case parms: Seq[Parameter] if </span><span style='background: #AEF1AE'>parms.nonEmpty</span><span style=''> =&gt;
+</span>23 <span style=''>        val newParams = </span><span style='background: #AEF1AE'>parms.map(p =&gt; SimpleParameterValue(p.getName, p.getDefaultValue))</span><span style=''>
+</span>24 <span style=''>        </span><span style='background: #AEF1AE'>new SimpleParameterValues(newParams ++ pvs.parameterValues)</span><span style=''>
+</span>25 <span style=''>      case _ =&gt; pvs
+</span>26 <span style=''>    }
+</span>27 <span style=''>  }
+</span>28 <span style=''>
+</span>29 <span style=''>  /**
+</span>30 <span style=''>    * Validate the given arguments, throwing an exception if they're invalid.
+</span>31 <span style=''>    *
+</span>32 <span style=''>    * @param poa arguments to validate
+</span>33 <span style=''>    * @throws InvalidParametersException if the parameters are invalid
+</span>34 <span style=''>    */
+</span>35 <span style=''>  @throws[InvalidParametersException]
+</span>36 <span style=''>  def validateParameters(poa: ParameterValues) {
+</span>37 <span style=''>    val missingParameters = </span><span style='background: #AEF1AE'>findMissingParameters(poa)</span><span style=''>
+</span>38 <span style=''>    if (</span><span style='background: #AEF1AE'>missingParameters.nonEmpty</span><span style=''>)
+</span>39 <span style=''>      </span><span style='background: #AEF1AE'>throw new MissingParametersException(
+</span>40 <span style=''></span><span style='background: #AEF1AE'>        s&quot;Missing parameters: [${missingParameters.map(_.getName).mkString(&quot;,&quot;)}]: $poa&quot;,
+</span>41 <span style=''></span><span style='background: #AEF1AE'>        missingParameters
+</span>42 <span style=''></span><span style='background: #AEF1AE'>      )</span><span style=''>
+</span>43 <span style=''>
+</span>44 <span style=''>    def validEmptyOptionalValue(v: Any) = </span><span style='background: #AEF1AE'>v == null || &quot;&quot;.equals(v)</span><span style=''>
+</span>45 <span style=''>
+</span>46 <span style=''>    // TODO could consider pulling this up to Parameterized
+</span>47 <span style=''>    val validationErrors =
+</span>48 <span style=''>      </span><span style='background: #AEF1AE'>for {
+</span>49 <span style=''></span><span style='background: #AEF1AE'>        pv &lt;- poa.parameterValues
+</span>50 <span style=''></span><span style='background: #AEF1AE'>        param &lt;- parameters.find(_.name == pv.getName)
+</span>51 <span style=''></span><span style='background: #AEF1AE'>        // Only validate optional values if they're supplied
+</span>52 <span style=''></span><span style='background: #AEF1AE'>        if param.isRequired || !validEmptyOptionalValue(pv.getValue)
+</span>53 <span style=''></span><span style='background: #AEF1AE'>        if !param.isValidValue(pv.getValue)
+</span>54 <span style=''></span><span style='background: #AEF1AE'>      } yield pv</span><span style=''>
+</span>55 <span style=''>
+</span>56 <span style=''>    if (</span><span style='background: #AEF1AE'>validationErrors.nonEmpty</span><span style=''>)
+</span>57 <span style=''>      </span><span style='background: #AEF1AE'>throw new IllformedParametersException(s&quot;Invalid parameters: [[${validationErrors.map(p =&gt; p.getName + &quot;=&quot; + p.getValue).mkString(&quot;,&quot;)}]&quot; +
+</span>58 <span style=''></span><span style='background: #AEF1AE'>        s&quot;: $poa&quot;,
+</span>59 <span style=''></span><span style='background: #AEF1AE'>        validationErrors)</span><span style=''>
+</span>60 <span style=''>  }
+</span>61 <span style=''>  /**
+</span>62 <span style=''>    * Convenience method subclasses can use to identify any missing parameters.
+</span>63 <span style=''>    *
+</span>64 <span style=''>    * @param pvs argument passed to an operation on this class
+</span>65 <span style=''>    * @return list of any missing parameters
+</span>66 <span style=''>    */
+</span>67 <span style=''>  def findMissingParameters(pvs: ParameterValues): Seq[Parameter] =
+</span>68 <span style=''>    </span><span style='background: #AEF1AE'>parameters.filter(p =&gt; p.isRequired &amp;&amp; !pvs.parameterValueMap.exists(_._1 == p.name))</span><span style=''>
+</span>69 <span style=''>
+</span>70 <span style=''>  def findInvalidParameterValues(pvs: ParameterValues): Seq[ParameterValue] = {
+</span>71 <span style=''>    </span><span style='background: #AEF1AE'>pvs.parameterValues.foldLeft(Nil: Seq[ParameterValue]) { (acc, pv) =&gt;
+</span>72 <span style=''></span><span style='background: #AEF1AE'>      parameters.find(_.getName == pv.getName) match {
+</span>73 <span style=''></span><span style='background: #AEF1AE'>        case Some(param) if !param.isValidValue(pv.getValue) =&gt; acc :+ pv
+</span>74 <span style=''></span><span style='background: #AEF1AE'>        case _ =&gt; acc
+</span>75 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>76 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>77 <span style=''>  }
+</span>78 <span style=''>
+</span>79 <span style=''>  /**
+</span>80 <span style=''>    * Convenient method to check whether parameter values are valid.
+</span>81 <span style=''>    * Callers should use findMissingParameters and findInvalidParameterValues to
+</span>82 <span style=''>    * find more information if this method returns false.
+</span>83 <span style=''>    *
+</span>84 <span style=''>    * @param pvs ParameterValues to check
+</span>85 <span style=''>    * @return true if the ParameterValues are valid, otherwise false
+</span>86 <span style=''>    */
+</span>87 <span style=''>  def areValid(pvs: ParameterValues): Boolean =
+</span>88 <span style=''>    </span><span style='background: #AEF1AE'>findMissingParameters(pvs).isEmpty &amp;&amp; findInvalidParameterValues(pvs).isEmpty</span><span style=''>
+</span>89 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          185
+        </td>
+        <td>
+          313
+          -
+          316
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          187
+        </td>
+        <td>
+          635
+          -
+          658
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          p.getDefaultValue.!=(&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          189
+        </td>
+        <td>
+          566
+          -
+          659
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          ParameterizedSupport.this.parameters.filter(((p: com.atomist.param.Parameter) =&gt; pvs.parameterValueMap.contains(p.getName).unary_!.&amp;&amp;(p.getDefaultValue.!=(&quot;&quot;))))
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          186
+        </td>
+        <td>
+          621
+          -
+          630
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.Parameter.getName
+        </td>
+        <td style="background: #AEF1AE">
+          p.getName
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          188
+        </td>
+        <td>
+          589
+          -
+          658
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          pvs.parameterValueMap.contains(p.getName).unary_!.&amp;&amp;(p.getDefaultValue.!=(&quot;&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          190
+        </td>
+        <td>
+          718
+          -
+          732
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          parms.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          191
+        </td>
+        <td>
+          796
+          -
+          805
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.Parameter.getName
+        </td>
+        <td style="background: #AEF1AE">
+          p.getName
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          194
+        </td>
+        <td>
+          769
+          -
+          769
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.param.SimpleParameterValue]
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          193
+        </td>
+        <td>
+          775
+          -
+          825
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValue.apply
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleParameterValue.apply(p.getName, p.getDefaultValue)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          192
+        </td>
+        <td>
+          807
+          -
+          824
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.Parameter.getDefaultValue
+        </td>
+        <td style="background: #AEF1AE">
+          p.getDefaultValue
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          195
+        </td>
+        <td>
+          760
+          -
+          826
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          parms.map[com.atomist.param.SimpleParameterValue, Seq[com.atomist.param.SimpleParameterValue]](((p: com.atomist.param.Parameter) =&gt; SimpleParameterValue.apply(p.getName, p.getDefaultValue)))(collection.this.Seq.canBuildFrom[com.atomist.param.SimpleParameterValue])
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          196
+        </td>
+        <td>
+          874
+          -
+          893
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValues.parameterValues
+        </td>
+        <td style="background: #AEF1AE">
+          pvs.parameterValues
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          199
+        </td>
+        <td>
+          835
+          -
+          894
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValues.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new SimpleParameterValues(newParams.++[com.atomist.param.ParameterValue, Seq[com.atomist.param.ParameterValue]](pvs.parameterValues)(collection.this.Seq.canBuildFrom[com.atomist.param.ParameterValue]))
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          198
+        </td>
+        <td>
+          861
+          -
+          893
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          newParams.++[com.atomist.param.ParameterValue, Seq[com.atomist.param.ParameterValue]](pvs.parameterValues)(collection.this.Seq.canBuildFrom[com.atomist.param.ParameterValue])
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          197
+        </td>
+        <td>
+          871
+          -
+          871
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.param.ParameterValue]
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          200
+        </td>
+        <td>
+          1248
+          -
+          1274
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.ParameterizedSupport.findMissingParameters
+        </td>
+        <td style="background: #AEF1AE">
+          ParameterizedSupport.this.findMissingParameters(poa)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          205
+        </td>
+        <td>
+          1279
+          -
+          1279
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          201
+        </td>
+        <td>
+          1283
+          -
+          1309
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          missingParameters.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          204
+        </td>
+        <td>
+          1279
+          -
+          1279
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          202
+        </td>
+        <td>
+          1317
+          -
+          1478
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new com.atomist.project.common.MissingParametersException(scala.StringContext.apply(&quot;Missing parameters: [&quot;, &quot;]: &quot;, &quot;&quot;).s(missingParameters.map[String, Seq[String]](((x$1: com.atomist.param.Parameter) =&gt; x$1.getName))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;,&quot;), poa), missingParameters)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          203
+        </td>
+        <td>
+          1317
+          -
+          1478
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new com.atomist.project.common.MissingParametersException(scala.StringContext.apply(&quot;Missing parameters: [&quot;, &quot;]: &quot;, &quot;&quot;).s(missingParameters.map[String, Seq[String]](((x$1: com.atomist.param.Parameter) =&gt; x$1.getName))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;,&quot;), poa), missingParameters)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          208
+        </td>
+        <td>
+          1522
+          -
+          1547
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          v.==(null).||(&quot;&quot;.equals(v))
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          207
+        </td>
+        <td>
+          1535
+          -
+          1547
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;.equals(v)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          206
+        </td>
+        <td>
+          1527
+          -
+          1531
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          218
+        </td>
+        <td>
+          1659
+          -
+          1659
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.param.ParameterValue]
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          219
+        </td>
+        <td>
+          1642
+          -
+          1927
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          poa.parameterValues.flatMap[com.atomist.param.ParameterValue, Seq[com.atomist.param.ParameterValue]](((pv: com.atomist.param.ParameterValue) =&gt; scala.this.Option.option2Iterable[com.atomist.param.ParameterValue](ParameterizedSupport.this.parameters.find(((x$2: com.atomist.param.Parameter) =&gt; x$2.name.==(pv.getName))).withFilter(((param: com.atomist.param.Parameter) =&gt; param.isRequired.||(validEmptyOptionalValue(pv.getValue).unary_!))).withFilter(((param: com.atomist.param.Parameter) =&gt; param.isValidValue(pv.getValue).unary_!)).map[com.atomist.param.ParameterValue](((param: com.atomist.param.Parameter) =&gt; pv)))))(collection.this.Seq.canBuildFrom[com.atomist.param.ParameterValue])
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          209
+        </td>
+        <td>
+          1725
+          -
+          1735
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValue.getName
+        </td>
+        <td style="background: #AEF1AE">
+          pv.getName
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          217
+        </td>
+        <td>
+          1690
+          -
+          1927
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[com.atomist.param.ParameterValue](ParameterizedSupport.this.parameters.find(((x$2: com.atomist.param.Parameter) =&gt; x$2.name.==(pv.getName))).withFilter(((param: com.atomist.param.Parameter) =&gt; param.isRequired.||(validEmptyOptionalValue(pv.getValue).unary_!))).withFilter(((param: com.atomist.param.Parameter) =&gt; param.isValidValue(pv.getValue).unary_!)).map[com.atomist.param.ParameterValue](((param: com.atomist.param.Parameter) =&gt; pv)))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          216
+        </td>
+        <td>
+          1690
+          -
+          1927
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.WithFilter.map
+        </td>
+        <td style="background: #AEF1AE">
+          ParameterizedSupport.this.parameters.find(((x$2: com.atomist.param.Parameter) =&gt; x$2.name.==(pv.getName))).withFilter(((param: com.atomist.param.Parameter) =&gt; param.isRequired.||(validEmptyOptionalValue(pv.getValue).unary_!))).withFilter(((param: com.atomist.param.Parameter) =&gt; param.isValidValue(pv.getValue).unary_!)).map[com.atomist.param.ParameterValue](((param: com.atomist.param.Parameter) =&gt; pv))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          210
+        </td>
+        <td>
+          1715
+          -
+          1735
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.name.==(pv.getName)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          211
+        </td>
+        <td>
+          1854
+          -
+          1865
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValue.getValue
+        </td>
+        <td style="background: #AEF1AE">
+          pv.getValue
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          213
+        </td>
+        <td>
+          1809
+          -
+          1866
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          param.isRequired.||(validEmptyOptionalValue(pv.getValue).unary_!)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          212
+        </td>
+        <td>
+          1829
+          -
+          1866
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          validEmptyOptionalValue(pv.getValue).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          214
+        </td>
+        <td>
+          1898
+          -
+          1909
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValue.getValue
+        </td>
+        <td style="background: #AEF1AE">
+          pv.getValue
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          215
+        </td>
+        <td>
+          1878
+          -
+          1910
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          param.isValidValue(pv.getValue).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          220
+        </td>
+        <td>
+          1937
+          -
+          1962
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          validationErrors.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          223
+        </td>
+        <td>
+          1933
+          -
+          1933
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          224
+        </td>
+        <td>
+          1933
+          -
+          1933
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          222
+        </td>
+        <td>
+          1970
+          -
+          2154
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new com.atomist.project.common.IllformedParametersException(scala.StringContext.apply(&quot;Invalid parameters: [[&quot;, &quot;]&quot;).s(validationErrors.map[String, Seq[String]](((p: com.atomist.param.ParameterValue) =&gt; p.getName.+(&quot;=&quot;).+(p.getValue)))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;,&quot;)).+(scala.StringContext.apply(&quot;: &quot;, &quot;&quot;).s(poa)), validationErrors)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          221
+        </td>
+        <td>
+          1970
+          -
+          2154
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new com.atomist.project.common.IllformedParametersException(scala.StringContext.apply(&quot;Invalid parameters: [[&quot;, &quot;]&quot;).s(validationErrors.map[String, Seq[String]](((p: com.atomist.param.ParameterValue) =&gt; p.getName.+(&quot;=&quot;).+(p.getValue)))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;,&quot;)).+(scala.StringContext.apply(&quot;: &quot;, &quot;&quot;).s(poa)), validationErrors)
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          227
+        </td>
+        <td>
+          2477
+          -
+          2522
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          pvs.parameterValueMap.exists(((x$3: (String, com.atomist.param.ParameterValue)) =&gt; x$3._1.==(p.name))).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          226
+        </td>
+        <td>
+          2507
+          -
+          2521
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$3._1.==(p.name)
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          229
+        </td>
+        <td>
+          2438
+          -
+          2523
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          ParameterizedSupport.this.parameters.filter(((p: com.atomist.param.Parameter) =&gt; p.isRequired.&amp;&amp;(pvs.parameterValueMap.exists(((x$3: (String, com.atomist.param.ParameterValue)) =&gt; x$3._1.==(p.name))).unary_!)))
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          225
+        </td>
+        <td>
+          2515
+          -
+          2521
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.Parameter.name
+        </td>
+        <td style="background: #AEF1AE">
+          p.name
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          228
+        </td>
+        <td>
+          2461
+          -
+          2522
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          p.isRequired.&amp;&amp;(pvs.parameterValueMap.exists(((x$3: (String, com.atomist.param.ParameterValue)) =&gt; x$3._1.==(p.name))).unary_!)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          238
+        </td>
+        <td>
+          2609
+          -
+          2843
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.foldLeft
+        </td>
+        <td style="background: #AEF1AE">
+          pvs.parameterValues.foldLeft[Seq[com.atomist.param.ParameterValue]]((immutable.this.Nil: Seq[com.atomist.param.ParameterValue]))(((acc: Seq[com.atomist.param.ParameterValue], pv: com.atomist.param.ParameterValue) =&gt; ParameterizedSupport.this.parameters.find(((x$4: com.atomist.param.Parameter) =&gt; x$4.getName.==(pv.getName))) match {
+  case (x: com.atomist.param.Parameter)Some[com.atomist.param.Parameter]((param @ _)) if param.isValidValue(pv.getValue).unary_! =&gt; acc.:+[com.atomist.param.ParameterValue, Seq[com.atomist.param.ParameterValue]](pv)(collection.this.Seq.canBuildFrom[com.atomist.param.ParameterValue])
+  case _ =&gt; acc
+}))
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          230
+        </td>
+        <td>
+          2638
+          -
+          2641
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          232
+        </td>
+        <td>
+          2701
+          -
+          2724
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$4.getName.==(pv.getName)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          231
+        </td>
+        <td>
+          2714
+          -
+          2724
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValue.getName
+        </td>
+        <td style="background: #AEF1AE">
+          pv.getName
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          233
+        </td>
+        <td>
+          2685
+          -
+          2725
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #AEF1AE">
+          ParameterizedSupport.this.parameters.find(((x$4: com.atomist.param.Parameter) =&gt; x$4.getName.==(pv.getName)))
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          236
+        </td>
+        <td>
+          2802
+          -
+          2802
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.param.ParameterValue]
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          235
+        </td>
+        <td>
+          2762
+          -
+          2794
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          param.isValidValue(pv.getValue).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          234
+        </td>
+        <td>
+          2782
+          -
+          2793
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValue.getValue
+        </td>
+        <td style="background: #AEF1AE">
+          pv.getValue
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          237
+        </td>
+        <td>
+          2798
+          -
+          2807
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          acc.:+[com.atomist.param.ParameterValue, Seq[com.atomist.param.ParameterValue]](pv)(collection.this.Seq.canBuildFrom[com.atomist.param.ParameterValue])
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          240
+        </td>
+        <td>
+          3239
+          -
+          3316
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          ParameterizedSupport.this.findMissingParameters(pvs).isEmpty.&amp;&amp;(ParameterizedSupport.this.findInvalidParameterValues(pvs).isEmpty)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          239
+        </td>
+        <td>
+          3277
+          -
+          3316
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          ParameterizedSupport.this.findInvalidParameterValues(pvs).isEmpty
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

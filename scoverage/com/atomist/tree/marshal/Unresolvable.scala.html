@@ -1,0 +1,261 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/marshal/Unresolvable.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.marshal
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.tree.utils.NodeUtils
+</span>5 <span style=''>
+</span>6 <span style=''>/**
+</span>7 <span style=''>  * Supporting unresolvable nodes.
+</span>8 <span style=''>  * We don't use a special node type, but
+</span>9 <span style=''>  * a convention for marking nodes as unresolvable.
+</span>10 <span style=''>  */
+</span>11 <span style=''>object Unresolvable {
+</span>12 <span style=''>
+</span>13 <span style=''>  val RemainingPathExpressionKey = </span><span style='background: #AEF1AE'>&quot;remainingPathExpression&quot;</span><span style=''>
+</span>14 <span style=''>
+</span>15 <span style=''>  val UnresolvableTag = </span><span style='background: #AEF1AE'>&quot;Unresolvable&quot;</span><span style=''>
+</span>16 <span style=''>
+</span>17 <span style=''>  def apply(n: GraphNode): Option[Unresolvable] =
+</span>18 <span style=''>    </span><span style='background: #AEF1AE'>n.nodeTags.find(_ == UnresolvableTag).map(tag =&gt; {
+</span>19 <span style=''></span><span style='background: #AEF1AE'>      Unresolvable(
+</span>20 <span style=''></span><span style='background: #AEF1AE'>        NodeUtils.keyValue(n, RemainingPathExpressionKey).getOrElse(
+</span>21 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(
+</span>22 <span style=''></span><span style='background: #F0ADAD'>            s&quot;Node $n must have key [$RemainingPathExpressionKey]: Found keys [${n.relatedNodeNames.mkString(&quot;,&quot;)}]&quot;)</span><span style='background: #AEF1AE'>
+</span>23 <span style=''></span><span style='background: #AEF1AE'>        ), n
+</span>24 <span style=''></span><span style='background: #AEF1AE'>      )
+</span>25 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>}
+</span>28 <span style=''>
+</span>29 <span style=''>case class Unresolvable(
+</span>30 <span style=''>                         remainingPathExpression: String,
+</span>31 <span style=''>                         rawNode: GraphNode)
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          7999
+        </td>
+        <td>
+          306
+          -
+          331
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;remainingPathExpression&quot;
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          8000
+        </td>
+        <td>
+          357
+          -
+          371
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Unresolvable&quot;
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          8002
+        </td>
+        <td>
+          443
+          -
+          463
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.==(Unresolvable.this.UnresolvableTag)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          8007
+        </td>
+        <td>
+          427
+          -
+          758
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.map
+        </td>
+        <td style="background: #AEF1AE">
+          n.nodeTags.find(((x$1: String) =&gt; x$1.==(Unresolvable.this.UnresolvableTag))).map[com.atomist.tree.marshal.Unresolvable](((tag: String) =&gt; Unresolvable.apply(com.atomist.tree.utils.NodeUtils.keyValue(n, Unresolvable.this.RemainingPathExpressionKey).getOrElse[String](throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Node &quot;, &quot; must have key [&quot;, &quot;]: Found keys [&quot;, &quot;]&quot;).s(n, Unresolvable.this.RemainingPathExpressionKey, n.relatedNodeNames.mkString(&quot;,&quot;)))), n)))
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          8001
+        </td>
+        <td>
+          448
+          -
+          463
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.Unresolvable.UnresolvableTag
+        </td>
+        <td style="background: #AEF1AE">
+          Unresolvable.this.UnresolvableTag
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          8006
+        </td>
+        <td>
+          484
+          -
+          751
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.marshal.Unresolvable.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Unresolvable.apply(com.atomist.tree.utils.NodeUtils.keyValue(n, Unresolvable.this.RemainingPathExpressionKey).getOrElse[String](throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Node &quot;, &quot; must have key [&quot;, &quot;]: Found keys [&quot;, &quot;]&quot;).s(n, Unresolvable.this.RemainingPathExpressionKey, n.relatedNodeNames.mkString(&quot;,&quot;)))), n)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          8005
+        </td>
+        <td>
+          506
+          -
+          740
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.keyValue(n, Unresolvable.this.RemainingPathExpressionKey).getOrElse[String](throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Node &quot;, &quot; must have key [&quot;, &quot;]: Found keys [&quot;, &quot;]&quot;).s(n, Unresolvable.this.RemainingPathExpressionKey, n.relatedNodeNames.mkString(&quot;,&quot;))))
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          8003
+        </td>
+        <td>
+          528
+          -
+          554
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.Unresolvable.RemainingPathExpressionKey
+        </td>
+        <td style="background: #AEF1AE">
+          Unresolvable.this.RemainingPathExpressionKey
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          8004
+        </td>
+        <td>
+          577
+          -
+          730
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Node &quot;, &quot; must have key [&quot;, &quot;]: Found keys [&quot;, &quot;]&quot;).s(n, Unresolvable.this.RemainingPathExpressionKey, n.relatedNodeNames.mkString(&quot;,&quot;)))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

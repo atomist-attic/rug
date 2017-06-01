@@ -1,0 +1,167 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/project/edit/ProjectEditor.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.project.edit
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.param.{ParameterValues, SimpleParameterValues}
+</span>4 <span style=''>import com.atomist.project.ProjectOperation
+</span>5 <span style=''>import com.atomist.project.common.MissingParametersException
+</span>6 <span style=''>import com.atomist.source.ArtifactSource
+</span>7 <span style=''>
+</span>8 <span style=''>/**
+</span>9 <span style=''>  * Interface implemented by classes that know how to modify an existing project.
+</span>10 <span style=''>  * Extend ProjectEditorSupport rather than implementing this interface directly.
+</span>11 <span style=''>  */
+</span>12 <span style=''>trait ProjectEditor extends ProjectOperation {
+</span>13 <span style=''>
+</span>14 <span style=''>  /**
+</span>15 <span style=''>    * Attempt to create a new ArtifactSource based on applying this editor to the given one.
+</span>16 <span style=''>    *
+</span>17 <span style=''>    * @param as existing sources
+</span>18 <span style=''>    * @param poa data for modification
+</span>19 <span style=''>    * @return object indicating whether successful modification was possible.
+</span>20 <span style=''>    *         Returns a FailedModificationAttempt if it's impossible to make any change,
+</span>21 <span style=''>    *         because of error or because the codebase was simply ineligible.
+</span>22 <span style=''>    *         Return NoModificationNeeded if the codebase already satisfies the invariants
+</span>23 <span style=''>    *         of the operation, or if it's not critical that the change was made
+</span>24 <span style=''>    *         (e.g. adding comments files that meet a certain criteria).
+</span>25 <span style=''>    * @throws MissingParametersException if any parameters are missing
+</span>26 <span style=''>    */
+</span>27 <span style=''>  @throws[MissingParametersException]
+</span>28 <span style=''>  def modify(as: ArtifactSource, poa: ParameterValues = SimpleParameterValues.Empty): ModificationAttempt
+</span>29 <span style=''>
+</span>30 <span style=''>  /**
+</span>31 <span style=''>    * Is this editor potentially applicable to the given ArtifactSource?
+</span>32 <span style=''>    * This may not be the same as it is *actually* applicable, because
+</span>33 <span style=''>    * some editors may apply to such projects but not presently be applicable
+</span>34 <span style=''>    * because of a conflict etc. The editor *will* be applicable if
+</span>35 <span style=''>    * it could be applied in theory, but is unnecessary because the post condition
+</span>36 <span style=''>    * of the editor is already satisfied.
+</span>37 <span style=''>    *
+</span>38 <span style=''>    * @param as an ArtifactSource
+</span>39 <span style=''>    * @return the applicability
+</span>40 <span style=''>    */
+</span>41 <span style=''>  def potentialApplicability(as: ArtifactSource): Applicability = </span><span style='background: #F0ADAD'>applicability(as)</span><span style=''>
+</span>42 <span style=''>
+</span>43 <span style=''>  /**
+</span>44 <span style=''>    * Is this editor applicable to the given ArtifactSource?
+</span>45 <span style=''>    *
+</span>46 <span style=''>    * @param as an ArtifactSource
+</span>47 <span style=''>    * @return the applicability
+</span>48 <span style=''>    */
+</span>49 <span style=''>  def applicability(as: ArtifactSource): Applicability
+</span>50 <span style=''>
+</span>51 <span style=''>  /**
+</span>52 <span style=''>    * Does the ArtifactSource already meet the post condition?
+</span>53 <span style=''>    * Subclasses can choose to override the default return of false.
+</span>54 <span style=''>    */
+</span>55 <span style=''>  def meetsPostcondition(as: ArtifactSource): Boolean = </span><span style='background: #AEF1AE'>false</span><span style=''>
+</span>56 <span style=''>
+</span>57 <span style=''>  /**
+</span>58 <span style=''>    * Return the reverse of this ProjectEditor, or None if not found
+</span>59 <span style=''>    *
+</span>60 <span style=''>    * @return an Optional
+</span>61 <span style=''>    */
+</span>62 <span style=''>  def reverse: Option[ProjectEditor] = </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>63 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          645
+        </td>
+        <td>
+          1924
+          -
+          1941
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.ProjectEditor.applicability
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectEditor.this.applicability(as)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          646
+        </td>
+        <td>
+          2346
+          -
+          2351
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          647
+        </td>
+        <td>
+          2506
+          -
+          2510
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

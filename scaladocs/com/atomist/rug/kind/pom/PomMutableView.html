@@ -1,0 +1,2463 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>PomMutableView - rug 1.0.0-m.4 API - com.atomist.rug.kind.pom.PomMutableView</title>
+          <meta name="description" content="PomMutableView - rug 1.0.0 - m.4 API - com.atomist.rug.kind.pom.PomMutableView" />
+          <meta name="keywords" content="PomMutableView rug 1.0.0 m.4 API com.atomist.rug.kind.pom.PomMutableView" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../index.html';
+            var hash = 'com.atomist.rug.kind.pom.PomMutableView';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="type">
+      <div id="definition">
+        <a href="PomMutableView$.html" title="See companion object"><img alt="Class/Object" src="../../../../../lib/class_to_object_big.png" /></a>
+        <p id="owner"><a href="../../../../package.html" class="extype" name="com">com</a>.<a href="../../../package.html" class="extype" name="com.atomist">atomist</a>.<a href="../../package.html" class="extype" name="com.atomist.rug">rug</a>.<a href="../package.html" class="extype" name="com.atomist.rug.kind">kind</a>.<a href="package.html" class="extype" name="com.atomist.rug.kind.pom">pom</a></p>
+        <h1><a href="PomMutableView$.html" title="See companion object">PomMutableView</a></h1><h3><span class="morelinks"><div>
+            Related Docs:
+            <a href="PomMutableView$.html" title="See companion object">object PomMutableView</a>
+            | <a href="package.html" class="extype" name="com.atomist.rug.kind.pom">package pom</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">PomMutableView</span><span class="result"> extends <a href="../xml/XmlMutableView.html" class="extype" name="com.atomist.rug.kind.xml.XmlMutableView">XmlMutableView</a> with <a href="../../spi/TerminalView.html" class="extype" name="com.atomist.rug.spi.TerminalView">TerminalView</a>[<span class="extype" name="com.atomist.source.FileArtifact">FileArtifact</span>] with <a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a> with <a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a></span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a>, <a href="../build/BuildViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewMutatingFunctions">BuildViewMutatingFunctions</a>, <a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a>, <a href="../build/BuildViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewNonMutatingFunctions">BuildViewNonMutatingFunctions</a>, <a href="../xml/XmlMutableView.html" class="extype" name="com.atomist.rug.kind.xml.XmlMutableView">XmlMutableView</a>, <a href="../core/LazyFileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView">LazyFileArtifactBackedMutableView</a>, <a href="../../spi/TerminalView.html" class="extype" name="com.atomist.rug.spi.TerminalView">TerminalView</a>[<span class="extype" name="com.atomist.source.FileArtifact">FileArtifact</span>], <a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a>, <a href="../core/FileMetrics.html" class="extype" name="com.atomist.rug.kind.core.FileMetrics">FileMetrics</a>, <a href="../../spi/ViewSupport.html" class="extype" name="com.atomist.rug.spi.ViewSupport">ViewSupport</a>[<span class="extype" name="com.atomist.source.FileArtifact">FileArtifact</span>], <a href="../core/ChangeCounting.html" class="extype" name="com.atomist.rug.kind.core.ChangeCounting">ChangeCounting</a>, <a href="../../spi/CommonViewOperations.html" class="extype" name="com.atomist.rug.spi.CommonViewOperations">CommonViewOperations</a>[<span class="extype" name="com.atomist.source.FileArtifact">FileArtifact</span>], <span class="extype" name="com.typesafe.scalalogging.LazyLogging">LazyLogging</span>, <a href="../../spi/MutableView.html" class="extype" name="com.atomist.rug.spi.MutableView">MutableView</a>[<span class="extype" name="com.atomist.source.FileArtifact">FileArtifact</span>], <a href="../../../tree/ContainerTreeNode.html" class="extype" name="com.atomist.tree.ContainerTreeNode">ContainerTreeNode</a>, <a href="../../../tree/PathAwareTreeNode.html" class="extype" name="com.atomist.tree.PathAwareTreeNode">PathAwareTreeNode</a>, <a href="../../../tree/AddressableTreeNode.html" class="extype" name="com.atomist.tree.AddressableTreeNode">AddressableTreeNode</a>, <a href="../../../graph/AddressableGraphNode.html" class="extype" name="com.atomist.graph.AddressableGraphNode">AddressableGraphNode</a>, <a href="../../../tree/ParentAwareTreeNode.html" class="extype" name="com.atomist.tree.ParentAwareTreeNode">ParentAwareTreeNode</a>, <a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a>, <a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a>, <a href="../../../util/Visitable.html" class="extype" name="com.atomist.util.Visitable">Visitable</a>, <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By Inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="com.atomist.rug.kind.pom.PomMutableView"><span>PomMutableView</span></li><li class="in" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions"><span>PomMutableViewMutatingFunctions</span></li><li class="in" name="com.atomist.rug.kind.build.BuildViewMutatingFunctions"><span>BuildViewMutatingFunctions</span></li><li class="in" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions"><span>PomMutableViewNonMutatingFunctions</span></li><li class="in" name="com.atomist.rug.kind.build.BuildViewNonMutatingFunctions"><span>BuildViewNonMutatingFunctions</span></li><li class="in" name="com.atomist.rug.kind.xml.XmlMutableView"><span>XmlMutableView</span></li><li class="in" name="com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView"><span>LazyFileArtifactBackedMutableView</span></li><li class="in" name="com.atomist.rug.spi.TerminalView"><span>TerminalView</span></li><li class="in" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView"><span>FileArtifactBackedMutableView</span></li><li class="in" name="com.atomist.rug.kind.core.FileMetrics"><span>FileMetrics</span></li><li class="in" name="com.atomist.rug.spi.ViewSupport"><span>ViewSupport</span></li><li class="in" name="com.atomist.rug.kind.core.ChangeCounting"><span>ChangeCounting</span></li><li class="in" name="com.atomist.rug.spi.CommonViewOperations"><span>CommonViewOperations</span></li><li class="in" name="com.typesafe.scalalogging.LazyLogging"><span>LazyLogging</span></li><li class="in" name="com.atomist.rug.spi.MutableView"><span>MutableView</span></li><li class="in" name="com.atomist.tree.ContainerTreeNode"><span>ContainerTreeNode</span></li><li class="in" name="com.atomist.tree.PathAwareTreeNode"><span>PathAwareTreeNode</span></li><li class="in" name="com.atomist.tree.AddressableTreeNode"><span>AddressableTreeNode</span></li><li class="in" name="com.atomist.graph.AddressableGraphNode"><span>AddressableGraphNode</span></li><li class="in" name="com.atomist.tree.ParentAwareTreeNode"><span>ParentAwareTreeNode</span></li><li class="in" name="com.atomist.tree.TreeNode"><span>TreeNode</span></li><li class="in" name="com.atomist.graph.GraphNode"><span>GraphNode</span></li><li class="in" name="com.atomist.util.Visitable"><span>Visitable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show All</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        <div id="constructors" class="members">
+              <h3>Instance Constructors</h3>
+              <ol><li name="com.atomist.rug.kind.pom.PomMutableView#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(originalBackingObject:com.atomist.source.FileArtifact,parent:com.atomist.rug.kind.core.ProjectMutableView):com.atomist.rug.kind.pom.PomMutableView"></a>
+      <a id="&lt;init&gt;:PomMutableView"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">new</span>
+      </span>
+      <span class="symbol">
+        <span class="name">PomMutableView</span><span class="params">(<span name="originalBackingObject">originalBackingObject: <span class="extype" name="com.atomist.source.FileArtifact">FileArtifact</span></span>, <span name="parent">parent: <a href="../core/ProjectMutableView.html" class="extype" name="com.atomist.rug.kind.core.ProjectMutableView">ProjectMutableView</a></span>)</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@&lt;init&gt;(originalBackingObject:com.atomist.source.FileArtifact,parent:com.atomist.rug.kind.core.ProjectMutableView):com.atomist.rug.kind.pom.PomMutableView" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@##():Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.atomist.graph.GraphNode#accept" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="accept(v:com.atomist.util.Visitor,depth:Int):Unit"></a>
+      <a id="accept(Visitor,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">accept</span><span class="params">(<span name="v">v: <a href="../../../util/Visitor.html" class="extype" name="com.atomist.util.Visitor">Visitor</a></span>, <span name="depth">depth: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@accept(v:com.atomist.util.Visitor,depth:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a> → <a href="../../../util/Visitable.html" class="extype" name="com.atomist.util.Visitable">Visitable</a></dd></dl></div>
+    </li><li name="com.atomist.rug.kind.xml.XmlMutableView#addChildNode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addChildNode(xpath:String,newNode:String,nodeContent:String):Unit"></a>
+      <a id="addChildNode(String,String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addChildNode</span><span class="params">(<span name="xpath">xpath: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="newNode">newNode: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="nodeContent">nodeContent: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@addChildNode(xpath:String,newNode:String,nodeContent:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../xml/XmlMutableView.html" class="extype" name="com.atomist.rug.kind.xml.XmlMutableView">XmlMutableView</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.xml.XmlMutableView#addNodeIfNotPresent" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addNodeIfNotPresent(xpathOfParent:String,xPathOfNodeToPlace:String,newNode:String,nodeContent:String):Unit"></a>
+      <a id="addNodeIfNotPresent(String,String,String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addNodeIfNotPresent</span><span class="params">(<span name="xpathOfParent">xpathOfParent: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="xPathOfNodeToPlace">xPathOfNodeToPlace: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="newNode">newNode: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="nodeContent">nodeContent: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@addNodeIfNotPresent(xpathOfParent:String,xPathOfNodeToPlace:String,newNode:String,nodeContent:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../xml/XmlMutableView.html" class="extype" name="com.atomist.rug.kind.xml.XmlMutableView">XmlMutableView</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#addOrReplaceBuildPlugin" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addOrReplaceBuildPlugin(groupId:String,artifactId:String,pluginContent:String):Unit"></a>
+      <a id="addOrReplaceBuildPlugin(String,String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addOrReplaceBuildPlugin</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="pluginContent">pluginContent: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@addOrReplaceBuildPlugin(groupId:String,artifactId:String,pluginContent:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#addOrReplaceBuildPluginManagementPlugin" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addOrReplaceBuildPluginManagementPlugin(groupId:String,artifactId:String,pluginContent:String):Unit"></a>
+      <a id="addOrReplaceBuildPluginManagementPlugin(String,String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addOrReplaceBuildPluginManagementPlugin</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="pluginContent">pluginContent: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@addOrReplaceBuildPluginManagementPlugin(groupId:String,artifactId:String,pluginContent:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#addOrReplaceDependency" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addOrReplaceDependency(groupId:String,artifactId:String):Unit"></a>
+      <a id="addOrReplaceDependency(String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addOrReplaceDependency</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@addOrReplaceDependency(groupId:String,artifactId:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a> → <a href="../build/BuildViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewMutatingFunctions">BuildViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#addOrReplaceDependencyManagementDependency" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addOrReplaceDependencyManagementDependency(groupId:String,artifactId:String,dependencyContent:String):Unit"></a>
+      <a id="addOrReplaceDependencyManagementDependency(String,String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addOrReplaceDependencyManagementDependency</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="dependencyContent">dependencyContent: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@addOrReplaceDependencyManagementDependency(groupId:String,artifactId:String,dependencyContent:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#addOrReplaceDependencyOfScope" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addOrReplaceDependencyOfScope(groupId:String,artifactId:String,scope:String):Unit"></a>
+      <a id="addOrReplaceDependencyOfScope(String,String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addOrReplaceDependencyOfScope</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="scope">scope: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@addOrReplaceDependencyOfScope(groupId:String,artifactId:String,scope:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#addOrReplaceDependencyOfVersion" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addOrReplaceDependencyOfVersion(groupId:String,artifactId:String,version:String):Unit"></a>
+      <a id="addOrReplaceDependencyOfVersion(String,String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addOrReplaceDependencyOfVersion</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="version">version: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@addOrReplaceDependencyOfVersion(groupId:String,artifactId:String,version:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a> → <a href="../build/BuildViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewMutatingFunctions">BuildViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#addOrReplaceDependencyOfVersionAndScope" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addOrReplaceDependencyOfVersionAndScope(groupId:String,artifactId:String,version:String,scope:String):Unit"></a>
+      <a id="addOrReplaceDependencyOfVersionAndScope(String,String,String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addOrReplaceDependencyOfVersionAndScope</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="version">version: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="scope">scope: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@addOrReplaceDependencyOfVersionAndScope(groupId:String,artifactId:String,version:String,scope:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#addOrReplaceDependencyScope" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addOrReplaceDependencyScope(groupId:String,artifactId:String,newScope:String):Unit"></a>
+      <a id="addOrReplaceDependencyScope(String,String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addOrReplaceDependencyScope</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="newScope">newScope: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@addOrReplaceDependencyScope(groupId:String,artifactId:String,newScope:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#addOrReplaceDependencyVersion" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addOrReplaceDependencyVersion(groupId:String,artifactId:String,newVersion:String):Unit"></a>
+      <a id="addOrReplaceDependencyVersion(String,String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addOrReplaceDependencyVersion</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="newVersion">newVersion: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@addOrReplaceDependencyVersion(groupId:String,artifactId:String,newVersion:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a> → <a href="../build/BuildViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewMutatingFunctions">BuildViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.xml.XmlMutableView#addOrReplaceNode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addOrReplaceNode(xpathOfParent:String,xPathOfNodeToReplace:String,newNode:String,nodeContent:String):Unit"></a>
+      <a id="addOrReplaceNode(String,String,String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addOrReplaceNode</span><span class="params">(<span name="xpathOfParent">xpathOfParent: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="xPathOfNodeToReplace">xPathOfNodeToReplace: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="newNode">newNode: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="nodeContent">nodeContent: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@addOrReplaceNode(xpathOfParent:String,xPathOfNodeToReplace:String,newNode:String,nodeContent:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../xml/XmlMutableView.html" class="extype" name="com.atomist.rug.kind.xml.XmlMutableView">XmlMutableView</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#addOrReplaceProfile" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addOrReplaceProfile(id:String,profileContent:String):Unit"></a>
+      <a id="addOrReplaceProfile(String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addOrReplaceProfile</span><span class="params">(<span name="id">id: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="profileContent">profileContent: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@addOrReplaceProfile(id:String,profileContent:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#addOrReplaceProperty" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addOrReplaceProperty(propertyName:String,propertyValue:String):Unit"></a>
+      <a id="addOrReplaceProperty(String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addOrReplaceProperty</span><span class="params">(<span name="propertyName">propertyName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="propertyValue">propertyValue: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@addOrReplaceProperty(propertyName:String,propertyValue:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a> → <a href="../build/BuildViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewMutatingFunctions">BuildViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#address" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="address:String"></a>
+      <a id="address:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">address</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@address:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a> → <a href="../../../tree/PathAwareTreeNode.html" class="extype" name="com.atomist.tree.PathAwareTreeNode">PathAwareTreeNode</a> → <a href="../../../graph/AddressableGraphNode.html" class="extype" name="com.atomist.graph.AddressableGraphNode">AddressableGraphNode</a></dd></dl></div>
+    </li><li name="com.atomist.rug.spi.MutableView#addressableBackingObject" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addressableBackingObject:Any"></a>
+      <a id="addressableBackingObject:Any"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addressableBackingObject</span><span class="result">: <span class="extype" name="scala.Any">Any</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@addressableBackingObject:Any" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../spi/MutableView.html" class="extype" name="com.atomist.rug.spi.MutableView">MutableView</a></dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions#artifactId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="artifactId:String"></a>
+      <a id="artifactId:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">artifactId</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@artifactId:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a> → <a href="../build/BuildViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewNonMutatingFunctions">BuildViewNonMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.atomist.rug.spi.ViewSupport#changeCount" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="changeCount:Int"></a>
+      <a id="changeCount:Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">changeCount</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@changeCount:Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>the number of revisions of this object. 0 means it has not
+        been changed</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../spi/ViewSupport.html" class="extype" name="com.atomist.rug.spi.ViewSupport">ViewSupport</a> → <a href="../core/ChangeCounting.html" class="extype" name="com.atomist.rug.kind.core.ChangeCounting">ChangeCounting</a></dd></dl></div>
+    </li><li name="com.atomist.tree.TreeNode#childCount" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="childCount:Int"></a>
+      <a id="childCount:Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">childCount</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@childCount:Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a></dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#childNodeNames" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="childNodeNames:Set[String]"></a>
+      <a id="childNodeNames:Set[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">childNodeNames</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@childNodeNames:Set[String]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a> → <a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a></dd></dl></div>
+    </li><li name="com.atomist.rug.spi.TerminalView#childNodeTypes" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="childNodeTypes:Set[String]"></a>
+      <a id="childNodeTypes:Set[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">childNodeTypes</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@childNodeTypes:Set[String]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../spi/TerminalView.html" class="extype" name="com.atomist.rug.spi.TerminalView">TerminalView</a> → <a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a></dd></dl></div>
+    </li><li name="com.atomist.tree.TreeNode#childNodes" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="childNodes:Seq[com.atomist.tree.TreeNode]"></a>
+      <a id="childNodes:Seq[TreeNode]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">childNodes</span><span class="result">: <a href="../../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@childNodes:Seq[com.atomist.tree.TreeNode]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Return all visible children of this node.</p><div class="fullcomment"><div class="comment cmt"><p>Return all visible children of this node.
+</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>the children of this node. Ordering is significant</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a></dd></dl></div>
+    </li><li name="com.atomist.tree.TreeNode#children" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="children:java.util.List[com.atomist.tree.TreeNode]"></a>
+      <a id="children:List[TreeNode]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">children</span><span class="result">: <span class="extype" name="java.util.List">List</span>[<a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@children:java.util.List[com.atomist.tree.TreeNode]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Convenience method for Java callers and JavaScript.</p><div class="fullcomment"><div class="comment cmt"><p>Convenience method for Java callers and JavaScript.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.spi.TerminalView#childrenNamed" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="childrenNamed(key:String):Seq[com.atomist.tree.TreeNode]"></a>
+      <a id="childrenNamed(String):Seq[TreeNode]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">childrenNamed</span><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="../../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@childrenNamed(key:String):Seq[com.atomist.tree.TreeNode]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../spi/TerminalView.html" class="extype" name="com.atomist.rug.spi.TerminalView">TerminalView</a> → <a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a></dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView#commit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="commit():Unit"></a>
+      <a id="commit():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">commit</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@commit():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Commit all changes, invoking updaters and calling parent if necessary.</p><div class="fullcomment"><div class="comment cmt"><p>Commit all changes, invoking updaters and calling parent if necessary.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/LazyFileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView">LazyFileArtifactBackedMutableView</a> → <a href="../../spi/ViewSupport.html" class="extype" name="com.atomist.rug.spi.ViewSupport">ViewSupport</a> → <a href="../../spi/MutableView.html" class="extype" name="com.atomist.rug.spi.MutableView">MutableView</a></dd></dl></div>
+    </li><li name="com.atomist.rug.kind.xml.XmlMutableView#contains" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="contains(xpath:String):Boolean"></a>
+      <a id="contains(String):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">contains</span><span class="params">(<span name="xpath">xpath: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@contains(xpath:String):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../xml/XmlMutableView.html" class="extype" name="com.atomist.rug.kind.xml.XmlMutableView">XmlMutableView</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#content" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="content:String"></a>
+      <a id="content:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">content</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@content:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#contentLength" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="contentLength:Long"></a>
+      <a id="contentLength:Long"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">contentLength</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@contentLength:Long" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.graph.GraphNode#count" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="count:Int"></a>
+      <a id="count:Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">count</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@count:Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a></dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView#currentBackingObject" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="currentBackingObject:com.atomist.source.FileArtifact"></a>
+      <a id="currentBackingObject:FileArtifact"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">currentBackingObject</span><span class="result">: <span class="extype" name="com.atomist.source.FileArtifact">FileArtifact</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@currentBackingObject:com.atomist.source.FileArtifact" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/LazyFileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView">LazyFileArtifactBackedMutableView</a> → <a href="../../spi/ViewSupport.html" class="extype" name="com.atomist.rug.spi.ViewSupport">ViewSupport</a> → <a href="../../spi/MutableView.html" class="extype" name="com.atomist.rug.spi.MutableView">MutableView</a></dd></dl></div>
+    </li><li name="com.atomist.rug.kind.xml.XmlMutableView#currentContent" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="currentContent:String"></a>
+      <a id="currentContent:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">currentContent</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@currentContent:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Return current content for the file.</p><div class="fullcomment"><div class="comment cmt"><p>Return current content for the file.
+</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>current content</p></dd></dl><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="../xml/XmlMutableView.html" class="extype" name="com.atomist.rug.kind.xml.XmlMutableView">XmlMutableView</a> → <a href="../core/LazyFileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView">LazyFileArtifactBackedMutableView</a></dd></dl></div>
+    </li><li name="com.atomist.rug.kind.xml.XmlMutableView#deleteNode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="deleteNode(xpath:String):Unit"></a>
+      <a id="deleteNode(String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">deleteNode</span><span class="params">(<span name="xpath">xpath: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@deleteNode(xpath:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../xml/XmlMutableView.html" class="extype" name="com.atomist.rug.kind.xml.XmlMutableView">XmlMutableView</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions#dependencyScope" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="dependencyScope(groupId:String,artifactId:String):String"></a>
+      <a id="dependencyScope(String,String):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">dependencyScope</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@dependencyScope(groupId:String,artifactId:String):String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a> → <a href="../build/BuildViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewNonMutatingFunctions">BuildViewNonMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions#dependencyVersion" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="dependencyVersion(groupId:String,artifactId:String):String"></a>
+      <a id="dependencyVersion(String,String):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">dependencyVersion</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@dependencyVersion(groupId:String,artifactId:String):String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a> → <a href="../build/BuildViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewNonMutatingFunctions">BuildViewNonMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions#description" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="description:String"></a>
+      <a id="description:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">description</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@description:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a> → <a href="../build/BuildViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewNonMutatingFunctions">BuildViewNonMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView#dirty" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="dirty:Boolean"></a>
+      <a id="dirty:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">dirty</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@dirty:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/LazyFileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView">LazyFileArtifactBackedMutableView</a> → <a href="../../spi/ViewSupport.html" class="extype" name="com.atomist.rug.spi.ViewSupport">ViewSupport</a> → <a href="../core/ChangeCounting.html" class="extype" name="com.atomist.rug.kind.core.ChangeCounting">ChangeCounting</a> → <a href="../../spi/MutableView.html" class="extype" name="com.atomist.rug.spi.MutableView">MutableView</a></dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.atomist.rug.spi.CommonViewOperations#fail" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fail(msg:String):Unit"></a>
+      <a id="fail(String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fail</span><span class="params">(<span name="msg">msg: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@fail(msg:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../spi/CommonViewOperations.html" class="extype" name="com.atomist.rug.spi.CommonViewOperations">CommonViewOperations</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+                <span class="name">@Deprecated</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#filename" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="filename:String"></a>
+      <a id="filename:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">filename</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@filename:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.graph.GraphNode#followEdge" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="followEdge(name:String):Seq[com.atomist.graph.GraphNode]"></a>
+      <a id="followEdge(String):Seq[GraphNode]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">followEdge</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="../../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@followEdge(name:String):Seq[com.atomist.graph.GraphNode]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Find nodes under the named edge, regardless of their names.</p><div class="fullcomment"><div class="comment cmt"><p>Find nodes under the named edge, regardless of their names.
+Default implementation looks on this class for an appropriately
+named no-arg method returning Seq[GraphNode] or GraphNode
+</p></div><dl class="paramcmts block"><dt class="param">name</dt><dd class="cmt"><p>name of the edge</p></dd><dt>returns</dt><dd class="cmt"><p>nodes found at the end of this named edge</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a></dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.atomist.rug.kind.xml.XmlMutableView#getTextContentFor" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getTextContentFor(xpath:String):String"></a>
+      <a id="getTextContentFor(String):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getTextContentFor</span><span class="params">(<span name="xpath">xpath: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@getTextContentFor(xpath:String):String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../xml/XmlMutableView.html" class="extype" name="com.atomist.rug.kind.xml.XmlMutableView">XmlMutableView</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions#groupId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="groupId:String"></a>
+      <a id="groupId:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">groupId</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@groupId:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a> → <a href="../build/BuildViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewNonMutatingFunctions">BuildViewNonMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.graph.GraphNode#hasTag" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hasTag(tag:String):Boolean"></a>
+      <a id="hasTag(String):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hasTag</span><span class="params">(<span name="tag">tag: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@hasTag(tag:String):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a></dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions#isBuildPluginManagementPresent" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isBuildPluginManagementPresent(groupId:String,artifactId:String):Boolean"></a>
+      <a id="isBuildPluginManagementPresent(String,String):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isBuildPluginManagementPresent</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@isBuildPluginManagementPresent(groupId:String,artifactId:String):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions#isBuildPluginPresent" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isBuildPluginPresent(groupId:String,artifactId:String):Boolean"></a>
+      <a id="isBuildPluginPresent(String,String):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isBuildPluginPresent</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@isBuildPluginPresent(groupId:String,artifactId:String):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions#isDependencyManagementDependencyPresent" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isDependencyManagementDependencyPresent(groupId:String,artifactId:String):Boolean"></a>
+      <a id="isDependencyManagementDependencyPresent(String,String):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isDependencyManagementDependencyPresent</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@isDependencyManagementDependencyPresent(groupId:String,artifactId:String):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions#isDependencyPresent" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isDependencyPresent(groupId:String,artifactId:String):Boolean"></a>
+      <a id="isDependencyPresent(String,String):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isDependencyPresent</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@isDependencyPresent(groupId:String,artifactId:String):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a> → <a href="../build/BuildViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewNonMutatingFunctions">BuildViewNonMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.atomist.tree.TreeNode#isLeaf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isLeaf:Boolean"></a>
+      <a id="isLeaf:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isLeaf</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@isLeaf:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Convenient method to return whether this is a leaf node.</p><div class="fullcomment"><div class="comment cmt"><p>Convenient method to return whether this is a leaf node.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a></dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions#isProfilePresent" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isProfilePresent(id:String):Boolean"></a>
+      <a id="isProfilePresent(String):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isProfilePresent</span><span class="params">(<span name="id">id: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@isProfilePresent(id:String):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#isWellFormed" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isWellFormed:Boolean"></a>
+      <a id="isWellFormed:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isWellFormed</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@isWellFormed:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+                <span class="name">@Deprecated</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#lineCount" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="lineCount:Int"></a>
+      <a id="lineCount:Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">lineCount</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@lineCount:Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a> → <a href="../core/FileMetrics.html" class="extype" name="com.atomist.rug.kind.core.FileMetrics">FileMetrics</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.typesafe.scalalogging.LazyLogging#logger" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="logger:com.typesafe.scalalogging.Logger"></a>
+      <a id="logger:Logger"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">lazy val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">logger</span><span class="result">: <span class="extype" name="com.typesafe.scalalogging.Logger">Logger</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@logger:com.typesafe.scalalogging.Logger" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>LazyLogging</dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#makeExecutable" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="makeExecutable():Unit"></a>
+      <a id="makeExecutable():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">makeExecutable</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@makeExecutable():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions#name" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="name:String"></a>
+      <a id="name:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">name</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@name:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a> → <a href="../build/BuildViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewNonMutatingFunctions">BuildViewNonMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#nodeName" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="nodeName:String"></a>
+      <a id="nodeName:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">nodeName</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@nodeName:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a> → <a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a></dd></dl></div>
+    </li><li name="com.atomist.graph.GraphNode#nodeTags" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="nodeTags:Set[String]"></a>
+      <a id="nodeTags:Set[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">nodeTags</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@nodeTags:Set[String]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Tags for the node, such as &quot;File&quot; or &quot;JavaType&quot;.</p><div class="fullcomment"><div class="comment cmt"><p>Tags for the node, such as &quot;File&quot; or &quot;JavaType&quot;. There may be multiple
+nodes in a tree with the same tags, and multiple tags on the one node.
+A common use of tags is type.
+</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>tags for the node.</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.atomist.rug.spi.ViewSupport#originalBackingObject" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="originalBackingObject:T"></a>
+      <a id="originalBackingObject:FileArtifact"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">originalBackingObject</span><span class="result">: <span class="extype" name="com.atomist.source.FileArtifact">FileArtifact</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@originalBackingObject:T" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../spi/ViewSupport.html" class="extype" name="com.atomist.rug.spi.ViewSupport">ViewSupport</a> → <a href="../../spi/MutableView.html" class="extype" name="com.atomist.rug.spi.MutableView">MutableView</a></dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions#packaging" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="packaging:String"></a>
+      <a id="packaging:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">packaging</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@packaging:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#parent" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="parent:com.atomist.rug.kind.core.ProjectMutableView"></a>
+      <a id="parent:ProjectMutableView"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parent</span><span class="result">: <a href="../core/ProjectMutableView.html" class="extype" name="com.atomist.rug.kind.core.ProjectMutableView">ProjectMutableView</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@parent:com.atomist.rug.kind.core.ProjectMutableView" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Override to make type more specific.</p><div class="fullcomment"><div class="comment cmt"><p>Override to make type more specific. Null if we're top level.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a> → <a href="../../spi/ViewSupport.html" class="extype" name="com.atomist.rug.spi.ViewSupport">ViewSupport</a> → <a href="../../spi/MutableView.html" class="extype" name="com.atomist.rug.spi.MutableView">MutableView</a> → <a href="../../../tree/PathAwareTreeNode.html" class="extype" name="com.atomist.tree.PathAwareTreeNode">PathAwareTreeNode</a> → <a href="../../../tree/ParentAwareTreeNode.html" class="extype" name="com.atomist.tree.ParentAwareTreeNode">ParentAwareTreeNode</a></dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions#parentArtifactId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="parentArtifactId:String"></a>
+      <a id="parentArtifactId:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parentArtifactId</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@parentArtifactId:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions#parentGroupId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="parentGroupId:String"></a>
+      <a id="parentGroupId:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parentGroupId</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@parentGroupId:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions#parentVersion" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="parentVersion:String"></a>
+      <a id="parentVersion:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parentVersion</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@parentVersion:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#path" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="path:String"></a>
+      <a id="path:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">path</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@path:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#permissions" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="permissions:Int"></a>
+      <a id="permissions:Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">permissions</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@permissions:Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.spi.ViewSupport#previousBackingObject" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="previousBackingObject:T"></a>
+      <a id="previousBackingObject:FileArtifact"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">previousBackingObject</span><span class="result">: <span class="extype" name="com.atomist.source.FileArtifact">FileArtifact</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@previousBackingObject:T" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../spi/ViewSupport.html" class="extype" name="com.atomist.rug.spi.ViewSupport">ViewSupport</a></dd></dl></div>
+    </li><li name="com.atomist.rug.spi.CommonViewOperations#println" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="println(msg:String):Unit"></a>
+      <a id="println(String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">println</span><span class="params">(<span name="msg">msg: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@println(msg:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Useful for debugging.</p><div class="fullcomment"><div class="comment cmt"><p>Useful for debugging.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../spi/CommonViewOperations.html" class="extype" name="com.atomist.rug.spi.CommonViewOperations">CommonViewOperations</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+                <span class="name">@Deprecated</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#project" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="project:com.atomist.rug.kind.core.ProjectMutableView"></a>
+      <a id="project:ProjectMutableView"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">project</span><span class="result">: <a href="../core/ProjectMutableView.html" class="extype" name="com.atomist.rug.kind.core.ProjectMutableView">ProjectMutableView</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@project:com.atomist.rug.kind.core.ProjectMutableView" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions#property" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="property(projectPropertyName:String):String"></a>
+      <a id="property(String):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">property</span><span class="params">(<span name="projectPropertyName">projectPropertyName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@property(projectPropertyName:String):String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a> → <a href="../build/BuildViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewNonMutatingFunctions">BuildViewNonMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.spi.ViewSupport#registerUpdater" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="registerUpdater(u:com.atomist.rug.spi.MutableView[T]=&gt;Unit):Unit"></a>
+      <a id="registerUpdater((MutableView[FileArtifact])⇒Unit):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">registerUpdater</span><span class="params">(<span name="u">u: (<a href="../../spi/MutableView.html" class="extype" name="com.atomist.rug.spi.MutableView">MutableView</a>[<span class="extype" name="com.atomist.source.FileArtifact">FileArtifact</span>]) ⇒ <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@registerUpdater(u:com.atomist.rug.spi.MutableView[T]=&gt;Unit):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Convenience method to register an update function.</p><div class="fullcomment"><div class="comment cmt"><p>Convenience method to register an update function.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../spi/ViewSupport.html" class="extype" name="com.atomist.rug.spi.ViewSupport">ViewSupport</a></dd></dl></div>
+    </li><li name="com.atomist.rug.spi.ViewSupport#registerUpdater" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="registerUpdater(u:com.atomist.rug.spi.Updater[T]):Unit"></a>
+      <a id="registerUpdater(Updater[FileArtifact]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">registerUpdater</span><span class="params">(<span name="u">u: <a href="../../spi/Updater.html" class="extype" name="com.atomist.rug.spi.Updater">Updater</a>[<span class="extype" name="com.atomist.source.FileArtifact">FileArtifact</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@registerUpdater(u:com.atomist.rug.spi.Updater[T]):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Register an updater that will be invoked before a call to currentObject.</p><div class="fullcomment"><div class="comment cmt"><p>Register an updater that will be invoked before a call to currentObject.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../spi/ViewSupport.html" class="extype" name="com.atomist.rug.spi.ViewSupport">ViewSupport</a> → <a href="../../spi/MutableView.html" class="extype" name="com.atomist.rug.spi.MutableView">MutableView</a></dd></dl></div>
+    </li><li name="com.atomist.tree.TreeNode#relatedNodeNames" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="relatedNodeNames:Set[String]"></a>
+      <a id="relatedNodeNames:Set[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">relatedNodeNames</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@relatedNodeNames:Set[String]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a> → <a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a></dd></dl></div>
+    </li><li name="com.atomist.tree.TreeNode#relatedNodeTypes" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="relatedNodeTypes:Set[String]"></a>
+      <a id="relatedNodeTypes:Set[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">relatedNodeTypes</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@relatedNodeTypes:Set[String]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a> → <a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a></dd></dl></div>
+    </li><li name="com.atomist.tree.TreeNode#relatedNodes" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="relatedNodes:Seq[com.atomist.graph.GraphNode]"></a>
+      <a id="relatedNodes:Seq[GraphNode]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">relatedNodes</span><span class="result">: <a href="../../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@relatedNodes:Seq[com.atomist.graph.GraphNode]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a> → <a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a></dd></dl></div>
+    </li><li name="com.atomist.tree.TreeNode#relatedNodesNamed" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="relatedNodesNamed(key:String):Seq[com.atomist.graph.GraphNode]"></a>
+      <a id="relatedNodesNamed(String):Seq[GraphNode]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">relatedNodesNamed</span><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="../../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@relatedNodesNamed(key:String):Seq[com.atomist.graph.GraphNode]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a> → <a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a></dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#removeDependency" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="removeDependency(groupId:String,artifactId:String):Unit"></a>
+      <a id="removeDependency(String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">removeDependency</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@removeDependency(groupId:String,artifactId:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a> → <a href="../build/BuildViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewMutatingFunctions">BuildViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#removeDependencyScope" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="removeDependencyScope(groupId:String,artifactId:String):Unit"></a>
+      <a id="removeDependencyScope(String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">removeDependencyScope</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@removeDependencyScope(groupId:String,artifactId:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#removeDependencyVersion" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="removeDependencyVersion(groupId:String,artifactId:String):Unit"></a>
+      <a id="removeDependencyVersion(String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">removeDependencyVersion</span><span class="params">(<span name="groupId">groupId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifactId">artifactId: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@removeDependencyVersion(groupId:String,artifactId:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a> → <a href="../build/BuildViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewMutatingFunctions">BuildViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#removeProperty" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="removeProperty(propertyName:String):Unit"></a>
+      <a id="removeProperty(String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">removeProperty</span><span class="params">(<span name="propertyName">propertyName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@removeProperty(propertyName:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a> → <a href="../build/BuildViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewMutatingFunctions">BuildViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#replaceParent" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="replaceParent(newParentBlock:String):Unit"></a>
+      <a id="replaceParent(String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">replaceParent</span><span class="params">(<span name="newParentBlock">newParentBlock: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@replaceParent(newParentBlock:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#setArtifactId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setArtifactId(newArtifactId:String):Unit"></a>
+      <a id="setArtifactId(String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setArtifactId</span><span class="params">(<span name="newArtifactId">newArtifactId: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@setArtifactId(newArtifactId:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a> → <a href="../build/BuildViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewMutatingFunctions">BuildViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#setDescription" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setDescription(newDescription:String):Unit"></a>
+      <a id="setDescription(String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setDescription</span><span class="params">(<span name="newDescription">newDescription: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@setDescription(newDescription:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a> → <a href="../build/BuildViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewMutatingFunctions">BuildViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#setGroupId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setGroupId(newGroupId:String):Unit"></a>
+      <a id="setGroupId(String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setGroupId</span><span class="params">(<span name="newGroupId">newGroupId: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@setGroupId(newGroupId:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a> → <a href="../build/BuildViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewMutatingFunctions">BuildViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#setName" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setName(name:String):Unit"></a>
+      <a id="setName(String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setName</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@setName(name:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a></dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#setPackaging" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setPackaging(newPackaging:String):Unit"></a>
+      <a id="setPackaging(String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setPackaging</span><span class="params">(<span name="newPackaging">newPackaging: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@setPackaging(newPackaging:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#setParentArtifactId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setParentArtifactId(newParentArtifactId:String):Unit"></a>
+      <a id="setParentArtifactId(String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setParentArtifactId</span><span class="params">(<span name="newParentArtifactId">newParentArtifactId: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@setParentArtifactId(newParentArtifactId:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#setParentGroupId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setParentGroupId(newParentGroupId:String):Unit"></a>
+      <a id="setParentGroupId(String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setParentGroupId</span><span class="params">(<span name="newParentGroupId">newParentGroupId: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@setParentGroupId(newParentGroupId:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#setParentVersion" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setParentVersion(newParentVersion:String):Unit"></a>
+      <a id="setParentVersion(String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setParentVersion</span><span class="params">(<span name="newParentVersion">newParentVersion: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@setParentVersion(newParentVersion:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView#setPath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setPath(newPath:String):Unit"></a>
+      <a id="setPath(String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setPath</span><span class="params">(<span name="newPath">newPath: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@setPath(newPath:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Not to be directly exposed to views in most cases.</p><div class="fullcomment"><div class="comment cmt"><p>Not to be directly exposed to views in most cases.
+</p></div><dl class="paramcmts block"><dt class="param">newPath</dt><dd class="cmt"><p>the new path</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/LazyFileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView">LazyFileArtifactBackedMutableView</a> → <a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a></dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#setProjectName" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setProjectName(newName:String):Unit"></a>
+      <a id="setProjectName(String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setProjectName</span><span class="params">(<span name="newName">newName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@setProjectName(newName:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a> → <a href="../build/BuildViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewMutatingFunctions">BuildViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.xml.XmlMutableView#setTextContentFor" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setTextContentFor(xpath:String,newContent:String):Unit"></a>
+      <a id="setTextContentFor(String,String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setTextContentFor</span><span class="params">(<span name="xpath">xpath: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="newContent">newContent: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@setTextContentFor(xpath:String,newContent:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../xml/XmlMutableView.html" class="extype" name="com.atomist.rug.kind.xml.XmlMutableView">XmlMutableView</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions#setVersion" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setVersion(newVersion:String):Unit"></a>
+      <a id="setVersion(String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setVersion</span><span class="params">(<span name="newVersion">newVersion: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@setVersion(newVersion:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a> → <a href="../build/BuildViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewMutatingFunctions">BuildViewMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.tree.TreeNode#significance" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="significance:com.atomist.tree.TreeNode.Significance"></a>
+      <a id="significance:Significance"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">significance</span><span class="result">: <a href="../../../tree/TreeNode$$Significance.html" class="extype" name="com.atomist.tree.TreeNode.Significance">Significance</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@significance:com.atomist.tree.TreeNode.Significance" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Is this tree node here to help other nodes
+hang together, or does it have significance
+to the user and the outside world?
+</p><div class="fullcomment"><div class="comment cmt"><p>Is this tree node here to help other nodes
+hang together, or does it have significance
+to the user and the outside world?
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a></dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@toString():String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a> → AnyRef → Any</dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#underPath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="underPath(root:String):Boolean"></a>
+      <a id="underPath(String):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">underPath</span><span class="params">(<span name="root">root: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@underPath(root:String):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#updateParent" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="updateParent():Unit"></a>
+      <a id="updateParent():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">updateParent</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@updateParent():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Update the parent after changing this class.</p><div class="fullcomment"><div class="comment cmt"><p>Update the parent after changing this class. Subclasses can override
+this implementation, which does nothing.
+</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a> → <a href="../../spi/ViewSupport.html" class="extype" name="com.atomist.rug.spi.ViewSupport">ViewSupport</a></dd></dl></div>
+    </li><li name="com.atomist.rug.spi.ViewSupport#updateTo" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="updateTo(newBackingObject:T):Unit"></a>
+      <a id="updateTo(FileArtifact):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">updateTo</span><span class="params">(<span name="newBackingObject">newBackingObject: <span class="extype" name="com.atomist.source.FileArtifact">FileArtifact</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@updateTo(newBackingObject:T):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Subclasses can call this to update the state of this object.</p><div class="fullcomment"><div class="comment cmt"><p>Subclasses can call this to update the state of this object.</p></div><dl class="paramcmts block"><dt class="param">newBackingObject</dt><dd class="cmt"><p>type of the underlying object</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../spi/ViewSupport.html" class="extype" name="com.atomist.rug.spi.ViewSupport">ViewSupport</a> → <a href="../../spi/MutableView.html" class="extype" name="com.atomist.rug.spi.MutableView">MutableView</a></dd></dl></div>
+    </li><li name="com.atomist.rug.spi.MutableView#value" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="value:String"></a>
+      <a id="value:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">value</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@value:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../spi/MutableView.html" class="extype" name="com.atomist.rug.spi.MutableView">MutableView</a> → <a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions#version" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="version:String"></a>
+      <a id="version:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">version</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@version:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a> → <a href="../build/BuildViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewNonMutatingFunctions">BuildViewNonMutatingFunctions</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.atomist.rug.kind.core.FileArtifactBackedMutableView#wellFormed" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wellFormed:Boolean"></a>
+      <a id="wellFormed:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wellFormed</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@wellFormed:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Subclasses should override this method to return whether or not their content is well-formed.</p><div class="fullcomment"><div class="comment cmt"><p>Subclasses should override this method to return whether or not their content is well-formed.
+</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a></dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Deprecated Value Members</h3>
+              <ol><li name="com.atomist.graph.GraphNode#nodeType" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="nodeType:Set[String]"></a>
+      <a id="nodeType:Set[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version 0.10.0) Please don't use this">nodeType</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.kind.pom.PomMutableView@nodeType:Set[String]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+                <span class="name">@<a href="../../spi/ExportFunction.html" class="extype" name="com.atomist.rug.spi.ExportFunction">ExportFunction</a></span><span class="args">()</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.10.0)</i> Please don't use this</p></dd></dl></div>
+    </li></ol>
+            </div>
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">
+              <h3>Inherited from <a href="PomMutableViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewMutatingFunctions">PomMutableViewMutatingFunctions</a></h3>
+            </div><div class="parent" name="com.atomist.rug.kind.build.BuildViewMutatingFunctions">
+              <h3>Inherited from <a href="../build/BuildViewMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewMutatingFunctions">BuildViewMutatingFunctions</a></h3>
+            </div><div class="parent" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">
+              <h3>Inherited from <a href="PomMutableViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.pom.PomMutableViewNonMutatingFunctions">PomMutableViewNonMutatingFunctions</a></h3>
+            </div><div class="parent" name="com.atomist.rug.kind.build.BuildViewNonMutatingFunctions">
+              <h3>Inherited from <a href="../build/BuildViewNonMutatingFunctions.html" class="extype" name="com.atomist.rug.kind.build.BuildViewNonMutatingFunctions">BuildViewNonMutatingFunctions</a></h3>
+            </div><div class="parent" name="com.atomist.rug.kind.xml.XmlMutableView">
+              <h3>Inherited from <a href="../xml/XmlMutableView.html" class="extype" name="com.atomist.rug.kind.xml.XmlMutableView">XmlMutableView</a></h3>
+            </div><div class="parent" name="com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView">
+              <h3>Inherited from <a href="../core/LazyFileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView">LazyFileArtifactBackedMutableView</a></h3>
+            </div><div class="parent" name="com.atomist.rug.spi.TerminalView">
+              <h3>Inherited from <a href="../../spi/TerminalView.html" class="extype" name="com.atomist.rug.spi.TerminalView">TerminalView</a>[<span class="extype" name="com.atomist.source.FileArtifact">FileArtifact</span>]</h3>
+            </div><div class="parent" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">
+              <h3>Inherited from <a href="../core/FileArtifactBackedMutableView.html" class="extype" name="com.atomist.rug.kind.core.FileArtifactBackedMutableView">FileArtifactBackedMutableView</a></h3>
+            </div><div class="parent" name="com.atomist.rug.kind.core.FileMetrics">
+              <h3>Inherited from <a href="../core/FileMetrics.html" class="extype" name="com.atomist.rug.kind.core.FileMetrics">FileMetrics</a></h3>
+            </div><div class="parent" name="com.atomist.rug.spi.ViewSupport">
+              <h3>Inherited from <a href="../../spi/ViewSupport.html" class="extype" name="com.atomist.rug.spi.ViewSupport">ViewSupport</a>[<span class="extype" name="com.atomist.source.FileArtifact">FileArtifact</span>]</h3>
+            </div><div class="parent" name="com.atomist.rug.kind.core.ChangeCounting">
+              <h3>Inherited from <a href="../core/ChangeCounting.html" class="extype" name="com.atomist.rug.kind.core.ChangeCounting">ChangeCounting</a></h3>
+            </div><div class="parent" name="com.atomist.rug.spi.CommonViewOperations">
+              <h3>Inherited from <a href="../../spi/CommonViewOperations.html" class="extype" name="com.atomist.rug.spi.CommonViewOperations">CommonViewOperations</a>[<span class="extype" name="com.atomist.source.FileArtifact">FileArtifact</span>]</h3>
+            </div><div class="parent" name="com.typesafe.scalalogging.LazyLogging">
+              <h3>Inherited from <span class="extype" name="com.typesafe.scalalogging.LazyLogging">LazyLogging</span></h3>
+            </div><div class="parent" name="com.atomist.rug.spi.MutableView">
+              <h3>Inherited from <a href="../../spi/MutableView.html" class="extype" name="com.atomist.rug.spi.MutableView">MutableView</a>[<span class="extype" name="com.atomist.source.FileArtifact">FileArtifact</span>]</h3>
+            </div><div class="parent" name="com.atomist.tree.ContainerTreeNode">
+              <h3>Inherited from <a href="../../../tree/ContainerTreeNode.html" class="extype" name="com.atomist.tree.ContainerTreeNode">ContainerTreeNode</a></h3>
+            </div><div class="parent" name="com.atomist.tree.PathAwareTreeNode">
+              <h3>Inherited from <a href="../../../tree/PathAwareTreeNode.html" class="extype" name="com.atomist.tree.PathAwareTreeNode">PathAwareTreeNode</a></h3>
+            </div><div class="parent" name="com.atomist.tree.AddressableTreeNode">
+              <h3>Inherited from <a href="../../../tree/AddressableTreeNode.html" class="extype" name="com.atomist.tree.AddressableTreeNode">AddressableTreeNode</a></h3>
+            </div><div class="parent" name="com.atomist.graph.AddressableGraphNode">
+              <h3>Inherited from <a href="../../../graph/AddressableGraphNode.html" class="extype" name="com.atomist.graph.AddressableGraphNode">AddressableGraphNode</a></h3>
+            </div><div class="parent" name="com.atomist.tree.ParentAwareTreeNode">
+              <h3>Inherited from <a href="../../../tree/ParentAwareTreeNode.html" class="extype" name="com.atomist.tree.ParentAwareTreeNode">ParentAwareTreeNode</a></h3>
+            </div><div class="parent" name="com.atomist.tree.TreeNode">
+              <h3>Inherited from <a href="../../../tree/TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a></h3>
+            </div><div class="parent" name="com.atomist.graph.GraphNode">
+              <h3>Inherited from <a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a></h3>
+            </div><div class="parent" name="com.atomist.util.Visitable">
+              <h3>Inherited from <a href="../../../util/Visitable.html" class="extype" name="com.atomist.util.Visitable">Visitable</a></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

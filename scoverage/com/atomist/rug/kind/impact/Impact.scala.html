@@ -1,0 +1,2232 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/impact/Impact.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.impact
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.kind.core.{FileMutableView, ProjectMutableView}
+</span>5 <span style=''>import com.atomist.rug.spi.{ExportFunction, TypeProvider}
+</span>6 <span style=''>import com.atomist.source._
+</span>7 <span style=''>import com.atomist.tree.{ParentAwareTreeNode, SimpleTerminalTreeNode, TreeNode}
+</span>8 <span style=''>
+</span>9 <span style=''>/**
+</span>10 <span style=''>  * Represents the impact of one or more changes to a project.
+</span>11 <span style=''>  * Allows finding file deltas (&quot;files&quot;), and the changed (new or updated) files (&quot;changed&quot;).
+</span>12 <span style=''>  */
+</span>13 <span style=''>class Impact(_parent: GraphNode, _before: ArtifactSource, _after: ArtifactSource)
+</span>14 <span style=''>  extends TreeNode {
+</span>15 <span style=''>
+</span>16 <span style=''>  private lazy val deltas: Deltas = </span><span style='background: #AEF1AE'>_after Δ _before</span><span style=''>
+</span>17 <span style=''>
+</span>18 <span style=''>  private lazy val beforeProject = </span><span style='background: #AEF1AE'>new ProjectMutableView(_before)</span><span style=''>
+</span>19 <span style=''>
+</span>20 <span style=''>  private lazy val afterProject = </span><span style='background: #AEF1AE'>new ProjectMutableView(_after)</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Project before impact&quot;, exposeAsProperty = true)
+</span>23 <span style=''>  def before: ProjectMutableView = beforeProject
+</span>24 <span style=''>
+</span>25 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Project after impact&quot;, exposeAsProperty = true)
+</span>26 <span style=''>  def after: ProjectMutableView = afterProject
+</span>27 <span style=''>
+</span>28 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Parent of the impact&quot;, exposeAsProperty = true)
+</span>29 <span style=''>  def parent: GraphNode = </span><span style='background: #F0ADAD'>_parent</span><span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>  override def nodeName: String = </span><span style='background: #F0ADAD'>&quot;impact&quot;</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>  override def value: String = </span><span style='background: #F0ADAD'>???</span><span style=''>
+</span>34 <span style=''>
+</span>35 <span style=''>  override def childrenNamed(key: String): Seq[TreeNode] = key match {
+</span>36 <span style=''>    case &quot;files&quot; =&gt;
+</span>37 <span style=''>      </span><span style='background: #AEF1AE'>files</span><span style=''>
+</span>38 <span style=''>    case &quot;changed&quot; =&gt;
+</span>39 <span style=''>      </span><span style='background: #F0ADAD'>Seq(changed)</span><span style=''>
+</span>40 <span style=''>    case _ =&gt; </span><span style='background: #F0ADAD'>Nil</span><span style=''>
+</span>41 <span style=''>  }
+</span>42 <span style=''>
+</span>43 <span style=''>  @ExportFunction(readOnly = true, description = &quot;File impacts in this commit&quot;, exposeAsProperty = true)
+</span>44 <span style=''>  def files: Seq[FileImpact] =
+</span>45 <span style=''>    </span><span style='background: #AEF1AE'>deltas.deltas collect {
+</span>46 <span style=''></span><span style='background: #AEF1AE'>      case fad: FileAdditionDelta =&gt;
+</span>47 <span style=''></span><span style='background: #AEF1AE'>        new FileAddition(this, new FileMutableView(fad.newFile, afterProject))
+</span>48 <span style=''></span><span style='background: #AEF1AE'>      case fud: FileUpdateDelta =&gt;
+</span>49 <span style=''></span><span style='background: #AEF1AE'>        new FileUpdate(this, new FileMutableView(fud.oldFile, beforeProject), new FileMutableView(fud.updatedFile, afterProject))
+</span>50 <span style=''></span><span style='background: #AEF1AE'>      case fdd: FileDeletionDelta =&gt;
+</span>51 <span style=''></span><span style='background: #AEF1AE'>        new FileDeletion(this, new FileMutableView(fdd.oldFile, beforeProject))
+</span>52 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>53 <span style=''>
+</span>54 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Virtual project composed of files changed in this commit&quot;, exposeAsProperty = true)
+</span>55 <span style=''>  def changed: ProjectMutableView = {
+</span>56 <span style=''>    val filesToInclude =
+</span>57 <span style=''>      </span><span style='background: #AEF1AE'>deltas.deltas collect {
+</span>58 <span style=''></span><span style='background: #AEF1AE'>        case fad: FileAdditionDelta =&gt;
+</span>59 <span style=''></span><span style='background: #AEF1AE'>          fad.newFile
+</span>60 <span style=''></span><span style='background: #AEF1AE'>        case fud: FileUpdateDelta =&gt;
+</span>61 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>fud.updatedFile</span><span style='background: #AEF1AE'>
+</span>62 <span style=''></span><span style='background: #AEF1AE'>      }</span><span style=''>
+</span>63 <span style=''>    </span><span style='background: #AEF1AE'>new ProjectMutableView(new SimpleFileBasedArtifactSource(_after.id, filesToInclude))</span><span style=''>
+</span>64 <span style=''>  }
+</span>65 <span style=''>
+</span>66 <span style=''>  override val childNodeNames: Set[String] = </span><span style='background: #AEF1AE'>Set(&quot;files&quot;, &quot;changed&quot;, &quot;before&quot;, &quot;after&quot;)</span><span style=''>
+</span>67 <span style=''>
+</span>68 <span style=''>  override val childNodeTypes: Set[String] = </span><span style='background: #AEF1AE'>Set(&quot;FileImpact&quot;, &quot;FileAddition&quot;, &quot;FileUpdate&quot;, &quot;FileDeletion&quot;)</span><span style=''>
+</span>69 <span style=''>
+</span>70 <span style=''>  override def toString =
+</span>71 <span style=''>    </span><span style='background: #F0ADAD'>s&quot;Impact: fileImpacts=${files.mkString(&quot;,&quot;)}&quot;</span><span style=''>
+</span>72 <span style=''>
+</span>73 <span style=''>}
+</span>74 <span style=''>
+</span>75 <span style=''>abstract class FileImpact(_parent: TreeNode) extends ParentAwareTreeNode {
+</span>76 <span style=''>
+</span>77 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Path to the file&quot;, exposeAsProperty = true)
+</span>78 <span style=''>  def path: String
+</span>79 <span style=''>
+</span>80 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Parent&quot;, exposeAsProperty = true)
+</span>81 <span style=''>  override def parent: TreeNode = </span><span style='background: #F0ADAD'>_parent</span><span style=''>
+</span>82 <span style=''>
+</span>83 <span style=''>  override def value: String = </span><span style='background: #F0ADAD'>???</span><span style=''>
+</span>84 <span style=''>
+</span>85 <span style=''>  override def nodeName: String = </span><span style='background: #F0ADAD'>getClass.getSimpleName</span><span style=''>
+</span>86 <span style=''>
+</span>87 <span style=''>  override def toString = </span><span style='background: #F0ADAD'>s&quot;${getClass.getSimpleName}:$path&quot;</span><span style=''>
+</span>88 <span style=''>
+</span>89 <span style=''>}
+</span>90 <span style=''>
+</span>91 <span style=''>class FileAdditionTypeProvider extends TypeProvider(classOf[FileAddition]) {
+</span>92 <span style=''>
+</span>93 <span style=''>  override def description: String = </span><span style='background: #AEF1AE'>&quot;File addition&quot;</span><span style=''>
+</span>94 <span style=''>}
+</span>95 <span style=''>
+</span>96 <span style=''>class FileAddition(_parent: Impact, newFile: FileMutableView)
+</span>97 <span style=''>  extends FileImpact(_parent) {
+</span>98 <span style=''>
+</span>99 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Path to the file&quot;, exposeAsProperty = true)
+</span>100 <span style=''>  override def path: String = </span><span style='background: #AEF1AE'>newFile.path</span><span style=''>
+</span>101 <span style=''>
+</span>102 <span style=''>  @ExportFunction(readOnly = true, description = &quot;File&quot;, exposeAsProperty = true)
+</span>103 <span style=''>  def file: FileMutableView = </span><span style='background: #AEF1AE'>newFile</span><span style=''>
+</span>104 <span style=''>
+</span>105 <span style=''>  override def childrenNamed(key: String): Seq[TreeNode] = key match {
+</span>106 <span style=''>    case &quot;file&quot; =&gt;
+</span>107 <span style=''>      </span><span style='background: #AEF1AE'>Seq(file)</span><span style=''>
+</span>108 <span style=''>    case &quot;path&quot; =&gt;
+</span>109 <span style=''>      </span><span style='background: #AEF1AE'>Seq(SimpleTerminalTreeNode(&quot;path&quot;, path))</span><span style=''>
+</span>110 <span style=''>    case _ =&gt; </span><span style='background: #F0ADAD'>Nil</span><span style=''>
+</span>111 <span style=''>  }
+</span>112 <span style=''>
+</span>113 <span style=''>  override val childNodeNames: Set[String] = </span><span style='background: #AEF1AE'>Set(&quot;file&quot;, &quot;path&quot;)</span><span style=''>
+</span>114 <span style=''>
+</span>115 <span style=''>  override def childNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>Set(&quot;File&quot;)</span><span style=''>
+</span>116 <span style=''>
+</span>117 <span style=''>}
+</span>118 <span style=''>
+</span>119 <span style=''>class FileUpdateTypeProvider extends TypeProvider(classOf[FileUpdate]) {
+</span>120 <span style=''>
+</span>121 <span style=''>  override def description: String = </span><span style='background: #AEF1AE'>&quot;File update&quot;</span><span style=''>
+</span>122 <span style=''>}
+</span>123 <span style=''>
+</span>124 <span style=''>class FileUpdate(_parent: Impact, oldFile: FileMutableView, newFile: FileMutableView)
+</span>125 <span style=''>  extends FileImpact(_parent) {
+</span>126 <span style=''>
+</span>127 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Path to the file&quot;, exposeAsProperty = true)
+</span>128 <span style=''>  override def path: String = </span><span style='background: #AEF1AE'>oldFile.path</span><span style=''>
+</span>129 <span style=''>
+</span>130 <span style=''>  @ExportFunction(readOnly = true, description = &quot;File&quot;, exposeAsProperty = true)
+</span>131 <span style=''>  def old: FileMutableView = </span><span style='background: #AEF1AE'>oldFile</span><span style=''>
+</span>132 <span style=''>
+</span>133 <span style=''>  @ExportFunction(readOnly = true, description = &quot;File&quot;, exposeAsProperty = true)
+</span>134 <span style=''>  def now: FileMutableView = </span><span style='background: #AEF1AE'>newFile</span><span style=''>
+</span>135 <span style=''>
+</span>136 <span style=''>  override def childrenNamed(key: String): Seq[TreeNode] = key match {
+</span>137 <span style=''>    case &quot;path&quot; =&gt;
+</span>138 <span style=''>      </span><span style='background: #AEF1AE'>Seq(SimpleTerminalTreeNode(&quot;path&quot;, path))</span><span style=''>
+</span>139 <span style=''>    case &quot;old&quot; =&gt;
+</span>140 <span style=''>      </span><span style='background: #F0ADAD'>Seq(old)</span><span style=''>
+</span>141 <span style=''>    case &quot;new&quot; =&gt;
+</span>142 <span style=''>      </span><span style='background: #AEF1AE'>Seq(now)</span><span style=''>
+</span>143 <span style=''>    case _ =&gt; </span><span style='background: #F0ADAD'>Nil</span><span style=''>
+</span>144 <span style=''>  }
+</span>145 <span style=''>
+</span>146 <span style=''>  override val childNodeNames: Set[String] = </span><span style='background: #AEF1AE'>Set(&quot;path&quot;, &quot;old&quot;, &quot;new&quot;)</span><span style=''>
+</span>147 <span style=''>
+</span>148 <span style=''>  override def childNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>Set(&quot;File&quot;)</span><span style=''>
+</span>149 <span style=''>
+</span>150 <span style=''>}
+</span>151 <span style=''>
+</span>152 <span style=''>
+</span>153 <span style=''>class FileDeletionTypeProvider extends TypeProvider(classOf[FileDeletion]) {
+</span>154 <span style=''>
+</span>155 <span style=''>  override def description: String = </span><span style='background: #F0ADAD'>&quot;File deletion&quot;</span><span style=''>
+</span>156 <span style=''>}
+</span>157 <span style=''>
+</span>158 <span style=''>class FileDeletion(_parent: Impact, oldFile: FileMutableView)
+</span>159 <span style=''>  extends FileImpact(_parent) {
+</span>160 <span style=''>
+</span>161 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Path to the file&quot;, exposeAsProperty = true)
+</span>162 <span style=''>  override def path: String = </span><span style='background: #AEF1AE'>oldFile.path</span><span style=''>
+</span>163 <span style=''>
+</span>164 <span style=''>  @ExportFunction(readOnly = true, description = &quot;File&quot;, exposeAsProperty = true)
+</span>165 <span style=''>  def file: FileMutableView = </span><span style='background: #F0ADAD'>oldFile</span><span style=''>
+</span>166 <span style=''>
+</span>167 <span style=''>  override def childrenNamed(key: String): Seq[TreeNode] = key match {
+</span>168 <span style=''>    case &quot;file&quot; =&gt;
+</span>169 <span style=''>      </span><span style='background: #F0ADAD'>Seq(file)</span><span style=''>
+</span>170 <span style=''>    case &quot;path&quot; =&gt;
+</span>171 <span style=''>      </span><span style='background: #AEF1AE'>Seq(SimpleTerminalTreeNode(&quot;path&quot;, path))</span><span style=''>
+</span>172 <span style=''>    case _ =&gt; </span><span style='background: #F0ADAD'>Nil</span><span style=''>
+</span>173 <span style=''>  }
+</span>174 <span style=''>
+</span>175 <span style=''>  override val childNodeNames: Set[String] = </span><span style='background: #AEF1AE'>Set(&quot;file&quot;, &quot;path&quot;)</span><span style=''>
+</span>176 <span style=''>
+</span>177 <span style=''>  override def childNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>Set(&quot;File&quot;)</span><span style=''>
+</span>178 <span style=''>
+</span>179 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          1578
+        </td>
+        <td>
+          616
+          -
+          632
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.Δ
+        </td>
+        <td style="background: #AEF1AE">
+          Impact.this._after.Δ(Impact.this._before)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          1577
+        </td>
+        <td>
+          625
+          -
+          632
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.Impact._before
+        </td>
+        <td style="background: #AEF1AE">
+          Impact.this._before
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1580
+        </td>
+        <td>
+          669
+          -
+          700
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.kind.core.ProjectMutableView(Impact.this._before)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1579
+        </td>
+        <td>
+          692
+          -
+          699
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.Impact._before
+        </td>
+        <td style="background: #AEF1AE">
+          Impact.this._before
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1581
+        </td>
+        <td>
+          759
+          -
+          765
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.Impact._after
+        </td>
+        <td style="background: #AEF1AE">
+          Impact.this._after
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1582
+        </td>
+        <td>
+          736
+          -
+          766
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.kind.core.ProjectMutableView(Impact.this._after)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1583
+        </td>
+        <td>
+          1187
+          -
+          1194
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.Impact._parent
+        </td>
+        <td style="background: #F0ADAD">
+          Impact.this._parent
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1584
+        </td>
+        <td>
+          1230
+          -
+          1238
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;impact&quot;
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1585
+        </td>
+        <td>
+          1271
+          -
+          1274
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1586
+        </td>
+        <td>
+          1373
+          -
+          1378
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.Impact.files
+        </td>
+        <td style="background: #AEF1AE">
+          Impact.this.files
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1587
+        </td>
+        <td>
+          1411
+          -
+          1418
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.Impact.changed
+        </td>
+        <td style="background: #F0ADAD">
+          Impact.this.changed
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1588
+        </td>
+        <td>
+          1407
+          -
+          1419
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[com.atomist.rug.kind.core.ProjectMutableView](Impact.this.changed)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1589
+        </td>
+        <td>
+          1434
+          -
+          1437
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1602
+        </td>
+        <td>
+          1597
+          -
+          1597
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.kind.impact.FileImpact]
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1601
+        </td>
+        <td>
+          1605
+          -
+          1605
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.Impact.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1603
+        </td>
+        <td>
+          1583
+          -
+          2010
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          Impact.this.deltas.deltas.collect[com.atomist.rug.kind.impact.FileImpact, Seq[com.atomist.rug.kind.impact.FileImpact]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.source.Delta,com.atomist.rug.kind.impact.FileImpact] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.source.Delta =&gt; com.atomist.rug.kind.impact.FileImpact&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.source.Delta, B1 &gt;: com.atomist.rug.kind.impact.FileImpact](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[com.atomist.source.Delta]: com.atomist.source.Delta): com.atomist.source.Delta @unchecked) match {
+      case (fad @ (_: com.atomist.source.FileAdditionDelta)) =&gt; new FileAddition(this, new com.atomist.rug.kind.core.FileMutableView(fad.newFile, Impact.this.afterProject))
+      case (fud @ (_: com.atomist.source.FileUpdateDelta)) =&gt; new FileUpdate(this, new com.atomist.rug.kind.core.FileMutableView(fud.oldFile, Impact.this.beforeProject), new com.atomist.rug.kind.core.FileMutableView(fud.updatedFile, Impact.this.afterProject))
+      case (fdd @ (_: com.atomist.source.FileDeletionDelta)) =&gt; new FileDeletion(this, new com.atomist.rug.kind.core.FileMutableView(fdd.oldFile, Impact.this.beforeProject))
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: com.atomist.source.Delta): Boolean = ((x1.asInstanceOf[com.atomist.source.Delta]: com.atomist.source.Delta): com.atomist.source.Delta @unchecked) match {
+      case (fad @ (_: com.atomist.source.FileAdditionDelta)) =&gt; true
+      case (fud @ (_: com.atomist.source.FileUpdateDelta)) =&gt; true
+      case (fdd @ (_: com.atomist.source.FileDeletionDelta)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.source.Delta,com.atomist.rug.kind.impact.FileImpact]))(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.impact.FileImpact])
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1590
+        </td>
+        <td>
+          1695
+          -
+          1706
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileAdditionDelta.newFile
+        </td>
+        <td style="background: #AEF1AE">
+          fad.newFile
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1592
+        </td>
+        <td>
+          1652
+          -
+          1722
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.FileAddition.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new FileAddition(this, new com.atomist.rug.kind.core.FileMutableView(fad.newFile, Impact.this.afterProject))
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1591
+        </td>
+        <td>
+          1675
+          -
+          1721
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.kind.core.FileMutableView(fad.newFile, Impact.this.afterProject)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1596
+        </td>
+        <td>
+          1836
+          -
+          1886
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.kind.core.FileMutableView(fud.updatedFile, Impact.this.afterProject)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1593
+        </td>
+        <td>
+          1807
+          -
+          1818
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileUpdateDelta.oldFile
+        </td>
+        <td style="background: #AEF1AE">
+          fud.oldFile
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1595
+        </td>
+        <td>
+          1856
+          -
+          1871
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileUpdateDelta.updatedFile
+        </td>
+        <td style="background: #AEF1AE">
+          fud.updatedFile
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1597
+        </td>
+        <td>
+          1766
+          -
+          1887
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.FileUpdate.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new FileUpdate(this, new com.atomist.rug.kind.core.FileMutableView(fud.oldFile, Impact.this.beforeProject), new com.atomist.rug.kind.core.FileMutableView(fud.updatedFile, Impact.this.afterProject))
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1594
+        </td>
+        <td>
+          1787
+          -
+          1834
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.kind.core.FileMutableView(fud.oldFile, Impact.this.beforeProject)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          1599
+        </td>
+        <td>
+          1956
+          -
+          2003
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.kind.core.FileMutableView(fdd.oldFile, Impact.this.beforeProject)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          1598
+        </td>
+        <td>
+          1976
+          -
+          1987
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileDeletionDelta.oldFile
+        </td>
+        <td style="background: #AEF1AE">
+          fdd.oldFile
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          1600
+        </td>
+        <td>
+          1933
+          -
+          2004
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.FileDeletion.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new FileDeletion(this, new com.atomist.rug.kind.core.FileMutableView(fdd.oldFile, Impact.this.beforeProject))
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          1608
+        </td>
+        <td>
+          2215
+          -
+          2370
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          Impact.this.deltas.deltas.collect[com.atomist.source.FileArtifact, Seq[com.atomist.source.FileArtifact]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.source.Delta,com.atomist.source.FileArtifact] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.source.Delta =&gt; com.atomist.source.FileArtifact&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.source.Delta, B1 &gt;: com.atomist.source.FileArtifact](x2: A1, default: A1 =&gt; B1): B1 = ((x2.asInstanceOf[com.atomist.source.Delta]: com.atomist.source.Delta): com.atomist.source.Delta @unchecked) match {
+      case (fad @ (_: com.atomist.source.FileAdditionDelta)) =&gt; fad.newFile
+      case (fud @ (_: com.atomist.source.FileUpdateDelta)) =&gt; fud.updatedFile
+      case (defaultCase$ @ _) =&gt; default.apply(x2)
+    };
+    final def isDefinedAt(x2: com.atomist.source.Delta): Boolean = ((x2.asInstanceOf[com.atomist.source.Delta]: com.atomist.source.Delta): com.atomist.source.Delta @unchecked) match {
+      case (fad @ (_: com.atomist.source.FileAdditionDelta)) =&gt; true
+      case (fud @ (_: com.atomist.source.FileUpdateDelta)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.source.Delta,com.atomist.source.FileArtifact]))(collection.this.Seq.canBuildFrom[com.atomist.source.FileArtifact])
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          1607
+        </td>
+        <td>
+          2229
+          -
+          2229
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.source.FileArtifact]
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          1606
+        </td>
+        <td>
+          2237
+          -
+          2237
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.Impact.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1604
+        </td>
+        <td>
+          2288
+          -
+          2299
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileAdditionDelta.newFile
+        </td>
+        <td style="background: #AEF1AE">
+          fad.newFile
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          1605
+        </td>
+        <td>
+          2347
+          -
+          2362
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileUpdateDelta.updatedFile
+        </td>
+        <td style="background: #F0ADAD">
+          fud.updatedFile
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1611
+        </td>
+        <td>
+          2398
+          -
+          2398
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.SimpleFileBasedArtifactSource.&lt;init&gt;$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          source.this.SimpleFileBasedArtifactSource.&lt;init&gt;$default$4
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1610
+        </td>
+        <td>
+          2398
+          -
+          2398
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.SimpleFileBasedArtifactSource.&lt;init&gt;$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          source.this.SimpleFileBasedArtifactSource.&lt;init&gt;$default$3
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1613
+        </td>
+        <td>
+          2375
+          -
+          2459
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.kind.core.ProjectMutableView(new com.atomist.source.SimpleFileBasedArtifactSource(Impact.this._after.id, filesToInclude, source.this.SimpleFileBasedArtifactSource.&lt;init&gt;$default$3, source.this.SimpleFileBasedArtifactSource.&lt;init&gt;$default$4))
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1609
+        </td>
+        <td>
+          2432
+          -
+          2441
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.id
+        </td>
+        <td style="background: #AEF1AE">
+          Impact.this._after.id
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1612
+        </td>
+        <td>
+          2398
+          -
+          2458
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.SimpleFileBasedArtifactSource.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.source.SimpleFileBasedArtifactSource(Impact.this._after.id, filesToInclude, source.this.SimpleFileBasedArtifactSource.&lt;init&gt;$default$3, source.this.SimpleFileBasedArtifactSource.&lt;init&gt;$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          1614
+        </td>
+        <td>
+          2510
+          -
+          2552
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](&quot;files&quot;, &quot;changed&quot;, &quot;before&quot;, &quot;after&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          1615
+        </td>
+        <td>
+          2599
+          -
+          2662
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](&quot;FileImpact&quot;, &quot;FileAddition&quot;, &quot;FileUpdate&quot;, &quot;FileDeletion&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1617
+        </td>
+        <td>
+          2738
+          -
+          2739
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1619
+        </td>
+        <td>
+          2694
+          -
+          2739
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Impact: fileImpacts=&quot;, &quot;&quot;).s(Impact.this.files.mkString(&quot;,&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1616
+        </td>
+        <td>
+          2696
+          -
+          2717
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Impact: fileImpacts=&quot;
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1618
+        </td>
+        <td>
+          2718
+          -
+          2737
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          Impact.this.files.mkString(&quot;,&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          1620
+        </td>
+        <td>
+          3052
+          -
+          3059
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.FileImpact._parent
+        </td>
+        <td style="background: #F0ADAD">
+          FileImpact.this._parent
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1621
+        </td>
+        <td>
+          3092
+          -
+          3095
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1622
+        </td>
+        <td>
+          3131
+          -
+          3153
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getSimpleName
+        </td>
+        <td style="background: #F0ADAD">
+          FileImpact.this.getClass().getSimpleName()
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          1623
+        </td>
+        <td>
+          3183
+          -
+          3184
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          1626
+        </td>
+        <td>
+          3185
+          -
+          3207
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getSimpleName
+        </td>
+        <td style="background: #F0ADAD">
+          FileImpact.this.getClass().getSimpleName()
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          1628
+        </td>
+        <td>
+          3181
+          -
+          3215
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;:&quot;, &quot;&quot;).s(FileImpact.this.getClass().getSimpleName(), FileImpact.this.path)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          1625
+        </td>
+        <td>
+          3214
+          -
+          3215
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          1624
+        </td>
+        <td>
+          3208
+          -
+          3210
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;:&quot;
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          1627
+        </td>
+        <td>
+          3210
+          -
+          3214
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.FileImpact.path
+        </td>
+        <td style="background: #F0ADAD">
+          FileImpact.this.path
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1629
+        </td>
+        <td>
+          3335
+          -
+          3350
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;File addition&quot;
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          1630
+        </td>
+        <td>
+          3573
+          -
+          3585
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.path
+        </td>
+        <td style="background: #AEF1AE">
+          FileAddition.this.newFile.path
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          1631
+        </td>
+        <td>
+          3699
+          -
+          3706
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.FileAddition.newFile
+        </td>
+        <td style="background: #AEF1AE">
+          FileAddition.this.newFile
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          1632
+        </td>
+        <td>
+          3808
+          -
+          3812
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.FileAddition.file
+        </td>
+        <td style="background: #AEF1AE">
+          FileAddition.this.file
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          1633
+        </td>
+        <td>
+          3804
+          -
+          3813
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.kind.core.FileMutableView](FileAddition.this.file)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          1638
+        </td>
+        <td>
+          3839
+          -
+          3880
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.tree.SimpleTerminalTreeNode](com.atomist.tree.SimpleTerminalTreeNode.apply(&quot;path&quot;, FileAddition.this.path, com.atomist.tree.SimpleTerminalTreeNode.apply$default$3))
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          1635
+        </td>
+        <td>
+          3874
+          -
+          3878
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.FileAddition.path
+        </td>
+        <td style="background: #AEF1AE">
+          FileAddition.this.path
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          1634
+        </td>
+        <td>
+          3866
+          -
+          3872
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;path&quot;
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          1637
+        </td>
+        <td>
+          3843
+          -
+          3879
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.SimpleTerminalTreeNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.SimpleTerminalTreeNode.apply(&quot;path&quot;, FileAddition.this.path, com.atomist.tree.SimpleTerminalTreeNode.apply$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          1636
+        </td>
+        <td>
+          3843
+          -
+          3843
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.SimpleTerminalTreeNode.apply$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.SimpleTerminalTreeNode.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          1639
+        </td>
+        <td>
+          3895
+          -
+          3898
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          1640
+        </td>
+        <td>
+          3949
+          -
+          3968
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](&quot;file&quot;, &quot;path&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          1641
+        </td>
+        <td>
+          4015
+          -
+          4026
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.Set.apply[String](&quot;File&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          1642
+        </td>
+        <td>
+          4142
+          -
+          4155
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;File update&quot;
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          1643
+        </td>
+        <td>
+          4402
+          -
+          4414
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.path
+        </td>
+        <td style="background: #AEF1AE">
+          FileUpdate.this.oldFile.path
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          1644
+        </td>
+        <td>
+          4527
+          -
+          4534
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.FileUpdate.oldFile
+        </td>
+        <td style="background: #AEF1AE">
+          FileUpdate.this.oldFile
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          1645
+        </td>
+        <td>
+          4647
+          -
+          4654
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.FileUpdate.newFile
+        </td>
+        <td style="background: #AEF1AE">
+          FileUpdate.this.newFile
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          1647
+        </td>
+        <td>
+          4787
+          -
+          4791
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.FileUpdate.path
+        </td>
+        <td style="background: #AEF1AE">
+          FileUpdate.this.path
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          1650
+        </td>
+        <td>
+          4752
+          -
+          4793
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.tree.SimpleTerminalTreeNode](com.atomist.tree.SimpleTerminalTreeNode.apply(&quot;path&quot;, FileUpdate.this.path, com.atomist.tree.SimpleTerminalTreeNode.apply$default$3))
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          1646
+        </td>
+        <td>
+          4779
+          -
+          4785
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;path&quot;
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          1649
+        </td>
+        <td>
+          4756
+          -
+          4792
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.SimpleTerminalTreeNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.SimpleTerminalTreeNode.apply(&quot;path&quot;, FileUpdate.this.path, com.atomist.tree.SimpleTerminalTreeNode.apply$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          1648
+        </td>
+        <td>
+          4756
+          -
+          4756
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.SimpleTerminalTreeNode.apply$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.SimpleTerminalTreeNode.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          1652
+        </td>
+        <td>
+          4818
+          -
+          4826
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[com.atomist.rug.kind.core.FileMutableView](FileUpdate.this.old)
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          1651
+        </td>
+        <td>
+          4822
+          -
+          4825
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.FileUpdate.old
+        </td>
+        <td style="background: #F0ADAD">
+          FileUpdate.this.old
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          1653
+        </td>
+        <td>
+          4855
+          -
+          4858
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.FileUpdate.now
+        </td>
+        <td style="background: #AEF1AE">
+          FileUpdate.this.now
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          1654
+        </td>
+        <td>
+          4851
+          -
+          4859
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.kind.core.FileMutableView](FileUpdate.this.now)
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          1655
+        </td>
+        <td>
+          4874
+          -
+          4877
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          1656
+        </td>
+        <td>
+          4928
+          -
+          4953
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](&quot;path&quot;, &quot;old&quot;, &quot;new&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          1657
+        </td>
+        <td>
+          5000
+          -
+          5011
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.Set.apply[String](&quot;File&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          1658
+        </td>
+        <td>
+          5132
+          -
+          5147
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;File deletion&quot;
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          1659
+        </td>
+        <td>
+          5370
+          -
+          5382
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.path
+        </td>
+        <td style="background: #AEF1AE">
+          FileDeletion.this.oldFile.path
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          1660
+        </td>
+        <td>
+          5496
+          -
+          5503
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.FileDeletion.oldFile
+        </td>
+        <td style="background: #F0ADAD">
+          FileDeletion.this.oldFile
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          1662
+        </td>
+        <td>
+          5601
+          -
+          5610
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[com.atomist.rug.kind.core.FileMutableView](FileDeletion.this.file)
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          1661
+        </td>
+        <td>
+          5605
+          -
+          5609
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.FileDeletion.file
+        </td>
+        <td style="background: #F0ADAD">
+          FileDeletion.this.file
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          1665
+        </td>
+        <td>
+          5640
+          -
+          5640
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.SimpleTerminalTreeNode.apply$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.SimpleTerminalTreeNode.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          1664
+        </td>
+        <td>
+          5671
+          -
+          5675
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.FileDeletion.path
+        </td>
+        <td style="background: #AEF1AE">
+          FileDeletion.this.path
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          1667
+        </td>
+        <td>
+          5636
+          -
+          5677
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.tree.SimpleTerminalTreeNode](com.atomist.tree.SimpleTerminalTreeNode.apply(&quot;path&quot;, FileDeletion.this.path, com.atomist.tree.SimpleTerminalTreeNode.apply$default$3))
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          1666
+        </td>
+        <td>
+          5640
+          -
+          5676
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.SimpleTerminalTreeNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.SimpleTerminalTreeNode.apply(&quot;path&quot;, FileDeletion.this.path, com.atomist.tree.SimpleTerminalTreeNode.apply$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          1663
+        </td>
+        <td>
+          5663
+          -
+          5669
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;path&quot;
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          1668
+        </td>
+        <td>
+          5692
+          -
+          5695
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          1669
+        </td>
+        <td>
+          5746
+          -
+          5765
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](&quot;file&quot;, &quot;path&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          1670
+        </td>
+        <td>
+          5812
+          -
+          5823
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.Set.apply[String](&quot;File&quot;)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

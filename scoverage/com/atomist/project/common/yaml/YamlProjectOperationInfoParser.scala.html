@@ -1,0 +1,1270 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/project/common/yaml/YamlProjectOperationInfoParser.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.project.common.yaml
+</span>2 <span style=''>
+</span>3 <span style=''>import java.util.regex.{Pattern, PatternSyntaxException}
+</span>4 <span style=''>
+</span>5 <span style=''>import com.atomist.param._
+</span>6 <span style=''>import com.atomist.project.common.template.{InvalidTemplateException, TemplateBasedProjectOperationInfo}
+</span>7 <span style=''>import com.fasterxml.jackson.annotation.JsonProperty
+</span>8 <span style=''>import com.fasterxml.jackson.databind.ObjectMapper
+</span>9 <span style=''>import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+</span>10 <span style=''>import com.fasterxml.jackson.module.scala.DefaultScalaModule
+</span>11 <span style=''>import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+</span>12 <span style=''>import org.apache.commons.lang3.builder.ReflectionToStringBuilder
+</span>13 <span style=''>
+</span>14 <span style=''>import scala.util.{Failure, Success, Try}
+</span>15 <span style=''>
+</span>16 <span style=''>/**
+</span>17 <span style=''>  * Parse YAML file to return ProjectOperationInfo.
+</span>18 <span style=''>  */
+</span>19 <span style=''>object YamlProjectOperationInfoParser {
+</span>20 <span style=''>
+</span>21 <span style=''>  private val mapper = </span><span style='background: #AEF1AE'>new</span><span style=''> ObjectMapper(new YAMLFactory()) with ScalaObjectMapper
+</span>22 <span style=''>  </span><span style='background: #AEF1AE'>mapper.registerModule(DefaultScalaModule)</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>  @throws[InvalidYamlDescriptorException]
+</span>25 <span style=''>  def parse(yaml: String): TemplateBasedProjectOperationInfo = {
+</span>26 <span style=''>    if (</span><span style='background: #AEF1AE'>yaml == null || &quot;&quot;.equals(yaml)</span><span style=''>)
+</span>27 <span style=''>      </span><span style='background: #AEF1AE'>throw new InvalidYamlDescriptorException(&quot;YAML content required in template metadata file&quot;)</span><span style=''>
+</span>28 <span style=''>
+</span>29 <span style=''>    </span><span style='background: #AEF1AE'>Try(mapper.readValue(yaml, classOf[BoundProjectOperationInfo]))</span><span style=''> match {
+</span>30 <span style=''>      case s: Success[BoundProjectOperationInfo] =&gt;
+</span>31 <span style=''>        val badPatterns = </span><span style='background: #AEF1AE'>s.value.parameters.flatMap(p =&gt; patternError(p))</span><span style=''>
+</span>32 <span style=''>        if (</span><span style='background: #AEF1AE'>badPatterns.nonEmpty</span><span style=''>)
+</span>33 <span style=''>          </span><span style='background: #F0ADAD'>throw new InvalidYamlDescriptorException(s&quot;Bad regexp patterns: ${badPatterns.mkString(&quot;,&quot;)}&quot;)</span><span style=''>
+</span>34 <span style=''>        </span><span style='background: #AEF1AE'>s.value</span><span style=''>
+</span>35 <span style=''>      case f: Failure[BoundProjectOperationInfo] =&gt;
+</span>36 <span style=''>        </span><span style='background: #AEF1AE'>throw new InvalidYamlDescriptorException(s&quot;Failed to parse YAML [$yaml]: ${f.exception.getMessage}&quot;, f.exception)</span><span style=''>
+</span>37 <span style=''>    }
+</span>38 <span style=''>  }
+</span>39 <span style=''>
+</span>40 <span style=''>  private def patternError(p: Parameter): Option[String] = {
+</span>41 <span style=''>    try {
+</span>42 <span style=''>      </span><span style='background: #AEF1AE'>Pattern.compile(p.getPattern)
+</span>43 <span style=''></span><span style='background: #AEF1AE'>      None</span><span style=''>
+</span>44 <span style=''>    } catch {
+</span>45 <span style=''>      case pse: PatternSyntaxException =&gt; </span><span style='background: #F0ADAD'>Some(s&quot;${p.getName}: Bad regular expression pattern: ${pse.getMessage}&quot;)</span><span style=''>
+</span>46 <span style=''>    }
+</span>47 <span style=''>  }
+</span>48 <span style=''>}
+</span>49 <span style=''>
+</span>50 <span style=''>private class BoundProjectOperationInfo extends TemplateBasedProjectOperationInfo {
+</span>51 <span style=''>
+</span>52 <span style=''>  @JsonProperty(&quot;name&quot;)
+</span>53 <span style=''>  var name: String = _
+</span>54 <span style=''>
+</span>55 <span style=''>  @JsonProperty(&quot;description&quot;)
+</span>56 <span style=''>  var description: String = _
+</span>57 <span style=''>
+</span>58 <span style=''>  @JsonProperty(&quot;template_name&quot;)
+</span>59 <span style=''>  var templateName: String = _
+</span>60 <span style=''>
+</span>61 <span style=''>  @JsonProperty(&quot;type&quot;)
+</span>62 <span style=''>  var _templateType: String = _
+</span>63 <span style=''>
+</span>64 <span style=''>  override def templateType: Option[String] =
+</span>65 <span style=''>    if (</span><span style='background: #F0ADAD'>_templateType == null || &quot;&quot;.equals(_templateType)</span><span style=''>) </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>66 <span style=''>    else </span><span style='background: #F0ADAD'>Some(_templateType)</span><span style=''>
+</span>67 <span style=''>
+</span>68 <span style=''>  @JsonProperty(&quot;parameters&quot;)
+</span>69 <span style=''>  private var _params: Seq[Parameter] = </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>70 <span style=''>
+</span>71 <span style=''>  @JsonProperty(&quot;tags&quot;)
+</span>72 <span style=''>  private var _tags: Seq[TagHolder] = </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>73 <span style=''>
+</span>74 <span style=''>  override def parameters: Seq[Parameter] = </span><span style='background: #AEF1AE'>_params</span><span style=''>
+</span>75 <span style=''>
+</span>76 <span style=''>  override def tags: Seq[Tag] = </span><span style='background: #AEF1AE'>_tags.map(tw =&gt; tw.toTag)</span><span style=''>
+</span>77 <span style=''>
+</span>78 <span style=''>  override def toString = </span><span style='background: #F0ADAD'>ReflectionToStringBuilder.toString(this)</span><span style=''>
+</span>79 <span style=''>}
+</span>80 <span style=''>
+</span>81 <span style=''>private class TagHolder {
+</span>82 <span style=''>
+</span>83 <span style=''>  @JsonProperty
+</span>84 <span style=''>  var name: String = _
+</span>85 <span style=''>
+</span>86 <span style=''>  @JsonProperty
+</span>87 <span style=''>  var description: String = _
+</span>88 <span style=''>
+</span>89 <span style=''>  def toTag = </span><span style='background: #AEF1AE'>Tag(name, description)</span><span style=''>
+</span>90 <span style=''>}
+</span>91 <span style=''>
+</span>92 <span style=''>class InvalidYamlDescriptorException(msg: String, ex: Throwable = null) extends InvalidTemplateException(msg, ex)
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          591
+        </td>
+        <td>
+          761
+          -
+          764
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.common.yaml.YamlProjectOperationInfoParser.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          593
+        </td>
+        <td>
+          822
+          -
+          863
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.databind.ObjectMapper.registerModule
+        </td>
+        <td style="background: #AEF1AE">
+          YamlProjectOperationInfoParser.this.mapper.registerModule(com.fasterxml.jackson.module.scala.DefaultScalaModule)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          592
+        </td>
+        <td>
+          844
+          -
+          862
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.fasterxml.jackson.module.scala.DefaultScalaModule
+        </td>
+        <td style="background: #AEF1AE">
+          com.fasterxml.jackson.module.scala.DefaultScalaModule
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          600
+        </td>
+        <td>
+          976
+          -
+          976
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          594
+        </td>
+        <td>
+          988
+          -
+          992
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          599
+        </td>
+        <td>
+          976
+          -
+          976
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          596
+        </td>
+        <td>
+          980
+          -
+          1011
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          yaml.==(null).||(&quot;&quot;.equals(yaml))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          595
+        </td>
+        <td>
+          996
+          -
+          1011
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;.equals(yaml)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          597
+        </td>
+        <td>
+          1019
+          -
+          1110
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new InvalidYamlDescriptorException(&quot;YAML content required in template metadata file&quot;, yaml.this.InvalidYamlDescriptorException.&lt;init&gt;$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          598
+        </td>
+        <td>
+          1019
+          -
+          1110
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new InvalidYamlDescriptorException(&quot;YAML content required in template metadata file&quot;, yaml.this.InvalidYamlDescriptorException.&lt;init&gt;$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          602
+        </td>
+        <td>
+          1116
+          -
+          1179
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.Try.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Try.apply[com.atomist.project.common.yaml.BoundProjectOperationInfo](YamlProjectOperationInfoParser.this.mapper.readValue[com.atomist.project.common.yaml.BoundProjectOperationInfo](yaml, classOf[com.atomist.project.common.yaml.BoundProjectOperationInfo]))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          601
+        </td>
+        <td>
+          1120
+          -
+          1178
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.databind.ObjectMapper.readValue
+        </td>
+        <td style="background: #AEF1AE">
+          YamlProjectOperationInfoParser.this.mapper.readValue[com.atomist.project.common.yaml.BoundProjectOperationInfo](yaml, classOf[com.atomist.project.common.yaml.BoundProjectOperationInfo])
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          603
+        </td>
+        <td>
+          1298
+          -
+          1313
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.common.yaml.YamlProjectOperationInfoParser.patternError
+        </td>
+        <td style="background: #AEF1AE">
+          YamlProjectOperationInfoParser.this.patternError(p)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          606
+        </td>
+        <td>
+          1266
+          -
+          1314
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          s.value.parameters.flatMap[String, Seq[String]](((p: com.atomist.param.Parameter) =&gt; scala.this.Option.option2Iterable[String](YamlProjectOperationInfoParser.this.patternError(p))))(collection.this.Seq.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          605
+        </td>
+        <td>
+          1292
+          -
+          1292
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          604
+        </td>
+        <td>
+          1298
+          -
+          1313
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[String](YamlProjectOperationInfoParser.this.patternError(p))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          611
+        </td>
+        <td>
+          1323
+          -
+          1323
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          607
+        </td>
+        <td>
+          1327
+          -
+          1347
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          badPatterns.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          610
+        </td>
+        <td>
+          1323
+          -
+          1323
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          609
+        </td>
+        <td>
+          1359
+          -
+          1453
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new InvalidYamlDescriptorException(scala.StringContext.apply(&quot;Bad regexp patterns: &quot;, &quot;&quot;).s(badPatterns.mkString(&quot;,&quot;)), yaml.this.InvalidYamlDescriptorException.&lt;init&gt;$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          608
+        </td>
+        <td>
+          1359
+          -
+          1453
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new InvalidYamlDescriptorException(scala.StringContext.apply(&quot;Bad regexp patterns: &quot;, &quot;&quot;).s(badPatterns.mkString(&quot;,&quot;)), yaml.this.InvalidYamlDescriptorException.&lt;init&gt;$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          612
+        </td>
+        <td>
+          1462
+          -
+          1469
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.Success.value
+        </td>
+        <td style="background: #AEF1AE">
+          s.value
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          613
+        </td>
+        <td>
+          1530
+          -
+          1643
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new InvalidYamlDescriptorException(scala.StringContext.apply(&quot;Failed to parse YAML [&quot;, &quot;]: &quot;, &quot;&quot;).s(yaml, f.exception.getMessage()), f.exception)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          617
+        </td>
+        <td>
+          1732
+          -
+          1772
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  java.util.regex.Pattern.compile(p.getPattern);
+  scala.None
+}
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          615
+        </td>
+        <td>
+          1732
+          -
+          1761
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.regex.Pattern.compile
+        </td>
+        <td style="background: #AEF1AE">
+          java.util.regex.Pattern.compile(p.getPattern)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          614
+        </td>
+        <td>
+          1748
+          -
+          1760
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.Parameter.getPattern
+        </td>
+        <td style="background: #AEF1AE">
+          p.getPattern
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          616
+        </td>
+        <td>
+          1768
+          -
+          1772
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          618
+        </td>
+        <td>
+          1836
+          -
+          1837
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          621
+        </td>
+        <td>
+          1838
+          -
+          1847
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.Parameter.getName
+        </td>
+        <td style="background: #F0ADAD">
+          p.getName
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          624
+        </td>
+        <td>
+          1829
+          -
+          1901
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](scala.StringContext.apply(&quot;&quot;, &quot;: Bad regular expression pattern: &quot;, &quot;&quot;).s(p.getName, pse.getMessage()))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          623
+        </td>
+        <td>
+          1834
+          -
+          1900
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;: Bad regular expression pattern: &quot;, &quot;&quot;).s(p.getName, pse.getMessage())
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          620
+        </td>
+        <td>
+          1899
+          -
+          1900
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          622
+        </td>
+        <td>
+          1884
+          -
+          1898
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.regex.PatternSyntaxException.getMessage
+        </td>
+        <td style="background: #F0ADAD">
+          pse.getMessage()
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          619
+        </td>
+        <td>
+          1848
+          -
+          1883
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;: Bad regular expression pattern: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          627
+        </td>
+        <td>
+          2321
+          -
+          2334
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.common.yaml.BoundProjectOperationInfo._templateType
+        </td>
+        <td style="background: #F0ADAD">
+          BoundProjectOperationInfo.this._templateType
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          630
+        </td>
+        <td>
+          2337
+          -
+          2341
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          626
+        </td>
+        <td>
+          2311
+          -
+          2313
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          629
+        </td>
+        <td>
+          2286
+          -
+          2335
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #F0ADAD">
+          BoundProjectOperationInfo.this._templateType.==(null).||(&quot;&quot;.equals(BoundProjectOperationInfo.this._templateType))
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          631
+        </td>
+        <td>
+          2337
+          -
+          2341
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          625
+        </td>
+        <td>
+          2303
+          -
+          2307
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          628
+        </td>
+        <td>
+          2311
+          -
+          2335
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;.equals(BoundProjectOperationInfo.this._templateType)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          633
+        </td>
+        <td>
+          2351
+          -
+          2370
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](BoundProjectOperationInfo.this._templateType)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          632
+        </td>
+        <td>
+          2356
+          -
+          2369
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.common.yaml.BoundProjectOperationInfo._templateType
+        </td>
+        <td style="background: #F0ADAD">
+          BoundProjectOperationInfo.this._templateType
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          634
+        </td>
+        <td>
+          2351
+          -
+          2370
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](BoundProjectOperationInfo.this._templateType)
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          635
+        </td>
+        <td>
+          2442
+          -
+          2445
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          636
+        </td>
+        <td>
+          2509
+          -
+          2512
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          637
+        </td>
+        <td>
+          2558
+          -
+          2565
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.common.yaml.BoundProjectOperationInfo._params
+        </td>
+        <td style="background: #AEF1AE">
+          BoundProjectOperationInfo.this._params
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          639
+        </td>
+        <td>
+          2608
+          -
+          2608
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.param.Tag]
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          638
+        </td>
+        <td>
+          2615
+          -
+          2623
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.common.yaml.TagHolder.toTag
+        </td>
+        <td style="background: #AEF1AE">
+          tw.toTag
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          640
+        </td>
+        <td>
+          2599
+          -
+          2624
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          BoundProjectOperationInfo.this._tags.map[com.atomist.param.Tag, Seq[com.atomist.param.Tag]](((tw: com.atomist.project.common.yaml.TagHolder) =&gt; tw.toTag))(collection.this.Seq.canBuildFrom[com.atomist.param.Tag])
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          641
+        </td>
+        <td>
+          2652
+          -
+          2692
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.apache.commons.lang3.builder.ReflectionToStringBuilder.toString
+        </td>
+        <td style="background: #F0ADAD">
+          org.apache.commons.lang3.builder.ReflectionToStringBuilder.toString(this)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          642
+        </td>
+        <td>
+          2828
+          -
+          2832
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.common.yaml.TagHolder.name
+        </td>
+        <td style="background: #AEF1AE">
+          TagHolder.this.name
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          644
+        </td>
+        <td>
+          2824
+          -
+          2846
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Tag.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.param.Tag.apply(TagHolder.this.name, TagHolder.this.description)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          643
+        </td>
+        <td>
+          2834
+          -
+          2845
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.common.yaml.TagHolder.description
+        </td>
+        <td style="background: #AEF1AE">
+          TagHolder.this.description
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

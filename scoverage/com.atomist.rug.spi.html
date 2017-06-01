@@ -1,0 +1,1451 @@
+<html>
+      <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+      <title id="title">Scoverage Code Coverage</title>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+      <style>
+        .meter {
+        height: 14px;
+        position: relative;
+        background: #BB2020;
+}
+
+.meter span {
+	display: block;
+	height: 100%;
+	background-color: rgb(43,194,83);
+	background-image: -webkit-gradient(
+	  linear,
+	  left bottom,
+	  left top,
+	  color-stop(0, rgb(43,194,83)),
+	  color-stop(1, rgb(84,240,84))
+	 );
+	background-image: -webkit-linear-gradient(
+	  center bottom,
+	  rgb(43,194,83) 37%,
+	  rgb(84,240,84) 69%
+	 );
+	background-image: -moz-linear-gradient(
+	  center bottom,
+	  rgb(43,194,83) 37%,
+	  rgb(84,240,84) 69%
+	 );
+	background-image: -ms-linear-gradient(
+	  center bottom,
+	  rgb(43,194,83) 37%,
+	  rgb(84,240,84) 69%
+	 );
+	background-image: -o-linear-gradient(
+	  center bottom,
+	  rgb(43,194,83) 37%,
+	  rgb(84,240,84) 69%
+	 );
+	-webkit-box-shadow:
+	  inset 0 2px 9px  rgba(255,255,255,0.3),
+	  inset 0 -2px 6px rgba(0,0,0,0.4);
+	-moz-box-shadow:
+	  inset 0 2px 9px  rgba(255,255,255,0.3),
+	  inset 0 -2px 6px rgba(0,0,0,0.4);
+	position: relative;
+	overflow: hidden;
+}
+      </style>
+    </head><body style="font-family: monospace;">
+      <table class="tablesorter table table-striped" style="font-size:13px">
+      <thead>
+        <tr>
+          <th>
+            Class
+          </th>
+          <th>
+            Source file
+          </th>
+          <th>
+            Lines
+          </th>
+          <th>
+            Methods
+          </th>
+          <th>
+            Statements
+          </th>
+          <th>
+            Invoked
+          </th>
+          <th>
+            Coverage
+          </th>
+          <th>
+          </th>
+          <th>
+            Branches
+          </th>
+          <th>
+            Invoked
+          </th>
+          <th>
+            Coverage
+          </th>
+          <th>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+      <td>
+        <a href="com/atomist/rug/spi/AnnotatedRugFunction.scala.html">
+          AnnotatedRugFunction
+        </a>
+      </td>
+      <td>
+        AnnotatedRugFunction.scala
+      </td>
+      <td>
+        85
+      </td>
+      <td>
+        9
+      </td>
+      <td>
+        92
+      </td>
+      <td>
+        80
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 87%"></span>
+        </div>
+      </td>
+      <td>
+        86.96
+        %
+      </td>
+      <td>
+        7
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 86%"></span>
+        </div>
+      </td>
+      <td>
+        85.71
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/RugFunction.scala.html">
+          ByteBodyOption
+        </a>
+      </td>
+      <td>
+        RugFunction.scala
+      </td>
+      <td>
+        38
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/CommonViewOperations.scala.html">
+          CommonViewOperations
+        </a>
+      </td>
+      <td>
+        CommonViewOperations.scala
+      </td>
+      <td>
+        30
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 50%"></span>
+        </div>
+      </td>
+      <td>
+        50.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/ParameterOrReturnType.scala.html">
+          EnumParameterOrReturnType
+        </a>
+      </td>
+      <td>
+        ParameterOrReturnType.scala
+      </td>
+      <td>
+        43
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/Handlers.scala.html">
+          Handlers.DefaultTarget
+        </a>
+      </td>
+      <td>
+        Handlers.scala
+      </td>
+      <td>
+        108
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/Handlers.scala.html">
+          Handlers.Instruction
+        </a>
+      </td>
+      <td>
+        Handlers.scala
+      </td>
+      <td>
+        149
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        15
+      </td>
+      <td>
+        13
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 87%"></span>
+        </div>
+      </td>
+      <td>
+        86.67
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/Handlers.scala.html">
+          Handlers.LifecycleMessage
+        </a>
+      </td>
+      <td>
+        Handlers.scala
+      </td>
+      <td>
+        48
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/Handlers.scala.html">
+          Handlers.LocallyRenderedMessage
+        </a>
+      </td>
+      <td>
+        Handlers.scala
+      </td>
+      <td>
+        65
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        10
+      </td>
+      <td>
+        10
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/Handlers.scala.html">
+          Handlers.Plan
+        </a>
+      </td>
+      <td>
+        Handlers.scala
+      </td>
+      <td>
+        34
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        7
+      </td>
+      <td>
+        7
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/Handlers.scala.html">
+          Handlers.Plannable
+        </a>
+      </td>
+      <td>
+        Handlers.scala
+      </td>
+      <td>
+        76
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/Handlers.scala.html">
+          Handlers.Response
+        </a>
+      </td>
+      <td>
+        Handlers.scala
+      </td>
+      <td>
+        185
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        10
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 60%"></span>
+        </div>
+      </td>
+      <td>
+        60.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/Handlers.scala.html">
+          Handlers.Status
+        </a>
+      </td>
+      <td>
+        Handlers.scala
+      </td>
+      <td>
+        222
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/RugFunction.scala.html">
+          JsonBodyOption
+        </a>
+      </td>
+      <td>
+        RugFunction.scala
+      </td>
+      <td>
+        32
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/MutableView.scala.html">
+          MutableView
+        </a>
+      </td>
+      <td>
+        MutableView.scala
+      </td>
+      <td>
+        32
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/ReflectiveFunctionExport.scala.html">
+          ReflectiveFunctionExport
+        </a>
+      </td>
+      <td>
+        ReflectiveFunctionExport.scala
+      </td>
+      <td>
+        51
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        54
+      </td>
+      <td>
+        50
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 93%"></span>
+        </div>
+      </td>
+      <td>
+        92.59
+        %
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 67%"></span>
+        </div>
+      </td>
+      <td>
+        66.67
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/ReflectiveTypeOperationFinder.scala.html">
+          ReflectiveTypeOperationFinder
+        </a>
+      </td>
+      <td>
+        ReflectiveTypeOperationFinder.scala
+      </td>
+      <td>
+        19
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        10
+      </td>
+      <td>
+        10
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/ReflectiveTypeOperationFinder.scala.html">
+          ReflectivelyTypedType
+        </a>
+      </td>
+      <td>
+        ReflectiveTypeOperationFinder.scala
+      </td>
+      <td>
+        34
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/ParameterOrReturnType.scala.html">
+          SimpleParameterOrReturnType
+        </a>
+      </td>
+      <td>
+        ParameterOrReturnType.scala
+      </td>
+      <td>
+        26
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        9
+      </td>
+      <td>
+        9
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/TypeRegistry.scala.html">
+          SimpleTypeRegistry
+        </a>
+      </td>
+      <td>
+        TypeRegistry.scala
+      </td>
+      <td>
+        32
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 50%"></span>
+        </div>
+      </td>
+      <td>
+        50.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/RugFunction.scala.html">
+          StringBodyOption
+        </a>
+      </td>
+      <td>
+        RugFunction.scala
+      </td>
+      <td>
+        26
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/TerminalView.scala.html">
+          TerminalView
+        </a>
+      </td>
+      <td>
+        TerminalView.scala
+      </td>
+      <td>
+        9
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 50%"></span>
+        </div>
+      </td>
+      <td>
+        50.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/ViewSupport.scala.html">
+          TreeViewSupport
+        </a>
+      </td>
+      <td>
+        ViewSupport.scala
+      </td>
+      <td>
+        74
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/TypeOperation.scala.html">
+          TypeOperation
+        </a>
+      </td>
+      <td>
+        TypeOperation.scala
+      </td>
+      <td>
+        98
+      </td>
+      <td>
+        7
+      </td>
+      <td>
+        54
+      </td>
+      <td>
+        35
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 65%"></span>
+        </div>
+      </td>
+      <td>
+        64.81
+        %
+      </td>
+      <td>
+        5
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 60%"></span>
+        </div>
+      </td>
+      <td>
+        60.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/TypeParameter.scala.html">
+          TypeParameter
+        </a>
+      </td>
+      <td>
+        TypeParameter.scala
+      </td>
+      <td>
+        15
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        9
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/ReflectiveTypeOperationFinder.scala.html">
+          TypeProvider
+        </a>
+      </td>
+      <td>
+        ReflectiveTypeOperationFinder.scala
+      </td>
+      <td>
+        51
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        7
+      </td>
+      <td>
+        7
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/TypeRegistry.scala.html">
+          TypeRegistry
+        </a>
+      </td>
+      <td>
+        TypeRegistry.scala
+      </td>
+      <td>
+        22
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        11
+      </td>
+      <td>
+        5
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 45%"></span>
+        </div>
+      </td>
+      <td>
+        45.45
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/Typed.scala.html">
+          Typed
+        </a>
+      </td>
+      <td>
+        Typed.scala
+      </td>
+      <td>
+        47
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        28
+      </td>
+      <td>
+        25
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 89%"></span>
+        </div>
+      </td>
+      <td>
+        89.29
+        %
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/Typed.scala.html">
+          UnionType
+        </a>
+      </td>
+      <td>
+        Typed.scala
+      </td>
+      <td>
+        86
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        17
+      </td>
+      <td>
+        16
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 94%"></span>
+        </div>
+      </td>
+      <td>
+        94.12
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/UsageSpecificTypeRegistry.scala.html">
+          UsageSpecificTypeRegistry
+        </a>
+      </td>
+      <td>
+        UsageSpecificTypeRegistry.scala
+      </td>
+      <td>
+        18
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        12
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 33%"></span>
+        </div>
+      </td>
+      <td>
+        33.33
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/spi/ViewSupport.scala.html">
+          ViewSupport
+        </a>
+      </td>
+      <td>
+        ViewSupport.scala
+      </td>
+      <td>
+        62
+      </td>
+      <td>
+        10
+      </td>
+      <td>
+        30
+      </td>
+      <td>
+        24
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 80%"></span>
+        </div>
+      </td>
+      <td>
+        80.00
+        %
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr>
+      </tbody>
+    </table>
+    </body>
+    </html>

@@ -1,0 +1,376 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/content/text/InputPosition.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.content.text
+</span>2 <span style=''>
+</span>3 <span style=''>/**
+</span>4 <span style=''>  * Represents a position within an input sequence
+</span>5 <span style=''>  */
+</span>6 <span style=''>trait InputPosition {
+</span>7 <span style=''>
+</span>8 <span style=''>  /**
+</span>9 <span style=''>    * Offset from beginning of input, from 0.
+</span>10 <span style=''>    */
+</span>11 <span style=''>  def offset: Int
+</span>12 <span style=''>
+</span>13 <span style=''>  def -(that: InputPosition): Int = </span><span style='background: #F0ADAD'>this.offset - that.offset</span><span style=''>
+</span>14 <span style=''>
+</span>15 <span style=''>  def -(n: Int): OffsetInputPosition = </span><span style='background: #F0ADAD'>OffsetInputPosition(this.offset - n)</span><span style=''>
+</span>16 <span style=''>
+</span>17 <span style=''>  /**
+</span>18 <span style=''>    * Advance by a number of characters
+</span>19 <span style=''>    * @param offs number of characters to advance by
+</span>20 <span style=''>    * @return a new offset
+</span>21 <span style=''>    */
+</span>22 <span style=''>  def +(offs: Int): InputPosition = </span><span style='background: #AEF1AE'>new</span><span style=''> InputPosition {
+</span>23 <span style=''>
+</span>24 <span style=''>    override def offset: Int = </span><span style='background: #AEF1AE'>InputPosition.this.offset + offs</span><span style=''>
+</span>25 <span style=''>
+</span>26 <span style=''>    override def show: String = </span><span style='background: #F0ADAD'>InputPosition.this.show</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>    override def toString = </span><span style='background: #F0ADAD'>s&quot;[${InputPosition.this}+$offs]&quot;</span><span style=''>
+</span>29 <span style=''>  }
+</span>30 <span style=''>
+</span>31 <span style=''>  /**
+</span>32 <span style=''>    * Show a readable compiler-style position
+</span>33 <span style=''>    */
+</span>34 <span style=''>  def show: String
+</span>35 <span style=''>
+</span>36 <span style=''>  /**
+</span>37 <span style=''>    * Take the content from this position to the end, inclusive
+</span>38 <span style=''>    */
+</span>39 <span style=''>  def takeTo(content: CharSequence, end: InputPosition): CharSequence =
+</span>40 <span style=''>    </span><span style='background: #AEF1AE'>content.subSequence(this.offset, end.offset)</span><span style=''>
+</span>41 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          7287
+        </td>
+        <td>
+          236
+          -
+          261
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #F0ADAD">
+          this.offset.-(that.offset)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          7286
+        </td>
+        <td>
+          250
+          -
+          261
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #F0ADAD">
+          that.offset
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          7289
+        </td>
+        <td>
+          302
+          -
+          338
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OffsetInputPosition.apply
+        </td>
+        <td style="background: #F0ADAD">
+          OffsetInputPosition.apply(this.offset.-(n))
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          7288
+        </td>
+        <td>
+          322
+          -
+          337
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #F0ADAD">
+          this.offset.-(n)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          7296
+        </td>
+        <td>
+          509
+          -
+          512
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          7290
+        </td>
+        <td>
+          561
+          -
+          593
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          InputPosition.this.offset.+(offs)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          7291
+        </td>
+        <td>
+          627
+          -
+          650
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.show
+        </td>
+        <td style="background: #F0ADAD">
+          InputPosition.this.show
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7293
+        </td>
+        <td>
+          704
+          -
+          706
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;+&quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7292
+        </td>
+        <td>
+          682
+          -
+          684
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7295
+        </td>
+        <td>
+          680
+          -
+          712
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;[&quot;, &quot;+&quot;, &quot;]&quot;).s(InputPosition.this, offs)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7294
+        </td>
+        <td>
+          710
+          -
+          712
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          7299
+        </td>
+        <td>
+          950
+          -
+          994
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.CharSequence.subSequence
+        </td>
+        <td style="background: #AEF1AE">
+          content.subSequence(this.offset, end.offset)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          7298
+        </td>
+        <td>
+          983
+          -
+          993
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #AEF1AE">
+          end.offset
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          7297
+        </td>
+        <td>
+          970
+          -
+          981
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #AEF1AE">
+          this.offset
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

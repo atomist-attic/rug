@@ -1,0 +1,2421 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/plans/PlanUtils.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.plans
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.spi.Handlers.Instruction._
+</span>4 <span style=''>import com.atomist.tree.utils.TreeNodePrinter
+</span>5 <span style=''>import com.atomist.tree.utils.TreeNodePrinter.BabyTree
+</span>6 <span style=''>
+</span>7 <span style=''>import scala.concurrent.Await
+</span>8 <span style=''>import scala.concurrent.duration._
+</span>9 <span style=''>import scala.util.{Failure, Success}
+</span>10 <span style=''>
+</span>11 <span style=''>/**
+</span>12 <span style=''>  * Print out Plans etc
+</span>13 <span style=''>  */
+</span>14 <span style=''>object PlanUtils {
+</span>15 <span style=''>
+</span>16 <span style=''>  import com.atomist.rug.spi.Handlers._
+</span>17 <span style=''>
+</span>18 <span style=''>  def drawPlan(plan: Plan): String = {
+</span>19 <span style=''>    val tree: BabyTree = </span><span style='background: #F0ADAD'>planToTree(plan)</span><span style=''>
+</span>20 <span style=''>    </span><span style='background: #F0ADAD'>TreeNodePrinter.draw[BabyTree](_.children, _.print)(tree)</span><span style=''>
+</span>21 <span style=''>  }
+</span>22 <span style=''>
+</span>23 <span style=''>  def drawEventLogs(name: String, events: Seq[PlanLogEvent]) =
+</span>24 <span style=''>    </span><span style='background: #F0ADAD'>TreeNodePrinter.drawTree(awaitAndTreeLogEvents(name, events))</span><span style=''>
+</span>25 <span style=''>
+</span>26 <span style=''>  private def instructionToString(i: Instruction) = {
+</span>27 <span style=''>    val op = i match {
+</span>28 <span style=''>      case Generate(_) =&gt; </span><span style='background: #F0ADAD'>&quot;Generate&quot;</span><span style=''>
+</span>29 <span style=''>      case Edit(_) =&gt; </span><span style='background: #F0ADAD'>&quot;Edit&quot;</span><span style=''>
+</span>30 <span style=''>      case Command(_) =&gt; </span><span style='background: #F0ADAD'>&quot;Command&quot;</span><span style=''>
+</span>31 <span style=''>      case Execute(_) =&gt; </span><span style='background: #F0ADAD'>&quot;Execute&quot;</span><span style=''>
+</span>32 <span style=''>      case Respond(_) =&gt; </span><span style='background: #F0ADAD'>&quot;Respond&quot;</span><span style=''>
+</span>33 <span style=''>    }
+</span>34 <span style=''>    </span><span style='background: #F0ADAD'>s&quot;$op ${i.detail.name} ${i.detail.coordinates} ${i.detail.parameters}&quot;</span><span style=''>
+</span>35 <span style=''>  }
+</span>36 <span style=''>
+</span>37 <span style=''>  private def messageToTree(m: Message) = {
+</span>38 <span style=''>    val messageString = </span><span style='background: #F0ADAD'>s&quot;Message: ${m.toDisplay}&quot;</span><span style=''>
+</span>39 <span style=''>    </span><span style='background: #F0ADAD'>BabyTree(messageString)</span><span style=''>
+</span>40 <span style=''>  }
+</span>41 <span style=''>  private def callbackToTree(name: String, c: Callback): BabyTree = </span><span style='background: #F0ADAD'>BabyTree(name, Seq(c match {
+</span>42 <span style=''></span><span style='background: #F0ADAD'>    case p: Plan =&gt; planToTree(p)
+</span>43 <span style=''></span><span style='background: #F0ADAD'>    case m: Message =&gt; messageToTree(m)
+</span>44 <span style=''></span><span style='background: #F0ADAD'>    case r: Respond =&gt; BabyTree(instructionToString(r))
+</span>45 <span style=''></span><span style='background: #F0ADAD'>  }))</span><span style=''>
+</span>46 <span style=''>
+</span>47 <span style=''>  private def planToTree(plan: Plan): BabyTree = {
+</span>48 <span style=''>
+</span>49 <span style=''>    def respondableToTree(plannable: Plannable): BabyTree = {
+</span>50 <span style=''>      val i = </span><span style='background: #F0ADAD'>instructionToString(plannable.instruction)</span><span style=''>
+</span>51 <span style=''>      plannable match {
+</span>52 <span style=''>        case r: Respondable =&gt;
+</span>53 <span style=''>          val onSuccessChild = </span><span style='background: #F0ADAD'>r.onSuccess.map(callbackToTree(&quot;onSuccess&quot;, _))</span><span style=''>
+</span>54 <span style=''>          val onFailureChild = </span><span style='background: #F0ADAD'>r.onFailure.map(callbackToTree(&quot;onFailure&quot;, _))</span><span style=''>
+</span>55 <span style=''>          </span><span style='background: #F0ADAD'>BabyTree(i, onSuccessChild.toSeq ++ onFailureChild)</span><span style=''>
+</span>56 <span style=''>        case nr: Nonrespondable =&gt;
+</span>57 <span style=''>          </span><span style='background: #F0ADAD'>BabyTree(i, Nil)</span><span style=''>
+</span>58 <span style=''>      }
+</span>59 <span style=''>    }
+</span>60 <span style=''>
+</span>61 <span style=''>    val allMessages = </span><span style='background: #F0ADAD'>plan.local ++ plan.lifecycle</span><span style=''>
+</span>62 <span style=''>    </span><span style='background: #F0ADAD'>BabyTree(&quot;Plan&quot;,
+</span>63 <span style=''></span><span style='background: #F0ADAD'>      plan.instructions.sortBy(_.toString).map(respondableToTree) ++
+</span>64 <span style=''></span><span style='background: #F0ADAD'>        allMessages.sortBy(_.toDisplay).map(messageToTree))</span><span style=''>
+</span>65 <span style=''>  }
+</span>66 <span style=''>
+</span>67 <span style=''>  private def awaitAndTreeLogEvents(name: String, events: Seq[PlanLogEvent]): BabyTree = {
+</span>68 <span style=''>    def logEventToTree(one: PlanLogEvent): BabyTree = {
+</span>69 <span style=''>      def nullSafeMessage(x: Throwable) = </span><span style='background: #F0ADAD'>s&quot;Error: ${Option(x).map(_.getMessage).getOrElse(&quot;null exception&quot;)}&quot;</span><span style=''>
+</span>70 <span style=''>
+</span>71 <span style=''>      one match {
+</span>72 <span style=''>        case InstructionError(i, x) =&gt; </span><span style='background: #F0ADAD'>BabyTree(nullSafeMessage(x), Seq(BabyTree(instructionToString(i))))</span><span style=''>
+</span>73 <span style=''>        case MessageDeliveryError(m, x) =&gt; </span><span style='background: #F0ADAD'>BabyTree(nullSafeMessage(x), Seq(messageToTree(m)))</span><span style=''>
+</span>74 <span style=''>        case CallbackError(c, x) =&gt; </span><span style='background: #F0ADAD'>BabyTree(nullSafeMessage(x), Seq(callbackToTree(&quot;failed callback&quot;, c)))</span><span style=''>
+</span>75 <span style=''>        case InstructionResult(instruction, response) =&gt;
+</span>76 <span style=''>          </span><span style='background: #F0ADAD'>BabyTree(s&quot;Received $response back from ${instructionToString(instruction)}&quot;)</span><span style=''>
+</span>77 <span style=''>        case NestedPlanRun(plan, planResult) =&gt;
+</span>78 <span style=''>          </span><span style='background: #F0ADAD'>Await.ready(planResult, 10.seconds)</span><span style=''>
+</span>79 <span style=''>          val result = </span><span style='background: #F0ADAD'>planResult.value.get</span><span style=''> match {
+</span>80 <span style=''>            case Failure(exception) =&gt; </span><span style='background: #F0ADAD'>BabyTree(s&quot;Future failed with ${exception.getMessage}&quot;)</span><span style=''>
+</span>81 <span style=''>            case Success(value) =&gt; </span><span style='background: #F0ADAD'>awaitAndTreeLogEvents(s&quot;Future completed&quot;, value.log)</span><span style=''>
+</span>82 <span style=''>          }
+</span>83 <span style=''>          val planChild = </span><span style='background: #F0ADAD'>planToTree(plan)</span><span style=''>
+</span>84 <span style=''>          </span><span style='background: #F0ADAD'>BabyTree(&quot;Nested plan run&quot;, Seq(planChild, result))</span><span style=''>
+</span>85 <span style=''>      }
+</span>86 <span style=''>    }
+</span>87 <span style=''>
+</span>88 <span style=''>    val children = </span><span style='background: #F0ADAD'>events.map(logEventToTree)</span><span style=''>
+</span>89 <span style=''>    </span><span style='background: #F0ADAD'>BabyTree(name, children.sortBy(_.print))</span><span style=''>
+</span>90 <span style=''>  }
+</span>91 <span style=''>
+</span>92 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          4991
+        </td>
+        <td>
+          452
+          -
+          468
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.planToTree
+        </td>
+        <td style="background: #F0ADAD">
+          PlanUtils.this.planToTree(plan)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          4992
+        </td>
+        <td>
+          473
+          -
+          530
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.draw
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.draw[com.atomist.tree.utils.TreeNodePrinter.BabyTree](((x$1: com.atomist.tree.utils.TreeNodePrinter.BabyTree) =&gt; x$1.children), ((x$2: com.atomist.tree.utils.TreeNodePrinter.BabyTree) =&gt; x$2.print))(tree)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          4993
+        </td>
+        <td>
+          628
+          -
+          663
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.awaitAndTreeLogEvents
+        </td>
+        <td style="background: #F0ADAD">
+          PlanUtils.this.awaitAndTreeLogEvents(name, events)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          4994
+        </td>
+        <td>
+          603
+          -
+          664
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.drawTree
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.drawTree(PlanUtils.this.awaitAndTreeLogEvents(name, events))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          4995
+        </td>
+        <td>
+          769
+          -
+          779
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Generate&quot;
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          4996
+        </td>
+        <td>
+          802
+          -
+          808
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Edit&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          4997
+        </td>
+        <td>
+          834
+          -
+          843
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Command&quot;
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          4998
+        </td>
+        <td>
+          869
+          -
+          878
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Execute&quot;
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4999
+        </td>
+        <td>
+          904
+          -
+          913
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Respond&quot;
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          5000
+        </td>
+        <td>
+          926
+          -
+          927
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          5008
+        </td>
+        <td>
+          924
+          -
+          994
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot; &quot;, &quot; &quot;, &quot; &quot;, &quot;&quot;).s(op, i.detail.name, i.detail.coordinates, i.detail.parameters)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          5002
+        </td>
+        <td>
+          946
+          -
+          948
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          5005
+        </td>
+        <td>
+          932
+          -
+          945
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.name
+        </td>
+        <td style="background: #F0ADAD">
+          i.detail.name
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          5007
+        </td>
+        <td>
+          973
+          -
+          992
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.parameters
+        </td>
+        <td style="background: #F0ADAD">
+          i.detail.parameters
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          5001
+        </td>
+        <td>
+          929
+          -
+          931
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          5004
+        </td>
+        <td>
+          993
+          -
+          994
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          5003
+        </td>
+        <td>
+          970
+          -
+          972
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          5006
+        </td>
+        <td>
+          949
+          -
+          969
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.coordinates
+        </td>
+        <td style="background: #F0ADAD">
+          i.detail.coordinates
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          5009
+        </td>
+        <td>
+          1070
+          -
+          1080
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Message: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          5011
+        </td>
+        <td>
+          1081
+          -
+          1092
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Callback.toDisplay
+        </td>
+        <td style="background: #F0ADAD">
+          m.toDisplay
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          5010
+        </td>
+        <td>
+          1093
+          -
+          1094
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          5012
+        </td>
+        <td>
+          1068
+          -
+          1094
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Message: &quot;, &quot;&quot;).s(m.toDisplay)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          5014
+        </td>
+        <td>
+          1099
+          -
+          1122
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(messageString, com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          5013
+        </td>
+        <td>
+          1099
+          -
+          1099
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          5020
+        </td>
+        <td>
+          1210
+          -
+          1358
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[com.atomist.tree.utils.TreeNodePrinter.BabyTree](c match {
+  case (p @ (_: com.atomist.rug.spi.Handlers.Plan)) =&gt; PlanUtils.this.planToTree(p)
+  case (m @ (_: com.atomist.rug.spi.Handlers.Message)) =&gt; PlanUtils.this.messageToTree(m)
+  case (r @ (_: com.atomist.rug.spi.Handlers.Instruction.Respond)) =&gt; com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(PlanUtils.this.instructionToString(r), com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2)
+})
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          5021
+        </td>
+        <td>
+          1195
+          -
+          1359
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(name, collection.this.Seq.apply[com.atomist.tree.utils.TreeNodePrinter.BabyTree](c match {
+  case (p @ (_: com.atomist.rug.spi.Handlers.Plan)) =&gt; PlanUtils.this.planToTree(p)
+  case (m @ (_: com.atomist.rug.spi.Handlers.Message)) =&gt; PlanUtils.this.messageToTree(m)
+  case (r @ (_: com.atomist.rug.spi.Handlers.Instruction.Respond)) =&gt; com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(PlanUtils.this.instructionToString(r), com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          5015
+        </td>
+        <td>
+          1244
+          -
+          1257
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.planToTree
+        </td>
+        <td style="background: #F0ADAD">
+          PlanUtils.this.planToTree(p)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          5016
+        </td>
+        <td>
+          1281
+          -
+          1297
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.messageToTree
+        </td>
+        <td style="background: #F0ADAD">
+          PlanUtils.this.messageToTree(m)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          5018
+        </td>
+        <td>
+          1321
+          -
+          1321
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          5017
+        </td>
+        <td>
+          1330
+          -
+          1352
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.instructionToString
+        </td>
+        <td style="background: #F0ADAD">
+          PlanUtils.this.instructionToString(r)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          5019
+        </td>
+        <td>
+          1321
+          -
+          1353
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(PlanUtils.this.instructionToString(r), com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          5023
+        </td>
+        <td>
+          1489
+          -
+          1531
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.instructionToString
+        </td>
+        <td style="background: #F0ADAD">
+          PlanUtils.this.instructionToString(plannable.instruction)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          5022
+        </td>
+        <td>
+          1509
+          -
+          1530
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Plannable.instruction
+        </td>
+        <td style="background: #F0ADAD">
+          plannable.instruction
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          5025
+        </td>
+        <td>
+          1618
+          -
+          1665
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.map
+        </td>
+        <td style="background: #F0ADAD">
+          r.onSuccess.map[com.atomist.tree.utils.TreeNodePrinter.BabyTree](((x$3: com.atomist.rug.spi.Handlers.Callback) =&gt; PlanUtils.this.callbackToTree(&quot;onSuccess&quot;, x$3)))
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          5024
+        </td>
+        <td>
+          1634
+          -
+          1664
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.callbackToTree
+        </td>
+        <td style="background: #F0ADAD">
+          PlanUtils.this.callbackToTree(&quot;onSuccess&quot;, x$3)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          5027
+        </td>
+        <td>
+          1697
+          -
+          1744
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.map
+        </td>
+        <td style="background: #F0ADAD">
+          r.onFailure.map[com.atomist.tree.utils.TreeNodePrinter.BabyTree](((x$4: com.atomist.rug.spi.Handlers.Callback) =&gt; PlanUtils.this.callbackToTree(&quot;onFailure&quot;, x$4)))
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          5026
+        </td>
+        <td>
+          1713
+          -
+          1743
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.callbackToTree
+        </td>
+        <td style="background: #F0ADAD">
+          PlanUtils.this.callbackToTree(&quot;onFailure&quot;, x$4)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          5029
+        </td>
+        <td>
+          1788
+          -
+          1788
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.utils.TreeNodePrinter.BabyTree]
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          5031
+        </td>
+        <td>
+          1755
+          -
+          1806
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(i, scala.this.Option.option2Iterable[com.atomist.tree.utils.TreeNodePrinter.BabyTree](onSuccessChild).toSeq.++[com.atomist.tree.utils.TreeNodePrinter.BabyTree, Seq[com.atomist.tree.utils.TreeNodePrinter.BabyTree]](scala.this.Option.option2Iterable[com.atomist.tree.utils.TreeNodePrinter.BabyTree](onFailureChild))(collection.this.Seq.canBuildFrom[com.atomist.tree.utils.TreeNodePrinter.BabyTree]))
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          5028
+        </td>
+        <td>
+          1791
+          -
+          1805
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Option.option2Iterable[com.atomist.tree.utils.TreeNodePrinter.BabyTree](onFailureChild)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          5030
+        </td>
+        <td>
+          1767
+          -
+          1805
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Option.option2Iterable[com.atomist.tree.utils.TreeNodePrinter.BabyTree](onSuccessChild).toSeq.++[com.atomist.tree.utils.TreeNodePrinter.BabyTree, Seq[com.atomist.tree.utils.TreeNodePrinter.BabyTree]](scala.this.Option.option2Iterable[com.atomist.tree.utils.TreeNodePrinter.BabyTree](onFailureChild))(collection.this.Seq.canBuildFrom[com.atomist.tree.utils.TreeNodePrinter.BabyTree])
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          5032
+        </td>
+        <td>
+          1864
+          -
+          1867
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          5033
+        </td>
+        <td>
+          1852
+          -
+          1868
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(i, immutable.this.Nil)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          5036
+        </td>
+        <td>
+          1906
+          -
+          1934
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #F0ADAD">
+          plan.local.++[com.atomist.rug.spi.Handlers.Message with Product with Serializable, Seq[com.atomist.rug.spi.Handlers.Message with Product with Serializable]](plan.lifecycle)(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.Message with Product with Serializable])
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          5035
+        </td>
+        <td>
+          1917
+          -
+          1917
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.Message with Product with Serializable]
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          5034
+        </td>
+        <td>
+          1920
+          -
+          1934
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Plan.lifecycle
+        </td>
+        <td style="background: #F0ADAD">
+          plan.lifecycle
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          5049
+        </td>
+        <td>
+          1939
+          -
+          2084
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(&quot;Plan&quot;, plan.instructions.sortBy[String](((x$5: com.atomist.rug.spi.Handlers.Plannable) =&gt; x$5.toString()))(math.this.Ordering.String).map[com.atomist.tree.utils.TreeNodePrinter.BabyTree, Seq[com.atomist.tree.utils.TreeNodePrinter.BabyTree]]({
+  ((plannable: com.atomist.rug.spi.Handlers.Plannable) =&gt; respondableToTree(plannable))
+})(collection.this.Seq.canBuildFrom[com.atomist.tree.utils.TreeNodePrinter.BabyTree]).++[com.atomist.tree.utils.TreeNodePrinter.BabyTree, Seq[com.atomist.tree.utils.TreeNodePrinter.BabyTree]](allMessages.sortBy[String](((x$6: com.atomist.rug.spi.Handlers.Message with Product with Serializable) =&gt; x$6.toDisplay))(math.this.Ordering.String).map[com.atomist.tree.utils.TreeNodePrinter.BabyTree, Seq[com.atomist.tree.utils.TreeNodePrinter.BabyTree]]({
+  ((m: com.atomist.rug.spi.Handlers.Message) =&gt; PlanUtils.this.messageToTree(m))
+})(collection.this.Seq.canBuildFrom[com.atomist.tree.utils.TreeNodePrinter.BabyTree]))(collection.this.Seq.canBuildFrom[com.atomist.tree.utils.TreeNodePrinter.BabyTree]))
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          5037
+        </td>
+        <td>
+          1948
+          -
+          1954
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Plan&quot;
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          5038
+        </td>
+        <td>
+          1987
+          -
+          1997
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #F0ADAD">
+          x$5.toString()
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          5047
+        </td>
+        <td>
+          2022
+          -
+          2022
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.utils.TreeNodePrinter.BabyTree]
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          5041
+        </td>
+        <td>
+          2002
+          -
+          2002
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.utils.TreeNodePrinter.BabyTree]
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          5040
+        </td>
+        <td>
+          2003
+          -
+          2020
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.respondableToTree
+        </td>
+        <td style="background: #F0ADAD">
+          respondableToTree(plannable)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          5048
+        </td>
+        <td>
+          1962
+          -
+          2083
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #F0ADAD">
+          plan.instructions.sortBy[String](((x$5: com.atomist.rug.spi.Handlers.Plannable) =&gt; x$5.toString()))(math.this.Ordering.String).map[com.atomist.tree.utils.TreeNodePrinter.BabyTree, Seq[com.atomist.tree.utils.TreeNodePrinter.BabyTree]]({
+  ((plannable: com.atomist.rug.spi.Handlers.Plannable) =&gt; respondableToTree(plannable))
+})(collection.this.Seq.canBuildFrom[com.atomist.tree.utils.TreeNodePrinter.BabyTree]).++[com.atomist.tree.utils.TreeNodePrinter.BabyTree, Seq[com.atomist.tree.utils.TreeNodePrinter.BabyTree]](allMessages.sortBy[String](((x$6: com.atomist.rug.spi.Handlers.Message with Product with Serializable) =&gt; x$6.toDisplay))(math.this.Ordering.String).map[com.atomist.tree.utils.TreeNodePrinter.BabyTree, Seq[com.atomist.tree.utils.TreeNodePrinter.BabyTree]]({
+  ((m: com.atomist.rug.spi.Handlers.Message) =&gt; PlanUtils.this.messageToTree(m))
+})(collection.this.Seq.canBuildFrom[com.atomist.tree.utils.TreeNodePrinter.BabyTree]))(collection.this.Seq.canBuildFrom[com.atomist.tree.utils.TreeNodePrinter.BabyTree])
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          5039
+        </td>
+        <td>
+          1986
+          -
+          1986
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.math.Ordering.String
+        </td>
+        <td style="background: #F0ADAD">
+          math.this.Ordering.String
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          5044
+        </td>
+        <td>
+          2069
+          -
+          2082
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.messageToTree
+        </td>
+        <td style="background: #F0ADAD">
+          PlanUtils.this.messageToTree(m)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          5043
+        </td>
+        <td>
+          2051
+          -
+          2051
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.math.Ordering.String
+        </td>
+        <td style="background: #F0ADAD">
+          math.this.Ordering.String
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          5046
+        </td>
+        <td>
+          2033
+          -
+          2083
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #F0ADAD">
+          allMessages.sortBy[String](((x$6: com.atomist.rug.spi.Handlers.Message with Product with Serializable) =&gt; x$6.toDisplay))(math.this.Ordering.String).map[com.atomist.tree.utils.TreeNodePrinter.BabyTree, Seq[com.atomist.tree.utils.TreeNodePrinter.BabyTree]]({
+  ((m: com.atomist.rug.spi.Handlers.Message) =&gt; PlanUtils.this.messageToTree(m))
+})(collection.this.Seq.canBuildFrom[com.atomist.tree.utils.TreeNodePrinter.BabyTree])
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          5045
+        </td>
+        <td>
+          2068
+          -
+          2068
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.utils.TreeNodePrinter.BabyTree]
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          5042
+        </td>
+        <td>
+          2052
+          -
+          2063
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Callback.toDisplay
+        </td>
+        <td style="background: #F0ADAD">
+          x$6.toDisplay
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          5053
+        </td>
+        <td>
+          2279
+          -
+          2347
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Error: &quot;, &quot;&quot;).s(scala.Option.apply[Throwable](x).map[String](((x$7: Throwable) =&gt; x$7.getMessage())).getOrElse[String](&quot;null exception&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          5050
+        </td>
+        <td>
+          2281
+          -
+          2289
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Error: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          5052
+        </td>
+        <td>
+          2290
+          -
+          2345
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Option.apply[Throwable](x).map[String](((x$7: Throwable) =&gt; x$7.getMessage())).getOrElse[String](&quot;null exception&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          5051
+        </td>
+        <td>
+          2346
+          -
+          2347
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          5059
+        </td>
+        <td>
+          2406
+          -
+          2473
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(nullSafeMessage(x), collection.this.Seq.apply[com.atomist.tree.utils.TreeNodePrinter.BabyTree](com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(PlanUtils.this.instructionToString(i), com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2)))
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          5056
+        </td>
+        <td>
+          2439
+          -
+          2439
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          5058
+        </td>
+        <td>
+          2435
+          -
+          2472
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[com.atomist.tree.utils.TreeNodePrinter.BabyTree](com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(PlanUtils.this.instructionToString(i), com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2))
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          5055
+        </td>
+        <td>
+          2448
+          -
+          2470
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.instructionToString
+        </td>
+        <td style="background: #F0ADAD">
+          PlanUtils.this.instructionToString(i)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          5054
+        </td>
+        <td>
+          2415
+          -
+          2433
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.nullSafeMessage
+        </td>
+        <td style="background: #F0ADAD">
+          nullSafeMessage(x)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          5057
+        </td>
+        <td>
+          2439
+          -
+          2471
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(PlanUtils.this.instructionToString(i), com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          5062
+        </td>
+        <td>
+          2546
+          -
+          2567
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[com.atomist.tree.utils.TreeNodePrinter.BabyTree](PlanUtils.this.messageToTree(m))
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          5061
+        </td>
+        <td>
+          2550
+          -
+          2566
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.messageToTree
+        </td>
+        <td style="background: #F0ADAD">
+          PlanUtils.this.messageToTree(m)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          5063
+        </td>
+        <td>
+          2517
+          -
+          2568
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(nullSafeMessage(x), collection.this.Seq.apply[com.atomist.tree.utils.TreeNodePrinter.BabyTree](PlanUtils.this.messageToTree(m)))
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          5060
+        </td>
+        <td>
+          2526
+          -
+          2544
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.nullSafeMessage
+        </td>
+        <td style="background: #F0ADAD">
+          nullSafeMessage(x)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          5065
+        </td>
+        <td>
+          2638
+          -
+          2674
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.callbackToTree
+        </td>
+        <td style="background: #F0ADAD">
+          PlanUtils.this.callbackToTree(&quot;failed callback&quot;, c)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          5067
+        </td>
+        <td>
+          2605
+          -
+          2676
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(nullSafeMessage(x), collection.this.Seq.apply[com.atomist.tree.utils.TreeNodePrinter.BabyTree](PlanUtils.this.callbackToTree(&quot;failed callback&quot;, c)))
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          5064
+        </td>
+        <td>
+          2614
+          -
+          2632
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.nullSafeMessage
+        </td>
+        <td style="background: #F0ADAD">
+          nullSafeMessage(x)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          5066
+        </td>
+        <td>
+          2634
+          -
+          2675
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[com.atomist.tree.utils.TreeNodePrinter.BabyTree](PlanUtils.this.callbackToTree(&quot;failed callback&quot;, c))
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          5068
+        </td>
+        <td>
+          2755
+          -
+          2765
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Received &quot;
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          5071
+        </td>
+        <td>
+          2786
+          -
+          2818
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.instructionToString
+        </td>
+        <td style="background: #F0ADAD">
+          PlanUtils.this.instructionToString(instruction)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          5074
+        </td>
+        <td>
+          2744
+          -
+          2821
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(scala.StringContext.apply(&quot;Received &quot;, &quot; back from &quot;, &quot;&quot;).s(response, PlanUtils.this.instructionToString(instruction)), com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          5070
+        </td>
+        <td>
+          2819
+          -
+          2820
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          5073
+        </td>
+        <td>
+          2744
+          -
+          2744
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          5072
+        </td>
+        <td>
+          2753
+          -
+          2820
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Received &quot;, &quot; back from &quot;, &quot;&quot;).s(response, PlanUtils.this.instructionToString(instruction))
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          5069
+        </td>
+        <td>
+          2773
+          -
+          2785
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; back from &quot;
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          5077
+        </td>
+        <td>
+          2880
+          -
+          2915
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Await.ready
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.Await.ready[com.atomist.rug.spi.Handlers.PlanResult](planResult, scala.concurrent.duration.`package`.DurationInt(10).seconds)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          5076
+        </td>
+        <td>
+          2904
+          -
+          2914
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.concurrent.duration.DurationConversions.seconds
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.duration.`package`.DurationInt(10).seconds
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          5075
+        </td>
+        <td>
+          2904
+          -
+          2906
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          10
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          5078
+        </td>
+        <td>
+          2939
+          -
+          2959
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #F0ADAD">
+          planResult.value.get
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          5080
+        </td>
+        <td>
+          3060
+          -
+          3061
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          5083
+        </td>
+        <td>
+          3007
+          -
+          3007
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          5082
+        </td>
+        <td>
+          3016
+          -
+          3061
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Future failed with &quot;, &quot;&quot;).s(exception.getMessage())
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          5079
+        </td>
+        <td>
+          3018
+          -
+          3038
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Future failed with &quot;
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          5081
+        </td>
+        <td>
+          3039
+          -
+          3059
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Throwable.getMessage
+        </td>
+        <td style="background: #F0ADAD">
+          exception.getMessage()
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          5084
+        </td>
+        <td>
+          3007
+          -
+          3062
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(scala.StringContext.apply(&quot;Future failed with &quot;, &quot;&quot;).s(exception.getMessage()), com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          5086
+        </td>
+        <td>
+          3141
+          -
+          3150
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.PlanResult.log
+        </td>
+        <td style="background: #F0ADAD">
+          value.log
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          5085
+        </td>
+        <td>
+          3120
+          -
+          3139
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Future completed&quot;).s()
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          5087
+        </td>
+        <td>
+          3098
+          -
+          3151
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.awaitAndTreeLogEvents
+        </td>
+        <td style="background: #F0ADAD">
+          PlanUtils.this.awaitAndTreeLogEvents(scala.StringContext.apply(&quot;Future completed&quot;).s(), value.log)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          5088
+        </td>
+        <td>
+          3190
+          -
+          3206
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.planToTree
+        </td>
+        <td style="background: #F0ADAD">
+          PlanUtils.this.planToTree(plan)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          5089
+        </td>
+        <td>
+          3226
+          -
+          3243
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Nested plan run&quot;
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          5091
+        </td>
+        <td>
+          3217
+          -
+          3268
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(&quot;Nested plan run&quot;, collection.this.Seq.apply[com.atomist.tree.utils.TreeNodePrinter.BabyTree](planChild, result))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          5090
+        </td>
+        <td>
+          3245
+          -
+          3267
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[com.atomist.tree.utils.TreeNodePrinter.BabyTree](planChild, result)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          5092
+        </td>
+        <td>
+          3314
+          -
+          3328
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanUtils.logEventToTree
+        </td>
+        <td style="background: #F0ADAD">
+          logEventToTree(one)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          5094
+        </td>
+        <td>
+          3303
+          -
+          3329
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #F0ADAD">
+          events.map[com.atomist.tree.utils.TreeNodePrinter.BabyTree, Seq[com.atomist.tree.utils.TreeNodePrinter.BabyTree]]({
+  ((one: com.atomist.rug.spi.Handlers.PlanLogEvent) =&gt; logEventToTree(one))
+})(collection.this.Seq.canBuildFrom[com.atomist.tree.utils.TreeNodePrinter.BabyTree])
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          5093
+        </td>
+        <td>
+          3313
+          -
+          3313
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.utils.TreeNodePrinter.BabyTree]
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          5095
+        </td>
+        <td>
+          3365
+          -
+          3372
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.print
+        </td>
+        <td style="background: #F0ADAD">
+          x$8.print
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          5098
+        </td>
+        <td>
+          3334
+          -
+          3374
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodePrinter.BabyTree.apply(name, children.sortBy[String](((x$8: com.atomist.tree.utils.TreeNodePrinter.BabyTree) =&gt; x$8.print))(math.this.Ordering.String))
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          5097
+        </td>
+        <td>
+          3349
+          -
+          3373
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.sortBy
+        </td>
+        <td style="background: #F0ADAD">
+          children.sortBy[String](((x$8: com.atomist.tree.utils.TreeNodePrinter.BabyTree) =&gt; x$8.print))(math.this.Ordering.String)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          5096
+        </td>
+        <td>
+          3364
+          -
+          3364
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.math.Ordering.String
+        </td>
+        <td style="background: #F0ADAD">
+          math.this.Ordering.String
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

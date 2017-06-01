@@ -1,0 +1,1479 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/java/JavaTypeType.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.java
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.kind.core._
+</span>5 <span style=''>import com.atomist.rug.kind.java.JavaSourceType._
+</span>6 <span style=''>import com.atomist.rug.kind.java.JavaTypeType._
+</span>7 <span style=''>import com.atomist.rug.spi._
+</span>8 <span style=''>import com.github.javaparser.ast.NodeList
+</span>9 <span style=''>import com.github.javaparser.ast.body._
+</span>10 <span style=''>import com.github.javaparser.ast.expr.{MarkerAnnotationExpr, Name}
+</span>11 <span style=''>
+</span>12 <span style=''>import scala.collection.JavaConverters._
+</span>13 <span style=''>
+</span>14 <span style=''>/**
+</span>15 <span style=''>  * Type resolution for a Java type (class or interface)
+</span>16 <span style=''>  */
+</span>17 <span style=''>class JavaTypeType
+</span>18 <span style=''>  extends Type
+</span>19 <span style=''>    with ReflectivelyTypedType {
+</span>20 <span style=''>
+</span>21 <span style=''>  override def description = </span><span style='background: #AEF1AE'>&quot;Java class&quot;</span><span style=''>
+</span>22 <span style=''>
+</span>23 <span style=''>  override def runtimeClass: Class[JavaClassOrInterfaceMutableView] = </span><span style='background: #AEF1AE'>classOf[JavaClassOrInterfaceMutableView]</span><span style=''>
+</span>24 <span style=''>
+</span>25 <span style=''>  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
+</span>26 <span style=''>      case pv: ProjectMutableView =&gt;
+</span>27 <span style=''>        </span><span style='background: #AEF1AE'>Some(JavaProjectMutableView(pv).javaSourceViews.flatMap(_.childrenNamed(JavaTypeAlias)))</span><span style=''>
+</span>28 <span style=''>      case fmv: FileArtifactBackedMutableView =&gt;
+</span>29 <span style=''>        </span><span style='background: #AEF1AE'>Some(
+</span>30 <span style=''></span><span style='background: #AEF1AE'>          Seq(new JavaSourceMutableView(fmv.originalBackingObject, JavaProjectMutableView(fmv.parent))).flatMap(_.childrenNamed(JavaTypeAlias))
+</span>31 <span style=''></span><span style='background: #AEF1AE'>        )</span><span style=''>
+</span>32 <span style=''>      case dmv: DirectoryMutableView =&gt;
+</span>33 <span style=''>        val jpmv = </span><span style='background: #AEF1AE'>JavaProjectMutableView(dmv.parent)</span><span style=''>
+</span>34 <span style=''>        val filesInDir = </span><span style='background: #AEF1AE'>dmv.childNodes</span><span style=''>
+</span>35 <span style=''>        val javaSourceFiles = </span><span style='background: #AEF1AE'>filesInDir collect {
+</span>36 <span style=''></span><span style='background: #AEF1AE'>          case f: FileArtifactBackedMutableView if f.path.endsWith(JavaExtension) =&gt;
+</span>37 <span style=''></span><span style='background: #AEF1AE'>            new JavaSourceMutableView(f.originalBackingObject, jpmv)
+</span>38 <span style=''></span><span style='background: #AEF1AE'>        }</span><span style=''>
+</span>39 <span style=''>        val allClasses = </span><span style='background: #AEF1AE'>javaSourceFiles.flatMap(_.childrenNamed(JavaTypeAlias))</span><span style=''>
+</span>40 <span style=''>        </span><span style='background: #AEF1AE'>Some(allClasses)</span><span style=''>
+</span>41 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>42 <span style=''>    }
+</span>43 <span style=''>}
+</span>44 <span style=''>
+</span>45 <span style=''>object JavaTypeType {
+</span>46 <span style=''>
+</span>47 <span style=''>  def annotationAddedTo[T &lt;: BodyDeclaration[T]](bd: BodyDeclaration[T], annotationName: String): Boolean = {
+</span>48 <span style=''>    val annotations = </span><span style='background: #AEF1AE'>bd.getAnnotations.asScala</span><span style=''>
+</span>49 <span style=''>    if (</span><span style='background: #AEF1AE'>!annotations.exists(_.getNameAsString == annotationName)</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>50 <span style=''></span><span style='background: #AEF1AE'>      bd.setAnnotations(NodeList.nodeList((annotations :+ new MarkerAnnotationExpr(new Name(annotationName))).asJava))
+</span>51 <span style=''></span><span style='background: #AEF1AE'>      true
+</span>52 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''> else // It's already there
+</span>53 <span style=''>      </span><span style='background: #AEF1AE'>false</span><span style=''>
+</span>54 <span style=''>  }
+</span>55 <span style=''>
+</span>56 <span style=''>  def annotationRemovedFrom[T &lt;: BodyDeclaration[T]](bd: BodyDeclaration[T], annotationName: String): Boolean = {
+</span>57 <span style=''>    val annotations = </span><span style='background: #AEF1AE'>bd.getAnnotations.asScala</span><span style=''>
+</span>58 <span style=''>    if (</span><span style='background: #AEF1AE'>annotations.exists(_.getNameAsString == annotationName)</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>59 <span style=''></span><span style='background: #AEF1AE'>      bd.setAnnotations(NodeList.nodeList(annotations.filterNot(_.getNameAsString == annotationName).asJava))
+</span>60 <span style=''></span><span style='background: #AEF1AE'>      true
+</span>61 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''> else // It's already gone
+</span>62 <span style=''>      </span><span style='background: #AEF1AE'>false</span><span style=''>
+</span>63 <span style=''>  }
+</span>64 <span style=''>
+</span>65 <span style=''>  val ConstructorAlias: String = </span><span style='background: #AEF1AE'>&quot;JavaConstructor&quot;</span><span style=''>
+</span>66 <span style=''>
+</span>67 <span style=''>  val FieldAlias: String = </span><span style='background: #AEF1AE'>&quot;JavaField&quot;</span><span style=''>
+</span>68 <span style=''>
+</span>69 <span style=''>  val MethodAlias: String = </span><span style='background: #AEF1AE'>&quot;JavaMethod&quot;</span><span style=''>
+</span>70 <span style=''>
+</span>71 <span style=''>  val JavaTypeAlias: String = </span><span style='background: #AEF1AE'>Typed.typeClassToTypeName(classOf[JavaTypeType])</span><span style=''>
+</span>72 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          2080
+        </td>
+        <td>
+          587
+          -
+          599
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Java class&quot;
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2081
+        </td>
+        <td>
+          671
+          -
+          711
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.rug.kind.java.JavaClassOrInterfaceMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          2084
+        </td>
+        <td>
+          905
+          -
+          905
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.MutableView[_]]
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          2086
+        </td>
+        <td>
+          850
+          -
+          938
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Seq[com.atomist.rug.spi.MutableView[_]]](JavaProjectMutableView.apply(pv).javaSourceViews.flatMap[com.atomist.rug.spi.MutableView[_], Seq[com.atomist.rug.spi.MutableView[_]]](((x$1: com.atomist.rug.kind.java.JavaSourceMutableView) =&gt; x$1.childrenNamed(com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias)))(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.MutableView[_]]))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          2083
+        </td>
+        <td>
+          906
+          -
+          936
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaSourceMutableView.childrenNamed
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.childrenNamed(com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          2085
+        </td>
+        <td>
+          855
+          -
+          937
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          JavaProjectMutableView.apply(pv).javaSourceViews.flatMap[com.atomist.rug.spi.MutableView[_], Seq[com.atomist.rug.spi.MutableView[_]]](((x$1: com.atomist.rug.kind.java.JavaSourceMutableView) =&gt; x$1.childrenNamed(com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias)))(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.MutableView[_]])
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          2082
+        </td>
+        <td>
+          922
+          -
+          935
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          2095
+        </td>
+        <td>
+          996
+          -
+          1155
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Seq[com.atomist.rug.spi.MutableView[_]]](collection.this.Seq.apply[com.atomist.rug.kind.java.JavaSourceMutableView](new JavaSourceMutableView(fmv.originalBackingObject, JavaProjectMutableView.apply(fmv.parent))).flatMap[com.atomist.rug.spi.MutableView[_], Seq[com.atomist.rug.spi.MutableView[_]]](((x$2: com.atomist.rug.kind.java.JavaSourceMutableView) =&gt; x$2.childrenNamed(com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias)))(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.MutableView[_]]))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2093
+        </td>
+        <td>
+          1113
+          -
+          1113
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.MutableView[_]]
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2087
+        </td>
+        <td>
+          1042
+          -
+          1067
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.originalBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          fmv.originalBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2089
+        </td>
+        <td>
+          1069
+          -
+          1103
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaProjectMutableView.apply
+        </td>
+        <td style="background: #AEF1AE">
+          JavaProjectMutableView.apply(fmv.parent)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2092
+        </td>
+        <td>
+          1114
+          -
+          1144
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaSourceMutableView.childrenNamed
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.childrenNamed(com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2091
+        </td>
+        <td>
+          1130
+          -
+          1143
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2094
+        </td>
+        <td>
+          1012
+          -
+          1145
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.kind.java.JavaSourceMutableView](new JavaSourceMutableView(fmv.originalBackingObject, JavaProjectMutableView.apply(fmv.parent))).flatMap[com.atomist.rug.spi.MutableView[_], Seq[com.atomist.rug.spi.MutableView[_]]](((x$2: com.atomist.rug.kind.java.JavaSourceMutableView) =&gt; x$2.childrenNamed(com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias)))(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.MutableView[_]])
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2088
+        </td>
+        <td>
+          1092
+          -
+          1102
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.parent
+        </td>
+        <td style="background: #AEF1AE">
+          fmv.parent
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2090
+        </td>
+        <td>
+          1016
+          -
+          1104
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaSourceMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new JavaSourceMutableView(fmv.originalBackingObject, JavaProjectMutableView.apply(fmv.parent))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          2096
+        </td>
+        <td>
+          1238
+          -
+          1248
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.DirectoryMutableView.parent
+        </td>
+        <td style="background: #AEF1AE">
+          dmv.parent
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          2097
+        </td>
+        <td>
+          1215
+          -
+          1249
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaProjectMutableView.apply
+        </td>
+        <td style="background: #AEF1AE">
+          JavaProjectMutableView.apply(dmv.parent)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          2098
+        </td>
+        <td>
+          1275
+          -
+          1289
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.childNodes
+        </td>
+        <td style="background: #AEF1AE">
+          dmv.childNodes
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          2105
+        </td>
+        <td>
+          1320
+          -
+          1504
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          filesInDir.collect[com.atomist.rug.kind.java.JavaSourceMutableView, Seq[com.atomist.rug.kind.java.JavaSourceMutableView]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.tree.TreeNode,com.atomist.rug.kind.java.JavaSourceMutableView] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.tree.TreeNode =&gt; com.atomist.rug.kind.java.JavaSourceMutableView&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.tree.TreeNode, B1 &gt;: com.atomist.rug.kind.java.JavaSourceMutableView](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[com.atomist.tree.TreeNode]: com.atomist.tree.TreeNode): com.atomist.tree.TreeNode @unchecked) match {
+      case (f @ (_: com.atomist.rug.kind.core.FileArtifactBackedMutableView)) if f.path.endsWith(com.atomist.rug.kind.java.JavaSourceType.JavaExtension) =&gt; new JavaSourceMutableView(f.originalBackingObject, jpmv)
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: com.atomist.tree.TreeNode): Boolean = ((x1.asInstanceOf[com.atomist.tree.TreeNode]: com.atomist.tree.TreeNode): com.atomist.tree.TreeNode @unchecked) match {
+      case (f @ (_: com.atomist.rug.kind.core.FileArtifactBackedMutableView)) if f.path.endsWith(com.atomist.rug.kind.java.JavaSourceType.JavaExtension) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.tree.TreeNode,com.atomist.rug.kind.java.JavaSourceMutableView]))(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.java.JavaSourceMutableView])
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          2104
+        </td>
+        <td>
+          1331
+          -
+          1331
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.kind.java.JavaSourceMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          2103
+        </td>
+        <td>
+          1339
+          -
+          1339
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaTypeType.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2100
+        </td>
+        <td>
+          1392
+          -
+          1422
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          f.path.endsWith(com.atomist.rug.kind.java.JavaSourceType.JavaExtension)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2099
+        </td>
+        <td>
+          1408
+          -
+          1421
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaSourceType.JavaExtension
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.java.JavaSourceType.JavaExtension
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          2102
+        </td>
+        <td>
+          1438
+          -
+          1494
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaSourceMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new JavaSourceMutableView(f.originalBackingObject, jpmv)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          2101
+        </td>
+        <td>
+          1464
+          -
+          1487
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.originalBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          f.originalBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          2107
+        </td>
+        <td>
+          1554
+          -
+          1584
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaSourceMutableView.childrenNamed
+        </td>
+        <td style="background: #AEF1AE">
+          x$3.childrenNamed(com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          2109
+        </td>
+        <td>
+          1530
+          -
+          1585
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          javaSourceFiles.flatMap[com.atomist.rug.spi.MutableView[_], Seq[com.atomist.rug.spi.MutableView[_]]](((x$3: com.atomist.rug.kind.java.JavaSourceMutableView) =&gt; x$3.childrenNamed(com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias)))(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.MutableView[_]])
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          2106
+        </td>
+        <td>
+          1570
+          -
+          1583
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          2108
+        </td>
+        <td>
+          1553
+          -
+          1553
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.MutableView[_]]
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          2110
+        </td>
+        <td>
+          1594
+          -
+          1610
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Seq[com.atomist.rug.spi.MutableView[_]]](allClasses)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          2111
+        </td>
+        <td>
+          1627
+          -
+          1631
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          2113
+        </td>
+        <td>
+          1796
+          -
+          1821
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsScala.asScala
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.expr.AnnotationExpr](bd.getAnnotations()).asScala
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          2112
+        </td>
+        <td>
+          1796
+          -
+          1813
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.body.BodyDeclaration.getAnnotations
+        </td>
+        <td style="background: #AEF1AE">
+          bd.getAnnotations()
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          2124
+        </td>
+        <td>
+          1888
+          -
+          2025
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  bd.setAnnotations(com.github.javaparser.ast.NodeList.nodeList[com.github.javaparser.ast.expr.AnnotationExpr](scala.collection.JavaConverters.bufferAsJavaListConverter[com.github.javaparser.ast.expr.AnnotationExpr](annotations.:+[com.github.javaparser.ast.expr.AnnotationExpr, scala.collection.mutable.Buffer[com.github.javaparser.ast.expr.AnnotationExpr]](new com.github.javaparser.ast.expr.MarkerAnnotationExpr(new com.github.javaparser.ast.expr.Name(annotationName)))(mutable.this.Buffer.canBuildFrom[com.github.javaparser.ast.expr.AnnotationExpr])).asJava));
+  true
+}
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          2115
+        </td>
+        <td>
+          1830
+          -
+          1886
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          annotations.exists(((x$4: com.github.javaparser.ast.expr.AnnotationExpr) =&gt; x$4.getNameAsString().==(annotationName))).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          2114
+        </td>
+        <td>
+          1850
+          -
+          1885
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$4.getNameAsString().==(annotationName)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2120
+        </td>
+        <td>
+          1933
+          -
+          2006
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsJava.asJava
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.bufferAsJavaListConverter[com.github.javaparser.ast.expr.AnnotationExpr](annotations.:+[com.github.javaparser.ast.expr.AnnotationExpr, scala.collection.mutable.Buffer[com.github.javaparser.ast.expr.AnnotationExpr]](new com.github.javaparser.ast.expr.MarkerAnnotationExpr(new com.github.javaparser.ast.expr.Name(annotationName)))(mutable.this.Buffer.canBuildFrom[com.github.javaparser.ast.expr.AnnotationExpr])).asJava
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2122
+        </td>
+        <td>
+          1896
+          -
+          2008
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.body.BodyDeclaration.setAnnotations
+        </td>
+        <td style="background: #AEF1AE">
+          bd.setAnnotations(com.github.javaparser.ast.NodeList.nodeList[com.github.javaparser.ast.expr.AnnotationExpr](scala.collection.JavaConverters.bufferAsJavaListConverter[com.github.javaparser.ast.expr.AnnotationExpr](annotations.:+[com.github.javaparser.ast.expr.AnnotationExpr, scala.collection.mutable.Buffer[com.github.javaparser.ast.expr.AnnotationExpr]](new com.github.javaparser.ast.expr.MarkerAnnotationExpr(new com.github.javaparser.ast.expr.Name(annotationName)))(mutable.this.Buffer.canBuildFrom[com.github.javaparser.ast.expr.AnnotationExpr])).asJava))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2116
+        </td>
+        <td>
+          1973
+          -
+          1997
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.expr.Name.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.github.javaparser.ast.expr.Name(annotationName)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2119
+        </td>
+        <td>
+          1933
+          -
+          1998
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          annotations.:+[com.github.javaparser.ast.expr.AnnotationExpr, scala.collection.mutable.Buffer[com.github.javaparser.ast.expr.AnnotationExpr]](new com.github.javaparser.ast.expr.MarkerAnnotationExpr(new com.github.javaparser.ast.expr.Name(annotationName)))(mutable.this.Buffer.canBuildFrom[com.github.javaparser.ast.expr.AnnotationExpr])
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2118
+        </td>
+        <td>
+          1945
+          -
+          1945
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Buffer.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Buffer.canBuildFrom[com.github.javaparser.ast.expr.AnnotationExpr]
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2121
+        </td>
+        <td>
+          1914
+          -
+          2007
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.NodeList.nodeList
+        </td>
+        <td style="background: #AEF1AE">
+          com.github.javaparser.ast.NodeList.nodeList[com.github.javaparser.ast.expr.AnnotationExpr](scala.collection.JavaConverters.bufferAsJavaListConverter[com.github.javaparser.ast.expr.AnnotationExpr](annotations.:+[com.github.javaparser.ast.expr.AnnotationExpr, scala.collection.mutable.Buffer[com.github.javaparser.ast.expr.AnnotationExpr]](new com.github.javaparser.ast.expr.MarkerAnnotationExpr(new com.github.javaparser.ast.expr.Name(annotationName)))(mutable.this.Buffer.canBuildFrom[com.github.javaparser.ast.expr.AnnotationExpr])).asJava)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2117
+        </td>
+        <td>
+          1948
+          -
+          1998
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.expr.MarkerAnnotationExpr.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.github.javaparser.ast.expr.MarkerAnnotationExpr(new com.github.javaparser.ast.expr.Name(annotationName))
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          2123
+        </td>
+        <td>
+          2015
+          -
+          2019
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          2125
+        </td>
+        <td>
+          2059
+          -
+          2064
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          2126
+        </td>
+        <td>
+          2059
+          -
+          2064
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          2128
+        </td>
+        <td>
+          2206
+          -
+          2231
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsScala.asScala
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.expr.AnnotationExpr](bd.getAnnotations()).asScala
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          2127
+        </td>
+        <td>
+          2206
+          -
+          2223
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.body.BodyDeclaration.getAnnotations
+        </td>
+        <td style="background: #AEF1AE">
+          bd.getAnnotations()
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          2129
+        </td>
+        <td>
+          2259
+          -
+          2294
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$5.getNameAsString().==(annotationName)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          2137
+        </td>
+        <td>
+          2297
+          -
+          2425
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  bd.setAnnotations(com.github.javaparser.ast.NodeList.nodeList[com.github.javaparser.ast.expr.AnnotationExpr](scala.collection.JavaConverters.bufferAsJavaListConverter[com.github.javaparser.ast.expr.AnnotationExpr](annotations.filterNot(((x$6: com.github.javaparser.ast.expr.AnnotationExpr) =&gt; x$6.getNameAsString().==(annotationName)))).asJava));
+  true
+}
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          2130
+        </td>
+        <td>
+          2240
+          -
+          2295
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #AEF1AE">
+          annotations.exists(((x$5: com.github.javaparser.ast.expr.AnnotationExpr) =&gt; x$5.getNameAsString().==(annotationName)))
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          2131
+        </td>
+        <td>
+          2363
+          -
+          2398
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$6.getNameAsString().==(annotationName)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          2134
+        </td>
+        <td>
+          2323
+          -
+          2407
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.NodeList.nodeList
+        </td>
+        <td style="background: #AEF1AE">
+          com.github.javaparser.ast.NodeList.nodeList[com.github.javaparser.ast.expr.AnnotationExpr](scala.collection.JavaConverters.bufferAsJavaListConverter[com.github.javaparser.ast.expr.AnnotationExpr](annotations.filterNot(((x$6: com.github.javaparser.ast.expr.AnnotationExpr) =&gt; x$6.getNameAsString().==(annotationName)))).asJava)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          2133
+        </td>
+        <td>
+          2341
+          -
+          2406
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsJava.asJava
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.bufferAsJavaListConverter[com.github.javaparser.ast.expr.AnnotationExpr](annotations.filterNot(((x$6: com.github.javaparser.ast.expr.AnnotationExpr) =&gt; x$6.getNameAsString().==(annotationName)))).asJava
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          2132
+        </td>
+        <td>
+          2341
+          -
+          2399
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filterNot
+        </td>
+        <td style="background: #AEF1AE">
+          annotations.filterNot(((x$6: com.github.javaparser.ast.expr.AnnotationExpr) =&gt; x$6.getNameAsString().==(annotationName)))
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          2135
+        </td>
+        <td>
+          2305
+          -
+          2408
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.body.BodyDeclaration.setAnnotations
+        </td>
+        <td style="background: #AEF1AE">
+          bd.setAnnotations(com.github.javaparser.ast.NodeList.nodeList[com.github.javaparser.ast.expr.AnnotationExpr](scala.collection.JavaConverters.bufferAsJavaListConverter[com.github.javaparser.ast.expr.AnnotationExpr](annotations.filterNot(((x$6: com.github.javaparser.ast.expr.AnnotationExpr) =&gt; x$6.getNameAsString().==(annotationName)))).asJava))
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          2136
+        </td>
+        <td>
+          2415
+          -
+          2419
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          2138
+        </td>
+        <td>
+          2458
+          -
+          2463
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          2139
+        </td>
+        <td>
+          2458
+          -
+          2463
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          2140
+        </td>
+        <td>
+          2502
+          -
+          2519
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;JavaConstructor&quot;
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          2141
+        </td>
+        <td>
+          2548
+          -
+          2559
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;JavaField&quot;
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          2142
+        </td>
+        <td>
+          2589
+          -
+          2601
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;JavaMethod&quot;
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          2143
+        </td>
+        <td>
+          2633
+          -
+          2681
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeClassToTypeName
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeClassToTypeName(classOf[com.atomist.rug.kind.java.JavaTypeType])
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

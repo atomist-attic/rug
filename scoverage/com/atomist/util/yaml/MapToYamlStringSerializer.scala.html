@@ -1,0 +1,971 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/util/yaml/MapToYamlStringSerializer.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.util.yaml
+</span>2 <span style=''>
+</span>3 <span style=''>import java.util
+</span>4 <span style=''>
+</span>5 <span style=''>object MapToYamlStringSerializer {
+</span>6 <span style=''>
+</span>7 <span style=''>  val indentCharacters = </span><span style='background: #AEF1AE'>&quot;  &quot;</span><span style=''>
+</span>8 <span style=''>
+</span>9 <span style=''>  def toYamlString(yamlMap: util.HashMap[String, Object]): String = {
+</span>10 <span style=''>    val currentString = </span><span style='background: #AEF1AE'>new StringBuilder</span><span style=''>
+</span>11 <span style=''>    </span><span style='background: #AEF1AE'>outputYamlString(yamlMap, 0, currentString)</span><span style=''>
+</span>12 <span style=''>  }
+</span>13 <span style=''>
+</span>14 <span style=''>  private def outputYamlString(currentYamlMap: util.HashMap[String, Object], indentCount: Int, currentString: StringBuilder): String = {
+</span>15 <span style=''>    val entrySet = </span><span style='background: #AEF1AE'>currentYamlMap.entrySet.iterator</span><span style=''>
+</span>16 <span style=''>
+</span>17 <span style=''>    while (</span><span style='background: #AEF1AE'>entrySet.hasNext</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>18 <span style=''></span><span style='background: #AEF1AE'>      val entry = entrySet.next
+</span>19 <span style=''></span><span style='background: #AEF1AE'>
+</span>20 <span style=''></span><span style='background: #AEF1AE'>      currentString.append(produceNumberOfIndents(indentCount, 0, new StringBuilder))
+</span>21 <span style=''></span><span style='background: #AEF1AE'>      currentString.append(entry.getKey)
+</span>22 <span style=''></span><span style='background: #AEF1AE'>
+</span>23 <span style=''></span><span style='background: #AEF1AE'>      if (entry.getKey != &quot;&quot;) {
+</span>24 <span style=''></span><span style='background: #AEF1AE'>        currentString.append(&quot;:&quot;)
+</span>25 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>26 <span style=''></span><span style='background: #AEF1AE'>
+</span>27 <span style=''></span><span style='background: #AEF1AE'>      val buildingString = entry.getValue match {
+</span>28 <span style=''></span><span style='background: #AEF1AE'>        case value: util.HashMap[String@unchecked, Object@unchecked] =&gt; outputYamlString(value, indentCount + 1, currentString.append(&quot;\n&quot;))
+</span>29 <span style=''></span><span style='background: #AEF1AE'>        case &quot;&quot; =&gt; if (entry.getKey != &quot;&quot;) {
+</span>30 <span style=''></span><span style='background: #AEF1AE'>          currentString.append(&quot; &quot;).append(&quot;\&quot;\&quot;&quot;)
+</span>31 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>32 <span style=''></span><span style='background: #AEF1AE'>        case value =&gt; currentString.append(&quot; &quot;).append(value).append(&quot;\n&quot;)
+</span>33 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>34 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>35 <span style=''>
+</span>36 <span style=''>    </span><span style='background: #AEF1AE'>currentString.toString</span><span style=''>
+</span>37 <span style=''>  }
+</span>38 <span style=''>
+</span>39 <span style=''>  private def produceNumberOfIndents(numberOfIndents: Int, count: Int, currentString: StringBuilder): StringBuilder = {
+</span>40 <span style=''>    if (</span><span style='background: #AEF1AE'>count &lt; numberOfIndents</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>41 <span style=''></span><span style='background: #AEF1AE'>      currentString ++= indentCharacters
+</span>42 <span style=''></span><span style='background: #AEF1AE'>      produceNumberOfIndents(numberOfIndents, count + 1, currentString)
+</span>43 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>44 <span style=''>    currentString
+</span>45 <span style=''>  }
+</span>46 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          7
+        </td>
+        <td>
+          9494
+        </td>
+        <td>
+          110
+          -
+          114
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;  &quot;
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          9495
+        </td>
+        <td>
+          210
+          -
+          227
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.`package`.StringBuilder()
+        </td>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          9496
+        </td>
+        <td>
+          232
+          -
+          275
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.yaml.MapToYamlStringSerializer.outputYamlString
+        </td>
+        <td style="background: #AEF1AE">
+          MapToYamlStringSerializer.this.outputYamlString(yamlMap, 0, currentString)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          9497
+        </td>
+        <td>
+          437
+          -
+          469
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Set.iterator
+        </td>
+        <td style="background: #AEF1AE">
+          currentYamlMap.entrySet().iterator()
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          9524
+        </td>
+        <td>
+          475
+          -
+          475
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          9523
+        </td>
+        <td>
+          500
+          -
+          1123
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  {
+    val entry: java.util.Map.Entry[String,Object] = entrySet.next();
+    currentString.append(MapToYamlStringSerializer.this.produceNumberOfIndents(indentCount, 0, new scala.`package`.StringBuilder()));
+    currentString.append(entry.getKey());
+    if (entry.getKey().!=(&quot;&quot;))
+      currentString.append(&quot;:&quot;)
+    else
+      ();
+    val buildingString: Any = entry.getValue() match {
+      case (value @ (_: java.util.HashMap[String @unchecked,Object @unchecked])) =&gt; MapToYamlStringSerializer.this.outputYamlString(value, indentCount.+(1), currentString.append(&quot;\n&quot;))
+      case &quot;&quot; =&gt; if (entry.getKey().!=(&quot;&quot;))
+        currentString.append(&quot; &quot;).append(&quot;\&quot;\&quot;&quot;)
+      else
+        ()
+      case (value @ _) =&gt; currentString.append(&quot; &quot;).append(value).append(&quot;\n&quot;)
+    };
+    ()
+  };
+  while$1()
+}
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          9522
+        </td>
+        <td>
+          500
+          -
+          500
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.yaml.MapToYamlStringSerializer.while$1
+        </td>
+        <td style="background: #AEF1AE">
+          while$1()
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          9525
+        </td>
+        <td>
+          475
+          -
+          475
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          9498
+        </td>
+        <td>
+          482
+          -
+          498
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Iterator.hasNext
+        </td>
+        <td style="background: #AEF1AE">
+          entrySet.hasNext()
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          9499
+        </td>
+        <td>
+          520
+          -
+          533
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Iterator.next
+        </td>
+        <td style="background: #AEF1AE">
+          entrySet.next()
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          9503
+        </td>
+        <td>
+          541
+          -
+          620
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.append
+        </td>
+        <td style="background: #AEF1AE">
+          currentString.append(MapToYamlStringSerializer.this.produceNumberOfIndents(indentCount, 0, new scala.`package`.StringBuilder()))
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          9500
+        </td>
+        <td>
+          598
+          -
+          599
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          9502
+        </td>
+        <td>
+          562
+          -
+          619
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.yaml.MapToYamlStringSerializer.produceNumberOfIndents
+        </td>
+        <td style="background: #AEF1AE">
+          MapToYamlStringSerializer.this.produceNumberOfIndents(indentCount, 0, new scala.`package`.StringBuilder())
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          9501
+        </td>
+        <td>
+          601
+          -
+          618
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.`package`.StringBuilder()
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          9505
+        </td>
+        <td>
+          627
+          -
+          661
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.append
+        </td>
+        <td style="background: #AEF1AE">
+          currentString.append(entry.getKey())
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          9504
+        </td>
+        <td>
+          648
+          -
+          660
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Map.Entry.getKey
+        </td>
+        <td style="background: #AEF1AE">
+          entry.getKey()
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          9506
+        </td>
+        <td>
+          673
+          -
+          691
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          entry.getKey().!=(&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          9509
+        </td>
+        <td>
+          669
+          -
+          669
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          9510
+        </td>
+        <td>
+          669
+          -
+          669
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          9508
+        </td>
+        <td>
+          703
+          -
+          728
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.append
+        </td>
+        <td style="background: #AEF1AE">
+          currentString.append(&quot;:&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          9507
+        </td>
+        <td>
+          703
+          -
+          728
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.append
+        </td>
+        <td style="background: #AEF1AE">
+          currentString.append(&quot;:&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9511
+        </td>
+        <td>
+          765
+          -
+          779
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Map.Entry.getValue
+        </td>
+        <td style="background: #AEF1AE">
+          entry.getValue()
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          9512
+        </td>
+        <td>
+          884
+          -
+          899
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          indentCount.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          9514
+        </td>
+        <td>
+          860
+          -
+          928
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.yaml.MapToYamlStringSerializer.outputYamlString
+        </td>
+        <td style="background: #AEF1AE">
+          MapToYamlStringSerializer.this.outputYamlString(value, indentCount.+(1), currentString.append(&quot;\n&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          9513
+        </td>
+        <td>
+          901
+          -
+          927
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.append
+        </td>
+        <td style="background: #AEF1AE">
+          currentString.append(&quot;\n&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          9518
+        </td>
+        <td>
+          948
+          -
+          948
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          9515
+        </td>
+        <td>
+          952
+          -
+          970
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          entry.getKey().!=(&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          9519
+        </td>
+        <td>
+          948
+          -
+          948
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          9517
+        </td>
+        <td>
+          984
+          -
+          1024
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.append
+        </td>
+        <td style="background: #AEF1AE">
+          currentString.append(&quot; &quot;).append(&quot;\&quot;\&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          9516
+        </td>
+        <td>
+          984
+          -
+          1024
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.append
+        </td>
+        <td style="background: #AEF1AE">
+          currentString.append(&quot; &quot;).append(&quot;\&quot;\&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          9520
+        </td>
+        <td>
+          1057
+          -
+          1109
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.append
+        </td>
+        <td style="background: #AEF1AE">
+          currentString.append(&quot; &quot;).append(value).append(&quot;\n&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          9521
+        </td>
+        <td>
+          1122
+          -
+          1122
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          9526
+        </td>
+        <td>
+          1129
+          -
+          1151
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.toString
+        </td>
+        <td style="background: #AEF1AE">
+          currentString.toString()
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          9527
+        </td>
+        <td>
+          1285
+          -
+          1308
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          count.&lt;(numberOfIndents)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          9533
+        </td>
+        <td>
+          1281
+          -
+          1281
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          9532
+        </td>
+        <td>
+          1310
+          -
+          1430
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  currentString.++=(MapToYamlStringSerializer.this.indentCharacters);
+  MapToYamlStringSerializer.this.produceNumberOfIndents(numberOfIndents, count.+(1), currentString)
+}
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          9534
+        </td>
+        <td>
+          1281
+          -
+          1281
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          9529
+        </td>
+        <td>
+          1318
+          -
+          1352
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          currentString.++=(MapToYamlStringSerializer.this.indentCharacters)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          9528
+        </td>
+        <td>
+          1336
+          -
+          1352
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.yaml.MapToYamlStringSerializer.indentCharacters
+        </td>
+        <td style="background: #AEF1AE">
+          MapToYamlStringSerializer.this.indentCharacters
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          9530
+        </td>
+        <td>
+          1399
+          -
+          1408
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          count.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          9531
+        </td>
+        <td>
+          1359
+          -
+          1424
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.yaml.MapToYamlStringSerializer.produceNumberOfIndents
+        </td>
+        <td style="background: #AEF1AE">
+          MapToYamlStringSerializer.this.produceNumberOfIndents(numberOfIndents, count.+(1), currentString)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

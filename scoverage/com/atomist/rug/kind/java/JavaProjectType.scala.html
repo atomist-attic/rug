@@ -1,0 +1,253 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/java/JavaProjectType.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.java
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.kind.core.ProjectMutableView
+</span>5 <span style=''>import com.atomist.rug.kind.java.support._
+</span>6 <span style=''>import com.atomist.rug.spi._
+</span>7 <span style=''>
+</span>8 <span style=''>class JavaProjectType
+</span>9 <span style=''>  extends Type
+</span>10 <span style=''>    with ReflectivelyTypedType {
+</span>11 <span style=''>
+</span>12 <span style=''>  override def description = </span><span style='background: #AEF1AE'>&quot;Java project&quot;</span><span style=''>
+</span>13 <span style=''>
+</span>14 <span style=''>  override def runtimeClass = </span><span style='background: #AEF1AE'>classOf[JavaProjectMutableView]</span><span style=''>
+</span>15 <span style=''>
+</span>16 <span style=''>  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = {
+</span>17 <span style=''>    context match {
+</span>18 <span style=''>      case pv: ProjectMutableView if </span><span style='background: #F0ADAD'>JavaAssertions.isJava(pv.currentBackingObject)</span><span style=''> =&gt;
+</span>19 <span style=''>        </span><span style='background: #F0ADAD'>Some(Seq(new JavaProjectMutableView(pv)))</span><span style=''>
+</span>20 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>Some(Nil)</span><span style=''>
+</span>21 <span style=''>    }
+</span>22 <span style=''>  }
+</span>23 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          2017
+        </td>
+        <td>
+          295
+          -
+          309
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Java project&quot;
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          2018
+        </td>
+        <td>
+          341
+          -
+          372
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.rug.kind.java.JavaProjectMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          2020
+        </td>
+        <td>
+          509
+          -
+          555
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.kind.java.support.JavaAssertions.isJava.apply(pv.currentBackingObject)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          2019
+        </td>
+        <td>
+          531
+          -
+          554
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #F0ADAD">
+          pv.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          2021
+        </td>
+        <td>
+          576
+          -
+          606
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaProjectMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new JavaProjectMutableView(pv)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          2023
+        </td>
+        <td>
+          567
+          -
+          608
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[Seq[com.atomist.rug.kind.java.JavaProjectMutableView]](collection.this.Seq.apply[com.atomist.rug.kind.java.JavaProjectMutableView](new JavaProjectMutableView(pv)))
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          2022
+        </td>
+        <td>
+          572
+          -
+          607
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[com.atomist.rug.kind.java.JavaProjectMutableView](new JavaProjectMutableView(pv))
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          2024
+        </td>
+        <td>
+          630
+          -
+          633
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          2025
+        </td>
+        <td>
+          625
+          -
+          634
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[scala.collection.immutable.Nil.type](immutable.this.Nil)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

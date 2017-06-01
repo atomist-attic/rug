@@ -1,0 +1,551 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/graph/GraphNode.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.graph
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.spi.{ExportFunction, Typed}
+</span>4 <span style=''>import com.atomist.tree.utils.NodeUtils
+</span>5 <span style=''>import com.atomist.util.{Visitable, Visitor}
+</span>6 <span style=''>
+</span>7 <span style=''>/**
+</span>8 <span style=''>  * Supertrait of all graph nodes. No assumptions about cycles
+</span>9 <span style=''>  * or children.
+</span>10 <span style=''>  *
+</span>11 <span style=''>  * This is a core Rug abstraction. Path expressions run against GraphNodes.
+</span>12 <span style=''>  * A GraphNode is independent of its underlying representation.
+</span>13 <span style=''>  */
+</span>14 <span style=''>trait GraphNode extends Visitable {
+</span>15 <span style=''>
+</span>16 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Name of the node&quot;)
+</span>17 <span style=''>  def nodeName: String
+</span>18 <span style=''>
+</span>19 <span style=''>  @deprecated(&quot;Please don't use this&quot;, &quot;0.10.0&quot;)
+</span>20 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Tags attached to the node&quot;)
+</span>21 <span style=''>  def nodeType: Set[String] = </span><span style='background: #F0ADAD'>nodeTags</span><span style=''>
+</span>22 <span style=''>
+</span>23 <span style=''>  /**
+</span>24 <span style=''>    * Tags for the node, such as &quot;File&quot; or &quot;JavaType&quot;. There may be multiple
+</span>25 <span style=''>    * nodes in a tree with the same tags, and multiple tags on the one node.
+</span>26 <span style=''>    * A common use of tags is type.
+</span>27 <span style=''>    *
+</span>28 <span style=''>    * @return tags for the node.
+</span>29 <span style=''>    */
+</span>30 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Tags attached to the node&quot;)
+</span>31 <span style=''>  def nodeTags: Set[String] = </span><span style='background: #AEF1AE'>Set(Typed.typeToTypeName(getClass))</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>  def hasTag(tag: String): Boolean = </span><span style='background: #AEF1AE'>nodeTags.contains(tag)</span><span style=''>
+</span>34 <span style=''>
+</span>35 <span style=''>  override def accept(v: Visitor, depth: Int): Unit = {
+</span>36 <span style=''>    if (</span><span style='background: #AEF1AE'>v.visit(this, depth)</span><span style=''>)
+</span>37 <span style=''>      </span><span style='background: #AEF1AE'>relatedNodes.foreach(_.accept(v, depth + 1))</span><span style=''>
+</span>38 <span style=''>  }
+</span>39 <span style=''>
+</span>40 <span style=''>  def count: Int = </span><span style='background: #F0ADAD'>relatedNodes.size</span><span style=''>
+</span>41 <span style=''>
+</span>42 <span style=''>  def relatedNodes: Seq[GraphNode]
+</span>43 <span style=''>
+</span>44 <span style=''>  def relatedNodeNames: Set[String]
+</span>45 <span style=''>
+</span>46 <span style=''>  def relatedNodeTypes: Set[String]
+</span>47 <span style=''>
+</span>48 <span style=''>  def relatedNodesNamed(key: String): Seq[GraphNode]
+</span>49 <span style=''>
+</span>50 <span style=''>  /**
+</span>51 <span style=''>    * Find nodes under the named edge, regardless of their names.
+</span>52 <span style=''>    * Default implementation looks on this class for an appropriately
+</span>53 <span style=''>    * named no-arg method returning Seq[GraphNode] or GraphNode
+</span>54 <span style=''>    *
+</span>55 <span style=''>    * @param name name of the edge
+</span>56 <span style=''>    * @return nodes found at the end of this named edge
+</span>57 <span style=''>    */
+</span>58 <span style=''>  def followEdge(name: String): Seq[GraphNode] = {
+</span>59 <span style=''>    </span><span style='background: #AEF1AE'>NodeUtils.invokeMethodIfPresent[Seq[GraphNode]](this, name)</span><span style=''> match {
+</span>60 <span style=''>      case null =&gt; </span><span style='background: #F0ADAD'>Nil</span><span style=''>
+</span>61 <span style=''>      case Some(l) =&gt; l
+</span>62 <span style=''>      case None =&gt;
+</span>63 <span style=''>        </span><span style='background: #AEF1AE'>NodeUtils.invokeMethodIfPresent[GraphNode](this, name)
+</span>64 <span style=''></span><span style='background: #AEF1AE'>          .map(n =&gt; Seq(n))
+</span>65 <span style=''></span><span style='background: #AEF1AE'>          .getOrElse(Nil)</span><span style=''>
+</span>66 <span style=''>    }
+</span>67 <span style=''>  }
+</span>68 <span style=''>
+</span>69 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          1
+        </td>
+        <td>
+          686
+          -
+          694
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeTags
+        </td>
+        <td style="background: #F0ADAD">
+          GraphNode.this.nodeTags
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          2
+        </td>
+        <td>
+          1071
+          -
+          1079
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.getClass
+        </td>
+        <td style="background: #AEF1AE">
+          GraphNode.this.getClass()
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          5
+        </td>
+        <td>
+          1046
+          -
+          1081
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](com.atomist.rug.spi.Typed.typeToTypeName(GraphNode.this.getClass(), com.atomist.rug.spi.Typed.typeToTypeName$default$2))
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          4
+        </td>
+        <td>
+          1050
+          -
+          1080
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName(GraphNode.this.getClass(), com.atomist.rug.spi.Typed.typeToTypeName$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          3
+        </td>
+        <td>
+          1056
+          -
+          1056
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          6
+        </td>
+        <td>
+          1120
+          -
+          1142
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          GraphNode.this.nodeTags.contains(tag)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          13
+        </td>
+        <td>
+          1204
+          -
+          1204
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          7
+        </td>
+        <td>
+          1208
+          -
+          1228
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.Visitor.visit
+        </td>
+        <td style="background: #AEF1AE">
+          v.visit(this, depth)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          12
+        </td>
+        <td>
+          1204
+          -
+          1204
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          8
+        </td>
+        <td>
+          1269
+          -
+          1278
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          depth.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          11
+        </td>
+        <td>
+          1236
+          -
+          1280
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          GraphNode.this.relatedNodes.foreach[Unit](((x$1: com.atomist.graph.GraphNode) =&gt; x$1.accept(v, depth.+(1))))
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          10
+        </td>
+        <td>
+          1236
+          -
+          1280
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          GraphNode.this.relatedNodes.foreach[Unit](((x$1: com.atomist.graph.GraphNode) =&gt; x$1.accept(v, depth.+(1))))
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          9
+        </td>
+        <td>
+          1257
+          -
+          1279
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.accept
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.accept(v, depth.+(1))
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          14
+        </td>
+        <td>
+          1305
+          -
+          1322
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #F0ADAD">
+          GraphNode.this.relatedNodes.size
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          16
+        </td>
+        <td>
+          1853
+          -
+          1912
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent[Seq[com.atomist.graph.GraphNode]](this, name, com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent$default$3[Seq[com.atomist.graph.GraphNode]])((ClassTag.apply[Seq[com.atomist.graph.GraphNode]](classOf[scala.collection.Seq]): scala.reflect.ClassTag[Seq[com.atomist.graph.GraphNode]]))
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          15
+        </td>
+        <td>
+          1884
+          -
+          1884
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent$default$3[Seq[com.atomist.graph.GraphNode]]
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          17
+        </td>
+        <td>
+          1940
+          -
+          1943
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          18
+        </td>
+        <td>
+          2026
+          -
+          2026
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent$default$3[com.atomist.graph.GraphNode]
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          19
+        </td>
+        <td>
+          2070
+          -
+          2076
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.graph.GraphNode](n)
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          20
+        </td>
+        <td>
+          2099
+          -
+          2102
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          21
+        </td>
+        <td>
+          1995
+          -
+          2103
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent[com.atomist.graph.GraphNode](this, name, com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent$default$3[com.atomist.graph.GraphNode])((ClassTag.apply[com.atomist.graph.GraphNode](classOf[com.atomist.graph.GraphNode]): scala.reflect.ClassTag[com.atomist.graph.GraphNode])).map[Seq[com.atomist.graph.GraphNode]](((n: com.atomist.graph.GraphNode) =&gt; collection.this.Seq.apply[com.atomist.graph.GraphNode](n))).getOrElse[Seq[com.atomist.graph.GraphNode]](immutable.this.Nil)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

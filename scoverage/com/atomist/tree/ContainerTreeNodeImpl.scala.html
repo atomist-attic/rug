@@ -1,0 +1,681 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/ContainerTreeNodeImpl.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree
+</span>2 <span style=''>
+</span>3 <span style=''>/**
+</span>4 <span style=''>  * Simple implementation of ContainerTreeNode allowing fields to be added.
+</span>5 <span style=''>  *
+</span>6 <span style=''>  * @param nodeName node name
+</span>7 <span style=''>  * @param nodeTags node type
+</span>8 <span style=''>  */
+</span>9 <span style=''>class ContainerTreeNodeImpl(
+</span>10 <span style=''>                             val nodeName: String,
+</span>11 <span style=''>                             override val nodeTags: Set[String])
+</span>12 <span style=''>  extends ContainerTreeNode {
+</span>13 <span style=''>
+</span>14 <span style=''>  def this(nodeName: String, nt: String) =
+</span>15 <span style=''>    </span><span style='background: #AEF1AE'>this(nodeName, Set(nt))</span><span style=''>
+</span>16 <span style=''>
+</span>17 <span style=''>  private var kids: Seq[TreeNode] = </span><span style='background: #AEF1AE'>Seq()</span><span style=''>
+</span>18 <span style=''>
+</span>19 <span style=''>  def addField(tn: TreeNode): Unit =
+</span>20 <span style=''>    </span><span style='background: #AEF1AE'>kids = kids :+ tn</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>  override def childNodeNames: Set[String] = </span><span style='background: #AEF1AE'>kids.map(_.nodeName).toSet</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>  override def childNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>kids.flatMap(_.nodeTags).toSet</span><span style=''>
+</span>25 <span style=''>
+</span>26 <span style=''>  override def childrenNamed(key: String): Seq[TreeNode] = </span><span style='background: #AEF1AE'>kids.filter(_.nodeName == key)</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>  override def value: String = </span><span style='background: #F0ADAD'>s&quot;$nodeName:${kids.mkString(&quot;,&quot;)}&quot;</span><span style=''>
+</span>29 <span style=''>
+</span>30 <span style=''>  override def toString = </span><span style='background: #F0ADAD'>s&quot;$nodeName:$nodeTags(${kids.size})&quot;</span><span style=''>
+</span>31 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          7039
+        </td>
+        <td>
+          413
+          -
+          420
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](nt)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          7041
+        </td>
+        <td>
+          398
+          -
+          398
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          7040
+        </td>
+        <td>
+          398
+          -
+          421
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.ContainerTreeNodeImpl.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ContainerTreeNodeImpl.this.&lt;init&gt;(nodeName, scala.this.Predef.Set.apply[String](nt))
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          7042
+        </td>
+        <td>
+          459
+          -
+          464
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7045
+        </td>
+        <td>
+          507
+          -
+          524
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.ContainerTreeNodeImpl.kids_=
+        </td>
+        <td style="background: #AEF1AE">
+          ContainerTreeNodeImpl.this.kids_=(ContainerTreeNodeImpl.this.kids.:+[com.atomist.tree.TreeNode, Seq[com.atomist.tree.TreeNode]](tn)(collection.this.Seq.canBuildFrom[com.atomist.tree.TreeNode]))
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7044
+        </td>
+        <td>
+          514
+          -
+          524
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          ContainerTreeNodeImpl.this.kids.:+[com.atomist.tree.TreeNode, Seq[com.atomist.tree.TreeNode]](tn)(collection.this.Seq.canBuildFrom[com.atomist.tree.TreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7043
+        </td>
+        <td>
+          519
+          -
+          519
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.TreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          7048
+        </td>
+        <td>
+          571
+          -
+          597
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          ContainerTreeNodeImpl.this.kids.map[String, Seq[String]](((x$1: com.atomist.tree.TreeNode) =&gt; x$1.nodeName))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          7047
+        </td>
+        <td>
+          579
+          -
+          579
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          7046
+        </td>
+        <td>
+          580
+          -
+          590
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          7051
+        </td>
+        <td>
+          644
+          -
+          674
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #F0ADAD">
+          ContainerTreeNodeImpl.this.kids.flatMap[String, Seq[String]](((x$2: com.atomist.tree.TreeNode) =&gt; x$2.nodeTags))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          7050
+        </td>
+        <td>
+          656
+          -
+          656
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          7049
+        </td>
+        <td>
+          657
+          -
+          667
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeTags
+        </td>
+        <td style="background: #F0ADAD">
+          x$2.nodeTags
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          7053
+        </td>
+        <td>
+          735
+          -
+          765
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          ContainerTreeNodeImpl.this.kids.filter(((x$3: com.atomist.tree.TreeNode) =&gt; x$3.nodeName.==(key)))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          7052
+        </td>
+        <td>
+          747
+          -
+          764
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$3.nodeName.==(key)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7057
+        </td>
+        <td>
+          801
+          -
+          809
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.ContainerTreeNodeImpl.nodeName
+        </td>
+        <td style="background: #F0ADAD">
+          ContainerTreeNodeImpl.this.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7054
+        </td>
+        <td>
+          800
+          -
+          801
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7056
+        </td>
+        <td>
+          831
+          -
+          832
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7059
+        </td>
+        <td>
+          798
+          -
+          832
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;:&quot;, &quot;&quot;).s(ContainerTreeNodeImpl.this.nodeName, ContainerTreeNodeImpl.this.kids.mkString(&quot;,&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7055
+        </td>
+        <td>
+          809
+          -
+          811
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;:&quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7058
+        </td>
+        <td>
+          812
+          -
+          830
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          ContainerTreeNodeImpl.this.kids.mkString(&quot;,&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          7066
+        </td>
+        <td>
+          884
+          -
+          893
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #F0ADAD">
+          ContainerTreeNodeImpl.this.kids.size
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          7060
+        </td>
+        <td>
+          862
+          -
+          863
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          7063
+        </td>
+        <td>
+          894
+          -
+          896
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;)&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          7062
+        </td>
+        <td>
+          881
+          -
+          883
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;(&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          7065
+        </td>
+        <td>
+          873
+          -
+          881
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.ContainerTreeNodeImpl.nodeTags
+        </td>
+        <td style="background: #F0ADAD">
+          ContainerTreeNodeImpl.this.nodeTags
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          7061
+        </td>
+        <td>
+          871
+          -
+          873
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;:&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          7064
+        </td>
+        <td>
+          863
+          -
+          871
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.ContainerTreeNodeImpl.nodeName
+        </td>
+        <td style="background: #F0ADAD">
+          ContainerTreeNodeImpl.this.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          7067
+        </td>
+        <td>
+          860
+          -
+          896
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;:&quot;, &quot;(&quot;, &quot;)&quot;).s(ContainerTreeNodeImpl.this.nodeName, ContainerTreeNodeImpl.this.nodeTags, ContainerTreeNodeImpl.this.kids.size)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

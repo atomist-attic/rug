@@ -1,0 +1,295 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/spi/RugFunction.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.spi
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.param.ParameterValues
+</span>4 <span style=''>import com.atomist.rug.spi.Handlers.Status
+</span>5 <span style=''>import com.atomist.util.JsonUtils
+</span>6 <span style=''>
+</span>7 <span style=''>/**
+</span>8 <span style=''>  * Arbitrary functions to be executed as a result add 'execute' instructions to a Plan
+</span>9 <span style=''>  * Should be thread safe.
+</span>10 <span style=''>  *
+</span>11 <span style=''>  * Secrets should be injected as normal ParameterValues
+</span>12 <span style=''>  */
+</span>13 <span style=''>trait RugFunction extends SecretAwareRug {
+</span>14 <span style=''>  /**
+</span>15 <span style=''>    * Run the function, return the Response
+</span>16 <span style=''>    */
+</span>17 <span style=''>  def run(parameters: ParameterValues): FunctionResponse
+</span>18 <span style=''>}
+</span>19 <span style=''>
+</span>20 <span style=''>case class FunctionResponse(status: Status, msg: Option[String] = None, code: Option[Int] = None, body: Option[Body] = None)
+</span>21 <span style=''>
+</span>22 <span style=''>case class Body(str: Option[String] = None, bytes: Option[Array[Byte]] = None)
+</span>23 <span style=''>
+</span>24 <span style=''>object StringBodyOption {
+</span>25 <span style=''>  def apply(body: String): Option[Body] = {
+</span>26 <span style=''>    </span><span style='background: #AEF1AE'>Some(Body(str = Some(body)))</span><span style=''>
+</span>27 <span style=''>  }
+</span>28 <span style=''>}
+</span>29 <span style=''>
+</span>30 <span style=''>object JsonBodyOption {
+</span>31 <span style=''>  def apply(body: AnyRef): Option[Body] = {
+</span>32 <span style=''>    </span><span style='background: #AEF1AE'>StringBodyOption(JsonUtils.toJson(body))</span><span style=''>
+</span>33 <span style=''>  }
+</span>34 <span style=''>}
+</span>35 <span style=''>
+</span>36 <span style=''>object ByteBodyOption {
+</span>37 <span style=''>  def apply(body: Array[Byte]): Option[Body] = {
+</span>38 <span style=''>    </span><span style='background: #F0ADAD'>Some(Body(bytes = Some(body)))</span><span style=''>
+</span>39 <span style=''>  }
+</span>40 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5367
+        </td>
+        <td>
+          773
+          -
+          801
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.spi.Body](Body.apply(scala.Some.apply[String](body), Body.apply$default$2))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5364
+        </td>
+        <td>
+          789
+          -
+          799
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](body)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5366
+        </td>
+        <td>
+          778
+          -
+          800
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Body.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Body.apply(scala.Some.apply[String](body), Body.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5365
+        </td>
+        <td>
+          778
+          -
+          778
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Body.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          Body.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          5369
+        </td>
+        <td>
+          881
+          -
+          921
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.StringBodyOption.apply
+        </td>
+        <td style="background: #AEF1AE">
+          StringBodyOption.apply(com.atomist.util.JsonUtils.toJson(body))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          5368
+        </td>
+        <td>
+          898
+          -
+          920
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.JsonUtils.toJson
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.JsonUtils.toJson(body)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          5370
+        </td>
+        <td>
+          1024
+          -
+          1034
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[Array[Byte]](body)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          5373
+        </td>
+        <td>
+          1006
+          -
+          1036
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[com.atomist.rug.spi.Body]({
+  &lt;artifact&gt; val x$1: Some[Array[Byte]] @scala.reflect.internal.annotations.uncheckedBounds = scala.Some.apply[Array[Byte]](body);
+  &lt;artifact&gt; val x$2: Option[String] @scala.reflect.internal.annotations.uncheckedBounds = Body.apply$default$1;
+  Body.apply(x$2, x$1)
+})
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          5372
+        </td>
+        <td>
+          1011
+          -
+          1035
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Body.apply
+        </td>
+        <td style="background: #F0ADAD">
+          Body.apply(x$2, x$1)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          5371
+        </td>
+        <td>
+          1011
+          -
+          1011
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Body.apply$default$1
+        </td>
+        <td style="background: #F0ADAD">
+          Body.apply$default$1
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

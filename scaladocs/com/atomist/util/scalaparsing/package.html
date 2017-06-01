@@ -1,0 +1,159 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>scalaparsing - rug 1.0.0-m.4 API - com.atomist.util.scalaparsing</title>
+          <meta name="description" content="scalaparsing - rug 1.0.0 - m.4 API - com.atomist.util.scalaparsing" />
+          <meta name="keywords" content="scalaparsing rug 1.0.0 m.4 API com.atomist.util.scalaparsing" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.atomist.util.scalaparsing.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.atomist">atomist</a>.<a href="../package.html" class="extype" name="com.atomist.util">util</a></p>
+        <h1>scalaparsing</h1><span class="permalink">
+      <a href="../../../../index.html#com.atomist.util.scalaparsing.package" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">scalaparsing</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="com.atomist.util.scalaparsing.CommonTypesParser" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="CommonTypesParserextendsJavaTokenParserswithLazyLogging"></a>
+      <a id="CommonTypesParser:CommonTypesParser"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="CommonTypesParser.html"><span class="name">CommonTypesParser</span></a><span class="result"> extends <span class="extype" name="scala.util.parsing.combinator.JavaTokenParsers">JavaTokenParsers</span> with <span class="extype" name="com.typesafe.scalalogging.LazyLogging">LazyLogging</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.util.scalaparsing.package@CommonTypesParserextendsJavaTokenParserswithLazyLogging" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Convenient support for parsers for different languages implemented using
+Scala parser combinators.</p><div class="fullcomment"><div class="comment cmt"><p>Convenient support for parsers for different languages implemented using
+Scala parser combinators.
+Offers common tokens, consistent reserved word handling, comment and string handling,
+and productions for nested blocks.
+</p></div><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p>TreeNode</p></span></dd></dl></div>
+    </li><li name="com.atomist.util.scalaparsing.ErrorInfo" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ErrorInfoextendsProductwithSerializable"></a>
+      <a id="ErrorInfo:ErrorInfo"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ErrorInfo.html"><span class="name">ErrorInfo</span></a><span class="params">(<span name="message">message: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="badInput">badInput: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="line">line: <span class="extype" name="scala.Int">Int</span></span>, <span name="col">col: <span class="extype" name="scala.Int">Int</span></span>, <span name="filePath">filePath: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="rootCause">rootCause: <a href="../../../../scala/package.html#Throwable=Throwable" class="extmbr" name="scala.Throwable">Throwable</a> = <span class="symbol">null</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.util.scalaparsing.package@ErrorInfoextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Support for formatting error information in a standard way.</p><div class="fullcomment"><div class="comment cmt"><p>Support for formatting error information in a standard way.
+Humans index from 1
+</p></div><dl class="paramcmts block"><dt class="param">message</dt><dd class="cmt"><p>message describing the failure</p></dd><dt class="param">badInput</dt><dd class="cmt"><p>input that caused the problem</p></dd><dt class="param">line</dt><dd class="cmt"><p>line from 1</p></dd><dt class="param">col</dt><dd class="cmt"><p>column from 1</p></dd><dt class="param">filePath</dt><dd class="cmt"><p>Path to the offending file within the archive</p></dd><dt class="param">rootCause</dt><dd class="cmt"><p>exception, if there was one</p></dd></dl></div>
+    </li><li name="com.atomist.util.scalaparsing.OffsetPositionInputPosition" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OffsetPositionInputPositionextendsLineInputPosition"></a>
+      <a id="OffsetPositionInputPosition:OffsetPositionInputPosition"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="OffsetPositionInputPosition.html"><span class="name">OffsetPositionInputPosition</span></a><span class="result"> extends <a href="../../tree/content/text/LineInputPosition.html" class="extype" name="com.atomist.tree.content.text.LineInputPosition">LineInputPosition</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.util.scalaparsing.package@OffsetPositionInputPositionextendsLineInputPosition" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">InputPosition wrapping a Scala OffsetPosition.</p>
+    </li></ol>
+            </div>
+
+        
+
+        
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

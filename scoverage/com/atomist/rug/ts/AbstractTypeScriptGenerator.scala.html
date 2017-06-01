@@ -1,0 +1,5789 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/ts/AbstractTypeScriptGenerator.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.ts
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.param.{Parameter, ParameterValues, Tag}
+</span>5 <span style=''>import com.atomist.project.common.InvalidParametersException
+</span>6 <span style=''>import com.atomist.project.edit._
+</span>7 <span style=''>import com.atomist.project.generate.ProjectGenerator
+</span>8 <span style=''>import com.atomist.rug.kind.core.ProjectContext
+</span>9 <span style=''>import com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations
+</span>10 <span style=''>import com.atomist.rug.spi._
+</span>11 <span style=''>import com.atomist.source._
+</span>12 <span style=''>import com.atomist.tree.TreeNode
+</span>13 <span style=''>import com.atomist.util.lang.TypeScriptGenerationHelper
+</span>14 <span style=''>import org.apache.commons.lang3.{ClassUtils, StringUtils}
+</span>15 <span style=''>
+</span>16 <span style=''>import scala.collection.JavaConverters._
+</span>17 <span style=''>import scala.collection.mutable.ListBuffer
+</span>18 <span style=''>
+</span>19 <span style=''>object AbstractTypeScriptGenerator {
+</span>20 <span style=''>
+</span>21 <span style=''>  val DefaultTemplateName = </span><span style='background: #AEF1AE'>&quot;ts.vm&quot;</span><span style=''>
+</span>22 <span style=''>
+</span>23 <span style=''>  val DefaultFilename = </span><span style='background: #AEF1AE'>&quot;model/Core.ts&quot;</span><span style=''>
+</span>24 <span style=''>
+</span>25 <span style=''>  val OutputPathParam = </span><span style='background: #AEF1AE'>&quot;output_path&quot;</span><span style=''>
+</span>26 <span style=''>}
+</span>27 <span style=''>
+</span>28 <span style=''>/**
+</span>29 <span style=''>  * Generate types for documents.
+</span>30 <span style=''>  *
+</span>31 <span style=''>  * @param typeRegistry registry of known Rug Types.
+</span>32 <span style=''>  */
+</span>33 <span style=''>abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
+</span>34 <span style=''>                                           config: TypeGenerationConfig,
+</span>35 <span style=''>                                           override val tags: Seq[Tag])
+</span>36 <span style=''>  extends ProjectGenerator
+</span>37 <span style=''>    with ProjectEditor {
+</span>38 <span style=''>
+</span>39 <span style=''>  import AbstractTypeScriptGenerator._
+</span>40 <span style=''>
+</span>41 <span style=''>  protected val indent = </span><span style='background: #AEF1AE'>&quot;    &quot;</span><span style=''>
+</span>42 <span style=''>  protected val helper = </span><span style='background: #AEF1AE'>new TypeScriptGenerationHelper()</span><span style=''>
+</span>43 <span style=''>  protected val typeSort: (Typed, Typed) =&gt; Boolean = (a, b) =&gt; </span><span style='background: #AEF1AE'>a.name &lt;= b.name</span><span style=''>
+</span>44 <span style=''>
+</span>45 <span style=''>  protected case class ParentClassHolder(parent: Class[_], exportedMethods: Seq[MethodInfo])
+</span>46 <span style=''>
+</span>47 <span style=''>  /**
+</span>48 <span style=''>    * Either an interface or a test class, depending on whether we're generated test classes
+</span>49 <span style=''>    */
+</span>50 <span style=''>  trait GeneratedType {
+</span>51 <span style=''>
+</span>52 <span style=''>    def root: String
+</span>53 <span style=''>
+</span>54 <span style=''>    /** Custom, additional, imports on this type */
+</span>55 <span style=''>    def specificImports: String = </span><span style='background: #AEF1AE'>&quot;&quot;</span><span style=''>
+</span>56 <span style=''>
+</span>57 <span style=''>    def name: String
+</span>58 <span style=''>
+</span>59 <span style=''>    def description: String
+</span>60 <span style=''>
+</span>61 <span style=''>    def methods: Seq[MethodInfo]
+</span>62 <span style=''>
+</span>63 <span style=''>    def parent: Seq[String]
+</span>64 <span style=''>  }
+</span>65 <span style=''>
+</span>66 <span style=''>  /**
+</span>67 <span style=''>    * toString methods on subclasses will drive generation
+</span>68 <span style=''>    */
+</span>69 <span style=''>  trait MethodInfo {
+</span>70 <span style=''>
+</span>71 <span style=''>    def typeName: String
+</span>72 <span style=''>
+</span>73 <span style=''>    def name: String
+</span>74 <span style=''>
+</span>75 <span style=''>    def params: Seq[MethodParam]
+</span>76 <span style=''>
+</span>77 <span style=''>    def exposeAsProperty: Boolean
+</span>78 <span style=''>
+</span>79 <span style=''>    def returnType: String
+</span>80 <span style=''>
+</span>81 <span style=''>    def description: Option[String]
+</span>82 <span style=''>
+</span>83 <span style=''>    def returnsArray: Boolean = </span><span style='background: #AEF1AE'>returnType.contains(&quot;[&quot;)</span><span style=''>
+</span>84 <span style=''>
+</span>85 <span style=''>    def deprecated: Boolean
+</span>86 <span style=''>
+</span>87 <span style=''>    /** Return the underlying type if we return an array */
+</span>88 <span style=''>    def underlyingType: String = </span><span style='background: #AEF1AE'>returnType.stripSuffix(&quot;[]&quot;)</span><span style=''>
+</span>89 <span style=''>
+</span>90 <span style=''>    def comment(indent: String): String = {
+</span>91 <span style=''>      val builder = </span><span style='background: #AEF1AE'>new StringBuilder(s&quot;$indent/**\n&quot;)</span><span style=''>
+</span>92 <span style=''>      val deprecationMessage = if (</span><span style='background: #AEF1AE'>deprecated</span><span style=''>) </span><span style='background: #AEF1AE'>&quot;DEPRECATED - &quot;</span><span style=''> else </span><span style='background: #AEF1AE'>&quot;&quot;</span><span style=''>
+</span>93 <span style=''>      </span><span style='background: #AEF1AE'>builder ++= s&quot;$indent  * $deprecationMessage${description.getOrElse(&quot;&quot;)}\n&quot;</span><span style=''>
+</span>94 <span style=''>      </span><span style='background: #AEF1AE'>builder ++= s&quot;$indent  * \n&quot;</span><span style=''>
+</span>95 <span style=''>
+</span>96 <span style=''>      if (</span><span style='background: #AEF1AE'>exposeAsProperty</span><span style=''>) {
+</span>97 <span style=''>        </span><span style='background: #AEF1AE'>builder ++= s&quot;$indent  * @property {$returnType} $name\n&quot;</span><span style=''>
+</span>98 <span style=''>      } else </span><span style='background: #AEF1AE'>{
+</span>99 <span style=''></span><span style='background: #AEF1AE'>        if (params.nonEmpty) {
+</span>100 <span style=''></span><span style='background: #AEF1AE'>          for (p &lt;- params)
+</span>101 <span style=''></span><span style='background: #AEF1AE'>            yield builder ++= s&quot;$indent  * ${p.comment}\n&quot;
+</span>102 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>103 <span style=''></span><span style='background: #AEF1AE'>
+</span>104 <span style=''></span><span style='background: #AEF1AE'>        if (returnType != &quot;void&quot;)
+</span>105 <span style=''></span><span style='background: #AEF1AE'>          builder ++= s&quot;$indent  * @returns {$returnType}\n&quot;
+</span>106 <span style=''></span><span style='background: #AEF1AE'>      }</span><span style=''>
+</span>107 <span style=''>
+</span>108 <span style=''>      </span><span style='background: #AEF1AE'>builder ++= s&quot;$indent  */\n&quot;</span><span style=''>
+</span>109 <span style=''>      </span><span style='background: #AEF1AE'>builder.toString</span><span style=''>
+</span>110 <span style=''>    }
+</span>111 <span style=''>
+</span>112 <span style=''>    def canEqual(a: Any): Boolean = </span><span style='background: #AEF1AE'>a.isInstanceOf[MethodInfo]</span><span style=''>
+</span>113 <span style=''>
+</span>114 <span style=''>    override def equals(that: Any): Boolean =
+</span>115 <span style=''>      that match {
+</span>116 <span style=''>        case that: MethodInfo =&gt; </span><span style='background: #AEF1AE'>that.canEqual(this) &amp;&amp; this.name.hashCode == that.name.hashCode &amp;&amp;
+</span>117 <span style=''></span><span style='background: #AEF1AE'>          this.params.hashCode == that.params.hashCode &amp;&amp; this.returnType.hashCode == that.returnType.hashCode</span><span style=''>
+</span>118 <span style=''>        case _ =&gt; </span><span style='background: #F0ADAD'>false</span><span style=''>
+</span>119 <span style=''>      }
+</span>120 <span style=''>
+</span>121 <span style=''>    override def hashCode(): Int =
+</span>122 <span style=''>      </span><span style='background: #F0ADAD'>Seq(name, params, returnType).map(_.hashCode()).foldLeft(0)((a, b) =&gt; 31 * a + b)</span><span style=''>
+</span>123 <span style=''>  }
+</span>124 <span style=''>
+</span>125 <span style=''>  protected class MethodParam(val name: String, val paramType: String, val description: Option[String]) {
+</span>126 <span style=''>
+</span>127 <span style=''>    def canEqual(a: Any): Boolean = </span><span style='background: #F0ADAD'>a.isInstanceOf[MethodParam]</span><span style=''>
+</span>128 <span style=''>
+</span>129 <span style=''>    override def equals(that: Any): Boolean =
+</span>130 <span style=''>      that match {
+</span>131 <span style=''>        case that: MethodParam =&gt;
+</span>132 <span style=''>          </span><span style='background: #F0ADAD'>that.canEqual(this) &amp;&amp; this.paramType.hashCode == that.paramType.hashCode</span><span style=''>
+</span>133 <span style=''>        case _ =&gt;
+</span>134 <span style=''>          </span><span style='background: #F0ADAD'>false</span><span style=''>
+</span>135 <span style=''>      }
+</span>136 <span style=''>
+</span>137 <span style=''>    override def hashCode: Int = </span><span style='background: #AEF1AE'>paramType.hashCode</span><span style=''>
+</span>138 <span style=''>
+</span>139 <span style=''>    override def toString = </span><span style='background: #AEF1AE'>s&quot;$name: $paramType&quot;</span><span style=''>
+</span>140 <span style=''>
+</span>141 <span style=''>    def comment: String = </span><span style='background: #AEF1AE'>s&quot;@param $name {$paramType} ${description.getOrElse(&quot;&quot;)}&quot;</span><span style=''>
+</span>142 <span style=''>  }
+</span>143 <span style=''>
+</span>144 <span style=''>  protected object MethodParam {
+</span>145 <span style=''>
+</span>146 <span style=''>    def apply(name: String, paramType: String, description: Option[String]) = </span><span style='background: #AEF1AE'>new MethodParam(name, paramType, description)</span><span style=''>
+</span>147 <span style=''>  }
+</span>148 <span style=''>
+</span>149 <span style=''>  override def parameters: Seq[Parameter] = </span><span style='background: #F0ADAD'>Seq(Parameter(OutputPathParam, &quot;.*&quot;)
+</span>150 <span style=''></span><span style='background: #F0ADAD'>    .setRequired(false)
+</span>151 <span style=''></span><span style='background: #F0ADAD'>    .setDisplayName(&quot;Path for consolidated exports file&quot;)
+</span>152 <span style=''></span><span style='background: #F0ADAD'>    .setDefaultValue(DefaultFilename))</span><span style=''>
+</span>153 <span style=''>
+</span>154 <span style=''>  @throws[InvalidParametersException](classOf[InvalidParametersException])
+</span>155 <span style=''>  override def generate(projectName: String, pvs: ParameterValues, ctx: ProjectContext): ArtifactSource = {
+</span>156 <span style=''>    val createdFiles = </span><span style='background: #AEF1AE'>emitTypes(pvs)</span><span style=''>
+</span>157 <span style=''>    </span><span style='background: #AEF1AE'>new SimpleFileBasedArtifactSource(&quot;Rug user model&quot;, createdFiles ++ emitCombinedTypes(pvs))</span><span style=''>
+</span>158 <span style=''>  }
+</span>159 <span style=''>
+</span>160 <span style=''>  override def modify(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = {
+</span>161 <span style=''>    val createdFile = </span><span style='background: #F0ADAD'>emitTypes(poa)</span><span style=''>
+</span>162 <span style=''>    val r = </span><span style='background: #F0ADAD'>as + createdFile</span><span style=''>
+</span>163 <span style=''>    </span><span style='background: #F0ADAD'>SuccessfulModification(r)</span><span style=''>
+</span>164 <span style=''>  }
+</span>165 <span style=''>
+</span>166 <span style=''>  override def applicability(as: ArtifactSource): Applicability = </span><span style='background: #F0ADAD'>Applicability.OK</span><span style=''>
+</span>167 <span style=''>
+</span>168 <span style=''>  override def description: String = </span><span style='background: #F0ADAD'>&quot;Generate core Rug type info&quot;</span><span style=''>
+</span>169 <span style=''>
+</span>170 <span style=''>  override def name: String = </span><span style='background: #F0ADAD'>&quot;TypedDoc&quot;</span><span style=''>
+</span>171 <span style=''>
+</span>172 <span style=''>  protected def emitCombinedTypes(poa: ParameterValues): Option[FileArtifact] = </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>173 <span style=''>
+</span>174 <span style=''>  protected def getGeneratedTypes(t: Typed, op: TypeOperation): Seq[GeneratedType]
+</span>175 <span style=''>
+</span>176 <span style=''>  protected def getSuperInterfaces(op: TypeOperation): List[ParentClassHolder] =
+</span>177 <span style=''>    if (</span><span style='background: #AEF1AE'>op.definedOn == null</span><span style=''>) </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>178 <span style=''>    else
+</span>179 <span style=''>      </span><span style='background: #AEF1AE'>ClassUtils.getAllInterfaces(op.definedOn).asScala
+</span>180 <span style=''></span><span style='background: #AEF1AE'>        .filterNot(c =&gt; classOf[TreeNode] == c || classOf[GraphNode] == c)
+</span>181 <span style=''></span><span style='background: #AEF1AE'>        .map(c =&gt; ParentClassHolder(c, allMethods(c.getName, exportedOperations(c))))
+</span>182 <span style=''></span><span style='background: #AEF1AE'>        .filterNot(_.exportedMethods.isEmpty)
+</span>183 <span style=''></span><span style='background: #AEF1AE'>        .toList</span><span style=''>
+</span>184 <span style=''>
+</span>185 <span style=''>  protected def getSuperClasses(op: TypeOperation): List[ParentClassHolder] =
+</span>186 <span style=''>    if (</span><span style='background: #AEF1AE'>op.definedOn == null</span><span style=''>) </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>187 <span style=''>    else
+</span>188 <span style=''>      </span><span style='background: #AEF1AE'>ClassUtils.getAllSuperclasses(op.definedOn).asScala
+</span>189 <span style=''></span><span style='background: #AEF1AE'>        .filterNot(c =&gt; classOf[TreeNode] == c || classOf[GraphNode] == c)
+</span>190 <span style=''></span><span style='background: #AEF1AE'>        .map(c =&gt; ParentClassHolder(c, allMethods(c.getName, exportedOperations(c))))
+</span>191 <span style=''></span><span style='background: #AEF1AE'>        .filterNot(_.exportedMethods.isEmpty)
+</span>192 <span style=''></span><span style='background: #AEF1AE'>        .toList</span><span style=''>
+</span>193 <span style=''>
+</span>194 <span style=''>  protected def allMethods(typeName: String, ops: Seq[TypeOperation]): Seq[MethodInfo] = {
+</span>195 <span style=''>    val methods = </span><span style='background: #AEF1AE'>new ListBuffer[MethodInfo]</span><span style=''>
+</span>196 <span style=''>    </span><span style='background: #AEF1AE'>for {
+</span>197 <span style=''></span><span style='background: #AEF1AE'>      op &lt;- ops
+</span>198 <span style=''></span><span style='background: #AEF1AE'>    } {
+</span>199 <span style=''></span><span style='background: #AEF1AE'>      val params =
+</span>200 <span style=''></span><span style='background: #AEF1AE'>        for (p &lt;- op.parameters)
+</span>201 <span style=''></span><span style='background: #AEF1AE'>          yield
+</span>202 <span style=''></span><span style='background: #AEF1AE'>            MethodParam(p.name, helper.rugTypeToTypeScriptType(p.parameterType, typeRegistry), p.description)
+</span>203 <span style=''></span><span style='background: #AEF1AE'>
+</span>204 <span style=''></span><span style='background: #AEF1AE'>      methods += getMethodInfo(typeName, op, params)
+</span>205 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>206 <span style=''>    </span><span style='background: #AEF1AE'>methods.sortBy(_.name)</span><span style=''>
+</span>207 <span style=''>  }
+</span>208 <span style=''>
+</span>209 <span style=''>  protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo
+</span>210 <span style=''>
+</span>211 <span style=''>  private def emitTypes(poa: ParameterValues): Seq[FileArtifact] = {
+</span>212 <span style=''>    val tsClassOrInterfaces = </span><span style='background: #AEF1AE'>ListBuffer.empty[StringFileArtifact]</span><span style=''>
+</span>213 <span style=''>    val alreadyGenerated = </span><span style='background: #AEF1AE'>ListBuffer.empty[GeneratedType]</span><span style=''>
+</span>214 <span style=''>    val allTypes = </span><span style='background: #AEF1AE'>typeRegistry.types.sortWith(typeSort)</span><span style=''>
+</span>215 <span style=''>    val generatedTypes = </span><span style='background: #AEF1AE'>allTypes.flatMap(t =&gt; t.operations.flatMap(op =&gt; getGeneratedTypes(t, op)))</span><span style=''>
+</span>216 <span style=''>    val pathParam = </span><span style='background: #AEF1AE'>poa.stringParamValue(OutputPathParam)</span><span style=''>
+</span>217 <span style=''>    val path = if (</span><span style='background: #AEF1AE'>pathParam.contains(&quot;/&quot;)</span><span style=''>) </span><span style='background: #AEF1AE'>StringUtils.substringBeforeLast(pathParam, &quot;/&quot;) + &quot;/&quot;</span><span style=''> else </span><span style='background: #AEF1AE'>&quot;&quot;</span><span style=''>
+</span>218 <span style=''>
+</span>219 <span style=''>    </span><span style='background: #AEF1AE'>for {
+</span>220 <span style=''></span><span style='background: #AEF1AE'>      t &lt;- generatedTypes
+</span>221 <span style=''></span><span style='background: #AEF1AE'>      if !alreadyGenerated.contains(t)
+</span>222 <span style=''></span><span style='background: #AEF1AE'>    } {
+</span>223 <span style=''></span><span style='background: #AEF1AE'>      val output = new StringBuilder(config.licenseHeader)
+</span>224 <span style=''></span><span style='background: #AEF1AE'>      output ++= config.separator
+</span>225 <span style=''></span><span style='background: #AEF1AE'>      output ++= config.imports
+</span>226 <span style=''></span><span style='background: #AEF1AE'>      output ++= t.specificImports
+</span>227 <span style=''></span><span style='background: #AEF1AE'>      output ++= getImports(generatedTypes, t)
+</span>228 <span style=''></span><span style='background: #AEF1AE'>      output ++= config.separator
+</span>229 <span style=''></span><span style='background: #AEF1AE'>      output ++= s&quot;export { ${t.name} };&quot;
+</span>230 <span style=''></span><span style='background: #AEF1AE'>      output ++= config.separator
+</span>231 <span style=''></span><span style='background: #AEF1AE'>      output ++= t.toString
+</span>232 <span style=''></span><span style='background: #AEF1AE'>      output ++= config.separator
+</span>233 <span style=''></span><span style='background: #AEF1AE'>      tsClassOrInterfaces += StringFileArtifact(s&quot;$path${t.name}.ts&quot;, output.toString())
+</span>234 <span style=''></span><span style='background: #AEF1AE'>      alreadyGenerated += t
+</span>235 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>236 <span style=''>
+</span>237 <span style=''>    // Core.ts
+</span>238 <span style=''>    val output = </span><span style='background: #AEF1AE'>new StringBuilder(config.licenseHeader)</span><span style=''>
+</span>239 <span style=''>    </span><span style='background: #AEF1AE'>output ++= config.separator</span><span style=''>
+</span>240 <span style=''>    val uniqueGeneratedTypes = (</span><span style='background: #AEF1AE'>alreadyGenerated.groupBy(_.name) map {
+</span>241 <span style=''></span><span style='background: #AEF1AE'>      case (_, l) =&gt; l.head
+</span>242 <span style=''></span><span style='background: #AEF1AE'>    }).toSeq.sortBy(_.name)</span><span style=''>
+</span>243 <span style=''>    </span><span style='background: #AEF1AE'>output ++= uniqueGeneratedTypes.map(t =&gt; s&quot;&quot;&quot;import { ${t.name} } from &quot;./${t.name}&quot;;&quot;&quot;&quot;).mkString(&quot;\n&quot;)</span><span style=''>
+</span>244 <span style=''>    </span><span style='background: #AEF1AE'>output ++= config.separator</span><span style=''>
+</span>245 <span style=''>    </span><span style='background: #AEF1AE'>output ++= uniqueGeneratedTypes.map(t =&gt; s&quot;\nexport { ${t.name} };&quot;).mkString(&quot;&quot;)</span><span style=''>
+</span>246 <span style=''>    </span><span style='background: #AEF1AE'>tsClassOrInterfaces += StringFileArtifact(pathParam, output.toString())</span><span style=''>
+</span>247 <span style=''>
+</span>248 <span style=''>    tsClassOrInterfaces
+</span>249 <span style=''>  }
+</span>250 <span style=''>
+</span>251 <span style=''>  private def getImports(interfaceTypes: Seq[GeneratedType], currentType: GeneratedType) = {
+</span>252 <span style=''>    val imports = </span><span style='background: #AEF1AE'>interfaceTypes
+</span>253 <span style=''></span><span style='background: #AEF1AE'>      .flatMap(t =&gt; currentType.methods.map(m =&gt; StringUtils.removeEnd(m.returnType, &quot;[]&quot;))
+</span>254 <span style=''></span><span style='background: #AEF1AE'>        .filter(currentType.name != t.name &amp;&amp; _ == t.name))
+</span>255 <span style=''></span><span style='background: #AEF1AE'>      .toList</span><span style=''>
+</span>256 <span style=''>
+</span>257 <span style=''>    (</span><span style='background: #AEF1AE'>currentType.parent.toList ::: imports)
+</span>258 <span style=''></span><span style='background: #AEF1AE'>      .distinct
+</span>259 <span style=''></span><span style='background: #AEF1AE'>      .filterNot(_ == currentType.root)
+</span>260 <span style=''></span><span style='background: #AEF1AE'>      .map(i =&gt; s&quot;&quot;&quot;import { $i } from &quot;./$i&quot;;&quot;&quot;&quot;)
+</span>261 <span style=''></span><span style='background: #AEF1AE'>      .mkString(&quot;\n&quot;)</span><span style=''>
+</span>262 <span style=''>  }
+</span>263 <span style=''>}
+</span>264 <span style=''>
+</span>265 <span style=''>case class TypeGenerationConfig(
+</span>266 <span style=''>                                 indent: String = &quot;    &quot;,
+</span>267 <span style=''>                                 separator: String = &quot;\n\n&quot;,
+</span>268 <span style=''>                                 imports: String = TypeGenerationConfig.DefaultImports
+</span>269 <span style=''>                               )
+</span>270 <span style=''>  extends TypeScriptGenerationConfig {
+</span>271 <span style=''>
+</span>272 <span style=''>  val licenseHeader: String =
+</span>273 <span style=''>    </span><span style='background: #AEF1AE'>&quot;&quot;&quot;|/*
+</span>274 <span style=''></span><span style='background: #AEF1AE'>       | * Copyright 2015-2017 Atomist Inc.
+</span>275 <span style=''></span><span style='background: #AEF1AE'>       | *
+</span>276 <span style=''></span><span style='background: #AEF1AE'>       | * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+</span>277 <span style=''></span><span style='background: #AEF1AE'>       | * you may not use this file except in compliance with the License.
+</span>278 <span style=''></span><span style='background: #AEF1AE'>       | * You may obtain a copy of the License at
+</span>279 <span style=''></span><span style='background: #AEF1AE'>       | *
+</span>280 <span style=''></span><span style='background: #AEF1AE'>       | *      http://www.apache.org/licenses/LICENSE-2.0
+</span>281 <span style=''></span><span style='background: #AEF1AE'>       | *
+</span>282 <span style=''></span><span style='background: #AEF1AE'>       | * Unless required by applicable law or agreed to in writing, software
+</span>283 <span style=''></span><span style='background: #AEF1AE'>       | * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+</span>284 <span style=''></span><span style='background: #AEF1AE'>       | * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span>285 <span style=''></span><span style='background: #AEF1AE'>       | * See the License for the specific language governing permissions and
+</span>286 <span style=''></span><span style='background: #AEF1AE'>       | * limitations under the License.
+</span>287 <span style=''></span><span style='background: #AEF1AE'>       | */&quot;&quot;&quot;.stripMargin</span><span style=''>
+</span>288 <span style=''>}
+</span>289 <span style=''>
+</span>290 <span style=''>object TypeGenerationConfig {
+</span>291 <span style=''>
+</span>292 <span style=''>  val DefaultImports: String =
+</span>293 <span style=''>    </span><span style='background: #AEF1AE'>&quot;&quot;&quot;|import { TreeNode, GraphNode, FormatInfo, PathExpressionEngine } from &quot;@atomist/rug/tree/PathExpression&quot;;
+</span>294 <span style=''></span><span style='background: #AEF1AE'>       |import { ProjectContext } from &quot;@atomist/rug/operations/ProjectEditor&quot;;
+</span>295 <span style=''></span><span style='background: #AEF1AE'>       |&quot;&quot;&quot;.stripMargin</span><span style=''>
+</span>296 <span style=''>
+</span>297 <span style=''>  val TestStubImports: String =
+</span>298 <span style=''>    </span><span style='background: #AEF1AE'>&quot;&quot;&quot;|import { GraphNode } from &quot;@atomist/rug/tree/PathExpression&quot;;
+</span>299 <span style=''></span><span style='background: #AEF1AE'>       |&quot;&quot;&quot;.stripMargin</span><span style=''>
+</span>300 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          6149
+        </td>
+        <td>
+          745
+          -
+          752
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;ts.vm&quot;
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          6150
+        </td>
+        <td>
+          778
+          -
+          793
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;model/Core.ts&quot;
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          6151
+        </td>
+        <td>
+          819
+          -
+          832
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;output_path&quot;
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          6152
+        </td>
+        <td>
+          1270
+          -
+          1276
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;    &quot;
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          6154
+        </td>
+        <td>
+          1302
+          -
+          1334
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.TypeScriptGenerationHelper.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.TypeScriptGenerationHelper(lang.this.TypeScriptGenerationHelper.&lt;init&gt;$default$1)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          6153
+        </td>
+        <td>
+          1302
+          -
+          1302
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.lang.TypeScriptGenerationHelper.&lt;init&gt;$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          lang.this.TypeScriptGenerationHelper.&lt;init&gt;$default$1
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          6157
+        </td>
+        <td>
+          1399
+          -
+          1415
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.math.Ordered.&lt;=
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(a.name).&lt;=(b.name)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          6156
+        </td>
+        <td>
+          1409
+          -
+          1415
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.name
+        </td>
+        <td style="background: #AEF1AE">
+          b.name
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          6155
+        </td>
+        <td>
+          1399
+          -
+          1405
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.name
+        </td>
+        <td style="background: #AEF1AE">
+          a.name
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          6158
+        </td>
+        <td>
+          1750
+          -
+          1752
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          6159
+        </td>
+        <td>
+          2180
+          -
+          2204
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.contains
+        </td>
+        <td style="background: #AEF1AE">
+          MethodInfo.this.returnType.contains(&quot;[&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          6160
+        </td>
+        <td>
+          2328
+          -
+          2356
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.stripSuffix
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(MethodInfo.this.returnType).stripSuffix(&quot;[]&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          6162
+        </td>
+        <td>
+          2422
+          -
+          2456
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.`package`.StringBuilder(scala.StringContext.apply(&quot;&quot;, &quot;/**\\n&quot;).s(indent))
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          6161
+        </td>
+        <td>
+          2440
+          -
+          2455
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;/**\\n&quot;).s(indent)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          6166
+        </td>
+        <td>
+          2525
+          -
+          2527
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          6163
+        </td>
+        <td>
+          2492
+          -
+          2502
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodInfo.deprecated
+        </td>
+        <td style="background: #AEF1AE">
+          MethodInfo.this.deprecated
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          6165
+        </td>
+        <td>
+          2504
+          -
+          2519
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;DEPRECATED - &quot;
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          6164
+        </td>
+        <td>
+          2504
+          -
+          2519
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;DEPRECATED - &quot;
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          6167
+        </td>
+        <td>
+          2525
+          -
+          2527
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          6169
+        </td>
+        <td>
+          2555
+          -
+          2560
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;  * &quot;
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          6172
+        </td>
+        <td>
+          2580
+          -
+          2605
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          MethodInfo.this.description.getOrElse[String](&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          6171
+        </td>
+        <td>
+          2606
+          -
+          2609
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          6174
+        </td>
+        <td>
+          2534
+          -
+          2609
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          builder.++=(scala.StringContext.apply(&quot;&quot;, &quot;  * &quot;, &quot;&quot;, &quot;\\n&quot;).s(indent, deprecationMessage, MethodInfo.this.description.getOrElse[String](&quot;&quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          6168
+        </td>
+        <td>
+          2548
+          -
+          2549
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          6170
+        </td>
+        <td>
+          2578
+          -
+          2579
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          6173
+        </td>
+        <td>
+          2546
+          -
+          2609
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;  * &quot;, &quot;&quot;, &quot;\\n&quot;).s(indent, deprecationMessage, MethodInfo.this.description.getOrElse[String](&quot;&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          6175
+        </td>
+        <td>
+          2628
+          -
+          2644
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;  * \\n&quot;).s(indent)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          6176
+        </td>
+        <td>
+          2616
+          -
+          2644
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          builder.++=(scala.StringContext.apply(&quot;&quot;, &quot;  * \\n&quot;).s(indent))
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          6177
+        </td>
+        <td>
+          2656
+          -
+          2672
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodInfo.exposeAsProperty
+        </td>
+        <td style="background: #AEF1AE">
+          MethodInfo.this.exposeAsProperty
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          6184
+        </td>
+        <td>
+          2696
+          -
+          2741
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;  * @property {&quot;, &quot;} &quot;, &quot;\\n&quot;).s(indent, MethodInfo.this.returnType, MethodInfo.this.name)
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          6178
+        </td>
+        <td>
+          2698
+          -
+          2699
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          6181
+        </td>
+        <td>
+          2738
+          -
+          2741
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          6180
+        </td>
+        <td>
+          2731
+          -
+          2734
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;} &quot;
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          6183
+        </td>
+        <td>
+          2734
+          -
+          2738
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodInfo.name
+        </td>
+        <td style="background: #AEF1AE">
+          MethodInfo.this.name
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          6186
+        </td>
+        <td>
+          2684
+          -
+          2741
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          builder.++=(scala.StringContext.apply(&quot;&quot;, &quot;  * @property {&quot;, &quot;} &quot;, &quot;\\n&quot;).s(indent, MethodInfo.this.returnType, MethodInfo.this.name))
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          6185
+        </td>
+        <td>
+          2684
+          -
+          2741
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          builder.++=(scala.StringContext.apply(&quot;&quot;, &quot;  * @property {&quot;, &quot;} &quot;, &quot;\\n&quot;).s(indent, MethodInfo.this.returnType, MethodInfo.this.name))
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          6179
+        </td>
+        <td>
+          2705
+          -
+          2721
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;  * @property {&quot;
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          6182
+        </td>
+        <td>
+          2721
+          -
+          2731
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodInfo.returnType
+        </td>
+        <td style="background: #AEF1AE">
+          MethodInfo.this.returnType
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          6209
+        </td>
+        <td>
+          2755
+          -
+          2988
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  if (MethodInfo.this.params.nonEmpty)
+    MethodInfo.this.params.map[StringBuilder, Seq[StringBuilder]](((p: AbstractTypeScriptGenerator.this.MethodParam) =&gt; builder.++=(scala.StringContext.apply(&quot;&quot;, &quot;  * &quot;, &quot;\\n&quot;).s(indent, p.comment))))(collection.this.Seq.canBuildFrom[StringBuilder])
+  else
+    ();
+  if (MethodInfo.this.returnType.!=(&quot;void&quot;))
+    builder.++=(scala.StringContext.apply(&quot;&quot;, &quot;  * @returns {&quot;, &quot;}\\n&quot;).s(indent, MethodInfo.this.returnType))
+  else
+    ()
+}
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          6187
+        </td>
+        <td>
+          2769
+          -
+          2784
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          MethodInfo.this.params.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          6198
+        </td>
+        <td>
+          2765
+          -
+          2765
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          6197
+        </td>
+        <td>
+          2765
+          -
+          2765
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          6196
+        </td>
+        <td>
+          2798
+          -
+          2874
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          MethodInfo.this.params.map[StringBuilder, Seq[StringBuilder]](((p: AbstractTypeScriptGenerator.this.MethodParam) =&gt; builder.++=(scala.StringContext.apply(&quot;&quot;, &quot;  * &quot;, &quot;\\n&quot;).s(indent, p.comment))))(collection.this.Seq.canBuildFrom[StringBuilder])
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          6195
+        </td>
+        <td>
+          2798
+          -
+          2874
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          MethodInfo.this.params.map[StringBuilder, Seq[StringBuilder]](((p: AbstractTypeScriptGenerator.this.MethodParam) =&gt; builder.++=(scala.StringContext.apply(&quot;&quot;, &quot;  * &quot;, &quot;\\n&quot;).s(indent, p.comment))))(collection.this.Seq.canBuildFrom[StringBuilder])
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          6194
+        </td>
+        <td>
+          2805
+          -
+          2805
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[StringBuilder]
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          6193
+        </td>
+        <td>
+          2834
+          -
+          2874
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          builder.++=(scala.StringContext.apply(&quot;&quot;, &quot;  * &quot;, &quot;\\n&quot;).s(indent, p.comment))
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          6190
+        </td>
+        <td>
+          2871
+          -
+          2874
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          6189
+        </td>
+        <td>
+          2855
+          -
+          2860
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;  * &quot;
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          6192
+        </td>
+        <td>
+          2846
+          -
+          2874
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;  * &quot;, &quot;\\n&quot;).s(indent, p.comment)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          6188
+        </td>
+        <td>
+          2848
+          -
+          2849
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          6191
+        </td>
+        <td>
+          2861
+          -
+          2870
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodParam.comment
+        </td>
+        <td style="background: #AEF1AE">
+          p.comment
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          6207
+        </td>
+        <td>
+          2894
+          -
+          2894
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          6208
+        </td>
+        <td>
+          2894
+          -
+          2894
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          6199
+        </td>
+        <td>
+          2898
+          -
+          2918
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          MethodInfo.this.returnType.!=(&quot;void&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          6202
+        </td>
+        <td>
+          2976
+          -
+          2980
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;}\\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          6205
+        </td>
+        <td>
+          2930
+          -
+          2980
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          builder.++=(scala.StringContext.apply(&quot;&quot;, &quot;  * @returns {&quot;, &quot;}\\n&quot;).s(indent, MethodInfo.this.returnType))
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          6201
+        </td>
+        <td>
+          2951
+          -
+          2966
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;  * @returns {&quot;
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          6204
+        </td>
+        <td>
+          2942
+          -
+          2980
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;  * @returns {&quot;, &quot;}\\n&quot;).s(indent, MethodInfo.this.returnType)
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          6203
+        </td>
+        <td>
+          2966
+          -
+          2976
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodInfo.returnType
+        </td>
+        <td style="background: #AEF1AE">
+          MethodInfo.this.returnType
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          6206
+        </td>
+        <td>
+          2930
+          -
+          2980
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          builder.++=(scala.StringContext.apply(&quot;&quot;, &quot;  * @returns {&quot;, &quot;}\\n&quot;).s(indent, MethodInfo.this.returnType))
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          6200
+        </td>
+        <td>
+          2944
+          -
+          2945
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          6211
+        </td>
+        <td>
+          2996
+          -
+          3024
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          builder.++=(scala.StringContext.apply(&quot;&quot;, &quot;  */\\n&quot;).s(indent))
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          6210
+        </td>
+        <td>
+          3008
+          -
+          3024
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;  */\\n&quot;).s(indent)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          6212
+        </td>
+        <td>
+          3031
+          -
+          3047
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.toString
+        </td>
+        <td style="background: #AEF1AE">
+          builder.toString()
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          6213
+        </td>
+        <td>
+          3091
+          -
+          3117
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.isInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          a.isInstanceOf[AbstractTypeScriptGenerator.this.MethodInfo]
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          6214
+        </td>
+        <td>
+          3262
+          -
+          3280
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.hashCode
+        </td>
+        <td style="background: #AEF1AE">
+          that.name.hashCode()
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          6215
+        </td>
+        <td>
+          3240
+          -
+          3280
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          this.name.hashCode().==(that.name.hashCode())
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          6220
+        </td>
+        <td>
+          3217
+          -
+          3394
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          that.canEqual(this).&amp;&amp;(this.name.hashCode().==(that.name.hashCode())).&amp;&amp;(this.params.hashCode().==(that.params.hashCode())).&amp;&amp;(this.returnType.hashCode().==(that.returnType.hashCode()))
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          6216
+        </td>
+        <td>
+          3318
+          -
+          3338
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.GenSeqLike.hashCode
+        </td>
+        <td style="background: #AEF1AE">
+          that.params.hashCode()
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          6219
+        </td>
+        <td>
+          3342
+          -
+          3394
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          this.returnType.hashCode().==(that.returnType.hashCode())
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          6218
+        </td>
+        <td>
+          3370
+          -
+          3394
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.hashCode
+        </td>
+        <td style="background: #AEF1AE">
+          that.returnType.hashCode()
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          6217
+        </td>
+        <td>
+          3294
+          -
+          3338
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          this.params.hashCode().==(that.params.hashCode())
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          6221
+        </td>
+        <td>
+          3413
+          -
+          3418
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          6229
+        </td>
+        <td>
+          3469
+          -
+          3550
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.foldLeft
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[Object](MethodInfo.this.name, MethodInfo.this.params, MethodInfo.this.returnType).map[Int, Seq[Int]](((x$1: Object) =&gt; x$1.hashCode()))(collection.this.Seq.canBuildFrom[Int]).foldLeft[Int](0)(((a: Int, b: Int) =&gt; 31.*(a).+(b)))
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          6223
+        </td>
+        <td>
+          3479
+          -
+          3485
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodInfo.params
+        </td>
+        <td style="background: #F0ADAD">
+          MethodInfo.this.params
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          6222
+        </td>
+        <td>
+          3473
+          -
+          3477
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodInfo.name
+        </td>
+        <td style="background: #F0ADAD">
+          MethodInfo.this.name
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          6225
+        </td>
+        <td>
+          3503
+          -
+          3515
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.hashCode
+        </td>
+        <td style="background: #F0ADAD">
+          x$1.hashCode()
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          6228
+        </td>
+        <td>
+          3539
+          -
+          3549
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #F0ADAD">
+          31.*(a).+(b)
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          6224
+        </td>
+        <td>
+          3487
+          -
+          3497
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodInfo.returnType
+        </td>
+        <td style="background: #F0ADAD">
+          MethodInfo.this.returnType
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          6227
+        </td>
+        <td>
+          3526
+          -
+          3527
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          6226
+        </td>
+        <td>
+          3502
+          -
+          3502
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[Int]
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          6230
+        </td>
+        <td>
+          3699
+          -
+          3726
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.isInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          a.isInstanceOf[AbstractTypeScriptGenerator.this.MethodParam]
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          6232
+        </td>
+        <td>
+          3860
+          -
+          3910
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #F0ADAD">
+          this.paramType.hashCode().==(that.paramType.hashCode())
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          6231
+        </td>
+        <td>
+          3887
+          -
+          3910
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.hashCode
+        </td>
+        <td style="background: #F0ADAD">
+          that.paramType.hashCode()
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          6233
+        </td>
+        <td>
+          3837
+          -
+          3910
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #F0ADAD">
+          that.canEqual(this).&amp;&amp;(this.paramType.hashCode().==(that.paramType.hashCode()))
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          6234
+        </td>
+        <td>
+          3939
+          -
+          3944
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          6235
+        </td>
+        <td>
+          3987
+          -
+          4005
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.hashCode
+        </td>
+        <td style="background: #AEF1AE">
+          MethodParam.this.paramType.hashCode()
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          6238
+        </td>
+        <td>
+          4054
+          -
+          4055
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          6241
+        </td>
+        <td>
+          4035
+          -
+          4055
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;: &quot;, &quot;&quot;).s(MethodParam.this.name, MethodParam.this.paramType)
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          6240
+        </td>
+        <td>
+          4045
+          -
+          4054
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodParam.paramType
+        </td>
+        <td style="background: #AEF1AE">
+          MethodParam.this.paramType
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          6237
+        </td>
+        <td>
+          4042
+          -
+          4045
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          6236
+        </td>
+        <td>
+          4037
+          -
+          4038
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          6239
+        </td>
+        <td>
+          4038
+          -
+          4042
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodParam.name
+        </td>
+        <td style="background: #AEF1AE">
+          MethodParam.this.name
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          6247
+        </td>
+        <td>
+          4100
+          -
+          4109
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodParam.paramType
+        </td>
+        <td style="background: #AEF1AE">
+          MethodParam.this.paramType
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          6249
+        </td>
+        <td>
+          4083
+          -
+          4140
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;@param &quot;, &quot; {&quot;, &quot;} &quot;, &quot;&quot;).s(MethodParam.this.name, MethodParam.this.paramType, MethodParam.this.description.getOrElse[String](&quot;&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          6243
+        </td>
+        <td>
+          4097
+          -
+          4100
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; {&quot;
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          6246
+        </td>
+        <td>
+          4093
+          -
+          4097
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodParam.name
+        </td>
+        <td style="background: #AEF1AE">
+          MethodParam.this.name
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          6245
+        </td>
+        <td>
+          4139
+          -
+          4140
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          6248
+        </td>
+        <td>
+          4113
+          -
+          4138
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          MethodParam.this.description.getOrElse[String](&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          6242
+        </td>
+        <td>
+          4085
+          -
+          4093
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;@param &quot;
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          6244
+        </td>
+        <td>
+          4109
+          -
+          4112
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;} &quot;
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          6250
+        </td>
+        <td>
+          4258
+          -
+          4303
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodParam.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new AbstractTypeScriptGenerator.this.MethodParam(name, paramType, description)
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          6252
+        </td>
+        <td>
+          4384
+          -
+          4388
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;.*&quot;
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          6257
+        </td>
+        <td>
+          4353
+          -
+          4510
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[com.atomist.param.Parameter](com.atomist.param.Parameter.apply(AbstractTypeScriptGenerator.OutputPathParam, &quot;.*&quot;).setRequired(false).setDisplayName(&quot;Path for consolidated exports file&quot;).setDefaultValue(AbstractTypeScriptGenerator.DefaultFilename))
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          6251
+        </td>
+        <td>
+          4367
+          -
+          4382
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.OutputPathParam
+        </td>
+        <td style="background: #F0ADAD">
+          AbstractTypeScriptGenerator.OutputPathParam
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          6253
+        </td>
+        <td>
+          4407
+          -
+          4412
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          6254
+        </td>
+        <td>
+          4434
+          -
+          4470
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Path for consolidated exports file&quot;
+        </td>
+      </tr><tr>
+        <td>
+          152
+        </td>
+        <td>
+          6256
+        </td>
+        <td>
+          4357
+          -
+          4509
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.setDefaultValue
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.param.Parameter.apply(AbstractTypeScriptGenerator.OutputPathParam, &quot;.*&quot;).setRequired(false).setDisplayName(&quot;Path for consolidated exports file&quot;).setDefaultValue(AbstractTypeScriptGenerator.DefaultFilename)
+        </td>
+      </tr><tr>
+        <td>
+          152
+        </td>
+        <td>
+          6255
+        </td>
+        <td>
+          4493
+          -
+          4508
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.DefaultFilename
+        </td>
+        <td style="background: #F0ADAD">
+          AbstractTypeScriptGenerator.DefaultFilename
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          6258
+        </td>
+        <td>
+          4718
+          -
+          4732
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.emitTypes
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.emitTypes(pvs)
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          6261
+        </td>
+        <td>
+          4805
+          -
+          4827
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[com.atomist.source.FileArtifact](AbstractTypeScriptGenerator.this.emitCombinedTypes(pvs))
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          6264
+        </td>
+        <td>
+          4737
+          -
+          4828
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.SimpleFileBasedArtifactSource.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.source.SimpleFileBasedArtifactSource(&quot;Rug user model&quot;, createdFiles.++[com.atomist.source.FileArtifact, Seq[com.atomist.source.FileArtifact]](scala.this.Option.option2Iterable[com.atomist.source.FileArtifact](AbstractTypeScriptGenerator.this.emitCombinedTypes(pvs)))(collection.this.Seq.canBuildFrom[com.atomist.source.FileArtifact]))
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          6263
+        </td>
+        <td>
+          4789
+          -
+          4827
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          createdFiles.++[com.atomist.source.FileArtifact, Seq[com.atomist.source.FileArtifact]](scala.this.Option.option2Iterable[com.atomist.source.FileArtifact](AbstractTypeScriptGenerator.this.emitCombinedTypes(pvs)))(collection.this.Seq.canBuildFrom[com.atomist.source.FileArtifact])
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          6260
+        </td>
+        <td>
+          4805
+          -
+          4827
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.emitCombinedTypes
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.emitCombinedTypes(pvs)
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          6259
+        </td>
+        <td>
+          4771
+          -
+          4787
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Rug user model&quot;
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          6262
+        </td>
+        <td>
+          4802
+          -
+          4802
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.source.FileArtifact]
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          6265
+        </td>
+        <td>
+          4945
+          -
+          4959
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.emitTypes
+        </td>
+        <td style="background: #F0ADAD">
+          AbstractTypeScriptGenerator.this.emitTypes(poa)
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          6266
+        </td>
+        <td>
+          4972
+          -
+          4988
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.+
+        </td>
+        <td style="background: #F0ADAD">
+          as.+(createdFile)
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          6267
+        </td>
+        <td>
+          4993
+          -
+          4993
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.edit.SuccessfulModification.apply$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.project.edit.SuccessfulModification.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          6268
+        </td>
+        <td>
+          4993
+          -
+          5018
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.SuccessfulModification.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.project.edit.SuccessfulModification.apply(r, com.atomist.project.edit.SuccessfulModification.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          6269
+        </td>
+        <td>
+          5090
+          -
+          5106
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.edit.Applicability.OK
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.project.edit.Applicability.OK
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          6270
+        </td>
+        <td>
+          5145
+          -
+          5174
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Generate core Rug type info&quot;
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          6271
+        </td>
+        <td>
+          5206
+          -
+          5216
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;TypedDoc&quot;
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          6272
+        </td>
+        <td>
+          5298
+          -
+          5302
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          6274
+        </td>
+        <td>
+          5499
+          -
+          5502
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          6273
+        </td>
+        <td>
+          5477
+          -
+          5497
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          op.definedOn.==(null)
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          6275
+        </td>
+        <td>
+          5499
+          -
+          5502
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          179
+        </td>
+        <td>
+          6276
+        </td>
+        <td>
+          5546
+          -
+          5558
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.definedOn
+        </td>
+        <td style="background: #AEF1AE">
+          op.definedOn
+        </td>
+      </tr><tr>
+        <td>
+          179
+        </td>
+        <td>
+          6277
+        </td>
+        <td>
+          5518
+          -
+          5559
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.apache.commons.lang3.ClassUtils.getAllInterfaces
+        </td>
+        <td style="background: #AEF1AE">
+          org.apache.commons.lang3.ClassUtils.getAllInterfaces(op.definedOn)
+        </td>
+      </tr><tr>
+        <td>
+          180
+        </td>
+        <td>
+          6279
+        </td>
+        <td>
+          5618
+          -
+          5641
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.graph.GraphNode].==(c)
+        </td>
+      </tr><tr>
+        <td>
+          180
+        </td>
+        <td>
+          6278
+        </td>
+        <td>
+          5592
+          -
+          5609
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.tree.TreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          180
+        </td>
+        <td>
+          6280
+        </td>
+        <td>
+          5592
+          -
+          5641
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.tree.TreeNode].==(c).||(classOf[com.atomist.graph.GraphNode].==(c))
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          6283
+        </td>
+        <td>
+          5682
+          -
+          5726
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.allMethods
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.allMethods(c.getName(), com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations(c))
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          6282
+        </td>
+        <td>
+          5704
+          -
+          5725
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations(c)
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          6285
+        </td>
+        <td>
+          5655
+          -
+          5655
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Buffer.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Buffer.canBuildFrom[AbstractTypeScriptGenerator.this.ParentClassHolder]
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          6281
+        </td>
+        <td>
+          5693
+          -
+          5702
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getName
+        </td>
+        <td style="background: #AEF1AE">
+          c.getName()
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          6284
+        </td>
+        <td>
+          5661
+          -
+          5727
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.ParentClassHolder.apply
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.ParentClassHolder.apply(c, AbstractTypeScriptGenerator.this.allMethods(c.getName(), com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations(c)))
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          6286
+        </td>
+        <td>
+          5748
+          -
+          5773
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.exportedMethods.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          6288
+        </td>
+        <td>
+          5518
+          -
+          5790
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toList
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[Class[_]](org.apache.commons.lang3.ClassUtils.getAllInterfaces(op.definedOn)).asScala.filterNot(((c: Class[_]) =&gt; classOf[com.atomist.tree.TreeNode].==(c).||(classOf[com.atomist.graph.GraphNode].==(c)))).map[AbstractTypeScriptGenerator.this.ParentClassHolder, scala.collection.mutable.Buffer[AbstractTypeScriptGenerator.this.ParentClassHolder]](((c: Class[_]) =&gt; AbstractTypeScriptGenerator.this.ParentClassHolder.apply(c, AbstractTypeScriptGenerator.this.allMethods(c.getName(), com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations(c)))))(mutable.this.Buffer.canBuildFrom[AbstractTypeScriptGenerator.this.ParentClassHolder]).filterNot(((x$2: AbstractTypeScriptGenerator.this.ParentClassHolder) =&gt; x$2.exportedMethods.isEmpty)).toList
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          6287
+        </td>
+        <td>
+          5518
+          -
+          5790
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toList
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[Class[_]](org.apache.commons.lang3.ClassUtils.getAllInterfaces(op.definedOn)).asScala.filterNot(((c: Class[_]) =&gt; classOf[com.atomist.tree.TreeNode].==(c).||(classOf[com.atomist.graph.GraphNode].==(c)))).map[AbstractTypeScriptGenerator.this.ParentClassHolder, scala.collection.mutable.Buffer[AbstractTypeScriptGenerator.this.ParentClassHolder]](((c: Class[_]) =&gt; AbstractTypeScriptGenerator.this.ParentClassHolder.apply(c, AbstractTypeScriptGenerator.this.allMethods(c.getName(), com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations(c)))))(mutable.this.Buffer.canBuildFrom[AbstractTypeScriptGenerator.this.ParentClassHolder]).filterNot(((x$2: AbstractTypeScriptGenerator.this.ParentClassHolder) =&gt; x$2.exportedMethods.isEmpty)).toList
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          6291
+        </td>
+        <td>
+          5900
+          -
+          5903
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          6290
+        </td>
+        <td>
+          5900
+          -
+          5903
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          6289
+        </td>
+        <td>
+          5878
+          -
+          5898
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          op.definedOn.==(null)
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          6292
+        </td>
+        <td>
+          5949
+          -
+          5961
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.definedOn
+        </td>
+        <td style="background: #AEF1AE">
+          op.definedOn
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          6293
+        </td>
+        <td>
+          5919
+          -
+          5962
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.apache.commons.lang3.ClassUtils.getAllSuperclasses
+        </td>
+        <td style="background: #AEF1AE">
+          org.apache.commons.lang3.ClassUtils.getAllSuperclasses(op.definedOn)
+        </td>
+      </tr><tr>
+        <td>
+          189
+        </td>
+        <td>
+          6294
+        </td>
+        <td>
+          5995
+          -
+          6012
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.tree.TreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          189
+        </td>
+        <td>
+          6296
+        </td>
+        <td>
+          5995
+          -
+          6044
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.tree.TreeNode].==(c).||(classOf[com.atomist.graph.GraphNode].==(c))
+        </td>
+      </tr><tr>
+        <td>
+          189
+        </td>
+        <td>
+          6295
+        </td>
+        <td>
+          6021
+          -
+          6044
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.graph.GraphNode].==(c)
+        </td>
+      </tr><tr>
+        <td>
+          190
+        </td>
+        <td>
+          6301
+        </td>
+        <td>
+          6058
+          -
+          6058
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Buffer.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Buffer.canBuildFrom[AbstractTypeScriptGenerator.this.ParentClassHolder]
+        </td>
+      </tr><tr>
+        <td>
+          190
+        </td>
+        <td>
+          6300
+        </td>
+        <td>
+          6064
+          -
+          6130
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.ParentClassHolder.apply
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.ParentClassHolder.apply(c, AbstractTypeScriptGenerator.this.allMethods(c.getName(), com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations(c)))
+        </td>
+      </tr><tr>
+        <td>
+          190
+        </td>
+        <td>
+          6297
+        </td>
+        <td>
+          6096
+          -
+          6105
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getName
+        </td>
+        <td style="background: #AEF1AE">
+          c.getName()
+        </td>
+      </tr><tr>
+        <td>
+          190
+        </td>
+        <td>
+          6299
+        </td>
+        <td>
+          6085
+          -
+          6129
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.allMethods
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.allMethods(c.getName(), com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations(c))
+        </td>
+      </tr><tr>
+        <td>
+          190
+        </td>
+        <td>
+          6298
+        </td>
+        <td>
+          6107
+          -
+          6128
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations(c)
+        </td>
+      </tr><tr>
+        <td>
+          191
+        </td>
+        <td>
+          6302
+        </td>
+        <td>
+          6151
+          -
+          6176
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          x$3.exportedMethods.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          6303
+        </td>
+        <td>
+          5919
+          -
+          6193
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toList
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[Class[_]](org.apache.commons.lang3.ClassUtils.getAllSuperclasses(op.definedOn)).asScala.filterNot(((c: Class[_]) =&gt; classOf[com.atomist.tree.TreeNode].==(c).||(classOf[com.atomist.graph.GraphNode].==(c)))).map[AbstractTypeScriptGenerator.this.ParentClassHolder, scala.collection.mutable.Buffer[AbstractTypeScriptGenerator.this.ParentClassHolder]](((c: Class[_]) =&gt; AbstractTypeScriptGenerator.this.ParentClassHolder.apply(c, AbstractTypeScriptGenerator.this.allMethods(c.getName(), com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations(c)))))(mutable.this.Buffer.canBuildFrom[AbstractTypeScriptGenerator.this.ParentClassHolder]).filterNot(((x$3: AbstractTypeScriptGenerator.this.ParentClassHolder) =&gt; x$3.exportedMethods.isEmpty)).toList
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          6304
+        </td>
+        <td>
+          5919
+          -
+          6193
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toList
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[Class[_]](org.apache.commons.lang3.ClassUtils.getAllSuperclasses(op.definedOn)).asScala.filterNot(((c: Class[_]) =&gt; classOf[com.atomist.tree.TreeNode].==(c).||(classOf[com.atomist.graph.GraphNode].==(c)))).map[AbstractTypeScriptGenerator.this.ParentClassHolder, scala.collection.mutable.Buffer[AbstractTypeScriptGenerator.this.ParentClassHolder]](((c: Class[_]) =&gt; AbstractTypeScriptGenerator.this.ParentClassHolder.apply(c, AbstractTypeScriptGenerator.this.allMethods(c.getName(), com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations(c)))))(mutable.this.Buffer.canBuildFrom[AbstractTypeScriptGenerator.this.ParentClassHolder]).filterNot(((x$3: AbstractTypeScriptGenerator.this.ParentClassHolder) =&gt; x$3.exportedMethods.isEmpty)).toList
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          6305
+        </td>
+        <td>
+          6304
+          -
+          6330
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.collection.mutable.ListBuffer[AbstractTypeScriptGenerator.this.MethodInfo]()
+        </td>
+      </tr><tr>
+        <td>
+          197
+        </td>
+        <td>
+          6316
+        </td>
+        <td>
+          6335
+          -
+          6602
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          ops.foreach[scala.collection.mutable.ListBuffer[AbstractTypeScriptGenerator.this.MethodInfo]](((op: com.atomist.rug.spi.TypeOperation) =&gt; {
+  val params: Seq[AbstractTypeScriptGenerator.this.MethodParam] = op.parameters.map[AbstractTypeScriptGenerator.this.MethodParam, Seq[AbstractTypeScriptGenerator.this.MethodParam]](((p: com.atomist.rug.spi.TypeParameter) =&gt; AbstractTypeScriptGenerator.this.MethodParam.apply(p.name, AbstractTypeScriptGenerator.this.helper.rugTypeToTypeScriptType(p.parameterType, AbstractTypeScriptGenerator.this.typeRegistry), p.description)))(collection.this.Seq.canBuildFrom[AbstractTypeScriptGenerator.this.MethodParam]);
+  methods.+=(AbstractTypeScriptGenerator.this.getMethodInfo(typeName, op, params))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          200
+        </td>
+        <td>
+          6312
+        </td>
+        <td>
+          6399
+          -
+          6399
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[AbstractTypeScriptGenerator.this.MethodParam]
+        </td>
+      </tr><tr>
+        <td>
+          200
+        </td>
+        <td>
+          6313
+        </td>
+        <td>
+          6392
+          -
+          6542
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          op.parameters.map[AbstractTypeScriptGenerator.this.MethodParam, Seq[AbstractTypeScriptGenerator.this.MethodParam]](((p: com.atomist.rug.spi.TypeParameter) =&gt; AbstractTypeScriptGenerator.this.MethodParam.apply(p.name, AbstractTypeScriptGenerator.this.helper.rugTypeToTypeScriptType(p.parameterType, AbstractTypeScriptGenerator.this.typeRegistry), p.description)))(collection.this.Seq.canBuildFrom[AbstractTypeScriptGenerator.this.MethodParam])
+        </td>
+      </tr><tr>
+        <td>
+          202
+        </td>
+        <td>
+          6310
+        </td>
+        <td>
+          6528
+          -
+          6541
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeParameter.description
+        </td>
+        <td style="background: #AEF1AE">
+          p.description
+        </td>
+      </tr><tr>
+        <td>
+          202
+        </td>
+        <td>
+          6309
+        </td>
+        <td>
+          6465
+          -
+          6526
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.TypeScriptGenerationHelper.rugTypeToTypeScriptType
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.helper.rugTypeToTypeScriptType(p.parameterType, AbstractTypeScriptGenerator.this.typeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          202
+        </td>
+        <td>
+          6306
+        </td>
+        <td>
+          6457
+          -
+          6463
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeParameter.name
+        </td>
+        <td style="background: #AEF1AE">
+          p.name
+        </td>
+      </tr><tr>
+        <td>
+          202
+        </td>
+        <td>
+          6308
+        </td>
+        <td>
+          6513
+          -
+          6525
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.typeRegistry
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.typeRegistry
+        </td>
+      </tr><tr>
+        <td>
+          202
+        </td>
+        <td>
+          6311
+        </td>
+        <td>
+          6445
+          -
+          6542
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodParam.apply
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.MethodParam.apply(p.name, AbstractTypeScriptGenerator.this.helper.rugTypeToTypeScriptType(p.parameterType, AbstractTypeScriptGenerator.this.typeRegistry), p.description)
+        </td>
+      </tr><tr>
+        <td>
+          202
+        </td>
+        <td>
+          6307
+        </td>
+        <td>
+          6496
+          -
+          6511
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeParameter.parameterType
+        </td>
+        <td style="background: #AEF1AE">
+          p.parameterType
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          6315
+        </td>
+        <td>
+          6550
+          -
+          6596
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.+=
+        </td>
+        <td style="background: #AEF1AE">
+          methods.+=(AbstractTypeScriptGenerator.this.getMethodInfo(typeName, op, params))
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          6314
+        </td>
+        <td>
+          6561
+          -
+          6596
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.getMethodInfo
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.getMethodInfo(typeName, op, params)
+        </td>
+      </tr><tr>
+        <td>
+          206
+        </td>
+        <td>
+          6318
+        </td>
+        <td>
+          6621
+          -
+          6621
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.math.Ordering.String
+        </td>
+        <td style="background: #AEF1AE">
+          math.this.Ordering.String
+        </td>
+      </tr><tr>
+        <td>
+          206
+        </td>
+        <td>
+          6317
+        </td>
+        <td>
+          6622
+          -
+          6628
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodInfo.name
+        </td>
+        <td style="background: #AEF1AE">
+          x$4.name
+        </td>
+      </tr><tr>
+        <td>
+          206
+        </td>
+        <td>
+          6319
+        </td>
+        <td>
+          6607
+          -
+          6629
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.sortBy
+        </td>
+        <td style="background: #AEF1AE">
+          methods.sortBy[String](((x$4: AbstractTypeScriptGenerator.this.MethodInfo) =&gt; x$4.name))(math.this.Ordering.String)
+        </td>
+      </tr><tr>
+        <td>
+          212
+        </td>
+        <td>
+          6320
+        </td>
+        <td>
+          6840
+          -
+          6876
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.empty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.mutable.ListBuffer.empty[com.atomist.source.StringFileArtifact]
+        </td>
+      </tr><tr>
+        <td>
+          213
+        </td>
+        <td>
+          6321
+        </td>
+        <td>
+          6904
+          -
+          6935
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.empty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.mutable.ListBuffer.empty[AbstractTypeScriptGenerator.this.GeneratedType]
+        </td>
+      </tr><tr>
+        <td>
+          214
+        </td>
+        <td>
+          6323
+        </td>
+        <td>
+          6955
+          -
+          6992
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.sortWith
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.typeRegistry.types.sortWith(AbstractTypeScriptGenerator.this.typeSort)
+        </td>
+      </tr><tr>
+        <td>
+          214
+        </td>
+        <td>
+          6322
+        </td>
+        <td>
+          6983
+          -
+          6991
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.typeSort
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.typeSort
+        </td>
+      </tr><tr>
+        <td>
+          215
+        </td>
+        <td>
+          6327
+        </td>
+        <td>
+          7034
+          -
+          7034
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[AbstractTypeScriptGenerator.this.GeneratedType]
+        </td>
+      </tr><tr>
+        <td>
+          215
+        </td>
+        <td>
+          6324
+        </td>
+        <td>
+          7067
+          -
+          7091
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.getGeneratedTypes
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.getGeneratedTypes(t, op)
+        </td>
+      </tr><tr>
+        <td>
+          215
+        </td>
+        <td>
+          6326
+        </td>
+        <td>
+          7040
+          -
+          7092
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          t.operations.flatMap[AbstractTypeScriptGenerator.this.GeneratedType, Seq[AbstractTypeScriptGenerator.this.GeneratedType]](((op: com.atomist.rug.spi.TypeOperation) =&gt; AbstractTypeScriptGenerator.this.getGeneratedTypes(t, op)))(collection.this.Seq.canBuildFrom[AbstractTypeScriptGenerator.this.GeneratedType])
+        </td>
+      </tr><tr>
+        <td>
+          215
+        </td>
+        <td>
+          6328
+        </td>
+        <td>
+          7018
+          -
+          7093
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          allTypes.flatMap[AbstractTypeScriptGenerator.this.GeneratedType, Seq[AbstractTypeScriptGenerator.this.GeneratedType]](((t: com.atomist.rug.spi.Typed) =&gt; t.operations.flatMap[AbstractTypeScriptGenerator.this.GeneratedType, Seq[AbstractTypeScriptGenerator.this.GeneratedType]](((op: com.atomist.rug.spi.TypeOperation) =&gt; AbstractTypeScriptGenerator.this.getGeneratedTypes(t, op)))(collection.this.Seq.canBuildFrom[AbstractTypeScriptGenerator.this.GeneratedType])))(collection.this.Seq.canBuildFrom[AbstractTypeScriptGenerator.this.GeneratedType])
+        </td>
+      </tr><tr>
+        <td>
+          215
+        </td>
+        <td>
+          6325
+        </td>
+        <td>
+          7060
+          -
+          7060
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[AbstractTypeScriptGenerator.this.GeneratedType]
+        </td>
+      </tr><tr>
+        <td>
+          216
+        </td>
+        <td>
+          6330
+        </td>
+        <td>
+          7114
+          -
+          7151
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.ParameterValues.stringParamValue
+        </td>
+        <td style="background: #AEF1AE">
+          poa.stringParamValue(AbstractTypeScriptGenerator.OutputPathParam)
+        </td>
+      </tr><tr>
+        <td>
+          216
+        </td>
+        <td>
+          6329
+        </td>
+        <td>
+          7135
+          -
+          7150
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.OutputPathParam
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.OutputPathParam
+        </td>
+      </tr><tr>
+        <td>
+          217
+        </td>
+        <td>
+          6333
+        </td>
+        <td>
+          7196
+          -
+          7249
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          org.apache.commons.lang3.StringUtils.substringBeforeLast(pathParam, &quot;/&quot;).+(&quot;/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          217
+        </td>
+        <td>
+          6332
+        </td>
+        <td>
+          7196
+          -
+          7249
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          org.apache.commons.lang3.StringUtils.substringBeforeLast(pathParam, &quot;/&quot;).+(&quot;/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          217
+        </td>
+        <td>
+          6335
+        </td>
+        <td>
+          7255
+          -
+          7257
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          217
+        </td>
+        <td>
+          6331
+        </td>
+        <td>
+          7171
+          -
+          7194
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.contains
+        </td>
+        <td style="background: #AEF1AE">
+          pathParam.contains(&quot;/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          217
+        </td>
+        <td>
+          6334
+        </td>
+        <td>
+          7255
+          -
+          7257
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          220
+        </td>
+        <td>
+          6369
+        </td>
+        <td>
+          7263
+          -
+          7843
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.FilterMonadic.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          generatedTypes.withFilter(((t: AbstractTypeScriptGenerator.this.GeneratedType) =&gt; alreadyGenerated.contains[AbstractTypeScriptGenerator.this.GeneratedType](t).unary_!)).foreach[scala.collection.mutable.ListBuffer[AbstractTypeScriptGenerator.this.GeneratedType]](((t: AbstractTypeScriptGenerator.this.GeneratedType) =&gt; {
+  val output: StringBuilder = new scala.`package`.StringBuilder(AbstractTypeScriptGenerator.this.config.licenseHeader);
+  output.++=(AbstractTypeScriptGenerator.this.config.separator);
+  output.++=(AbstractTypeScriptGenerator.this.config.imports);
+  output.++=(t.specificImports);
+  output.++=(AbstractTypeScriptGenerator.this.getImports(generatedTypes, t));
+  output.++=(AbstractTypeScriptGenerator.this.config.separator);
+  output.++=(scala.StringContext.apply(&quot;export { &quot;, &quot; };&quot;).s(t.name));
+  output.++=(AbstractTypeScriptGenerator.this.config.separator);
+  output.++=(t.toString());
+  output.++=(AbstractTypeScriptGenerator.this.config.separator);
+  tsClassOrInterfaces.+=(com.atomist.source.StringFileArtifact.apply(scala.StringContext.apply(&quot;&quot;, &quot;&quot;, &quot;.ts&quot;).s(path, t.name), output.toString()));
+  alreadyGenerated.+=(t)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          6336
+        </td>
+        <td>
+          7304
+          -
+          7333
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          alreadyGenerated.contains[AbstractTypeScriptGenerator.this.GeneratedType](t).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          223
+        </td>
+        <td>
+          6338
+        </td>
+        <td>
+          7361
+          -
+          7400
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.`package`.StringBuilder(AbstractTypeScriptGenerator.this.config.licenseHeader)
+        </td>
+      </tr><tr>
+        <td>
+          223
+        </td>
+        <td>
+          6337
+        </td>
+        <td>
+          7379
+          -
+          7399
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeGenerationConfig.licenseHeader
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.config.licenseHeader
+        </td>
+      </tr><tr>
+        <td>
+          224
+        </td>
+        <td>
+          6339
+        </td>
+        <td>
+          7418
+          -
+          7434
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeGenerationConfig.separator
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.config.separator
+        </td>
+      </tr><tr>
+        <td>
+          224
+        </td>
+        <td>
+          6340
+        </td>
+        <td>
+          7407
+          -
+          7434
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(AbstractTypeScriptGenerator.this.config.separator)
+        </td>
+      </tr><tr>
+        <td>
+          225
+        </td>
+        <td>
+          6342
+        </td>
+        <td>
+          7441
+          -
+          7466
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(AbstractTypeScriptGenerator.this.config.imports)
+        </td>
+      </tr><tr>
+        <td>
+          225
+        </td>
+        <td>
+          6341
+        </td>
+        <td>
+          7452
+          -
+          7466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeGenerationConfig.imports
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.config.imports
+        </td>
+      </tr><tr>
+        <td>
+          226
+        </td>
+        <td>
+          6344
+        </td>
+        <td>
+          7473
+          -
+          7501
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(t.specificImports)
+        </td>
+      </tr><tr>
+        <td>
+          226
+        </td>
+        <td>
+          6343
+        </td>
+        <td>
+          7484
+          -
+          7501
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.GeneratedType.specificImports
+        </td>
+        <td style="background: #AEF1AE">
+          t.specificImports
+        </td>
+      </tr><tr>
+        <td>
+          227
+        </td>
+        <td>
+          6345
+        </td>
+        <td>
+          7519
+          -
+          7548
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.getImports
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.getImports(generatedTypes, t)
+        </td>
+      </tr><tr>
+        <td>
+          227
+        </td>
+        <td>
+          6346
+        </td>
+        <td>
+          7508
+          -
+          7548
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(AbstractTypeScriptGenerator.this.getImports(generatedTypes, t))
+        </td>
+      </tr><tr>
+        <td>
+          228
+        </td>
+        <td>
+          6348
+        </td>
+        <td>
+          7555
+          -
+          7582
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(AbstractTypeScriptGenerator.this.config.separator)
+        </td>
+      </tr><tr>
+        <td>
+          228
+        </td>
+        <td>
+          6347
+        </td>
+        <td>
+          7566
+          -
+          7582
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeGenerationConfig.separator
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.config.separator
+        </td>
+      </tr><tr>
+        <td>
+          229
+        </td>
+        <td>
+          6351
+        </td>
+        <td>
+          7613
+          -
+          7619
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.GeneratedType.name
+        </td>
+        <td style="background: #AEF1AE">
+          t.name
+        </td>
+      </tr><tr>
+        <td>
+          229
+        </td>
+        <td>
+          6350
+        </td>
+        <td>
+          7620
+          -
+          7624
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; };&quot;
+        </td>
+      </tr><tr>
+        <td>
+          229
+        </td>
+        <td>
+          6353
+        </td>
+        <td>
+          7589
+          -
+          7624
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(scala.StringContext.apply(&quot;export { &quot;, &quot; };&quot;).s(t.name))
+        </td>
+      </tr><tr>
+        <td>
+          229
+        </td>
+        <td>
+          6349
+        </td>
+        <td>
+          7602
+          -
+          7612
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;export { &quot;
+        </td>
+      </tr><tr>
+        <td>
+          229
+        </td>
+        <td>
+          6352
+        </td>
+        <td>
+          7600
+          -
+          7624
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;export { &quot;, &quot; };&quot;).s(t.name)
+        </td>
+      </tr><tr>
+        <td>
+          230
+        </td>
+        <td>
+          6354
+        </td>
+        <td>
+          7642
+          -
+          7658
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeGenerationConfig.separator
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.config.separator
+        </td>
+      </tr><tr>
+        <td>
+          230
+        </td>
+        <td>
+          6355
+        </td>
+        <td>
+          7631
+          -
+          7658
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(AbstractTypeScriptGenerator.this.config.separator)
+        </td>
+      </tr><tr>
+        <td>
+          231
+        </td>
+        <td>
+          6357
+        </td>
+        <td>
+          7665
+          -
+          7686
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(t.toString())
+        </td>
+      </tr><tr>
+        <td>
+          231
+        </td>
+        <td>
+          6356
+        </td>
+        <td>
+          7676
+          -
+          7686
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #AEF1AE">
+          t.toString()
+        </td>
+      </tr><tr>
+        <td>
+          232
+        </td>
+        <td>
+          6359
+        </td>
+        <td>
+          7693
+          -
+          7720
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(AbstractTypeScriptGenerator.this.config.separator)
+        </td>
+      </tr><tr>
+        <td>
+          232
+        </td>
+        <td>
+          6358
+        </td>
+        <td>
+          7704
+          -
+          7720
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeGenerationConfig.separator
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.config.separator
+        </td>
+      </tr><tr>
+        <td>
+          233
+        </td>
+        <td>
+          6360
+        </td>
+        <td>
+          7771
+          -
+          7772
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          233
+        </td>
+        <td>
+          6363
+        </td>
+        <td>
+          7778
+          -
+          7784
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.GeneratedType.name
+        </td>
+        <td style="background: #AEF1AE">
+          t.name
+        </td>
+      </tr><tr>
+        <td>
+          233
+        </td>
+        <td>
+          6366
+        </td>
+        <td>
+          7750
+          -
+          7809
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.StringFileArtifact.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.StringFileArtifact.apply(scala.StringContext.apply(&quot;&quot;, &quot;&quot;, &quot;.ts&quot;).s(path, t.name), output.toString())
+        </td>
+      </tr><tr>
+        <td>
+          233
+        </td>
+        <td>
+          6365
+        </td>
+        <td>
+          7791
+          -
+          7808
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.toString
+        </td>
+        <td style="background: #AEF1AE">
+          output.toString()
+        </td>
+      </tr><tr>
+        <td>
+          233
+        </td>
+        <td>
+          6362
+        </td>
+        <td>
+          7785
+          -
+          7789
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;.ts&quot;
+        </td>
+      </tr><tr>
+        <td>
+          233
+        </td>
+        <td>
+          6364
+        </td>
+        <td>
+          7769
+          -
+          7789
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;&quot;, &quot;.ts&quot;).s(path, t.name)
+        </td>
+      </tr><tr>
+        <td>
+          233
+        </td>
+        <td>
+          6367
+        </td>
+        <td>
+          7727
+          -
+          7809
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.+=
+        </td>
+        <td style="background: #AEF1AE">
+          tsClassOrInterfaces.+=(com.atomist.source.StringFileArtifact.apply(scala.StringContext.apply(&quot;&quot;, &quot;&quot;, &quot;.ts&quot;).s(path, t.name), output.toString()))
+        </td>
+      </tr><tr>
+        <td>
+          233
+        </td>
+        <td>
+          6361
+        </td>
+        <td>
+          7776
+          -
+          7777
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          234
+        </td>
+        <td>
+          6368
+        </td>
+        <td>
+          7816
+          -
+          7837
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.+=
+        </td>
+        <td style="background: #AEF1AE">
+          alreadyGenerated.+=(t)
+        </td>
+      </tr><tr>
+        <td>
+          238
+        </td>
+        <td>
+          6371
+        </td>
+        <td>
+          7877
+          -
+          7916
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.`package`.StringBuilder(AbstractTypeScriptGenerator.this.config.licenseHeader)
+        </td>
+      </tr><tr>
+        <td>
+          238
+        </td>
+        <td>
+          6370
+        </td>
+        <td>
+          7895
+          -
+          7915
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeGenerationConfig.licenseHeader
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.config.licenseHeader
+        </td>
+      </tr><tr>
+        <td>
+          239
+        </td>
+        <td>
+          6372
+        </td>
+        <td>
+          7932
+          -
+          7948
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeGenerationConfig.separator
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.config.separator
+        </td>
+      </tr><tr>
+        <td>
+          239
+        </td>
+        <td>
+          6373
+        </td>
+        <td>
+          7921
+          -
+          7948
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(AbstractTypeScriptGenerator.this.config.separator)
+        </td>
+      </tr><tr>
+        <td>
+          240
+        </td>
+        <td>
+          6374
+        </td>
+        <td>
+          8006
+          -
+          8012
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.GeneratedType.name
+        </td>
+        <td style="background: #AEF1AE">
+          x$5.name
+        </td>
+      </tr><tr>
+        <td>
+          240
+        </td>
+        <td>
+          6376
+        </td>
+        <td>
+          8014
+          -
+          8014
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Iterable.canBuildFrom[AbstractTypeScriptGenerator.this.GeneratedType]
+        </td>
+      </tr><tr>
+        <td>
+          241
+        </td>
+        <td>
+          6375
+        </td>
+        <td>
+          8041
+          -
+          8047
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.generic.TraversableForwarder.head
+        </td>
+        <td style="background: #AEF1AE">
+          l.head
+        </td>
+      </tr><tr>
+        <td>
+          242
+        </td>
+        <td>
+          6378
+        </td>
+        <td>
+          8067
+          -
+          8067
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.math.Ordering.String
+        </td>
+        <td style="background: #AEF1AE">
+          math.this.Ordering.String
+        </td>
+      </tr><tr>
+        <td>
+          242
+        </td>
+        <td>
+          6377
+        </td>
+        <td>
+          8068
+          -
+          8074
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.GeneratedType.name
+        </td>
+        <td style="background: #AEF1AE">
+          x$6.name
+        </td>
+      </tr><tr>
+        <td>
+          242
+        </td>
+        <td>
+          6379
+        </td>
+        <td>
+          7981
+          -
+          8075
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.sortBy
+        </td>
+        <td style="background: #AEF1AE">
+          alreadyGenerated.groupBy[String](((x$5: AbstractTypeScriptGenerator.this.GeneratedType) =&gt; x$5.name)).map[AbstractTypeScriptGenerator.this.GeneratedType, scala.collection.immutable.Iterable[AbstractTypeScriptGenerator.this.GeneratedType]](((x0$1: (String, scala.collection.mutable.ListBuffer[AbstractTypeScriptGenerator.this.GeneratedType])) =&gt; x0$1 match {
+  case (_1: String, _2: scala.collection.mutable.ListBuffer[AbstractTypeScriptGenerator.this.GeneratedType])(String, scala.collection.mutable.ListBuffer[AbstractTypeScriptGenerator.this.GeneratedType])(_, (l @ _)) =&gt; l.head
+}))(immutable.this.Iterable.canBuildFrom[AbstractTypeScriptGenerator.this.GeneratedType]).toSeq.sortBy[String](((x$6: AbstractTypeScriptGenerator.this.GeneratedType) =&gt; x$6.name))(math.this.Ordering.String)
+        </td>
+      </tr><tr>
+        <td>
+          243
+        </td>
+        <td>
+          6381
+        </td>
+        <td>
+          8080
+          -
+          8184
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(uniqueGeneratedTypes.map[String, Seq[String]](((t: AbstractTypeScriptGenerator.this.GeneratedType) =&gt; scala.StringContext.apply(&quot;import { &quot;, &quot; } from \&quot;./&quot;, &quot;\&quot;;&quot;).s(t.name, t.name)))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;\n&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          243
+        </td>
+        <td>
+          6380
+        </td>
+        <td>
+          8091
+          -
+          8184
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          uniqueGeneratedTypes.map[String, Seq[String]](((t: AbstractTypeScriptGenerator.this.GeneratedType) =&gt; scala.StringContext.apply(&quot;import { &quot;, &quot; } from \&quot;./&quot;, &quot;\&quot;;&quot;).s(t.name, t.name)))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;\n&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          244
+        </td>
+        <td>
+          6383
+        </td>
+        <td>
+          8189
+          -
+          8216
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(AbstractTypeScriptGenerator.this.config.separator)
+        </td>
+      </tr><tr>
+        <td>
+          244
+        </td>
+        <td>
+          6382
+        </td>
+        <td>
+          8200
+          -
+          8216
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeGenerationConfig.separator
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.this.config.separator
+        </td>
+      </tr><tr>
+        <td>
+          245
+        </td>
+        <td>
+          6384
+        </td>
+        <td>
+          8232
+          -
+          8302
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          uniqueGeneratedTypes.map[String, Seq[String]](((t: AbstractTypeScriptGenerator.this.GeneratedType) =&gt; scala.StringContext.apply(&quot;\\nexport { &quot;, &quot; };&quot;).s(t.name)))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          245
+        </td>
+        <td>
+          6385
+        </td>
+        <td>
+          8221
+          -
+          8302
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(uniqueGeneratedTypes.map[String, Seq[String]](((t: AbstractTypeScriptGenerator.this.GeneratedType) =&gt; scala.StringContext.apply(&quot;\\nexport { &quot;, &quot; };&quot;).s(t.name)))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          246
+        </td>
+        <td>
+          6387
+        </td>
+        <td>
+          8330
+          -
+          8378
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.StringFileArtifact.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.StringFileArtifact.apply(pathParam, output.toString())
+        </td>
+      </tr><tr>
+        <td>
+          246
+        </td>
+        <td>
+          6386
+        </td>
+        <td>
+          8360
+          -
+          8377
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.toString
+        </td>
+        <td style="background: #AEF1AE">
+          output.toString()
+        </td>
+      </tr><tr>
+        <td>
+          246
+        </td>
+        <td>
+          6388
+        </td>
+        <td>
+          8307
+          -
+          8378
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.+=
+        </td>
+        <td style="background: #AEF1AE">
+          tsClassOrInterfaces.+=(com.atomist.source.StringFileArtifact.apply(pathParam, output.toString()))
+        </td>
+      </tr><tr>
+        <td>
+          253
+        </td>
+        <td>
+          6390
+        </td>
+        <td>
+          8620
+          -
+          8624
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;[]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          253
+        </td>
+        <td>
+          6392
+        </td>
+        <td>
+          8578
+          -
+          8578
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          253
+        </td>
+        <td>
+          6398
+        </td>
+        <td>
+          8549
+          -
+          8549
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          253
+        </td>
+        <td>
+          6389
+        </td>
+        <td>
+          8606
+          -
+          8618
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodInfo.returnType
+        </td>
+        <td style="background: #AEF1AE">
+          m.returnType
+        </td>
+      </tr><tr>
+        <td>
+          253
+        </td>
+        <td>
+          6391
+        </td>
+        <td>
+          8584
+          -
+          8625
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.apache.commons.lang3.StringUtils.removeEnd
+        </td>
+        <td style="background: #AEF1AE">
+          org.apache.commons.lang3.StringUtils.removeEnd(m.returnType, &quot;[]&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          254
+        </td>
+        <td>
+          6393
+        </td>
+        <td>
+          8663
+          -
+          8669
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.GeneratedType.name
+        </td>
+        <td style="background: #AEF1AE">
+          t.name
+        </td>
+      </tr><tr>
+        <td>
+          254
+        </td>
+        <td>
+          6396
+        </td>
+        <td>
+          8643
+          -
+          8684
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          currentType.name.!=(t.name).&amp;&amp;(x$7.==(t.name))
+        </td>
+      </tr><tr>
+        <td>
+          254
+        </td>
+        <td>
+          6395
+        </td>
+        <td>
+          8673
+          -
+          8684
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$7.==(t.name)
+        </td>
+      </tr><tr>
+        <td>
+          254
+        </td>
+        <td>
+          6397
+        </td>
+        <td>
+          8555
+          -
+          8685
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          currentType.methods.map[String, Seq[String]](((m: AbstractTypeScriptGenerator.this.MethodInfo) =&gt; org.apache.commons.lang3.StringUtils.removeEnd(m.returnType, &quot;[]&quot;)))(collection.this.Seq.canBuildFrom[String]).filter(((x$7: String) =&gt; currentType.name.!=(t.name).&amp;&amp;(x$7.==(t.name))))
+        </td>
+      </tr><tr>
+        <td>
+          254
+        </td>
+        <td>
+          6394
+        </td>
+        <td>
+          8678
+          -
+          8684
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.GeneratedType.name
+        </td>
+        <td style="background: #AEF1AE">
+          t.name
+        </td>
+      </tr><tr>
+        <td>
+          255
+        </td>
+        <td>
+          6399
+        </td>
+        <td>
+          8520
+          -
+          8700
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toList
+        </td>
+        <td style="background: #AEF1AE">
+          interfaceTypes.flatMap[String, Seq[String]](((t: AbstractTypeScriptGenerator.this.GeneratedType) =&gt; currentType.methods.map[String, Seq[String]](((m: AbstractTypeScriptGenerator.this.MethodInfo) =&gt; org.apache.commons.lang3.StringUtils.removeEnd(m.returnType, &quot;[]&quot;)))(collection.this.Seq.canBuildFrom[String]).filter(((x$7: String) =&gt; currentType.name.!=(t.name).&amp;&amp;(x$7.==(t.name))))))(collection.this.Seq.canBuildFrom[String]).toList
+        </td>
+      </tr><tr>
+        <td>
+          261
+        </td>
+        <td>
+          6400
+        </td>
+        <td>
+          8707
+          -
+          8874
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  &lt;synthetic&gt; &lt;artifact&gt; val x$8: List[String] = currentType.parent.toList;
+  imports.:::[String](x$8)
+}.distinct.filterNot(((x$9: String) =&gt; x$9.==(currentType.root))).map[String, List[String]](((i: String) =&gt; scala.StringContext.apply(&quot;import { &quot;, &quot; } from \&quot;./&quot;, &quot;\&quot;;&quot;).s(i, i)))(immutable.this.List.canBuildFrom[String]).mkString(&quot;\n&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          273
+        </td>
+        <td>
+          6401
+        </td>
+        <td>
+          9228
+          -
+          9948
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;|/*\n       | * Copyright 2015-2017 Atomist Inc.\n       | *\n       | * Licensed under the Apache License, Version 2.0 (the \&quot;License\&quot;);\n       | * you may not use this file except in compliance with the License.\n       | * You may obtain a copy of the License at\n       | *\n       | *      http://www.apache.org/licenses/LICENSE-2.0\n       | *\n       | * Unless required by applicable law or agreed to in writing, software\n       | * distributed under the License is distributed on an \&quot;AS IS\&quot; BASIS,\n       | * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n       | * See the License for the specific language governing permissions and\n       | * limitations under the License.\n       | */&quot;
+        </td>
+      </tr><tr>
+        <td>
+          287
+        </td>
+        <td>
+          6402
+        </td>
+        <td>
+          9228
+          -
+          9960
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.stripMargin
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(&quot;|/*\n       | * Copyright 2015-2017 Atomist Inc.\n       | *\n       | * Licensed under the Apache License, Version 2.0 (the \&quot;License\&quot;);\n       | * you may not use this file except in compliance with the License.\n       | * You may obtain a copy of the License at\n       | *\n       | *      http://www.apache.org/licenses/LICENSE-2.0\n       | *\n       | * Unless required by applicable law or agreed to in writing, software\n       | * distributed under the License is distributed on an \&quot;AS IS\&quot; BASIS,\n       | * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n       | * See the License for the specific language governing permissions and\n       | * limitations under the License.\n       | */&quot;).stripMargin
+        </td>
+      </tr><tr>
+        <td>
+          293
+        </td>
+        <td>
+          6403
+        </td>
+        <td>
+          10030
+          -
+          10231
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;|import { TreeNode, GraphNode, FormatInfo, PathExpressionEngine } from \&quot;@atomist/rug/tree/PathExpression\&quot;;\n       |import { ProjectContext } from \&quot;@atomist/rug/operations/ProjectEditor\&quot;;\n       |&quot;
+        </td>
+      </tr><tr>
+        <td>
+          295
+        </td>
+        <td>
+          6404
+        </td>
+        <td>
+          10030
+          -
+          10243
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.stripMargin
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(&quot;|import { TreeNode, GraphNode, FormatInfo, PathExpressionEngine } from \&quot;@atomist/rug/tree/PathExpression\&quot;;\n       |import { ProjectContext } from \&quot;@atomist/rug/operations/ProjectEditor\&quot;;\n       |&quot;).stripMargin
+        </td>
+      </tr><tr>
+        <td>
+          298
+        </td>
+        <td>
+          6405
+        </td>
+        <td>
+          10281
+          -
+          10358
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;|import { GraphNode } from \&quot;@atomist/rug/tree/PathExpression\&quot;;\n       |&quot;
+        </td>
+      </tr><tr>
+        <td>
+          299
+        </td>
+        <td>
+          6406
+        </td>
+        <td>
+          10281
+          -
+          10370
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.stripMargin
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(&quot;|import { GraphNode } from \&quot;@atomist/rug/tree/PathExpression\&quot;;\n       |&quot;).stripMargin
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

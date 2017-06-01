@@ -1,0 +1,542 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/pathexpression/PredicatedNodeTest.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.pathexpression
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.runtime.js.ExecutionContext
+</span>5 <span style=''>import com.atomist.tree.TreeNode
+</span>6 <span style=''>import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
+</span>7 <span style=''>
+</span>8 <span style=''>/**
+</span>9 <span style=''>  * Convenience superclass that uses a predicate to handle sourced nodes
+</span>10 <span style=''>  *
+</span>11 <span style=''>  * @param predicate predicate used to filter nodes
+</span>12 <span style=''>  */
+</span>13 <span style=''>abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends NodeTest {
+</span>14 <span style=''>
+</span>15 <span style=''>  final override def follow(tn: GraphNode, axis: AxisSpecifier,
+</span>16 <span style=''>                            ee: ExpressionEngine,
+</span>17 <span style=''>                            executionContext: ExecutionContext): ExecutionResult =
+</span>18 <span style=''>    </span><span style='background: #AEF1AE'>sourceNodes(tn, axis, executionContext)</span><span style=''> match {
+</span>19 <span style=''>      case Right(nodes) =&gt;
+</span>20 <span style=''>        </span><span style='background: #AEF1AE'>ExecutionResult(nodes.filter(tn =&gt; predicate.evaluate(tn, nodes, ee, executionContext, None)))</span><span style=''>
+</span>21 <span style=''>      case failure =&gt; failure
+</span>22 <span style=''>    }
+</span>23 <span style=''>
+</span>24 <span style=''>  /**
+</span>25 <span style=''>    * Subclasses can override this to provide a more efficient implementation.
+</span>26 <span style=''>    * This one works but can be expensive.
+</span>27 <span style=''>    */
+</span>28 <span style=''>  protected def sourceNodes(tn: GraphNode, axis: AxisSpecifier, executionContext: ExecutionContext): ExecutionResult = axis match {
+</span>29 <span style=''>    case Self =&gt; </span><span style='background: #AEF1AE'>ExecutionResult(List(tn))</span><span style=''>
+</span>30 <span style=''>    case Child =&gt;
+</span>31 <span style=''>      val kids = </span><span style='background: #AEF1AE'>tn.relatedNodes.filter {
+</span>32 <span style=''></span><span style='background: #AEF1AE'>        case tn: TreeNode =&gt; tn.significance != TreeNode.Noise
+</span>33 <span style=''></span><span style='background: #AEF1AE'>        case _ =&gt; true
+</span>34 <span style=''></span><span style='background: #AEF1AE'>      }.toList</span><span style=''>
+</span>35 <span style=''>      </span><span style='background: #AEF1AE'>ExecutionResult(kids)</span><span style=''>
+</span>36 <span style=''>    case Descendant =&gt;
+</span>37 <span style=''>      val kids = (</span><span style='background: #AEF1AE'>Descendant.allDescendants(tn) filter {
+</span>38 <span style=''></span><span style='background: #AEF1AE'>        case tn: TreeNode =&gt; tn.significance != TreeNode.Noise
+</span>39 <span style=''></span><span style='background: #AEF1AE'>        case _ =&gt; </span><span style='background: #F0ADAD'>true</span><span style='background: #AEF1AE'>
+</span>40 <span style=''></span><span style='background: #AEF1AE'>      }).toList</span><span style=''>
+</span>41 <span style=''>      </span><span style='background: #AEF1AE'>ExecutionResult(kids)</span><span style=''>
+</span>42 <span style=''>    case NavigationAxis(propertyName) =&gt;
+</span>43 <span style=''>      val nodes = </span><span style='background: #AEF1AE'>tn.relatedNodesNamed(propertyName)</span><span style=''>
+</span>44 <span style=''>      </span><span style='background: #AEF1AE'>ExecutionResult(nodes)</span><span style=''>
+</span>45 <span style=''>    case x =&gt; </span><span style='background: #F0ADAD'>throw new UnsupportedOperationException(s&quot;Unsupported axis $x in ${getClass.getSimpleName}&quot;)</span><span style=''>
+</span>46 <span style=''>  }
+</span>47 <span style=''>}
+</span>48 <span style=''>
+</span>49 <span style=''>/**
+</span>50 <span style=''>  * Return all nodes on the given axis.
+</span>51 <span style=''>  */
+</span>52 <span style=''>object All extends PredicatedNodeTest(&quot;All&quot;, TruePredicate) {
+</span>53 <span style=''>  override def toString = </span><span style='background: #AEF1AE'>&quot;*&quot;</span><span style=''>
+</span>54 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          8510
+        </td>
+        <td>
+          661
+          -
+          700
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PredicatedNodeTest.sourceNodes
+        </td>
+        <td style="background: #AEF1AE">
+          PredicatedNodeTest.this.sourceNodes(tn, axis, executionContext)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          8513
+        </td>
+        <td>
+          760
+          -
+          837
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          nodes.filter(((tn: com.atomist.graph.GraphNode) =&gt; PredicatedNodeTest.this.predicate.evaluate(tn, nodes, ee, executionContext, scala.None)))
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          8512
+        </td>
+        <td>
+          779
+          -
+          836
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.Predicate.evaluate
+        </td>
+        <td style="background: #AEF1AE">
+          PredicatedNodeTest.this.predicate.evaluate(tn, nodes, ee, executionContext, scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          8511
+        </td>
+        <td>
+          831
+          -
+          835
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          8514
+        </td>
+        <td>
+          744
+          -
+          838
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExecutionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ExecutionResult.apply(nodes.filter(((tn: com.atomist.graph.GraphNode) =&gt; PredicatedNodeTest.this.predicate.evaluate(tn, nodes, ee, executionContext, scala.None))))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          8516
+        </td>
+        <td>
+          1160
+          -
+          1185
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExecutionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ExecutionResult.apply(immutable.this.List.apply[com.atomist.graph.GraphNode](tn))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          8515
+        </td>
+        <td>
+          1176
+          -
+          1184
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.apply
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.apply[com.atomist.graph.GraphNode](tn)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          8517
+        </td>
+        <td>
+          1294
+          -
+          1308
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Noise
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Noise
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          8518
+        </td>
+        <td>
+          1275
+          -
+          1308
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          tn.significance.!=(com.atomist.tree.TreeNode.Noise)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          8519
+        </td>
+        <td>
+          1327
+          -
+          1331
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          8520
+        </td>
+        <td>
+          1221
+          -
+          1346
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toList
+        </td>
+        <td style="background: #AEF1AE">
+          tn.relatedNodes.filter(((x0$1: com.atomist.graph.GraphNode) =&gt; x0$1 match {
+  case (tn @ (_: com.atomist.tree.TreeNode)) =&gt; tn.significance.!=(com.atomist.tree.TreeNode.Noise)
+  case _ =&gt; true
+})).toList
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          8521
+        </td>
+        <td>
+          1353
+          -
+          1374
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExecutionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ExecutionResult.apply(kids)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          8522
+        </td>
+        <td>
+          1503
+          -
+          1517
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Noise
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Noise
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          8523
+        </td>
+        <td>
+          1484
+          -
+          1517
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          tn.significance.!=(com.atomist.tree.TreeNode.Noise)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          8524
+        </td>
+        <td>
+          1536
+          -
+          1540
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          8525
+        </td>
+        <td>
+          1416
+          -
+          1556
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toList
+        </td>
+        <td style="background: #AEF1AE">
+          Descendant.allDescendants(tn).filter(((x0$2: com.atomist.graph.GraphNode) =&gt; x0$2 match {
+  case (tn @ (_: com.atomist.tree.TreeNode)) =&gt; tn.significance.!=(com.atomist.tree.TreeNode.Noise)
+  case _ =&gt; true
+})).toList
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          8526
+        </td>
+        <td>
+          1563
+          -
+          1584
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExecutionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ExecutionResult.apply(kids)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          8527
+        </td>
+        <td>
+          1644
+          -
+          1678
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.relatedNodesNamed
+        </td>
+        <td style="background: #AEF1AE">
+          tn.relatedNodesNamed(propertyName)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          8528
+        </td>
+        <td>
+          1685
+          -
+          1707
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExecutionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ExecutionResult.apply(nodes)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          8529
+        </td>
+        <td>
+          1722
+          -
+          1814
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.UnsupportedOperationException(scala.StringContext.apply(&quot;Unsupported axis &quot;, &quot; in &quot;, &quot;&quot;).s(x, PredicatedNodeTest.this.getClass().getSimpleName()))
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          8530
+        </td>
+        <td>
+          1959
+          -
+          1962
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;*&quot;
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

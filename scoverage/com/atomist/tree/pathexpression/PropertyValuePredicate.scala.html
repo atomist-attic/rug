@@ -1,0 +1,627 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/pathexpression/PropertyValuePredicate.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.pathexpression
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.runtime.js.ExecutionContext
+</span>5 <span style=''>import com.atomist.rug.spi.TypeRegistry
+</span>6 <span style=''>import com.atomist.tree.TreeNode
+</span>7 <span style=''>import com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer
+</span>8 <span style=''>import com.atomist.tree.utils.NodeUtils
+</span>9 <span style=''>
+</span>10 <span style=''>case class PropertyValuePredicate(property: String, expectedValue: String)
+</span>11 <span style=''>  extends Predicate {
+</span>12 <span style=''>
+</span>13 <span style=''>  override def toString: String = </span><span style='background: #F0ADAD'>s&quot;@$property=$expectedValue&quot;</span><span style=''>
+</span>14 <span style=''>
+</span>15 <span style=''>  override def evaluate(n: GraphNode,
+</span>16 <span style=''>                        returnedNodes: Seq[GraphNode],
+</span>17 <span style=''>                        ee: ExpressionEngine,
+</span>18 <span style=''>                        executionContext: ExecutionContext,
+</span>19 <span style=''>                        nodePreparer: Option[NodePreparer]): Boolean = {
+</span>20 <span style=''>    if (</span><span style='background: #AEF1AE'>property == &quot;value&quot;</span><span style=''>) {
+</span>21 <span style=''>      // Treat the value property specially
+</span>22 <span style=''>      </span><span style='background: #AEF1AE'>n match {
+</span>23 <span style=''></span><span style='background: #AEF1AE'>        case tn: TreeNode =&gt; tn.value == expectedValue
+</span>24 <span style=''></span><span style='background: #AEF1AE'>        case _ =&gt; </span><span style='background: #F0ADAD'>false</span><span style='background: #AEF1AE'>
+</span>25 <span style=''></span><span style='background: #AEF1AE'>      }</span><span style=''>
+</span>26 <span style=''>    }
+</span>27 <span style=''>    else </span><span style='background: #AEF1AE'>{
+</span>28 <span style=''></span><span style='background: #AEF1AE'>      val extracted = n.relatedNodesNamed(property)
+</span>29 <span style=''></span><span style='background: #AEF1AE'>      if (extracted.size == 1) {
+</span>30 <span style=''></span><span style='background: #AEF1AE'>        val result = extracted.head match {
+</span>31 <span style=''></span><span style='background: #AEF1AE'>          case tn: TreeNode =&gt; tn.value.equals(expectedValue)
+</span>32 <span style=''></span><span style='background: #AEF1AE'>          case _ =&gt; </span><span style='background: #F0ADAD'>false</span><span style='background: #AEF1AE'>
+</span>33 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>34 <span style=''></span><span style='background: #AEF1AE'>        result
+</span>35 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>36 <span style=''></span><span style='background: #AEF1AE'>      else
+</span>37 <span style=''></span><span style='background: #AEF1AE'>        NodeUtils.invokeMethodIfPresent[String](n, property).contains(expectedValue)
+</span>38 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>39 <span style=''>  }
+</span>40 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          8535
+        </td>
+        <td>
+          456
+          -
+          469
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PropertyValuePredicate.expectedValue
+        </td>
+        <td style="background: #F0ADAD">
+          PropertyValuePredicate.this.expectedValue
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          8534
+        </td>
+        <td>
+          446
+          -
+          454
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PropertyValuePredicate.property
+        </td>
+        <td style="background: #F0ADAD">
+          PropertyValuePredicate.this.property
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          8531
+        </td>
+        <td>
+          444
+          -
+          446
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;@&quot;
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          8533
+        </td>
+        <td>
+          469
+          -
+          470
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          8536
+        </td>
+        <td>
+          442
+          -
+          470
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;@&quot;, &quot;=&quot;, &quot;&quot;).s(PropertyValuePredicate.this.property, PropertyValuePredicate.this.expectedValue)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          8532
+        </td>
+        <td>
+          454
+          -
+          456
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;=&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          8537
+        </td>
+        <td>
+          752
+          -
+          771
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          PropertyValuePredicate.this.property.==(&quot;value&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          8541
+        </td>
+        <td>
+          825
+          -
+          921
+        </td>
+        <td>
+          Match
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          n match {
+  case (tn @ (_: com.atomist.tree.TreeNode)) =&gt; tn.value.==(PropertyValuePredicate.this.expectedValue)
+  case _ =&gt; false
+}
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          8539
+        </td>
+        <td>
+          864
+          -
+          889
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          tn.value.==(PropertyValuePredicate.this.expectedValue)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          8538
+        </td>
+        <td>
+          876
+          -
+          889
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PropertyValuePredicate.expectedValue
+        </td>
+        <td style="background: #AEF1AE">
+          PropertyValuePredicate.this.expectedValue
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          8540
+        </td>
+        <td>
+          908
+          -
+          913
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          8555
+        </td>
+        <td>
+          937
+          -
+          1290
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val extracted: Seq[com.atomist.graph.GraphNode] = n.relatedNodesNamed(PropertyValuePredicate.this.property);
+  if (extracted.size.==(1))
+    {
+      val result: Boolean = extracted.head match {
+        case (tn @ (_: com.atomist.tree.TreeNode)) =&gt; tn.value.equals(PropertyValuePredicate.this.expectedValue)
+        case _ =&gt; false
+      };
+      result
+    }
+  else
+    com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent[String](n, PropertyValuePredicate.this.property, com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent$default$3[String])((ClassTag.apply[String](classOf[java.lang.String]): scala.reflect.ClassTag[String])).contains[String](PropertyValuePredicate.this.expectedValue)
+}
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8543
+        </td>
+        <td>
+          961
+          -
+          990
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.relatedNodesNamed
+        </td>
+        <td style="background: #AEF1AE">
+          n.relatedNodesNamed(PropertyValuePredicate.this.property)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8542
+        </td>
+        <td>
+          981
+          -
+          989
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PropertyValuePredicate.property
+        </td>
+        <td style="background: #AEF1AE">
+          PropertyValuePredicate.this.property
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          8549
+        </td>
+        <td>
+          1022
+          -
+          1188
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val result: Boolean = extracted.head match {
+    case (tn @ (_: com.atomist.tree.TreeNode)) =&gt; tn.value.equals(PropertyValuePredicate.this.expectedValue)
+    case _ =&gt; false
+  };
+  result
+}
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          8544
+        </td>
+        <td>
+          1001
+          -
+          1020
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          extracted.size.==(1)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          8545
+        </td>
+        <td>
+          1045
+          -
+          1059
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          extracted.head
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          8546
+        </td>
+        <td>
+          1115
+          -
+          1128
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PropertyValuePredicate.expectedValue
+        </td>
+        <td style="background: #AEF1AE">
+          PropertyValuePredicate.this.expectedValue
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          8547
+        </td>
+        <td>
+          1099
+          -
+          1129
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          tn.value.equals(PropertyValuePredicate.this.expectedValue)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          8548
+        </td>
+        <td>
+          1150
+          -
+          1155
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          8552
+        </td>
+        <td>
+          1270
+          -
+          1283
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PropertyValuePredicate.expectedValue
+        </td>
+        <td style="background: #AEF1AE">
+          PropertyValuePredicate.this.expectedValue
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          8551
+        </td>
+        <td>
+          1239
+          -
+          1239
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent$default$3[String]
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          8554
+        </td>
+        <td>
+          1208
+          -
+          1284
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Option.contains
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent[String](n, PropertyValuePredicate.this.property, com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent$default$3[String])((ClassTag.apply[String](classOf[java.lang.String]): scala.reflect.ClassTag[String])).contains[String](PropertyValuePredicate.this.expectedValue)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          8553
+        </td>
+        <td>
+          1208
+          -
+          1284
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.contains
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent[String](n, PropertyValuePredicate.this.property, com.atomist.tree.utils.NodeUtils.invokeMethodIfPresent$default$3[String])((ClassTag.apply[String](classOf[java.lang.String]): scala.reflect.ClassTag[String])).contains[String](PropertyValuePredicate.this.expectedValue)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          8550
+        </td>
+        <td>
+          1251
+          -
+          1259
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PropertyValuePredicate.property
+        </td>
+        <td style="background: #AEF1AE">
+          PropertyValuePredicate.this.property
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

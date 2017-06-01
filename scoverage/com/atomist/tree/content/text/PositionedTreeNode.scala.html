@@ -1,0 +1,552 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/content/text/PositionedTreeNode.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.content.text
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.kind.grammar.ParsedNode
+</span>4 <span style=''>import com.atomist.tree.TreeNode
+</span>5 <span style=''>
+</span>6 <span style=''>/**
+</span>7 <span style=''>  * These are the beginnings of TreeNodes. They come in from parsing
+</span>8 <span style=''>  * They can't be updated, and shouldn't really know their value.
+</span>9 <span style=''>  *
+</span>10 <span style=''>  * Goal: these should not implement TreeNode. They aren't path-expression-ready
+</span>11 <span style=''>  * they have to go through TextTreeNodeLifecycle first, to be turned into
+</span>12 <span style=''>  * proper TextTreeNodes that know value and can be updated. (Those maintain
+</span>13 <span style=''>  * position using padding instead of offsets, so the updates work.)
+</span>14 <span style=''>  *
+</span>15 <span style=''>  * ParsedNode is the minimal interface that Rug Language Extensions must supply when
+</span>16 <span style=''>  * parsing a file. It's implemented here for backwards compatibility, so that
+</span>17 <span style=''>  * existing extensions which supply full PositionedTreeNodes can continue to do so.
+</span>18 <span style=''>  */
+</span>19 <span style=''>trait PositionedTreeNode extends TreeNode with Positioned with ParsedNode {
+</span>20 <span style=''>
+</span>21 <span style=''>  override def parsedNodes: Seq[ParsedNode] = </span><span style='background: #AEF1AE'>childNodes.map(_.asInstanceOf[ParsedNode])</span><span style=''>
+</span>22 <span style=''>
+</span>23 <span style=''>  override def startOffset: Int = </span><span style='background: #AEF1AE'>startPosition.offset</span><span style=''>
+</span>24 <span style=''>
+</span>25 <span style=''>  override def endOffset: Int = </span><span style='background: #AEF1AE'>endPosition.offset</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>  def hasSamePositionAs(that: PositionedTreeNode): Boolean =
+</span>28 <span style=''>    </span><span style='background: #AEF1AE'>this.startPosition.offset == that.startPosition.offset</span><span style=''>
+</span>29 <span style=''>
+</span>30 <span style=''>  def includes(pos: InputPosition): Boolean =
+</span>31 <span style=''>    </span><span style='background: #F0ADAD'>this.startPosition.offset &lt;= pos.offset &amp;&amp; this.endPosition.offset &gt;= pos.offset</span><span style=''>
+</span>32 <span style=''>}
+</span>33 <span style=''>
+</span>34 <span style=''>object PositionedTreeNode {
+</span>35 <span style=''>  def fromParsedNode(ptn: ParsedNode): PositionedTreeNode = ptn match {
+</span>36 <span style=''>    case alreadyThere: PositionedTreeNode =&gt; alreadyThere
+</span>37 <span style=''>    case _ =&gt;
+</span>38 <span style=''>      </span><span style='background: #AEF1AE'>ImmutablePositionedTreeNode.apply(ptn.nodeName,
+</span>39 <span style=''></span><span style='background: #AEF1AE'>        OffsetInputPosition(ptn.startOffset),
+</span>40 <span style=''></span><span style='background: #AEF1AE'>        OffsetInputPosition(ptn.endOffset),
+</span>41 <span style=''></span><span style='background: #AEF1AE'>        ptn.parsedNodes.map(fromParsedNode),
+</span>42 <span style=''></span><span style='background: #AEF1AE'>        Set(),
+</span>43 <span style=''></span><span style='background: #AEF1AE'>        TreeNode.Signal)</span><span style=''>
+</span>44 <span style=''>  }
+</span>45 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          7640
+        </td>
+        <td>
+          947
+          -
+          989
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          PositionedTreeNode.this.childNodes.map[com.atomist.rug.kind.grammar.ParsedNode, Seq[com.atomist.rug.kind.grammar.ParsedNode]](((x$1: com.atomist.tree.TreeNode) =&gt; x$1.asInstanceOf[com.atomist.rug.kind.grammar.ParsedNode]))(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.grammar.ParsedNode])
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          7639
+        </td>
+        <td>
+          961
+          -
+          961
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.kind.grammar.ParsedNode]
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          7638
+        </td>
+        <td>
+          962
+          -
+          988
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.asInstanceOf[com.atomist.rug.kind.grammar.ParsedNode]
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          7641
+        </td>
+        <td>
+          1025
+          -
+          1045
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #AEF1AE">
+          PositionedTreeNode.this.startPosition.offset
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          7642
+        </td>
+        <td>
+          1079
+          -
+          1097
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #AEF1AE">
+          PositionedTreeNode.this.endPosition.offset
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7643
+        </td>
+        <td>
+          1193
+          -
+          1218
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #AEF1AE">
+          that.startPosition.offset
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7644
+        </td>
+        <td>
+          1164
+          -
+          1218
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          this.startPosition.offset.==(that.startPosition.offset)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          7646
+        </td>
+        <td>
+          1340
+          -
+          1350
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #F0ADAD">
+          pos.offset
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          7648
+        </td>
+        <td>
+          1270
+          -
+          1350
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #F0ADAD">
+          this.startPosition.offset.&lt;=(pos.offset).&amp;&amp;(this.endPosition.offset.&gt;=(pos.offset))
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          7645
+        </td>
+        <td>
+          1299
+          -
+          1309
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #F0ADAD">
+          pos.offset
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          7647
+        </td>
+        <td>
+          1313
+          -
+          1350
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;=
+        </td>
+        <td style="background: #F0ADAD">
+          this.endPosition.offset.&gt;=(pos.offset)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          7649
+        </td>
+        <td>
+          1566
+          -
+          1578
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.ParsedNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          ptn.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          7659
+        </td>
+        <td>
+          1532
+          -
+          1754
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ImmutablePositionedTreeNode.apply(ptn.nodeName, OffsetInputPosition.apply(ptn.startOffset), OffsetInputPosition.apply(ptn.endOffset), ptn.parsedNodes.map[com.atomist.tree.content.text.PositionedTreeNode, Seq[com.atomist.tree.content.text.PositionedTreeNode]]({
+  ((ptn: com.atomist.rug.kind.grammar.ParsedNode) =&gt; PositionedTreeNode.this.fromParsedNode(ptn))
+})(collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.PositionedTreeNode]), scala.this.Predef.Set.apply[String](), com.atomist.tree.TreeNode.Signal)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          7651
+        </td>
+        <td>
+          1588
+          -
+          1624
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OffsetInputPosition.apply
+        </td>
+        <td style="background: #AEF1AE">
+          OffsetInputPosition.apply(ptn.startOffset)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          7650
+        </td>
+        <td>
+          1608
+          -
+          1623
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.ParsedNode.startOffset
+        </td>
+        <td style="background: #AEF1AE">
+          ptn.startOffset
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          7652
+        </td>
+        <td>
+          1654
+          -
+          1667
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.ParsedNode.endOffset
+        </td>
+        <td style="background: #AEF1AE">
+          ptn.endOffset
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          7653
+        </td>
+        <td>
+          1634
+          -
+          1668
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OffsetInputPosition.apply
+        </td>
+        <td style="background: #AEF1AE">
+          OffsetInputPosition.apply(ptn.endOffset)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          7655
+        </td>
+        <td>
+          1697
+          -
+          1697
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.PositionedTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          7654
+        </td>
+        <td>
+          1698
+          -
+          1712
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.PositionedTreeNode.fromParsedNode
+        </td>
+        <td style="background: #AEF1AE">
+          PositionedTreeNode.this.fromParsedNode(ptn)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          7656
+        </td>
+        <td>
+          1678
+          -
+          1713
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          ptn.parsedNodes.map[com.atomist.tree.content.text.PositionedTreeNode, Seq[com.atomist.tree.content.text.PositionedTreeNode]]({
+  ((ptn: com.atomist.rug.kind.grammar.ParsedNode) =&gt; PositionedTreeNode.this.fromParsedNode(ptn))
+})(collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.PositionedTreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          7657
+        </td>
+        <td>
+          1723
+          -
+          1728
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String]()
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          7658
+        </td>
+        <td>
+          1738
+          -
+          1753
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Signal
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Signal
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

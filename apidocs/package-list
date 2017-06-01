@@ -1,0 +1,5 @@
+com.atomist.rug.runtime.js.interop
+com.atomist.rug.runtime.plans
+com.atomist.rug.spi
+com.atomist.rug.spi.annotation
+com.atomist.tree.content.text

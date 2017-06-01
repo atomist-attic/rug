@@ -1,0 +1,858 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/pathexpression/ReflectiveFunctionRegistry.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.pathexpression
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.tree.pathexpression.XPathTypes._
+</span>4 <span style=''>import com.atomist.util.lang.JavaHelpers
+</span>5 <span style=''>
+</span>6 <span style=''>/**
+</span>7 <span style=''>  * Uses reflection to load functions from designated classes
+</span>8 <span style=''>  */
+</span>9 <span style=''>class ReflectiveFunctionRegistry(targets: Object*) extends FunctionRegistry {
+</span>10 <span style=''>
+</span>11 <span style=''>  override val functions: Seq[Function] = {
+</span>12 <span style=''>    </span><span style='background: #AEF1AE'>for {
+</span>13 <span style=''></span><span style='background: #AEF1AE'>      t &lt;- targets
+</span>14 <span style=''></span><span style='background: #AEF1AE'>      m &lt;- t.getClass.getMethods
+</span>15 <span style=''></span><span style='background: #AEF1AE'>      if m.getParameterCount &gt;= 1
+</span>16 <span style=''></span><span style='background: #AEF1AE'>      if m.getParameterTypes.forall(c =&gt; c == classOf[String] || c == classOf[Boolean])
+</span>17 <span style=''></span><span style='background: #AEF1AE'>    } yield {
+</span>18 <span style=''></span><span style='background: #AEF1AE'>      val declaredArgs = m.getParameterTypes.map(_.getSimpleName) map {
+</span>19 <span style=''></span><span style='background: #AEF1AE'>        case &quot;String&quot; =&gt; String
+</span>20 <span style=''></span><span style='background: #AEF1AE'>        case &quot;Boolean&quot; =&gt; </span><span style='background: #F0ADAD'>Boolean</span><span style='background: #AEF1AE'>
+</span>21 <span style=''></span><span style='background: #AEF1AE'>        case wtf =&gt; </span><span style='background: #F0ADAD'>throw new IllegalStateException(s&quot;Should have filtered out parameter type [$wtf]&quot;)</span><span style='background: #AEF1AE'>
+</span>22 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>23 <span style=''></span><span style='background: #AEF1AE'>      // XPath functions are of the form string-length: We need to convert from Java camel case
+</span>24 <span style=''></span><span style='background: #AEF1AE'>      SimpleFunction(JavaHelpers.toLowerCaseDelimited(m.getName, &quot;-&quot;),
+</span>25 <span style=''></span><span style='background: #AEF1AE'>        declaredArgs,
+</span>26 <span style=''></span><span style='background: #AEF1AE'>        invoker = args =&gt; {
+</span>27 <span style=''></span><span style='background: #AEF1AE'>          //println(s&quot;Invoking $m on $DefaultFunctions with args=${args.map(a =&gt; s&quot;$a - ${a.getClass}&quot;)}&quot;)
+</span>28 <span style=''></span><span style='background: #AEF1AE'>          val objectified = args map {
+</span>29 <span style=''></span><span style='background: #AEF1AE'>            case o: Object =&gt; o
+</span>30 <span style=''></span><span style='background: #AEF1AE'>            case _ =&gt; </span><span style='background: #F0ADAD'>???</span><span style='background: #AEF1AE'>
+</span>31 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>32 <span style=''></span><span style='background: #AEF1AE'>          m.invoke(t, objectified: _*)
+</span>33 <span style=''></span><span style='background: #AEF1AE'>        })
+</span>34 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>35 <span style=''>  }
+</span>36 <span style=''>
+</span>37 <span style=''>  /**
+</span>38 <span style=''>    * Note that we don't need to write defensive code here as there will be the correct number of arguments
+</span>39 <span style=''>    * and they will have been coerced as to type
+</span>40 <span style=''>    */
+</span>41 <span style=''>  private case class SimpleFunction(name: String, argTypes: Seq[XPathType], invoker: Seq[Any] =&gt; Any) extends Function {
+</span>42 <span style=''>
+</span>43 <span style=''>    //println(s&quot;Creating $this&quot;)
+</span>44 <span style=''>
+</span>45 <span style=''>    override def invoke(convertedArgs: Seq[Any]): Any = {
+</span>46 <span style=''>      </span><span style='background: #AEF1AE'>require(convertedArgs.size == argTypes.size)</span><span style=''>
+</span>47 <span style=''>      </span><span style='background: #AEF1AE'>invoker(convertedArgs)</span><span style=''>
+</span>48 <span style=''>    }
+</span>49 <span style=''>  }
+</span>50 <span style=''>
+</span>51 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          8585
+        </td>
+        <td>
+          333
+          -
+          1264
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          ReflectiveFunctionRegistry.this.targets.flatMap[ReflectiveFunctionRegistry.this.SimpleFunction, Seq[com.atomist.tree.pathexpression.Function]](((t: Object) =&gt; scala.this.Predef.refArrayOps[ReflectiveFunctionRegistry.this.SimpleFunction](scala.this.Predef.refArrayOps[java.lang.reflect.Method](t.getClass().getMethods()).withFilter(((m: java.lang.reflect.Method) =&gt; m.getParameterCount().&gt;=(1))).withFilter(((m: java.lang.reflect.Method) =&gt; scala.this.Predef.refArrayOps[Class[_]](m.getParameterTypes()).forall(((c: Class[_]) =&gt; c.==(classOf[java.lang.String]).||(c.==(classOf[scala.Boolean])))))).map[ReflectiveFunctionRegistry.this.SimpleFunction, Array[ReflectiveFunctionRegistry.this.SimpleFunction]](((m: java.lang.reflect.Method) =&gt; {
+  val declaredArgs: Array[com.atomist.tree.pathexpression.XPathTypes.Value] = scala.this.Predef.refArrayOps[String](scala.this.Predef.refArrayOps[Class[_]](m.getParameterTypes()).map[String, Array[String]](((x$1: Class[_]) =&gt; x$1.getSimpleName()))(scala.this.Array.canBuildFrom[String]((ClassTag.apply[String](classOf[java.lang.String]): scala.reflect.ClassTag[String])))).map[com.atomist.tree.pathexpression.XPathTypes.Value, Array[com.atomist.tree.pathexpression.XPathTypes.Value]](((x0$1: String) =&gt; x0$1 match {
+    case &quot;String&quot; =&gt; com.atomist.tree.pathexpression.XPathTypes.String
+    case &quot;Boolean&quot; =&gt; com.atomist.tree.pathexpression.XPathTypes.Boolean
+    case (wtf @ _) =&gt; throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;Should have filtered out parameter type [&quot;, &quot;]&quot;).s(wtf))
+  }))(scala.this.Array.canBuildFrom[com.atomist.tree.pathexpression.XPathTypes.Value]((ClassTag.apply[com.atomist.tree.pathexpression.XPathTypes.Value](classOf[scala.Enumeration$Value]): scala.reflect.ClassTag[com.atomist.tree.pathexpression.XPathTypes.Value])));
+  ReflectiveFunctionRegistry.this.SimpleFunction.apply(com.atomist.util.lang.JavaHelpers.toLowerCaseDelimited(m.getName(), &quot;-&quot;), scala.this.Predef.wrapRefArray[com.atomist.tree.pathexpression.XPathTypes.Value](declaredArgs), ((args: Seq[Any]) =&gt; {
+    val objectified: Seq[Object] = args.map[Object, Seq[Object]](((x0$2: Any) =&gt; x0$2 match {
+      case (o @ (_: Object)) =&gt; o
+      case _ =&gt; scala.this.Predef.???
+    }))(collection.this.Seq.canBuildFrom[Object]);
+    m.invoke(t, (objectified: _*))
+  }))
+}))(scala.this.Array.canBuildFrom[ReflectiveFunctionRegistry.this.SimpleFunction]((ClassTag.apply[ReflectiveFunctionRegistry.this.SimpleFunction](classOf[com.atomist.tree.pathexpression.ReflectiveFunctionRegistry$SimpleFunction]): scala.reflect.ClassTag[ReflectiveFunctionRegistry.this.SimpleFunction]))))))(collection.this.Seq.canBuildFrom[ReflectiveFunctionRegistry.this.SimpleFunction])
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          8584
+        </td>
+        <td>
+          347
+          -
+          347
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[ReflectiveFunctionRegistry.this.SimpleFunction]
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          8582
+        </td>
+        <td>
+          364
+          -
+          1264
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.generic.FilterMonadic.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[java.lang.reflect.Method](t.getClass().getMethods()).withFilter(((m: java.lang.reflect.Method) =&gt; m.getParameterCount().&gt;=(1))).withFilter(((m: java.lang.reflect.Method) =&gt; scala.this.Predef.refArrayOps[Class[_]](m.getParameterTypes()).forall(((c: Class[_]) =&gt; c.==(classOf[java.lang.String]).||(c.==(classOf[scala.Boolean])))))).map[ReflectiveFunctionRegistry.this.SimpleFunction, Array[ReflectiveFunctionRegistry.this.SimpleFunction]](((m: java.lang.reflect.Method) =&gt; {
+  val declaredArgs: Array[com.atomist.tree.pathexpression.XPathTypes.Value] = scala.this.Predef.refArrayOps[String](scala.this.Predef.refArrayOps[Class[_]](m.getParameterTypes()).map[String, Array[String]](((x$1: Class[_]) =&gt; x$1.getSimpleName()))(scala.this.Array.canBuildFrom[String]((ClassTag.apply[String](classOf[java.lang.String]): scala.reflect.ClassTag[String])))).map[com.atomist.tree.pathexpression.XPathTypes.Value, Array[com.atomist.tree.pathexpression.XPathTypes.Value]](((x0$1: String) =&gt; x0$1 match {
+    case &quot;String&quot; =&gt; com.atomist.tree.pathexpression.XPathTypes.String
+    case &quot;Boolean&quot; =&gt; com.atomist.tree.pathexpression.XPathTypes.Boolean
+    case (wtf @ _) =&gt; throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;Should have filtered out parameter type [&quot;, &quot;]&quot;).s(wtf))
+  }))(scala.this.Array.canBuildFrom[com.atomist.tree.pathexpression.XPathTypes.Value]((ClassTag.apply[com.atomist.tree.pathexpression.XPathTypes.Value](classOf[scala.Enumeration$Value]): scala.reflect.ClassTag[com.atomist.tree.pathexpression.XPathTypes.Value])));
+  ReflectiveFunctionRegistry.this.SimpleFunction.apply(com.atomist.util.lang.JavaHelpers.toLowerCaseDelimited(m.getName(), &quot;-&quot;), scala.this.Predef.wrapRefArray[com.atomist.tree.pathexpression.XPathTypes.Value](declaredArgs), ((args: Seq[Any]) =&gt; {
+    val objectified: Seq[Object] = args.map[Object, Seq[Object]](((x0$2: Any) =&gt; x0$2 match {
+      case (o @ (_: Object)) =&gt; o
+      case _ =&gt; scala.this.Predef.???
+    }))(collection.this.Seq.canBuildFrom[Object]);
+    m.invoke(t, (objectified: _*))
+  }))
+}))(scala.this.Array.canBuildFrom[ReflectiveFunctionRegistry.this.SimpleFunction]((ClassTag.apply[ReflectiveFunctionRegistry.this.SimpleFunction](classOf[com.atomist.tree.pathexpression.ReflectiveFunctionRegistry$SimpleFunction]): scala.reflect.ClassTag[ReflectiveFunctionRegistry.this.SimpleFunction])))
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          8581
+        </td>
+        <td>
+          366
+          -
+          366
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.Array.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Array.canBuildFrom[ReflectiveFunctionRegistry.this.SimpleFunction]((ClassTag.apply[ReflectiveFunctionRegistry.this.SimpleFunction](classOf[com.atomist.tree.pathexpression.ReflectiveFunctionRegistry$SimpleFunction]): scala.reflect.ClassTag[ReflectiveFunctionRegistry.this.SimpleFunction]))
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          8583
+        </td>
+        <td>
+          364
+          -
+          1264
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Predef.refArrayOps
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[ReflectiveFunctionRegistry.this.SimpleFunction](scala.this.Predef.refArrayOps[java.lang.reflect.Method](t.getClass().getMethods()).withFilter(((m: java.lang.reflect.Method) =&gt; m.getParameterCount().&gt;=(1))).withFilter(((m: java.lang.reflect.Method) =&gt; scala.this.Predef.refArrayOps[Class[_]](m.getParameterTypes()).forall(((c: Class[_]) =&gt; c.==(classOf[java.lang.String]).||(c.==(classOf[scala.Boolean])))))).map[ReflectiveFunctionRegistry.this.SimpleFunction, Array[ReflectiveFunctionRegistry.this.SimpleFunction]](((m: java.lang.reflect.Method) =&gt; {
+  val declaredArgs: Array[com.atomist.tree.pathexpression.XPathTypes.Value] = scala.this.Predef.refArrayOps[String](scala.this.Predef.refArrayOps[Class[_]](m.getParameterTypes()).map[String, Array[String]](((x$1: Class[_]) =&gt; x$1.getSimpleName()))(scala.this.Array.canBuildFrom[String]((ClassTag.apply[String](classOf[java.lang.String]): scala.reflect.ClassTag[String])))).map[com.atomist.tree.pathexpression.XPathTypes.Value, Array[com.atomist.tree.pathexpression.XPathTypes.Value]](((x0$1: String) =&gt; x0$1 match {
+    case &quot;String&quot; =&gt; com.atomist.tree.pathexpression.XPathTypes.String
+    case &quot;Boolean&quot; =&gt; com.atomist.tree.pathexpression.XPathTypes.Boolean
+    case (wtf @ _) =&gt; throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;Should have filtered out parameter type [&quot;, &quot;]&quot;).s(wtf))
+  }))(scala.this.Array.canBuildFrom[com.atomist.tree.pathexpression.XPathTypes.Value]((ClassTag.apply[com.atomist.tree.pathexpression.XPathTypes.Value](classOf[scala.Enumeration$Value]): scala.reflect.ClassTag[com.atomist.tree.pathexpression.XPathTypes.Value])));
+  ReflectiveFunctionRegistry.this.SimpleFunction.apply(com.atomist.util.lang.JavaHelpers.toLowerCaseDelimited(m.getName(), &quot;-&quot;), scala.this.Predef.wrapRefArray[com.atomist.tree.pathexpression.XPathTypes.Value](declaredArgs), ((args: Seq[Any]) =&gt; {
+    val objectified: Seq[Object] = args.map[Object, Seq[Object]](((x0$2: Any) =&gt; x0$2 match {
+      case (o @ (_: Object)) =&gt; o
+      case _ =&gt; scala.this.Predef.???
+    }))(collection.this.Seq.canBuildFrom[Object]);
+    m.invoke(t, (objectified: _*))
+  }))
+}))(scala.this.Array.canBuildFrom[ReflectiveFunctionRegistry.this.SimpleFunction]((ClassTag.apply[ReflectiveFunctionRegistry.this.SimpleFunction](classOf[com.atomist.tree.pathexpression.ReflectiveFunctionRegistry$SimpleFunction]): scala.reflect.ClassTag[ReflectiveFunctionRegistry.this.SimpleFunction]))))
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          8556
+        </td>
+        <td>
+          369
+          -
+          390
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getMethods
+        </td>
+        <td style="background: #AEF1AE">
+          t.getClass().getMethods()
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          8557
+        </td>
+        <td>
+          400
+          -
+          424
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;=
+        </td>
+        <td style="background: #AEF1AE">
+          m.getParameterCount().&gt;=(1)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          8561
+        </td>
+        <td>
+          466
+          -
+          511
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          c.==(classOf[java.lang.String]).||(c.==(classOf[scala.Boolean]))
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          8558
+        </td>
+        <td>
+          434
+          -
+          453
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Method.getParameterTypes
+        </td>
+        <td style="background: #AEF1AE">
+          m.getParameterTypes()
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          8560
+        </td>
+        <td>
+          490
+          -
+          511
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          c.==(classOf[scala.Boolean])
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          8562
+        </td>
+        <td>
+          434
+          -
+          512
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.forall
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[Class[_]](m.getParameterTypes()).forall(((c: Class[_]) =&gt; c.==(classOf[java.lang.String]).||(c.==(classOf[scala.Boolean]))))
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          8559
+        </td>
+        <td>
+          471
+          -
+          486
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[java.lang.String]
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          8570
+        </td>
+        <td>
+          593
+          -
+          593
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.Array.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Array.canBuildFrom[com.atomist.tree.pathexpression.XPathTypes.Value]((ClassTag.apply[com.atomist.tree.pathexpression.XPathTypes.Value](classOf[scala.Enumeration$Value]): scala.reflect.ClassTag[com.atomist.tree.pathexpression.XPathTypes.Value]))
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          8564
+        </td>
+        <td>
+          576
+          -
+          591
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getSimpleName
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.getSimpleName()
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          8566
+        </td>
+        <td>
+          552
+          -
+          592
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[Class[_]](m.getParameterTypes()).map[String, Array[String]](((x$1: Class[_]) =&gt; x$1.getSimpleName()))(scala.this.Array.canBuildFrom[String]((ClassTag.apply[String](classOf[java.lang.String]): scala.reflect.ClassTag[String])))
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          8563
+        </td>
+        <td>
+          552
+          -
+          571
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Method.getParameterTypes
+        </td>
+        <td style="background: #AEF1AE">
+          m.getParameterTypes()
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          8571
+        </td>
+        <td>
+          552
+          -
+          775
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[String](scala.this.Predef.refArrayOps[Class[_]](m.getParameterTypes()).map[String, Array[String]](((x$1: Class[_]) =&gt; x$1.getSimpleName()))(scala.this.Array.canBuildFrom[String]((ClassTag.apply[String](classOf[java.lang.String]): scala.reflect.ClassTag[String])))).map[com.atomist.tree.pathexpression.XPathTypes.Value, Array[com.atomist.tree.pathexpression.XPathTypes.Value]](((x0$1: String) =&gt; x0$1 match {
+  case &quot;String&quot; =&gt; com.atomist.tree.pathexpression.XPathTypes.String
+  case &quot;Boolean&quot; =&gt; com.atomist.tree.pathexpression.XPathTypes.Boolean
+  case (wtf @ _) =&gt; throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;Should have filtered out parameter type [&quot;, &quot;]&quot;).s(wtf))
+}))(scala.this.Array.canBuildFrom[com.atomist.tree.pathexpression.XPathTypes.Value]((ClassTag.apply[com.atomist.tree.pathexpression.XPathTypes.Value](classOf[scala.Enumeration$Value]): scala.reflect.ClassTag[com.atomist.tree.pathexpression.XPathTypes.Value])))
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          8565
+        </td>
+        <td>
+          575
+          -
+          575
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.Array.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Array.canBuildFrom[String]((ClassTag.apply[String](classOf[java.lang.String]): scala.reflect.ClassTag[String]))
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          8567
+        </td>
+        <td>
+          624
+          -
+          630
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.XPathTypes.String
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.pathexpression.XPathTypes.String
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          8568
+        </td>
+        <td>
+          657
+          -
+          664
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.XPathTypes.Boolean
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.pathexpression.XPathTypes.Boolean
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          8569
+        </td>
+        <td>
+          685
+          -
+          767
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;Should have filtered out parameter type [&quot;, &quot;]&quot;).s(wtf))
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          8573
+        </td>
+        <td>
+          937
+          -
+          940
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;-&quot;
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          8572
+        </td>
+        <td>
+          926
+          -
+          935
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Method.getName
+        </td>
+        <td style="background: #AEF1AE">
+          m.getName()
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          8580
+        </td>
+        <td>
+          878
+          -
+          1258
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ReflectiveFunctionRegistry.SimpleFunction.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ReflectiveFunctionRegistry.this.SimpleFunction.apply(com.atomist.util.lang.JavaHelpers.toLowerCaseDelimited(m.getName(), &quot;-&quot;), scala.this.Predef.wrapRefArray[com.atomist.tree.pathexpression.XPathTypes.Value](declaredArgs), ((args: Seq[Any]) =&gt; {
+  val objectified: Seq[Object] = args.map[Object, Seq[Object]](((x0$2: Any) =&gt; x0$2 match {
+    case (o @ (_: Object)) =&gt; o
+    case _ =&gt; scala.this.Predef.???
+  }))(collection.this.Seq.canBuildFrom[Object]);
+  m.invoke(t, (objectified: _*))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          8574
+        </td>
+        <td>
+          893
+          -
+          941
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.toLowerCaseDelimited
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.lang.JavaHelpers.toLowerCaseDelimited(m.getName(), &quot;-&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          8575
+        </td>
+        <td>
+          951
+          -
+          963
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.LowPriorityImplicits.wrapRefArray
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.wrapRefArray[com.atomist.tree.pathexpression.XPathTypes.Value](declaredArgs)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8578
+        </td>
+        <td>
+          1128
+          -
+          1208
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          args.map[Object, Seq[Object]](((x0$2: Any) =&gt; x0$2 match {
+  case (o @ (_: Object)) =&gt; o
+  case _ =&gt; scala.this.Predef.???
+}))(collection.this.Seq.canBuildFrom[Object])
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8577
+        </td>
+        <td>
+          1133
+          -
+          1133
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Object]
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          8576
+        </td>
+        <td>
+          1193
+          -
+          1196
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          8579
+        </td>
+        <td>
+          1219
+          -
+          1247
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Method.invoke
+        </td>
+        <td style="background: #AEF1AE">
+          m.invoke(t, (objectified: _*))
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          8588
+        </td>
+        <td>
+          1660
+          -
+          1704
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.require
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.require(convertedArgs.size.==(SimpleFunction.this.argTypes.size))
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          8587
+        </td>
+        <td>
+          1668
+          -
+          1703
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          convertedArgs.size.==(SimpleFunction.this.argTypes.size)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          8586
+        </td>
+        <td>
+          1690
+          -
+          1703
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleFunction.this.argTypes.size
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          8589
+        </td>
+        <td>
+          1711
+          -
+          1733
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleFunction.this.invoker.apply(convertedArgs)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

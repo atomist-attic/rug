@@ -1,0 +1,1564 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/js/ExceptionEnhancer.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.js
+</span>2 <span style=''>
+</span>3 <span style=''>import java.util.Objects
+</span>4 <span style=''>
+</span>5 <span style=''>import com.atlassian.sourcemap.SourceMapImpl
+</span>6 <span style=''>import com.atomist.source.ArtifactSource
+</span>7 <span style=''>import com.atomist.tree.content.text.{LineInputPosition, LineInputPositionImpl}
+</span>8 <span style=''>import jdk.nashorn.internal.objects.{NativeError, NativeTypeError}
+</span>9 <span style=''>import jdk.nashorn.internal.runtime.ECMAException
+</span>10 <span style=''>
+</span>11 <span style=''>case class RuntimeErrorInfo(message: String,
+</span>12 <span style=''>                            filePath: String,
+</span>13 <span style=''>                            pos: LineInputPosition,
+</span>14 <span style=''>                            detail: Object) {
+</span>15 <span style=''>
+</span>16 <span style=''>  override def toString: String =
+</span>17 <span style=''>    </span><span style='background: #AEF1AE'>s&quot;[$message] at $positionInfo&quot;</span><span style=''>
+</span>18 <span style=''>
+</span>19 <span style=''>  def positionInfo: String =
+</span>20 <span style=''>    </span><span style='background: #AEF1AE'>s&quot;$filePath:${pos.lineFrom1}/${pos.colFrom1}\n${pos.show}&quot;</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>}
+</span>23 <span style=''>
+</span>24 <span style=''>/**
+</span>25 <span style=''>  * Enhances exceptions caught within a JavaScript context that
+</span>26 <span style=''>  * we have all sources for
+</span>27 <span style=''>  */
+</span>28 <span style=''>object ExceptionEnhancer {
+</span>29 <span style=''>
+</span>30 <span style=''>  def enhanceIfPossible(rugAs: ArtifactSource, ecmaEx: ECMAException): Exception = {
+</span>31 <span style=''>
+</span>32 <span style=''>    // Let this through. They probably threw it voluntarily.
+</span>33 <span style=''>    if (</span><span style='background: #AEF1AE'>ecmaEx.thrown.isInstanceOf[NativeError]</span><span style=''>)
+</span>34 <span style=''>      </span><span style='background: #AEF1AE'>throw ecmaEx</span><span style=''>
+</span>35 <span style=''>
+</span>36 <span style=''>    </span><span style='background: #AEF1AE'>ecmaEx.getFileName</span><span style=''> match {
+</span>37 <span style=''>      case &quot;&lt;eval&gt;&quot; | null =&gt;
+</span>38 <span style=''>        // Can't add much useful info
+</span>39 <span style=''>        ecmaEx
+</span>40 <span style=''>      case filePath =&gt;
+</span>41 <span style=''>        val f = </span><span style='background: #AEF1AE'>rugAs.findFile(filePath).getOrElse(
+</span>42 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>throw new IllegalStateException(s&quot;Cannot find file at path [$filePath] attempting to handle $ecmaEx&quot;)</span><span style='background: #AEF1AE'>
+</span>43 <span style=''></span><span style='background: #AEF1AE'>        )</span><span style=''>
+</span>44 <span style=''>
+</span>45 <span style=''>        val message: String =
+</span>46 <span style=''>          </span><span style='background: #AEF1AE'>Objects.toString(ecmaEx.getThrown match {
+</span>47 <span style=''></span><span style='background: #AEF1AE'>          case nte: NativeTypeError =&gt;
+</span>48 <span style=''></span><span style='background: #AEF1AE'>            nte.instMessage
+</span>49 <span style=''></span><span style='background: #AEF1AE'>          case x =&gt; x
+</span>50 <span style=''></span><span style='background: #AEF1AE'>        })</span><span style=''>
+</span>51 <span style=''>
+</span>52 <span style=''>        val line = </span><span style='background: #AEF1AE'>ecmaEx.getLineNumber</span><span style=''>
+</span>53 <span style=''>        val col = </span><span style='background: #AEF1AE'>ecmaEx.getColumnNumber.max(1)</span><span style=''>
+</span>54 <span style=''>        // Nashorn can report -1, which breaks source maps
+</span>55 <span style=''>        val pos = </span><span style='background: #AEF1AE'>LineInputPositionImpl(f.content, line, col)</span><span style=''>
+</span>56 <span style=''>        val jsri = </span><span style='background: #AEF1AE'>RuntimeErrorInfo(message,
+</span>57 <span style=''></span><span style='background: #AEF1AE'>          f.path, pos, ecmaEx.getThrown)</span><span style=''>
+</span>58 <span style=''>        </span><span style='background: #AEF1AE'>findSourceMappedSourceInformation(rugAs, jsri)</span><span style=''> match {
+</span>59 <span style=''>          case Some(rti) =&gt; </span><span style='background: #AEF1AE'>new SourceLanguageRuntimeException(jsri, rti)</span><span style=''>
+</span>60 <span style=''>          case None =&gt; </span><span style='background: #AEF1AE'>new JavaScriptRuntimeException(jsri)</span><span style=''>
+</span>61 <span style=''>        }
+</span>62 <span style=''>    }
+</span>63 <span style=''>  }
+</span>64 <span style=''>
+</span>65 <span style=''>  private def findSourceMappedSourceInformation(rugAs: ArtifactSource, jsri: RuntimeErrorInfo): Option[RuntimeErrorInfo] = {
+</span>66 <span style=''>    val sourceMapName = </span><span style='background: #AEF1AE'>jsri.filePath + &quot;.map&quot;</span><span style=''>
+</span>67 <span style=''>    </span><span style='background: #AEF1AE'>rugAs.findFile(sourceMapName).flatMap(map =&gt; {
+</span>68 <span style=''></span><span style='background: #AEF1AE'>      val sourceMap = new SourceMapImpl(map.content)
+</span>69 <span style=''></span><span style='background: #AEF1AE'>      val mapping = sourceMap.getMapping(jsri.pos.lineFrom1, jsri.pos.colFrom1)
+</span>70 <span style=''></span><span style='background: #AEF1AE'>      Option(mapping).flatMap(mapping =&gt; {
+</span>71 <span style=''></span><span style='background: #AEF1AE'>        val sourcePath = jsri.filePath.substring(0, jsri.filePath.lastIndexOf(&quot;/&quot;))
+</span>72 <span style=''></span><span style='background: #AEF1AE'>        val sourceFileO = rugAs.findFile(s&quot;$sourcePath/${mapping.getSourceFileName}&quot;)
+</span>73 <span style=''></span><span style='background: #AEF1AE'>        sourceFileO.map(sourceFile =&gt; {
+</span>74 <span style=''></span><span style='background: #AEF1AE'>          val lip = LineInputPositionImpl(sourceFile.content,
+</span>75 <span style=''></span><span style='background: #AEF1AE'>            mapping.getSourceLine + 1,
+</span>76 <span style=''></span><span style='background: #AEF1AE'>            mapping.getSourceLine)
+</span>77 <span style=''></span><span style='background: #AEF1AE'>          RuntimeErrorInfo(jsri.message, sourceFile.path, lip, jsri.detail)
+</span>78 <span style=''></span><span style='background: #AEF1AE'>        })
+</span>79 <span style=''></span><span style='background: #AEF1AE'>      })
+</span>80 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
+</span>81 <span style=''>  }
+</span>82 <span style=''>
+</span>83 <span style=''>}
+</span>84 <span style=''>
+</span>85 <span style=''>/**
+</span>86 <span style=''>  * Thrown when there's an exception in the JavaScript or TypeScript runtime
+</span>87 <span style=''>  */
+</span>88 <span style=''>class JavaScriptRuntimeException(
+</span>89 <span style=''>                                  val jsRuntimeErrorInfo: RuntimeErrorInfo,
+</span>90 <span style=''>                                  message: String)
+</span>91 <span style=''>  extends Exception(message) {
+</span>92 <span style=''>
+</span>93 <span style=''>  def this(jsri: RuntimeErrorInfo) =
+</span>94 <span style=''>    </span><span style='background: #AEF1AE'>this(jsri, jsri.toString)</span><span style=''>
+</span>95 <span style=''>
+</span>96 <span style=''>  // Supress stack trace
+</span>97 <span style=''>  override def fillInStackTrace(): Throwable = this
+</span>98 <span style=''>}
+</span>99 <span style=''>
+</span>100 <span style=''>/**
+</span>101 <span style=''>  * Has information both about the underlying JavaScript error and the original one,
+</span>102 <span style=''>  * in a language such as TypeScript
+</span>103 <span style=''>  * @param jsRuntimeErrorInfo JavaScript location
+</span>104 <span style=''>  * @param sourceLangRuntimeErrorInfo original language location
+</span>105 <span style=''>  */
+</span>106 <span style=''>class SourceLanguageRuntimeException(jsRuntimeErrorInfo: RuntimeErrorInfo,
+</span>107 <span style=''>                                     val sourceLangRuntimeErrorInfo: RuntimeErrorInfo
+</span>108 <span style=''>                                    )
+</span>109 <span style=''>  extends JavaScriptRuntimeException(jsRuntimeErrorInfo,
+</span>110 <span style=''>    sourceLangRuntimeErrorInfo.toString + &quot;\n--via generated code--\n&quot; +
+</span>111 <span style=''>      jsRuntimeErrorInfo.positionInfo) {
+</span>112 <span style=''>
+</span>113 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          3244
+        </td>
+        <td>
+          585
+          -
+          591
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;] at &quot;
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          3247
+        </td>
+        <td>
+          591
+          -
+          603
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.RuntimeErrorInfo.positionInfo
+        </td>
+        <td style="background: #AEF1AE">
+          RuntimeErrorInfo.this.positionInfo
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          3243
+        </td>
+        <td>
+          576
+          -
+          578
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          3246
+        </td>
+        <td>
+          578
+          -
+          585
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.RuntimeErrorInfo.message
+        </td>
+        <td style="background: #AEF1AE">
+          RuntimeErrorInfo.this.message
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          3248
+        </td>
+        <td>
+          574
+          -
+          604
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;[&quot;, &quot;] at &quot;, &quot;&quot;).s(RuntimeErrorInfo.this.message, RuntimeErrorInfo.this.positionInfo)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          3245
+        </td>
+        <td>
+          603
+          -
+          604
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          3253
+        </td>
+        <td>
+          696
+          -
+          697
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          3256
+        </td>
+        <td>
+          670
+          -
+          682
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineInputPosition.colFrom1
+        </td>
+        <td style="background: #AEF1AE">
+          RuntimeErrorInfo.this.pos.colFrom1
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          3250
+        </td>
+        <td>
+          650
+          -
+          652
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;:&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          3249
+        </td>
+        <td>
+          641
+          -
+          642
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          3258
+        </td>
+        <td>
+          639
+          -
+          697
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;:&quot;, &quot;/&quot;, &quot;\\n&quot;, &quot;&quot;).s(RuntimeErrorInfo.this.filePath, RuntimeErrorInfo.this.pos.lineFrom1, RuntimeErrorInfo.this.pos.colFrom1, RuntimeErrorInfo.this.pos.show)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          3252
+        </td>
+        <td>
+          683
+          -
+          686
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          3255
+        </td>
+        <td>
+          653
+          -
+          666
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineInputPosition.lineFrom1
+        </td>
+        <td style="background: #AEF1AE">
+          RuntimeErrorInfo.this.pos.lineFrom1
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          3254
+        </td>
+        <td>
+          642
+          -
+          650
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.RuntimeErrorInfo.filePath
+        </td>
+        <td style="background: #AEF1AE">
+          RuntimeErrorInfo.this.filePath
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          3257
+        </td>
+        <td>
+          687
+          -
+          695
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineInputPosition.show
+        </td>
+        <td style="background: #AEF1AE">
+          RuntimeErrorInfo.this.pos.show
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          3251
+        </td>
+        <td>
+          667
+          -
+          669
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;/&quot;
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          3262
+        </td>
+        <td>
+          982
+          -
+          982
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          3259
+        </td>
+        <td>
+          986
+          -
+          1025
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.isInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          ecmaEx.thrown.isInstanceOf[jdk.nashorn.internal.objects.NativeError]
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          3263
+        </td>
+        <td>
+          982
+          -
+          982
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          3261
+        </td>
+        <td>
+          1033
+          -
+          1045
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw ecmaEx
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          3260
+        </td>
+        <td>
+          1033
+          -
+          1045
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw ecmaEx
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3264
+        </td>
+        <td>
+          1051
+          -
+          1069
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.NashornException.getFileName
+        </td>
+        <td style="background: #AEF1AE">
+          ecmaEx.getFileName()
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          3266
+        </td>
+        <td>
+          1200
+          -
+          1357
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          rugAs.findFile(filePath).getOrElse[com.atomist.source.FileArtifact](throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;Cannot find file at path [&quot;, &quot;] attempting to handle &quot;, &quot;&quot;).s(filePath, ecmaEx)))
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          3265
+        </td>
+        <td>
+          1246
+          -
+          1347
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;Cannot find file at path [&quot;, &quot;] attempting to handle &quot;, &quot;&quot;).s(filePath, ecmaEx))
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          3267
+        </td>
+        <td>
+          1416
+          -
+          1432
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.internal.runtime.ECMAException.getThrown
+        </td>
+        <td style="background: #AEF1AE">
+          ecmaEx.getThrown()
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          3269
+        </td>
+        <td>
+          1399
+          -
+          1540
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Objects.toString
+        </td>
+        <td style="background: #AEF1AE">
+          java.util.Objects.toString(ecmaEx.getThrown() match {
+  case (nte @ (_: jdk.nashorn.internal.objects.NativeTypeError)) =&gt; nte.instMessage
+  case (x @ _) =&gt; x
+})
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          3268
+        </td>
+        <td>
+          1492
+          -
+          1507
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          jdk.nashorn.internal.objects.NativeTypeError.instMessage
+        </td>
+        <td style="background: #AEF1AE">
+          nte.instMessage
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          3270
+        </td>
+        <td>
+          1561
+          -
+          1581
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.NashornException.getLineNumber
+        </td>
+        <td style="background: #AEF1AE">
+          ecmaEx.getLineNumber()
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          3271
+        </td>
+        <td>
+          1600
+          -
+          1629
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.runtime.RichInt.max
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.intWrapper(ecmaEx.getColumnNumber()).max(1)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          3273
+        </td>
+        <td>
+          1707
+          -
+          1750
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineInputPositionImpl.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.content.text.LineInputPositionImpl.apply(f.content, line, col)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          3272
+        </td>
+        <td>
+          1729
+          -
+          1738
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          f.content
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          3276
+        </td>
+        <td>
+          1770
+          -
+          1836
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.RuntimeErrorInfo.apply
+        </td>
+        <td style="background: #AEF1AE">
+          RuntimeErrorInfo.apply(message, f.path, pos, ecmaEx.getThrown())
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          3274
+        </td>
+        <td>
+          1806
+          -
+          1812
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.path
+        </td>
+        <td style="background: #AEF1AE">
+          f.path
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          3275
+        </td>
+        <td>
+          1819
+          -
+          1835
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.internal.runtime.ECMAException.getThrown
+        </td>
+        <td style="background: #AEF1AE">
+          ecmaEx.getThrown()
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          3277
+        </td>
+        <td>
+          1845
+          -
+          1891
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.ExceptionEnhancer.findSourceMappedSourceInformation
+        </td>
+        <td style="background: #AEF1AE">
+          ExceptionEnhancer.this.findSourceMappedSourceInformation(rugAs, jsri)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3278
+        </td>
+        <td>
+          1928
+          -
+          1973
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SourceLanguageRuntimeException.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new SourceLanguageRuntimeException(jsri, rti)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          3279
+        </td>
+        <td>
+          1997
+          -
+          2033
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptRuntimeException.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new JavaScriptRuntimeException(jsri)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          3280
+        </td>
+        <td>
+          2204
+          -
+          2226
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          jsri.filePath.+(&quot;.map&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          3305
+        </td>
+        <td>
+          2231
+          -
+          2902
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          rugAs.findFile(sourceMapName).flatMap[com.atomist.rug.runtime.js.RuntimeErrorInfo](((map: com.atomist.source.FileArtifact) =&gt; {
+  val sourceMap: com.atlassian.sourcemap.SourceMapImpl = new com.atlassian.sourcemap.SourceMapImpl(map.content);
+  val mapping: com.atlassian.sourcemap.Mapping = sourceMap.getMapping(jsri.pos.lineFrom1, jsri.pos.colFrom1);
+  scala.Option.apply[com.atlassian.sourcemap.Mapping](mapping).flatMap[com.atomist.rug.runtime.js.RuntimeErrorInfo](((mapping: com.atlassian.sourcemap.Mapping) =&gt; {
+    val sourcePath: String = jsri.filePath.substring(0, jsri.filePath.lastIndexOf(&quot;/&quot;));
+    val sourceFileO: Option[com.atomist.source.FileArtifact] = rugAs.findFile(scala.StringContext.apply(&quot;&quot;, &quot;/&quot;, &quot;&quot;).s(sourcePath, mapping.getSourceFileName()));
+    sourceFileO.map[com.atomist.rug.runtime.js.RuntimeErrorInfo](((sourceFile: com.atomist.source.FileArtifact) =&gt; {
+      val lip: com.atomist.tree.content.text.LineInputPositionImpl = com.atomist.tree.content.text.LineInputPositionImpl.apply(sourceFile.content, mapping.getSourceLine().+(1), mapping.getSourceLine());
+      RuntimeErrorInfo.apply(jsri.message, sourceFile.path, lip, jsri.detail)
+    }))
+  }))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          3282
+        </td>
+        <td>
+          2300
+          -
+          2330
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atlassian.sourcemap.SourceMapImpl.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atlassian.sourcemap.SourceMapImpl(map.content)
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          3281
+        </td>
+        <td>
+          2318
+          -
+          2329
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          map.content
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          3283
+        </td>
+        <td>
+          2372
+          -
+          2390
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineInputPosition.lineFrom1
+        </td>
+        <td style="background: #AEF1AE">
+          jsri.pos.lineFrom1
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          3285
+        </td>
+        <td>
+          2351
+          -
+          2410
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atlassian.sourcemap.SourceMapImpl.getMapping
+        </td>
+        <td style="background: #AEF1AE">
+          sourceMap.getMapping(jsri.pos.lineFrom1, jsri.pos.colFrom1)
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          3284
+        </td>
+        <td>
+          2392
+          -
+          2409
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineInputPosition.colFrom1
+        </td>
+        <td style="background: #AEF1AE">
+          jsri.pos.colFrom1
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          3304
+        </td>
+        <td>
+          2417
+          -
+          2895
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Option.apply[com.atlassian.sourcemap.Mapping](mapping).flatMap[com.atomist.rug.runtime.js.RuntimeErrorInfo](((mapping: com.atlassian.sourcemap.Mapping) =&gt; {
+  val sourcePath: String = jsri.filePath.substring(0, jsri.filePath.lastIndexOf(&quot;/&quot;));
+  val sourceFileO: Option[com.atomist.source.FileArtifact] = rugAs.findFile(scala.StringContext.apply(&quot;&quot;, &quot;/&quot;, &quot;&quot;).s(sourcePath, mapping.getSourceFileName()));
+  sourceFileO.map[com.atomist.rug.runtime.js.RuntimeErrorInfo](((sourceFile: com.atomist.source.FileArtifact) =&gt; {
+    val lip: com.atomist.tree.content.text.LineInputPositionImpl = com.atomist.tree.content.text.LineInputPositionImpl.apply(sourceFile.content, mapping.getSourceLine().+(1), mapping.getSourceLine());
+    RuntimeErrorInfo.apply(jsri.message, sourceFile.path, lip, jsri.detail)
+  }))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          3286
+        </td>
+        <td>
+          2503
+          -
+          2504
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          3288
+        </td>
+        <td>
+          2479
+          -
+          2537
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.substring
+        </td>
+        <td style="background: #AEF1AE">
+          jsri.filePath.substring(0, jsri.filePath.lastIndexOf(&quot;/&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          3287
+        </td>
+        <td>
+          2506
+          -
+          2536
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.lastIndexOf
+        </td>
+        <td style="background: #AEF1AE">
+          jsri.filePath.lastIndexOf(&quot;/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          3289
+        </td>
+        <td>
+          2581
+          -
+          2582
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          3292
+        </td>
+        <td>
+          2595
+          -
+          2620
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atlassian.sourcemap.Mapping.getSourceFileName
+        </td>
+        <td style="background: #AEF1AE">
+          mapping.getSourceFileName()
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          3291
+        </td>
+        <td>
+          2621
+          -
+          2622
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          3294
+        </td>
+        <td>
+          2564
+          -
+          2623
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactContainer.findFile
+        </td>
+        <td style="background: #AEF1AE">
+          rugAs.findFile(scala.StringContext.apply(&quot;&quot;, &quot;/&quot;, &quot;&quot;).s(sourcePath, mapping.getSourceFileName()))
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          3290
+        </td>
+        <td>
+          2592
+          -
+          2594
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;/&quot;
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          3293
+        </td>
+        <td>
+          2579
+          -
+          2622
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;/&quot;, &quot;&quot;).s(sourcePath, mapping.getSourceFileName())
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          3303
+        </td>
+        <td>
+          2632
+          -
+          2886
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.map
+        </td>
+        <td style="background: #AEF1AE">
+          sourceFileO.map[com.atomist.rug.runtime.js.RuntimeErrorInfo](((sourceFile: com.atomist.source.FileArtifact) =&gt; {
+  val lip: com.atomist.tree.content.text.LineInputPositionImpl = com.atomist.tree.content.text.LineInputPositionImpl.apply(sourceFile.content, mapping.getSourceLine().+(1), mapping.getSourceLine());
+  RuntimeErrorInfo.apply(jsri.message, sourceFile.path, lip, jsri.detail)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          3295
+        </td>
+        <td>
+          2706
+          -
+          2724
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          sourceFile.content
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          3298
+        </td>
+        <td>
+          2684
+          -
+          2799
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineInputPositionImpl.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.content.text.LineInputPositionImpl.apply(sourceFile.content, mapping.getSourceLine().+(1), mapping.getSourceLine())
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          3296
+        </td>
+        <td>
+          2738
+          -
+          2763
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          mapping.getSourceLine().+(1)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          3297
+        </td>
+        <td>
+          2777
+          -
+          2798
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atlassian.sourcemap.Mapping.getSourceLine
+        </td>
+        <td style="background: #AEF1AE">
+          mapping.getSourceLine()
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          3301
+        </td>
+        <td>
+          2863
+          -
+          2874
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.RuntimeErrorInfo.detail
+        </td>
+        <td style="background: #AEF1AE">
+          jsri.detail
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          3300
+        </td>
+        <td>
+          2841
+          -
+          2856
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.path
+        </td>
+        <td style="background: #AEF1AE">
+          sourceFile.path
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          3299
+        </td>
+        <td>
+          2827
+          -
+          2839
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.RuntimeErrorInfo.message
+        </td>
+        <td style="background: #AEF1AE">
+          jsri.message
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          3302
+        </td>
+        <td>
+          2810
+          -
+          2875
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.RuntimeErrorInfo.apply
+        </td>
+        <td style="background: #AEF1AE">
+          RuntimeErrorInfo.apply(jsri.message, sourceFile.path, lip, jsri.detail)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          3307
+        </td>
+        <td>
+          3231
+          -
+          3256
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptRuntimeException.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptRuntimeException.this.&lt;init&gt;(jsri, jsri.toString())
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          3306
+        </td>
+        <td>
+          3242
+          -
+          3255
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.RuntimeErrorInfo.toString
+        </td>
+        <td style="background: #AEF1AE">
+          jsri.toString()
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          3308
+        </td>
+        <td>
+          3231
+          -
+          3231
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

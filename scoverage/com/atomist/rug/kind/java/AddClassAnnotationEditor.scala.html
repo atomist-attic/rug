@@ -1,0 +1,965 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/java/AddClassAnnotationEditor.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.java
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.param.ParameterValues
+</span>4 <span style=''>import com.atomist.source.ArtifactSource
+</span>5 <span style=''>import com.atomist.util.lang.{JavaConstants, JavaHelpers, JavaParserUtils}
+</span>6 <span style=''>import com.github.javaparser.JavaParser
+</span>7 <span style=''>import com.github.javaparser.ast.CompilationUnit
+</span>8 <span style=''>import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
+</span>9 <span style=''>import com.typesafe.scalalogging.LazyLogging
+</span>10 <span style=''>
+</span>11 <span style=''>import scala.collection.JavaConverters._
+</span>12 <span style=''>
+</span>13 <span style=''>/**
+</span>14 <span style=''>  * Add a class annotation if it doesn't exist.
+</span>15 <span style=''>  *
+</span>16 <span style=''>  * @param selector selects class to annotate
+</span>17 <span style=''>  * @param annotationPackageName Annotation package None means default package
+</span>18 <span style=''>  */
+</span>19 <span style=''>// TODO this supports only marker annotations: Need superclass to generalize
+</span>20 <span style=''>class AddClassAnnotationEditor(selector: ClassOrInterfaceDeclaration =&gt; Boolean,
+</span>21 <span style=''>                               annotationPackageName: Option[String],
+</span>22 <span style=''>                               annotationName: String,
+</span>23 <span style=''>                               javaSourcePath: String = JavaConstants.DefaultBaseSourcePath)
+</span>24 <span style=''>  extends JavaParserProjectEditor(&quot;AddClassAnnotation&quot;, javaSourcePath)
+</span>25 <span style=''>    with LazyLogging {
+</span>26 <span style=''>
+</span>27 <span style=''>  private def annotationFqn: String =
+</span>28 <span style=''>    if (</span><span style='background: #AEF1AE'>annotationPackageName.isEmpty</span><span style=''>)
+</span>29 <span style=''>      </span><span style='background: #F0ADAD'>annotationName</span><span style=''>
+</span>30 <span style=''>    else
+</span>31 <span style=''>      </span><span style='background: #AEF1AE'>annotationPackageName.get + &quot;.&quot; + annotationName</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>  // Could pull into superclass, using Parser
+</span>34 <span style=''>  override def meetsPostcondition(as: ArtifactSource): Boolean = {
+</span>35 <span style=''>    val annotatedFiles = </span><span style='background: #AEF1AE'>as.files
+</span>36 <span style=''></span><span style='background: #AEF1AE'>      .filter(JavaHelpers.isJavaSourceArtifact)
+</span>37 <span style=''></span><span style='background: #AEF1AE'>      .exists(f =&gt; {
+</span>38 <span style=''></span><span style='background: #AEF1AE'>        val cu = JavaParser.parse(f.inputStream())
+</span>39 <span style=''></span><span style='background: #AEF1AE'>        cu.getTypes.asScala.exists(_.getAnnotations.asScala.exists(_.getNameAsString.equals(annotationName)))
+</span>40 <span style=''></span><span style='background: #AEF1AE'>      })</span><span style=''>
+</span>41 <span style=''>    annotatedFiles
+</span>42 <span style=''>  }
+</span>43 <span style=''>
+</span>44 <span style=''>  override protected def maybeModifyCompilationUnit(cu: CompilationUnit, poa: ParameterValues): Option[CompilationUnit] = {
+</span>45 <span style=''>    val modifiedTypes: Traversable[ClassOrInterfaceDeclaration] = </span><span style='background: #AEF1AE'>cu.getTypes.asScala. collect {
+</span>46 <span style=''></span><span style='background: #AEF1AE'>      case coit: ClassOrInterfaceDeclaration if selector(coit) &amp;&amp; JavaTypeType.annotationAddedTo(coit, annotationName) =&gt;
+</span>47 <span style=''></span><span style='background: #AEF1AE'>        coit
+</span>48 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>49 <span style=''>
+</span>50 <span style=''>    if (</span><span style='background: #AEF1AE'>modifiedTypes.nonEmpty</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>51 <span style=''></span><span style='background: #AEF1AE'>      if (annotationPackageName.isDefined)
+</span>52 <span style=''></span><span style='background: #AEF1AE'>        JavaParserUtils.addImportsIfNeeded(Seq(annotationFqn), cu)
+</span>53 <span style=''></span><span style='background: #AEF1AE'>      Some(cu)
+</span>54 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''> else
+</span>55 <span style=''>      </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>56 <span style=''>  }
+</span>57 <span style=''>
+</span>58 <span style=''>  override def description: String = </span><span style='background: #F0ADAD'>s&quot;Add @$annotationFqn annotation to class&quot;</span><span style=''>
+</span>59 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1707
+        </td>
+        <td>
+          1139
+          -
+          1168
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          AddClassAnnotationEditor.this.annotationPackageName.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1709
+        </td>
+        <td>
+          1176
+          -
+          1190
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.kind.java.AddClassAnnotationEditor.annotationName
+        </td>
+        <td style="background: #F0ADAD">
+          AddClassAnnotationEditor.this.annotationName
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1708
+        </td>
+        <td>
+          1176
+          -
+          1190
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.AddClassAnnotationEditor.annotationName
+        </td>
+        <td style="background: #F0ADAD">
+          AddClassAnnotationEditor.this.annotationName
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1710
+        </td>
+        <td>
+          1234
+          -
+          1237
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;.&quot;
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1713
+        </td>
+        <td>
+          1206
+          -
+          1254
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          AddClassAnnotationEditor.this.annotationPackageName.get.+(&quot;.&quot;).+(AddClassAnnotationEditor.this.annotationName)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1712
+        </td>
+        <td>
+          1206
+          -
+          1254
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          AddClassAnnotationEditor.this.annotationPackageName.get.+(&quot;.&quot;).+(AddClassAnnotationEditor.this.annotationName)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1711
+        </td>
+        <td>
+          1240
+          -
+          1254
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.AddClassAnnotationEditor.annotationName
+        </td>
+        <td style="background: #AEF1AE">
+          AddClassAnnotationEditor.this.annotationName
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1714
+        </td>
+        <td>
+          1417
+          -
+          1449
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.isJavaSourceArtifact
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.lang.JavaHelpers.isJavaSourceArtifact
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1723
+        </td>
+        <td>
+          1394
+          -
+          1641
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #AEF1AE">
+          as.files.filter(com.atomist.util.lang.JavaHelpers.isJavaSourceArtifact).exists(((f: com.atomist.source.FileArtifact) =&gt; {
+  val cu: com.github.javaparser.ast.CompilationUnit = com.github.javaparser.JavaParser.parse(f.inputStream());
+  scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.body.TypeDeclaration[_]](cu.getTypes()).asScala.exists(((x$1: com.github.javaparser.ast.body.TypeDeclaration[_]) =&gt; scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.expr.AnnotationExpr](x$1.getAnnotations()).asScala.exists(((x$2: com.github.javaparser.ast.expr.AnnotationExpr) =&gt; x$2.getNameAsString().equals(AddClassAnnotationEditor.this.annotationName)))))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1716
+        </td>
+        <td>
+          1489
+          -
+          1522
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.JavaParser.parse
+        </td>
+        <td style="background: #AEF1AE">
+          com.github.javaparser.JavaParser.parse(f.inputStream())
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1715
+        </td>
+        <td>
+          1506
+          -
+          1521
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.inputStream
+        </td>
+        <td style="background: #AEF1AE">
+          f.inputStream()
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1719
+        </td>
+        <td>
+          1615
+          -
+          1629
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.AddClassAnnotationEditor.annotationName
+        </td>
+        <td style="background: #AEF1AE">
+          AddClassAnnotationEditor.this.annotationName
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1722
+        </td>
+        <td>
+          1531
+          -
+          1632
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.body.TypeDeclaration[_]](cu.getTypes()).asScala.exists(((x$1: com.github.javaparser.ast.body.TypeDeclaration[_]) =&gt; scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.expr.AnnotationExpr](x$1.getAnnotations()).asScala.exists(((x$2: com.github.javaparser.ast.expr.AnnotationExpr) =&gt; x$2.getNameAsString().equals(AddClassAnnotationEditor.this.annotationName)))))
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1721
+        </td>
+        <td>
+          1558
+          -
+          1631
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.expr.AnnotationExpr](x$1.getAnnotations()).asScala.exists(((x$2: com.github.javaparser.ast.expr.AnnotationExpr) =&gt; x$2.getNameAsString().equals(AddClassAnnotationEditor.this.annotationName)))
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1718
+        </td>
+        <td>
+          1558
+          -
+          1574
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.body.BodyDeclaration.getAnnotations
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.getAnnotations()
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1717
+        </td>
+        <td>
+          1531
+          -
+          1542
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.CompilationUnit.getTypes
+        </td>
+        <td style="background: #AEF1AE">
+          cu.getTypes()
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1720
+        </td>
+        <td>
+          1590
+          -
+          1630
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.getNameAsString().equals(AddClassAnnotationEditor.this.annotationName)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1728
+        </td>
+        <td>
+          1885
+          -
+          1885
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.AddClassAnnotationEditor.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1730
+        </td>
+        <td>
+          1856
+          -
+          2027
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.body.TypeDeclaration[_]](cu.getTypes()).asScala.collect[com.github.javaparser.ast.body.ClassOrInterfaceDeclaration, Traversable[com.github.javaparser.ast.body.ClassOrInterfaceDeclaration]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.github.javaparser.ast.body.TypeDeclaration[_],com.github.javaparser.ast.body.ClassOrInterfaceDeclaration] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.github.javaparser.ast.body.TypeDeclaration[_] =&gt; com.github.javaparser.ast.body.ClassOrInterfaceDeclaration&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.github.javaparser.ast.body.TypeDeclaration[_], B1 &gt;: com.github.javaparser.ast.body.ClassOrInterfaceDeclaration](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[com.github.javaparser.ast.body.TypeDeclaration[_]]: com.github.javaparser.ast.body.TypeDeclaration[_]): com.github.javaparser.ast.body.TypeDeclaration[?0] @unchecked) match {
+      case (coit @ (_: com.github.javaparser.ast.body.ClassOrInterfaceDeclaration)) if AddClassAnnotationEditor.this.selector.apply(coit).&amp;&amp;(JavaTypeType.annotationAddedTo[com.github.javaparser.ast.body.ClassOrInterfaceDeclaration](coit, AddClassAnnotationEditor.this.annotationName)) =&gt; coit
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: com.github.javaparser.ast.body.TypeDeclaration[_]): Boolean = ((x1.asInstanceOf[com.github.javaparser.ast.body.TypeDeclaration[_]]: com.github.javaparser.ast.body.TypeDeclaration[_]): com.github.javaparser.ast.body.TypeDeclaration[?0] @unchecked) match {
+      case (coit @ (_: com.github.javaparser.ast.body.ClassOrInterfaceDeclaration)) if AddClassAnnotationEditor.this.selector.apply(coit).&amp;&amp;(JavaTypeType.annotationAddedTo[com.github.javaparser.ast.body.ClassOrInterfaceDeclaration](coit, AddClassAnnotationEditor.this.annotationName)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.github.javaparser.ast.body.TypeDeclaration[_],com.github.javaparser.ast.body.ClassOrInterfaceDeclaration]))(mutable.this.Buffer.canBuildFrom[com.github.javaparser.ast.body.ClassOrInterfaceDeclaration])
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1724
+        </td>
+        <td>
+          1856
+          -
+          1867
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.CompilationUnit.getTypes
+        </td>
+        <td style="background: #AEF1AE">
+          cu.getTypes()
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1729
+        </td>
+        <td>
+          1885
+          -
+          1885
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Buffer.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Buffer.canBuildFrom[com.github.javaparser.ast.body.ClassOrInterfaceDeclaration]
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1725
+        </td>
+        <td>
+          1990
+          -
+          2004
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.AddClassAnnotationEditor.annotationName
+        </td>
+        <td style="background: #AEF1AE">
+          AddClassAnnotationEditor.this.annotationName
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1727
+        </td>
+        <td>
+          1935
+          -
+          2005
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          AddClassAnnotationEditor.this.selector.apply(coit).&amp;&amp;(JavaTypeType.annotationAddedTo[com.github.javaparser.ast.body.ClassOrInterfaceDeclaration](coit, AddClassAnnotationEditor.this.annotationName))
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1726
+        </td>
+        <td>
+          1953
+          -
+          2005
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaTypeType.annotationAddedTo
+        </td>
+        <td style="background: #AEF1AE">
+          JavaTypeType.annotationAddedTo[com.github.javaparser.ast.body.ClassOrInterfaceDeclaration](coit, AddClassAnnotationEditor.this.annotationName)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1731
+        </td>
+        <td>
+          2037
+          -
+          2059
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          modifiedTypes.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1740
+        </td>
+        <td>
+          2061
+          -
+          2193
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  if (AddClassAnnotationEditor.this.annotationPackageName.isDefined)
+    com.atomist.util.lang.JavaParserUtils.addImportsIfNeeded(collection.this.Seq.apply[String](AddClassAnnotationEditor.this.annotationFqn), cu)
+  else
+    ();
+  scala.Some.apply[com.github.javaparser.ast.CompilationUnit](cu)
+}
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          1737
+        </td>
+        <td>
+          2069
+          -
+          2069
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          1738
+        </td>
+        <td>
+          2069
+          -
+          2069
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          1732
+        </td>
+        <td>
+          2073
+          -
+          2104
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #AEF1AE">
+          AddClassAnnotationEditor.this.annotationPackageName.isDefined
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          1734
+        </td>
+        <td>
+          2149
+          -
+          2167
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[String](AddClassAnnotationEditor.this.annotationFqn)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          1733
+        </td>
+        <td>
+          2153
+          -
+          2166
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.AddClassAnnotationEditor.annotationFqn
+        </td>
+        <td style="background: #AEF1AE">
+          AddClassAnnotationEditor.this.annotationFqn
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          1736
+        </td>
+        <td>
+          2114
+          -
+          2172
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.util.lang.JavaParserUtils.addImportsIfNeeded
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.lang.JavaParserUtils.addImportsIfNeeded(collection.this.Seq.apply[String](AddClassAnnotationEditor.this.annotationFqn), cu)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          1735
+        </td>
+        <td>
+          2114
+          -
+          2172
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaParserUtils.addImportsIfNeeded
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.lang.JavaParserUtils.addImportsIfNeeded(collection.this.Seq.apply[String](AddClassAnnotationEditor.this.annotationFqn), cu)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1739
+        </td>
+        <td>
+          2179
+          -
+          2187
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.github.javaparser.ast.CompilationUnit](cu)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          1742
+        </td>
+        <td>
+          2205
+          -
+          2209
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          1741
+        </td>
+        <td>
+          2205
+          -
+          2209
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1743
+        </td>
+        <td>
+          2254
+          -
+          2260
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Add @&quot;
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1746
+        </td>
+        <td>
+          2252
+          -
+          2294
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Add @&quot;, &quot; annotation to class&quot;).s(AddClassAnnotationEditor.this.annotationFqn)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1745
+        </td>
+        <td>
+          2260
+          -
+          2273
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.AddClassAnnotationEditor.annotationFqn
+        </td>
+        <td style="background: #F0ADAD">
+          AddClassAnnotationEditor.this.annotationFqn
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1744
+        </td>
+        <td>
+          2273
+          -
+          2294
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; annotation to class&quot;
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

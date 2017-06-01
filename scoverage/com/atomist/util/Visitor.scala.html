@@ -1,0 +1,250 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/util/Visitor.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.util
+</span>2 <span style=''>
+</span>3 <span style=''>/**
+</span>4 <span style=''>  * Simple visitor interface
+</span>5 <span style=''>  */
+</span>6 <span style=''>trait Visitor {
+</span>7 <span style=''>
+</span>8 <span style=''>  /**
+</span>9 <span style=''>    * Boolean is whether this visit wants to visit the children of the current node, if any.
+</span>10 <span style=''>    */
+</span>11 <span style=''>  def visit(v: Visitable, depth: Int): Boolean
+</span>12 <span style=''>}
+</span>13 <span style=''>
+</span>14 <span style=''>trait Visitable {
+</span>15 <span style=''>
+</span>16 <span style=''>  def accept(v: Visitor, depth: Int)
+</span>17 <span style=''>}
+</span>18 <span style=''>
+</span>19 <span style=''>/**
+</span>20 <span style=''>  * Visitor support that avoids cycles by tracking
+</span>21 <span style=''>  * the objects it has visited. Not for use on
+</span>22 <span style=''>  * huge graphs.
+</span>23 <span style=''>  */
+</span>24 <span style=''>trait CycleAvoidingVisitor extends Visitor {
+</span>25 <span style=''>
+</span>26 <span style=''>  private var seen: Set[Visitable] = </span><span style='background: #F0ADAD'>Set()</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>  final override def visit(v: Visitable, depth: Int): Boolean = {
+</span>29 <span style=''>    if (</span><span style='background: #F0ADAD'>seen.contains(v)</span><span style=''>)
+</span>30 <span style=''>      </span><span style='background: #F0ADAD'>false</span><span style=''>
+</span>31 <span style=''>    else </span><span style='background: #F0ADAD'>{
+</span>32 <span style=''></span><span style='background: #F0ADAD'>      seen += v
+</span>33 <span style=''></span><span style='background: #F0ADAD'>      visitInternal(v, depth)
+</span>34 <span style=''></span><span style='background: #F0ADAD'>    }</span><span style=''>
+</span>35 <span style=''>  }
+</span>36 <span style=''>
+</span>37 <span style=''>  protected def visitInternal(v: Visitable, depth: Int): Boolean
+</span>38 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          8875
+        </td>
+        <td>
+          503
+          -
+          508
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.Set.apply[com.atomist.util.Visitable]()
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          8876
+        </td>
+        <td>
+          584
+          -
+          600
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.contains
+        </td>
+        <td style="background: #F0ADAD">
+          CycleAvoidingVisitor.this.seen.contains(v)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          8878
+        </td>
+        <td>
+          608
+          -
+          613
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          8877
+        </td>
+        <td>
+          608
+          -
+          613
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          8882
+        </td>
+        <td>
+          623
+          -
+          676
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  CycleAvoidingVisitor.this.seen_=(CycleAvoidingVisitor.this.seen.+(v));
+  CycleAvoidingVisitor.this.visitInternal(v, depth)
+}
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          8880
+        </td>
+        <td>
+          631
+          -
+          640
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.CycleAvoidingVisitor.seen_=
+        </td>
+        <td style="background: #F0ADAD">
+          CycleAvoidingVisitor.this.seen_=(CycleAvoidingVisitor.this.seen.+(v))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          8879
+        </td>
+        <td>
+          631
+          -
+          640
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.+
+        </td>
+        <td style="background: #F0ADAD">
+          CycleAvoidingVisitor.this.seen.+(v)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          8881
+        </td>
+        <td>
+          647
+          -
+          670
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.CycleAvoidingVisitor.visitInternal
+        </td>
+        <td style="background: #F0ADAD">
+          CycleAvoidingVisitor.this.visitInternal(v, depth)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

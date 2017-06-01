@@ -1,0 +1,118 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/project/edit/modificationAttempt.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.project.edit
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.kind.core.ChangeLogEntry
+</span>4 <span style=''>import com.atomist.source.ArtifactSource
+</span>5 <span style=''>
+</span>6 <span style=''>/**
+</span>7 <span style=''>  * Supertrait for attempts to modify a project.
+</span>8 <span style=''>  */
+</span>9 <span style=''>sealed trait ModificationAttempt
+</span>10 <span style=''>
+</span>11 <span style=''>/**
+</span>12 <span style=''>  * Project was modified successfully.
+</span>13 <span style=''>  *
+</span>14 <span style=''>  * @param result resulting ArtifactSource containing the changes.
+</span>15 <span style=''>  * There must have been changed files. Otherwise,
+</span>16 <span style=''>  * NoModificationNeeded or FailedModificationAttempt should have been returned.
+</span>17 <span style=''>  */
+</span>18 <span style=''>// TODO list files changed? - This could be more efficient in many cases
+</span>19 <span style=''>// Although this makes compounding harder. We could include Deltas as well.
+</span>20 <span style=''>// We could also add methods to make delta history must more efficient in ArtifactSource e.g. on + etc.
+</span>21 <span style=''>case class SuccessfulModification(
+</span>22 <span style=''>                                   result: ArtifactSource,
+</span>23 <span style=''>                                   changeLogEntries: Seq[ChangeLogEntry[ArtifactSource]] = Nil
+</span>24 <span style=''>                                 )
+</span>25 <span style=''>  extends ModificationAttempt
+</span>26 <span style=''>
+</span>27 <span style=''>/**
+</span>28 <span style=''>  * Returned when no modification is needed, because the post condition
+</span>29 <span style=''>  * of the editor is already met.
+</span>30 <span style=''>  *
+</span>31 <span style=''>  * @param comment a comment
+</span>32 <span style=''>  */
+</span>33 <span style=''>case class NoModificationNeeded(comment: String) extends ModificationAttempt
+</span>34 <span style=''>
+</span>35 <span style=''>/**
+</span>36 <span style=''>  * Project modification failed.
+</span>37 <span style=''>  *
+</span>38 <span style=''>  * @param failureExplanation description of what went wrong
+</span>39 <span style=''>  */
+</span>40 <span style=''>case class FailedModificationAttempt(failureExplanation: String,
+</span>41 <span style=''>                                     cause: Option[Throwable] = None) extends ModificationAttempt
+</span>42 <span style=''>
+</span>43 <span style=''>/**
+</span>44 <span style=''>  * Indicates whether this can be applied to a particular ArtifactSource.
+</span>45 <span style=''>  *
+</span>46 <span style=''>  * @param canApply can we apply this editor to the given ArtifactSource?
+</span>47 <span style=''>  * @param message why we can or can't apply the given editor
+</span>48 <span style=''>  */
+</span>49 <span style=''>case class Applicability(canApply: Boolean, message: String) {
+</span>50 <span style=''>
+</span>51 <span style=''>}
+</span>52 <span style=''>
+</span>53 <span style=''>object Applicability {
+</span>54 <span style=''>
+</span>55 <span style=''>  val OK = </span><span style='background: #AEF1AE'>Applicability(canApply = true, &quot;OK&quot;)</span><span style=''>
+</span>56 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          696
+        </td>
+        <td>
+          1797
+          -
+          1833
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.Applicability.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Applicability.apply(true, &quot;OK&quot;)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

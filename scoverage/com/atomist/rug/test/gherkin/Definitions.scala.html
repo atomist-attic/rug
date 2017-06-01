@@ -1,0 +1,750 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/test/gherkin/Definitions.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.test.gherkin
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.runtime.js.JavaScriptContext
+</span>4 <span style=''>import com.atomist.source.ArtifactSource
+</span>5 <span style=''>import com.typesafe.scalalogging.LazyLogging
+</span>6 <span style=''>import jdk.nashorn.api.scripting.ScriptObjectMirror
+</span>7 <span style=''>
+</span>8 <span style=''>import scala.util.matching.Regex.Match
+</span>9 <span style=''>
+</span>10 <span style=''>/**
+</span>11 <span style=''>  * Definitions of JavaScript functions in a JavaScriptContext
+</span>12 <span style=''>  * corresponding to Gherkin scenario step definitions.
+</span>13 <span style=''>  * Parses arguments using regexs.
+</span>14 <span style=''>  */
+</span>15 <span style=''>class Definitions(
+</span>16 <span style=''>                   val jsc: JavaScriptContext)
+</span>17 <span style=''>  extends LazyLogging {
+</span>18 <span style=''>
+</span>19 <span style=''>  private val stepRegistry = </span><span style='background: #AEF1AE'>new scala.collection.mutable.HashMap[String, ScriptObjectMirror]()</span><span style=''>
+</span>20 <span style=''>
+</span>21 <span style=''>  def rugArchive: ArtifactSource = </span><span style='background: #F0ADAD'>jsc.rugAs</span><span style=''>
+</span>22 <span style=''>
+</span>23 <span style=''>  def Given(s: String, what: ScriptObjectMirror): Unit = {
+</span>24 <span style=''>    logger.debug(s&quot;Registering Given for [$s]&quot;)
+</span>25 <span style=''>    </span><span style='background: #AEF1AE'>stepRegistry.put(&quot;given_&quot; + s, what)</span><span style=''>
+</span>26 <span style=''>  }
+</span>27 <span style=''>
+</span>28 <span style=''>  def When(s: String, what: ScriptObjectMirror): Unit = {
+</span>29 <span style=''>    logger.debug(s&quot;Registering When for [$s]&quot;)
+</span>30 <span style=''>    </span><span style='background: #AEF1AE'>stepRegistry.put(&quot;when_&quot; + s, what)</span><span style=''>
+</span>31 <span style=''>  }
+</span>32 <span style=''>
+</span>33 <span style=''>  def Then(s: String, what: ScriptObjectMirror): Unit = {
+</span>34 <span style=''>    logger.debug(s&quot;Registering Then for [$s]&quot;)
+</span>35 <span style=''>    </span><span style='background: #AEF1AE'>stepRegistry.put(&quot;then_&quot; + s, what)</span><span style=''>
+</span>36 <span style=''>  }
+</span>37 <span style=''>
+</span>38 <span style=''>  def whenFor(s: String): Option[StepMatch] = </span><span style='background: #AEF1AE'>findMatch(&quot;when_&quot; + s)</span><span style=''>
+</span>39 <span style=''>
+</span>40 <span style=''>  def givenFor(s: String): Option[StepMatch] = </span><span style='background: #AEF1AE'>findMatch(&quot;given_&quot; + s)</span><span style=''>
+</span>41 <span style=''>
+</span>42 <span style=''>  def thenFor(s: String): Option[StepMatch] = </span><span style='background: #AEF1AE'>findMatch(&quot;then_&quot; + s)</span><span style=''>
+</span>43 <span style=''>
+</span>44 <span style=''>  private def findMatch(s: String): Option[StepMatch] = {
+</span>45 <span style=''>    // Find a key that matches the regex, then extract the capture groups
+</span>46 <span style=''>    </span><span style='background: #AEF1AE'>stepRegistry.keys.flatMap(key =&gt; {
+</span>47 <span style=''></span><span style='background: #AEF1AE'>      val r = s.matches(key)
+</span>48 <span style=''></span><span style='background: #AEF1AE'>      if (r) {
+</span>49 <span style=''></span><span style='background: #AEF1AE'>        val om: Match = key.r.findPrefixMatchOf(s).get
+</span>50 <span style=''></span><span style='background: #AEF1AE'>        val args: Seq[AnyRef] = om.subgroups
+</span>51 <span style=''></span><span style='background: #AEF1AE'>        Some(StepMatch(stepRegistry(key), args))
+</span>52 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>53 <span style=''></span><span style='background: #AEF1AE'>      else None
+</span>54 <span style=''></span><span style='background: #AEF1AE'>    }).headOption</span><span style=''>
+</span>55 <span style=''>  }
+</span>56 <span style=''>
+</span>57 <span style=''>}
+</span>58 <span style=''>
+</span>59 <span style=''>/**
+</span>60 <span style=''>  * Represents a step and the arguments, if any, to it,
+</span>61 <span style=''>  * from processing the regular expression
+</span>62 <span style=''>  * @param jsVar JS var to invoke
+</span>63 <span style=''>  * @param args arguments to pass
+</span>64 <span style=''>  */
+</span>65 <span style=''>case class StepMatch(jsVar: ScriptObjectMirror, args: Seq[AnyRef])
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          5707
+        </td>
+        <td>
+          552
+          -
+          618
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.HashMap.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.collection.mutable.HashMap[String,jdk.nashorn.api.scripting.ScriptObjectMirror]()
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          5708
+        </td>
+        <td>
+          655
+          -
+          664
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptContext.rugAs
+        </td>
+        <td style="background: #F0ADAD">
+          Definitions.this.jsc.rugAs
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          5711
+        </td>
+        <td>
+          793
+          -
+          793
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          5710
+        </td>
+        <td>
+          777
+          -
+          813
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.HashMap.put
+        </td>
+        <td style="background: #AEF1AE">
+          Definitions.this.stepRegistry.put(&quot;given_&quot;.+(s), what)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          5709
+        </td>
+        <td>
+          794
+          -
+          806
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;given_&quot;.+(s)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          5714
+        </td>
+        <td>
+          944
+          -
+          944
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          5713
+        </td>
+        <td>
+          928
+          -
+          963
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.HashMap.put
+        </td>
+        <td style="background: #AEF1AE">
+          Definitions.this.stepRegistry.put(&quot;when_&quot;.+(s), what)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          5712
+        </td>
+        <td>
+          945
+          -
+          956
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;when_&quot;.+(s)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          5717
+        </td>
+        <td>
+          1094
+          -
+          1094
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          5716
+        </td>
+        <td>
+          1078
+          -
+          1113
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.HashMap.put
+        </td>
+        <td style="background: #AEF1AE">
+          Definitions.this.stepRegistry.put(&quot;then_&quot;.+(s), what)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          5715
+        </td>
+        <td>
+          1095
+          -
+          1106
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;then_&quot;.+(s)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          5719
+        </td>
+        <td>
+          1165
+          -
+          1187
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Definitions.findMatch
+        </td>
+        <td style="background: #AEF1AE">
+          Definitions.this.findMatch(&quot;when_&quot;.+(s))
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          5718
+        </td>
+        <td>
+          1175
+          -
+          1186
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;when_&quot;.+(s)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          5720
+        </td>
+        <td>
+          1246
+          -
+          1258
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;given_&quot;.+(s)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          5721
+        </td>
+        <td>
+          1236
+          -
+          1259
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Definitions.findMatch
+        </td>
+        <td style="background: #AEF1AE">
+          Definitions.this.findMatch(&quot;given_&quot;.+(s))
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          5723
+        </td>
+        <td>
+          1307
+          -
+          1329
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Definitions.findMatch
+        </td>
+        <td style="background: #AEF1AE">
+          Definitions.this.findMatch(&quot;then_&quot;.+(s))
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          5722
+        </td>
+        <td>
+          1317
+          -
+          1328
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;then_&quot;.+(s)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          5735
+        </td>
+        <td>
+          1492
+          -
+          1492
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Iterable.canBuildFrom[com.atomist.rug.test.gherkin.StepMatch]
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          5724
+        </td>
+        <td>
+          1516
+          -
+          1530
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.matches
+        </td>
+        <td style="background: #AEF1AE">
+          s.matches(key)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          5731
+        </td>
+        <td>
+          1544
+          -
+          1702
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val om: util.matching.Regex.Match = scala.this.Predef.augmentString(key).r.findPrefixMatchOf(s).get;
+  val args: Seq[AnyRef] = om.subgroups;
+  scala.this.Option.option2Iterable[com.atomist.rug.test.gherkin.StepMatch](scala.Some.apply[com.atomist.rug.test.gherkin.StepMatch](StepMatch.apply(Definitions.this.stepRegistry.apply(key), args)))
+}
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5725
+        </td>
+        <td>
+          1570
+          -
+          1600
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(key).r.findPrefixMatchOf(s).get
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          5726
+        </td>
+        <td>
+          1633
+          -
+          1645
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.matching.Regex.MatchData.subgroups
+        </td>
+        <td style="background: #AEF1AE">
+          om.subgroups
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          5729
+        </td>
+        <td>
+          1654
+          -
+          1694
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.test.gherkin.StepMatch](StepMatch.apply(Definitions.this.stepRegistry.apply(key), args))
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          5728
+        </td>
+        <td>
+          1659
+          -
+          1693
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.StepMatch.apply
+        </td>
+        <td style="background: #AEF1AE">
+          StepMatch.apply(Definitions.this.stepRegistry.apply(key), args)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          5727
+        </td>
+        <td>
+          1669
+          -
+          1686
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.HashMap.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Definitions.this.stepRegistry.apply(key)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          5730
+        </td>
+        <td>
+          1654
+          -
+          1694
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[com.atomist.rug.test.gherkin.StepMatch](scala.Some.apply[com.atomist.rug.test.gherkin.StepMatch](StepMatch.apply(Definitions.this.stepRegistry.apply(key), args)))
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          5732
+        </td>
+        <td>
+          1714
+          -
+          1718
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          5734
+        </td>
+        <td>
+          1714
+          -
+          1718
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[Nothing](scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          5733
+        </td>
+        <td>
+          1714
+          -
+          1718
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[Nothing](scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          5736
+        </td>
+        <td>
+          1467
+          -
+          1736
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #AEF1AE">
+          Definitions.this.stepRegistry.keys.flatMap[com.atomist.rug.test.gherkin.StepMatch, Iterable[com.atomist.rug.test.gherkin.StepMatch]](((key: String) =&gt; {
+  val r: Boolean = s.matches(key);
+  if (r)
+    {
+      val om: util.matching.Regex.Match = scala.this.Predef.augmentString(key).r.findPrefixMatchOf(s).get;
+      val args: Seq[AnyRef] = om.subgroups;
+      scala.this.Option.option2Iterable[com.atomist.rug.test.gherkin.StepMatch](scala.Some.apply[com.atomist.rug.test.gherkin.StepMatch](StepMatch.apply(Definitions.this.stepRegistry.apply(key), args)))
+    }
+  else
+    scala.this.Option.option2Iterable[Nothing](scala.None)
+}))(collection.this.Iterable.canBuildFrom[com.atomist.rug.test.gherkin.StepMatch]).headOption
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

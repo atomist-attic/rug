@@ -1,0 +1,840 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/content/text/grammar/antlr/AbstractInMemAntlrGrammar.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.content.text.grammar.antlr
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.RugRuntimeException
+</span>4 <span style=''>import com.typesafe.scalalogging.LazyLogging
+</span>5 <span style=''>import org.antlr.v4.Tool
+</span>6 <span style=''>import org.antlr.v4.tool.{ANTLRMessage, ANTLRToolListener}
+</span>7 <span style=''>import org.snt.inmemantlr.GenericParser
+</span>8 <span style=''>import org.snt.inmemantlr.tool.ToolCustomizer
+</span>9 <span style=''>import org.stringtemplate.v4.ST
+</span>10 <span style=''>
+</span>11 <span style=''>import scala.collection.mutable.ListBuffer
+</span>12 <span style=''>
+</span>13 <span style=''>case class ParserSetup(
+</span>14 <span style=''>                        grammars: Seq[String],
+</span>15 <span style=''>                        parser: GenericParser,
+</span>16 <span style=''>                        production: String
+</span>17 <span style=''>                      )
+</span>18 <span style=''>
+</span>19 <span style=''>/**
+</span>20 <span style=''>  * Convenient superclass for in memory use of Antlr grammars.
+</span>21 <span style=''>  * Parse input using Antrl, with classes created and compiled on the fly.
+</span>22 <span style=''>  * Uses Inmemantlr (https://github.com/julianthome/inmemantlr)
+</span>23 <span style=''>  */
+</span>24 <span style=''>abstract class AbstractInMemAntlrGrammar
+</span>25 <span style=''>  extends ToolCustomizer with LazyLogging {
+</span>26 <span style=''>
+</span>27 <span style=''>  private val errorStore: ErrorStoringToolListener = </span><span style='background: #AEF1AE'>new ErrorStoringToolListener</span><span style=''>
+</span>28 <span style=''>
+</span>29 <span style=''>  /**
+</span>30 <span style=''>    *
+</span>31 <span style=''>    * @return Grammar and parser setup
+</span>32 <span style=''>    */
+</span>33 <span style=''>  protected def setup: ParserSetup
+</span>34 <span style=''>
+</span>35 <span style=''>  private def compileGrammar(parser: GenericParser): Unit = {
+</span>36 <span style=''>    try {
+</span>37 <span style=''>      </span><span style='background: #AEF1AE'>parser.compile()</span><span style=''>
+</span>38 <span style=''>    }
+</span>39 <span style=''>    catch {
+</span>40 <span style=''>      case t: Throwable =&gt;
+</span>41 <span style=''>        logger.warn(s&quot;Encountered Antlr exception ${t.getMessage}&quot;, t)
+</span>42 <span style=''>    }
+</span>43 <span style=''>    finally {
+</span>44 <span style=''>      </span><span style='background: #AEF1AE'>if (errorStore.hasErrors)
+</span>45 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>throw new RugRuntimeException(null, errorStore.toMessage, null)</span><span style=''>
+</span>46 <span style=''>    }
+</span>47 <span style=''>  }
+</span>48 <span style=''>
+</span>49 <span style=''>  protected val config: ParserSetup = </span><span style='background: #AEF1AE'>setup</span><span style=''>
+</span>50 <span style=''>
+</span>51 <span style=''>  logger.debug(s&quot;Compiling grammar-----\n$config\n-----&quot;)
+</span>52 <span style=''>  </span><span style='background: #AEF1AE'>compileGrammar(config.parser)</span><span style=''>
+</span>53 <span style=''>
+</span>54 <span style=''>  override def customize(tool: Tool): Unit = {
+</span>55 <span style=''>    </span><span style='background: #AEF1AE'>errorStore.setTool(tool)</span><span style=''>
+</span>56 <span style=''>    </span><span style='background: #AEF1AE'>tool.addListener(errorStore)</span><span style=''>
+</span>57 <span style=''>  }
+</span>58 <span style=''>}
+</span>59 <span style=''>
+</span>60 <span style=''>@FunctionalInterface
+</span>61 <span style=''>trait ToolListenerCreator {
+</span>62 <span style=''>
+</span>63 <span style=''>  def createListener(tool: Tool): ANTLRToolListener
+</span>64 <span style=''>}
+</span>65 <span style=''>
+</span>66 <span style=''>class ErrorStoringToolListener extends ANTLRToolListener {
+</span>67 <span style=''>
+</span>68 <span style=''>  private var tool: Tool = _
+</span>69 <span style=''>
+</span>70 <span style=''>  private val _errors = </span><span style='background: #AEF1AE'>new ListBuffer[String]</span><span style=''>
+</span>71 <span style=''>
+</span>72 <span style=''>  def setTool(t: Tool): Unit = {
+</span>73 <span style=''>    </span><span style='background: #AEF1AE'>this.tool = t</span><span style=''>
+</span>74 <span style=''>  }
+</span>75 <span style=''>
+</span>76 <span style=''>  def errors: Seq[String] = </span><span style='background: #F0ADAD'>_errors</span><span style=''>
+</span>77 <span style=''>
+</span>78 <span style=''>  private def toSingleLineIfNecessary(msg: String) =
+</span>79 <span style=''>    if (</span><span style='background: #F0ADAD'>tool.errMgr.formatWantsSingleLineMessage</span><span style=''>)
+</span>80 <span style=''>      </span><span style='background: #F0ADAD'>msg.replace('\n', ' ')</span><span style=''>
+</span>81 <span style=''>    else </span><span style='background: #F0ADAD'>msg</span><span style=''>
+</span>82 <span style=''>
+</span>83 <span style=''>  override def info(msg: String) {
+</span>84 <span style=''>    val toShow = </span><span style='background: #F0ADAD'>toSingleLineIfNecessary(msg)</span><span style=''>
+</span>85 <span style=''>  }
+</span>86 <span style=''>
+</span>87 <span style=''>  override def error(msg: ANTLRMessage) {
+</span>88 <span style=''>    val msgST: ST = </span><span style='background: #F0ADAD'>tool.errMgr.getMessageTemplate(msg)</span><span style=''>
+</span>89 <span style=''>    val outputMsg: String = </span><span style='background: #F0ADAD'>msgST.render</span><span style=''>
+</span>90 <span style=''>    </span><span style='background: #F0ADAD'>_errors.append(toSingleLineIfNecessary(outputMsg))</span><span style=''>
+</span>91 <span style=''>  }
+</span>92 <span style=''>
+</span>93 <span style=''>  override def warning(msg: ANTLRMessage) {
+</span>94 <span style=''>    val msgST: ST = </span><span style='background: #AEF1AE'>tool.errMgr.getMessageTemplate(msg)</span><span style=''>
+</span>95 <span style=''>    val outputMsg: String = </span><span style='background: #AEF1AE'>msgST.render</span><span style=''>
+</span>96 <span style=''>  }
+</span>97 <span style=''>
+</span>98 <span style=''>  def hasErrors: Boolean = </span><span style='background: #AEF1AE'>_errors.nonEmpty</span><span style=''>
+</span>99 <span style=''>
+</span>100 <span style=''>  def toMessage: String = {
+</span>101 <span style=''>    </span><span style='background: #F0ADAD'>errors.mkString(&quot;\n&quot;)</span><span style=''>
+</span>102 <span style=''>  }
+</span>103 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          7700
+        </td>
+        <td>
+          924
+          -
+          952
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ErrorStoringToolListener.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new ErrorStoringToolListener()
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          7702
+        </td>
+        <td>
+          1126
+          -
+          1142
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          org.snt.inmemantlr.GenericParser.compile
+        </td>
+        <td style="background: #AEF1AE">
+          parser.compile()
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          7701
+        </td>
+        <td>
+          1126
+          -
+          1142
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.snt.inmemantlr.GenericParser.compile
+        </td>
+        <td style="background: #AEF1AE">
+          parser.compile()
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          7703
+        </td>
+        <td>
+          1289
+          -
+          1309
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ErrorStoringToolListener.hasErrors
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractInMemAntlrGrammar.this.errorStore.hasErrors
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          7706
+        </td>
+        <td>
+          1285
+          -
+          1285
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          7708
+        </td>
+        <td>
+          1285
+          -
+          1382
+        </td>
+        <td>
+          If
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          if (AbstractInMemAntlrGrammar.this.errorStore.hasErrors)
+  throw new com.atomist.rug.RugRuntimeException(null, AbstractInMemAntlrGrammar.this.errorStore.toMessage, null)
+else
+  ()
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          7707
+        </td>
+        <td>
+          1285
+          -
+          1285
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          7705
+        </td>
+        <td>
+          1319
+          -
+          1382
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugRuntimeException(null, AbstractInMemAntlrGrammar.this.errorStore.toMessage, null)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          7704
+        </td>
+        <td>
+          1319
+          -
+          1382
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugRuntimeException(null, AbstractInMemAntlrGrammar.this.errorStore.toMessage, null)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          7709
+        </td>
+        <td>
+          1432
+          -
+          1437
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AbstractInMemAntlrGrammar.setup
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractInMemAntlrGrammar.this.setup
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          7711
+        </td>
+        <td>
+          1499
+          -
+          1528
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AbstractInMemAntlrGrammar.compileGrammar
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractInMemAntlrGrammar.this.compileGrammar(AbstractInMemAntlrGrammar.this.config.parser)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          7710
+        </td>
+        <td>
+          1514
+          -
+          1527
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ParserSetup.parser
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractInMemAntlrGrammar.this.config.parser
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          7712
+        </td>
+        <td>
+          1581
+          -
+          1605
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ErrorStoringToolListener.setTool
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractInMemAntlrGrammar.this.errorStore.setTool(tool)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          7714
+        </td>
+        <td>
+          1610
+          -
+          1638
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.antlr.v4.Tool.addListener
+        </td>
+        <td style="background: #AEF1AE">
+          tool.addListener(AbstractInMemAntlrGrammar.this.errorStore)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          7713
+        </td>
+        <td>
+          1627
+          -
+          1637
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AbstractInMemAntlrGrammar.errorStore
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractInMemAntlrGrammar.this.errorStore
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          7715
+        </td>
+        <td>
+          1865
+          -
+          1887
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.collection.mutable.ListBuffer[String]()
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          7716
+        </td>
+        <td>
+          1926
+          -
+          1939
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ErrorStoringToolListener.tool_=
+        </td>
+        <td style="background: #AEF1AE">
+          this.tool_=(t)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          7717
+        </td>
+        <td>
+          1973
+          -
+          1980
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ErrorStoringToolListener._errors
+        </td>
+        <td style="background: #F0ADAD">
+          ErrorStoringToolListener.this._errors
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          7718
+        </td>
+        <td>
+          2043
+          -
+          2083
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.antlr.v4.tool.ErrorManager.formatWantsSingleLineMessage
+        </td>
+        <td style="background: #F0ADAD">
+          ErrorStoringToolListener.this.tool.errMgr.formatWantsSingleLineMessage()
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          7720
+        </td>
+        <td>
+          2091
+          -
+          2113
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #F0ADAD">
+          msg.replace('\n', ' ')
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          7719
+        </td>
+        <td>
+          2091
+          -
+          2113
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #F0ADAD">
+          msg.replace('\n', ' ')
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          7721
+        </td>
+        <td>
+          2123
+          -
+          2126
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ErrorStoringToolListener.msg
+        </td>
+        <td style="background: #F0ADAD">
+          msg
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          7722
+        </td>
+        <td>
+          2180
+          -
+          2208
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ErrorStoringToolListener.toSingleLineIfNecessary
+        </td>
+        <td style="background: #F0ADAD">
+          ErrorStoringToolListener.this.toSingleLineIfNecessary(msg)
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          7723
+        </td>
+        <td>
+          2211
+          -
+          2211
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          7724
+        </td>
+        <td>
+          2276
+          -
+          2311
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.antlr.v4.tool.ErrorManager.getMessageTemplate
+        </td>
+        <td style="background: #F0ADAD">
+          ErrorStoringToolListener.this.tool.errMgr.getMessageTemplate(msg)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          7725
+        </td>
+        <td>
+          2340
+          -
+          2352
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.stringtemplate.v4.ST.render
+        </td>
+        <td style="background: #F0ADAD">
+          msgST.render()
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          7727
+        </td>
+        <td>
+          2357
+          -
+          2407
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.BufferLike.append
+        </td>
+        <td style="background: #F0ADAD">
+          ErrorStoringToolListener.this._errors.append(ErrorStoringToolListener.this.toSingleLineIfNecessary(outputMsg))
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          7726
+        </td>
+        <td>
+          2372
+          -
+          2406
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ErrorStoringToolListener.toSingleLineIfNecessary
+        </td>
+        <td style="background: #F0ADAD">
+          ErrorStoringToolListener.this.toSingleLineIfNecessary(outputMsg)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          7728
+        </td>
+        <td>
+          2477
+          -
+          2512
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.antlr.v4.tool.ErrorManager.getMessageTemplate
+        </td>
+        <td style="background: #AEF1AE">
+          ErrorStoringToolListener.this.tool.errMgr.getMessageTemplate(msg)
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          7729
+        </td>
+        <td>
+          2541
+          -
+          2553
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.stringtemplate.v4.ST.render
+        </td>
+        <td style="background: #AEF1AE">
+          msgST.render()
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          7730
+        </td>
+        <td>
+          2556
+          -
+          2556
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          7731
+        </td>
+        <td>
+          2586
+          -
+          2602
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.generic.TraversableForwarder.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          ErrorStoringToolListener.this._errors.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          7732
+        </td>
+        <td>
+          2636
+          -
+          2657
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          ErrorStoringToolListener.this.errors.mkString(&quot;\n&quot;)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

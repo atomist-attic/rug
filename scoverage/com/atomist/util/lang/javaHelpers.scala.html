@@ -1,0 +1,2338 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/util/lang/javaHelpers.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.util.lang
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.param.ParameterValidationPatterns
+</span>4 <span style=''>import com.atomist.source.FileArtifact
+</span>5 <span style=''>
+</span>6 <span style=''>/**
+</span>7 <span style=''>  * Convenience methods for working with Java.
+</span>8 <span style=''>  */
+</span>9 <span style=''>object JavaHelpers {
+</span>10 <span style=''>
+</span>11 <span style=''>  val isJavaSourceArtifact: FileArtifact =&gt; Boolean = f =&gt; </span><span style='background: #AEF1AE'>f.name.endsWith(&quot;.java&quot;)</span><span style=''>
+</span>12 <span style=''>
+</span>13 <span style=''>  /**
+</span>14 <span style=''>    * Convert a string such as big-thing to a Java class name like BigThing.
+</span>15 <span style=''>    *
+</span>16 <span style=''>    * @param name property named to convert, which may include hyphen or.
+</span>17 <span style=''>    * @return Java class name
+</span>18 <span style=''>    */
+</span>19 <span style=''>  def toJavaClassName(name: String): String = {
+</span>20 <span style=''>    </span><span style='background: #F0ADAD'>require(name != null &amp;&amp; name.nonEmpty, s&quot;Java class name must not be empty or null: [$name] was invalid&quot;)</span><span style=''>
+</span>21 <span style=''>    val tokes = </span><span style='background: #F0ADAD'>name.split(&quot;[-\\._]&quot;)</span><span style=''>
+</span>22 <span style=''>    </span><span style='background: #F0ADAD'>capitalizeTokens(tokes)</span><span style=''>
+</span>23 <span style=''>  }
+</span>24 <span style=''>
+</span>25 <span style=''>  private def toJavaIdentifierPart(c: Char): Char =
+</span>26 <span style=''>    if (</span><span style='background: #AEF1AE'>Character.isJavaIdentifierPart(c)</span><span style=''>) </span><span style='background: #AEF1AE'>c</span><span style=''>
+</span>27 <span style=''>    else </span><span style='background: #F0ADAD'>'_'</span><span style=''>
+</span>28 <span style=''>
+</span>29 <span style=''>  /**
+</span>30 <span style=''>    * Convert a string such as big_thing to a Java variable/field/method name like bigThing.
+</span>31 <span style=''>    * Will guarantee that resulting name is not a reserved word and is a valid Java identifier.
+</span>32 <span style=''>    *
+</span>33 <span style=''>    * @param name name, which may include hyphens or underscore. Useful in JSON binding
+</span>34 <span style=''>    * @return Java variable/field/method name
+</span>35 <span style=''>    */
+</span>36 <span style=''>  def toJavaVariableName(name: String): String = {
+</span>37 <span style=''>    </span><span style='background: #AEF1AE'>require(name != null &amp;&amp; name.nonEmpty, </span><span style='background: #F0ADAD'>&quot;Property name must not be empty or null&quot;</span><span style='background: #AEF1AE'>)</span><span style=''>
+</span>38 <span style=''>    val cleanName = </span><span style='background: #AEF1AE'>name.toList.map(c =&gt; toJavaIdentifierPart(c)).mkString</span><span style=''>
+</span>39 <span style=''>    val varName = </span><span style='background: #AEF1AE'>toCamelizedPropertyName(cleanName)</span><span style=''>
+</span>40 <span style=''>    if (</span><span style='background: #AEF1AE'>JavaParserUtils.isReservedWord(varName) || !Character.isJavaIdentifierStart(varName.charAt(0))</span><span style=''>)
+</span>41 <span style=''>      </span><span style='background: #F0ADAD'>&quot;m_&quot; + varName</span><span style=''>
+</span>42 <span style=''>    else </span><span style='background: #AEF1AE'>varName</span><span style=''>
+</span>43 <span style=''>  }
+</span>44 <span style=''>
+</span>45 <span style=''>  /**
+</span>46 <span style=''>    * Convert a string such as big_thing to a Java property name like bigThing. 
+</span>47 <span style=''>    *
+</span>48 <span style=''>    * @param name name, which may include hyphens or underscore. Useful in JSON binding
+</span>49 <span style=''>    * @return Java property name
+</span>50 <span style=''>    */
+</span>51 <span style=''>  def toCamelizedPropertyName(name: String): String = {
+</span>52 <span style=''>    </span><span style='background: #AEF1AE'>require(name != null &amp;&amp; name.nonEmpty, </span><span style='background: #F0ADAD'>&quot;Property name must not be empty or null&quot;</span><span style='background: #AEF1AE'>)</span><span style=''>
+</span>53 <span style=''>    val tokes = </span><span style='background: #AEF1AE'>name.split(&quot;[-\\._/]&quot;)</span><span style=''>
+</span>54 <span style=''>    </span><span style='background: #AEF1AE'>require(tokes.nonEmpty, </span><span style='background: #F0ADAD'>&quot;Property name must not be empty or null&quot;</span><span style='background: #AEF1AE'>)</span><span style=''>
+</span>55 <span style=''>    </span><span style='background: #AEF1AE'>lowerize(tokes.head) + tokes.tail.map(toke =&gt; upperize(toke)).mkString</span><span style=''>
+</span>56 <span style=''>  }
+</span>57 <span style=''>
+</span>58 <span style=''>  /**
+</span>59 <span style=''>    * Take a Java property name and produce a delimited String of all lower case.
+</span>60 <span style=''>    *
+</span>61 <span style=''>    * @param javaPropertyName Java property name like bigThing
+</span>62 <span style=''>    * @return delimited string like big_thing (delimiter is _ in this example)
+</span>63 <span style=''>    */
+</span>64 <span style=''>  def toLowerCaseDelimited(javaPropertyName: String, delim: String = &quot;_&quot;): String = {
+</span>65 <span style=''>    val chars: Seq[String] = </span><span style='background: #AEF1AE'>javaPropertyName.map(c =&gt;
+</span>66 <span style=''></span><span style='background: #AEF1AE'>      if (c.isUpper) delim + c.toLower else &quot;&quot; + c
+</span>67 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>68 <span style=''>    </span><span style='background: #AEF1AE'>chars.mkString(&quot;&quot;)</span><span style=''>
+</span>69 <span style=''>  }
+</span>70 <span style=''>
+</span>71 <span style=''>  // Run them together with capitalization. So git-service becomes GitService
+</span>72 <span style=''>  private def capitalizeTokens(tokens: Seq[String]) =
+</span>73 <span style=''>    </span><span style='background: #F0ADAD'>tokens.map(toke =&gt; upperize(toke)).mkString</span><span style=''>
+</span>74 <span style=''>
+</span>75 <span style=''>  def getterNameToPropertyName(name: String): String =
+</span>76 <span style=''>    if (</span><span style='background: #F0ADAD'>name.startsWith(&quot;get&quot;)</span><span style=''>) </span><span style='background: #F0ADAD'>lowerize(name.substring(3))</span><span style=''>
+</span>77 <span style=''>    else </span><span style='background: #F0ADAD'>if (name.startsWith(&quot;is&quot;)) lowerize(name.substring(2))
+</span>78 <span style=''></span><span style='background: #F0ADAD'>    else name</span><span style=''>
+</span>79 <span style=''>
+</span>80 <span style=''>  def propertyNameToGetterName(name: String): String =
+</span>81 <span style=''>    if (</span><span style='background: #AEF1AE'>!name.startsWith(&quot;get&quot;)</span><span style=''>) </span><span style='background: #AEF1AE'>&quot;get&quot; + upperize(name)</span><span style=''>
+</span>82 <span style=''>    else </span><span style='background: #F0ADAD'>name</span><span style=''>
+</span>83 <span style=''>
+</span>84 <span style=''>  def propertyNameToSetterName(name: String): String =
+</span>85 <span style=''>    if (</span><span style='background: #F0ADAD'>!name.startsWith(&quot;get&quot;)</span><span style=''>) </span><span style='background: #F0ADAD'>&quot;set&quot; + upperize(name)</span><span style=''>
+</span>86 <span style=''>    else </span><span style='background: #F0ADAD'>name</span><span style=''>
+</span>87 <span style=''>
+</span>88 <span style=''>  def stripSuffixIfPresent(name: String, suffix: String): String = </span><span style='background: #F0ADAD'>name stripSuffix suffix</span><span style=''>
+</span>89 <span style=''>
+</span>90 <span style=''>  def upperize(s: String): String = </span><span style='background: #AEF1AE'>s.length</span><span style=''> match {
+</span>91 <span style=''>    case 0 | 1 =&gt; </span><span style='background: #AEF1AE'>s.take(1).toUpperCase</span><span style=''>
+</span>92 <span style=''>    case _ =&gt; </span><span style='background: #AEF1AE'>s(0).toUpper + s.substring(1)</span><span style=''>
+</span>93 <span style=''>  }
+</span>94 <span style=''>
+</span>95 <span style=''>  def depluralize(s: String): String = </span><span style='background: #F0ADAD'>s.stripSuffix(&quot;s&quot;)</span><span style=''>
+</span>96 <span style=''>
+</span>97 <span style=''>  def lowerize(s: String): String = </span><span style='background: #AEF1AE'>s.length</span><span style=''> match {
+</span>98 <span style=''>    case 0 | 1 =&gt; </span><span style='background: #F0ADAD'>s.take(1).toLowerCase</span><span style=''>
+</span>99 <span style=''>    case _ =&gt; </span><span style='background: #AEF1AE'>s(0).toLower + s.substring(1)</span><span style=''>
+</span>100 <span style=''>  }
+</span>101 <span style=''>
+</span>102 <span style=''>  def pathToPackageName(path: String): String = </span><span style='background: #F0ADAD'>path.replace(&quot;.&quot;, &quot;/&quot;)</span><span style=''>
+</span>103 <span style=''>
+</span>104 <span style=''>  def packageNameToPath(pkg: String): String = </span><span style='background: #F0ADAD'>pkg.replace(&quot;/&quot;, &quot;.&quot;)</span><span style=''>
+</span>105 <span style=''>
+</span>106 <span style=''>  def packageFor(classFqn: String): String =
+</span>107 <span style=''>    </span><span style='background: #AEF1AE'>classFqn.split(&quot;\\.&quot;).dropRight(1).mkString(&quot;.&quot;)</span><span style=''>
+</span>108 <span style=''>
+</span>109 <span style=''>  def isValidPackageName(fqn: String): Boolean =
+</span>110 <span style=''>    </span><span style='background: #AEF1AE'>fqn matches ParameterValidationPatterns.JavaPackage</span><span style=''>
+</span>111 <span style=''>
+</span>112 <span style=''>  def isValidJavaIdentifier(n: String): Boolean =
+</span>113 <span style=''>    </span><span style='background: #F0ADAD'>n matches ParameterValidationPatterns.JavaIdentifier</span><span style=''>
+</span>114 <span style=''>}
+</span>115 <span style=''>
+</span>116 <span style=''>object JavaConstants {
+</span>117 <span style=''>
+</span>118 <span style=''>  val DefaultBaseSourcePath = </span><span style='background: #F0ADAD'>&quot;src/main/java&quot;</span><span style=''>
+</span>119 <span style=''>
+</span>120 <span style=''>  val DefaultBaseTestPath = </span><span style='background: #F0ADAD'>&quot;src/test/java&quot;</span><span style=''>
+</span>121 <span style=''>
+</span>122 <span style=''>  val DefaultBaseTestResources = </span><span style='background: #F0ADAD'>&quot;src/test/resources&quot;</span><span style=''>
+</span>123 <span style=''>}
+</span>124 <span style=''>
+</span>125 <span style=''>object MavenConstants {
+</span>126 <span style=''>
+</span>127 <span style=''>  val PomPath = </span><span style='background: #AEF1AE'>&quot;pom.xml&quot;</span><span style=''>
+</span>128 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          9296
+        </td>
+        <td>
+          261
+          -
+          285
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          f.name.endsWith(&quot;.java&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          9300
+        </td>
+        <td>
+          578
+          -
+          643
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Java class name must not be empty or null: [&quot;, &quot;] was invalid&quot;).s(name)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          9297
+        </td>
+        <td>
+          555
+          -
+          559
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          9299
+        </td>
+        <td>
+          547
+          -
+          576
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #F0ADAD">
+          name.!=(null).&amp;&amp;(scala.this.Predef.augmentString(name).nonEmpty)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          9301
+        </td>
+        <td>
+          539
+          -
+          644
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.require
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.require(name.!=(null).&amp;&amp;(scala.this.Predef.augmentString(name).nonEmpty), scala.StringContext.apply(&quot;Java class name must not be empty or null: [&quot;, &quot;] was invalid&quot;).s(name))
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          9298
+        </td>
+        <td>
+          563
+          -
+          576
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.augmentString(name).nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          9302
+        </td>
+        <td>
+          661
+          -
+          682
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.split
+        </td>
+        <td style="background: #F0ADAD">
+          name.split(&quot;[-\\._]&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          9303
+        </td>
+        <td>
+          704
+          -
+          709
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.LowPriorityImplicits.wrapRefArray
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.wrapRefArray[String](tokes)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          9304
+        </td>
+        <td>
+          687
+          -
+          710
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.capitalizeTokens
+        </td>
+        <td style="background: #F0ADAD">
+          JavaHelpers.this.capitalizeTokens(scala.this.Predef.wrapRefArray[String](tokes))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          9306
+        </td>
+        <td>
+          811
+          -
+          812
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.c
+        </td>
+        <td style="background: #AEF1AE">
+          c
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          9305
+        </td>
+        <td>
+          776
+          -
+          809
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Character.isJavaIdentifierPart
+        </td>
+        <td style="background: #AEF1AE">
+          java.this.lang.Character.isJavaIdentifierPart(c)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9308
+        </td>
+        <td>
+          822
+          -
+          825
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          '_'
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9307
+        </td>
+        <td>
+          822
+          -
+          825
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          '_'
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          9309
+        </td>
+        <td>
+          1240
+          -
+          1244
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          9312
+        </td>
+        <td>
+          1263
+          -
+          1304
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Property name must not be empty or null&quot;
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          9311
+        </td>
+        <td>
+          1232
+          -
+          1261
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          name.!=(null).&amp;&amp;(scala.this.Predef.augmentString(name).nonEmpty)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          9310
+        </td>
+        <td>
+          1248
+          -
+          1261
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(name).nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          9313
+        </td>
+        <td>
+          1224
+          -
+          1305
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.require
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.require(name.!=(null).&amp;&amp;(scala.this.Predef.augmentString(name).nonEmpty), &quot;Property name must not be empty or null&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          9315
+        </td>
+        <td>
+          1341
+          -
+          1341
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[Char]
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          9314
+        </td>
+        <td>
+          1347
+          -
+          1370
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.toJavaIdentifierPart
+        </td>
+        <td style="background: #AEF1AE">
+          JavaHelpers.this.toJavaIdentifierPart(c)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          9316
+        </td>
+        <td>
+          1326
+          -
+          1380
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(name).toList.map[Char, List[Char]](((c: Char) =&gt; JavaHelpers.this.toJavaIdentifierPart(c)))(immutable.this.List.canBuildFrom[Char]).mkString
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          9317
+        </td>
+        <td>
+          1399
+          -
+          1433
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.toCamelizedPropertyName
+        </td>
+        <td style="background: #AEF1AE">
+          JavaHelpers.this.toCamelizedPropertyName(cleanName)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          9318
+        </td>
+        <td>
+          1518
+          -
+          1535
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.charAt
+        </td>
+        <td style="background: #AEF1AE">
+          varName.charAt(0)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          9320
+        </td>
+        <td>
+          1442
+          -
+          1536
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          JavaParserUtils.isReservedWord(varName).||(java.this.lang.Character.isJavaIdentifierStart(varName.charAt(0)).unary_!)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          9319
+        </td>
+        <td>
+          1485
+          -
+          1536
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          java.this.lang.Character.isJavaIdentifierStart(varName.charAt(0)).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          9321
+        </td>
+        <td>
+          1544
+          -
+          1558
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;m_&quot;.+(varName)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          9322
+        </td>
+        <td>
+          1544
+          -
+          1558
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;m_&quot;.+(varName)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          9323
+        </td>
+        <td>
+          1568
+          -
+          1575
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.varName
+        </td>
+        <td style="background: #AEF1AE">
+          varName
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          9324
+        </td>
+        <td>
+          1878
+          -
+          1882
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          9327
+        </td>
+        <td>
+          1901
+          -
+          1942
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Property name must not be empty or null&quot;
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          9326
+        </td>
+        <td>
+          1870
+          -
+          1899
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          name.!=(null).&amp;&amp;(scala.this.Predef.augmentString(name).nonEmpty)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          9328
+        </td>
+        <td>
+          1862
+          -
+          1943
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.require
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.require(name.!=(null).&amp;&amp;(scala.this.Predef.augmentString(name).nonEmpty), &quot;Property name must not be empty or null&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          9325
+        </td>
+        <td>
+          1886
+          -
+          1899
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(name).nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          9329
+        </td>
+        <td>
+          1960
+          -
+          1982
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.split
+        </td>
+        <td style="background: #AEF1AE">
+          name.split(&quot;[-\\._/]&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          9330
+        </td>
+        <td>
+          1995
+          -
+          2009
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[String](tokes).nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          9332
+        </td>
+        <td>
+          1987
+          -
+          2053
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.require
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.require(scala.this.Predef.refArrayOps[String](tokes).nonEmpty, &quot;Property name must not be empty or null&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          9331
+        </td>
+        <td>
+          2011
+          -
+          2052
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Property name must not be empty or null&quot;
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          9333
+        </td>
+        <td>
+          2067
+          -
+          2077
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.head
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[String](tokes).head
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          9336
+        </td>
+        <td>
+          2095
+          -
+          2095
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.Array.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Array.canBuildFrom[String]((ClassTag.apply[String](classOf[java.lang.String]): scala.reflect.ClassTag[String]))
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          9339
+        </td>
+        <td>
+          2058
+          -
+          2128
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          JavaHelpers.this.lowerize(scala.this.Predef.refArrayOps[String](tokes).head).+(scala.this.Predef.refArrayOps[String](scala.this.Predef.refArrayOps[String](scala.this.Predef.refArrayOps[String](tokes).tail).map[String, Array[String]](((toke: String) =&gt; JavaHelpers.this.upperize(toke)))(scala.this.Array.canBuildFrom[String]((ClassTag.apply[String](classOf[java.lang.String]): scala.reflect.ClassTag[String])))).mkString)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          9338
+        </td>
+        <td>
+          2081
+          -
+          2128
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[String](scala.this.Predef.refArrayOps[String](scala.this.Predef.refArrayOps[String](tokes).tail).map[String, Array[String]](((toke: String) =&gt; JavaHelpers.this.upperize(toke)))(scala.this.Array.canBuildFrom[String]((ClassTag.apply[String](classOf[java.lang.String]): scala.reflect.ClassTag[String])))).mkString
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          9335
+        </td>
+        <td>
+          2104
+          -
+          2118
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.upperize
+        </td>
+        <td style="background: #AEF1AE">
+          JavaHelpers.this.upperize(toke)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          9337
+        </td>
+        <td>
+          2081
+          -
+          2119
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[String](scala.this.Predef.refArrayOps[String](tokes).tail).map[String, Array[String]](((toke: String) =&gt; JavaHelpers.this.upperize(toke)))(scala.this.Array.canBuildFrom[String]((ClassTag.apply[String](classOf[java.lang.String]): scala.reflect.ClassTag[String])))
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          9334
+        </td>
+        <td>
+          2081
+          -
+          2091
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.tail
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[String](tokes).tail
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          9347
+        </td>
+        <td>
+          2492
+          -
+          2574
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(javaPropertyName).map[String, Seq[String]](((c: Char) =&gt; if (scala.this.Predef.charWrapper(c).isUpper)
+  delim.+(scala.this.Predef.charWrapper(c).toLower)
+else
+  &quot;&quot;.+(c)))(scala.this.Predef.fallbackStringCanBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          9346
+        </td>
+        <td>
+          2512
+          -
+          2512
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.LowPriorityImplicits.fallbackStringCanBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.fallbackStringCanBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          9342
+        </td>
+        <td>
+          2539
+          -
+          2556
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          delim.+(scala.this.Predef.charWrapper(c).toLower)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          9345
+        </td>
+        <td>
+          2562
+          -
+          2568
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;.+(c)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          9341
+        </td>
+        <td>
+          2547
+          -
+          2556
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.runtime.RichChar.toLower
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.charWrapper(c).toLower
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          9344
+        </td>
+        <td>
+          2562
+          -
+          2568
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;.+(c)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          9340
+        </td>
+        <td>
+          2528
+          -
+          2537
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.runtime.RichChar.isUpper
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.charWrapper(c).isUpper
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          9343
+        </td>
+        <td>
+          2539
+          -
+          2556
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          delim.+(scala.this.Predef.charWrapper(c).toLower)
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          9348
+        </td>
+        <td>
+          2579
+          -
+          2597
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          chars.mkString(&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          9351
+        </td>
+        <td>
+          2739
+          -
+          2782
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          tokens.map[String, Seq[String]](((toke: String) =&gt; JavaHelpers.this.upperize(toke)))(collection.this.Seq.canBuildFrom[String]).mkString
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          9350
+        </td>
+        <td>
+          2749
+          -
+          2749
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          9349
+        </td>
+        <td>
+          2758
+          -
+          2772
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.upperize
+        </td>
+        <td style="background: #F0ADAD">
+          JavaHelpers.this.upperize(toke)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          9354
+        </td>
+        <td>
+          2871
+          -
+          2898
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.lowerize
+        </td>
+        <td style="background: #F0ADAD">
+          JavaHelpers.this.lowerize(name.substring(3))
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          9353
+        </td>
+        <td>
+          2880
+          -
+          2897
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.substring
+        </td>
+        <td style="background: #F0ADAD">
+          name.substring(3)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          9355
+        </td>
+        <td>
+          2871
+          -
+          2898
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.lowerize
+        </td>
+        <td style="background: #F0ADAD">
+          JavaHelpers.this.lowerize(name.substring(3))
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          9352
+        </td>
+        <td>
+          2847
+          -
+          2869
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.startsWith
+        </td>
+        <td style="background: #F0ADAD">
+          name.startsWith(&quot;get&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          9357
+        </td>
+        <td>
+          2944
+          -
+          2961
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.substring
+        </td>
+        <td style="background: #F0ADAD">
+          name.substring(2)
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          9356
+        </td>
+        <td>
+          2912
+          -
+          2933
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.startsWith
+        </td>
+        <td style="background: #F0ADAD">
+          name.startsWith(&quot;is&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          9359
+        </td>
+        <td>
+          2935
+          -
+          2962
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.lowerize
+        </td>
+        <td style="background: #F0ADAD">
+          JavaHelpers.this.lowerize(name.substring(2))
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          9361
+        </td>
+        <td>
+          2908
+          -
+          2976
+        </td>
+        <td>
+          If
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          if (name.startsWith(&quot;is&quot;))
+  JavaHelpers.this.lowerize(name.substring(2))
+else
+  name
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          9358
+        </td>
+        <td>
+          2935
+          -
+          2962
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.lowerize
+        </td>
+        <td style="background: #F0ADAD">
+          JavaHelpers.this.lowerize(name.substring(2))
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          9360
+        </td>
+        <td>
+          2972
+          -
+          2976
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.name
+        </td>
+        <td style="background: #F0ADAD">
+          name
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          9363
+        </td>
+        <td>
+          3041
+          -
+          3064
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          name.startsWith(&quot;get&quot;).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          9366
+        </td>
+        <td>
+          3066
+          -
+          3088
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;get&quot;.+(JavaHelpers.this.upperize(name))
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          9365
+        </td>
+        <td>
+          3074
+          -
+          3088
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.upperize
+        </td>
+        <td style="background: #AEF1AE">
+          JavaHelpers.this.upperize(name)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          9362
+        </td>
+        <td>
+          3058
+          -
+          3063
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;get&quot;
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          9364
+        </td>
+        <td>
+          3066
+          -
+          3071
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;get&quot;
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          9367
+        </td>
+        <td>
+          3066
+          -
+          3088
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;get&quot;.+(JavaHelpers.this.upperize(name))
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          9368
+        </td>
+        <td>
+          3098
+          -
+          3102
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.name
+        </td>
+        <td style="background: #F0ADAD">
+          name
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          9369
+        </td>
+        <td>
+          3184
+          -
+          3189
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;get&quot;
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          9372
+        </td>
+        <td>
+          3200
+          -
+          3214
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.upperize
+        </td>
+        <td style="background: #F0ADAD">
+          JavaHelpers.this.upperize(name)
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          9374
+        </td>
+        <td>
+          3192
+          -
+          3214
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;set&quot;.+(JavaHelpers.this.upperize(name))
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          9371
+        </td>
+        <td>
+          3192
+          -
+          3197
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;set&quot;
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          9370
+        </td>
+        <td>
+          3167
+          -
+          3190
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #F0ADAD">
+          name.startsWith(&quot;get&quot;).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          9373
+        </td>
+        <td>
+          3192
+          -
+          3214
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;set&quot;.+(JavaHelpers.this.upperize(name))
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          9375
+        </td>
+        <td>
+          3224
+          -
+          3228
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.name
+        </td>
+        <td style="background: #F0ADAD">
+          name
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          9376
+        </td>
+        <td>
+          3297
+          -
+          3320
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.stripSuffix
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.augmentString(name).stripSuffix(suffix)
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          9377
+        </td>
+        <td>
+          3358
+          -
+          3366
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.length
+        </td>
+        <td style="background: #AEF1AE">
+          s.length()
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          9378
+        </td>
+        <td>
+          3393
+          -
+          3414
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.toUpperCase
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(s).take(1).toUpperCase()
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          9381
+        </td>
+        <td>
+          3429
+          -
+          3458
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Char.+
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.charWrapper(scala.this.Predef.augmentString(s).apply(0)).toUpper.+(s.substring(1))
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          9380
+        </td>
+        <td>
+          3444
+          -
+          3458
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.substring
+        </td>
+        <td style="background: #AEF1AE">
+          s.substring(1)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          9379
+        </td>
+        <td>
+          3429
+          -
+          3433
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.StringOps.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(s).apply(0)
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          9382
+        </td>
+        <td>
+          3503
+          -
+          3521
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.stripSuffix
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.augmentString(s).stripSuffix(&quot;s&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          9383
+        </td>
+        <td>
+          3559
+          -
+          3567
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.length
+        </td>
+        <td style="background: #AEF1AE">
+          s.length()
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          9384
+        </td>
+        <td>
+          3594
+          -
+          3615
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.toLowerCase
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.augmentString(s).take(1).toLowerCase()
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          9387
+        </td>
+        <td>
+          3630
+          -
+          3659
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Char.+
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.charWrapper(scala.this.Predef.augmentString(s).apply(0)).toLower.+(s.substring(1))
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          9386
+        </td>
+        <td>
+          3645
+          -
+          3659
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.substring
+        </td>
+        <td style="background: #AEF1AE">
+          s.substring(1)
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          9385
+        </td>
+        <td>
+          3630
+          -
+          3634
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.StringOps.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(s).apply(0)
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          9388
+        </td>
+        <td>
+          3713
+          -
+          3735
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #F0ADAD">
+          path.replace(&quot;.&quot;, &quot;/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          9389
+        </td>
+        <td>
+          3784
+          -
+          3805
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #F0ADAD">
+          pkg.replace(&quot;/&quot;, &quot;.&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          9390
+        </td>
+        <td>
+          3856
+          -
+          3904
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[String](scala.this.Predef.refArrayOps[String](classFqn.split(&quot;\\.&quot;)).dropRight(1)).mkString(&quot;.&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          9392
+        </td>
+        <td>
+          3959
+          -
+          4010
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.matches
+        </td>
+        <td style="background: #AEF1AE">
+          fqn.matches(com.atomist.param.ParameterValidationPatterns.JavaPackage)
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          9391
+        </td>
+        <td>
+          3971
+          -
+          4010
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValidationPatterns.JavaPackage
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.param.ParameterValidationPatterns.JavaPackage
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          9394
+        </td>
+        <td>
+          4066
+          -
+          4118
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.matches
+        </td>
+        <td style="background: #F0ADAD">
+          n.matches(com.atomist.param.ParameterValidationPatterns.JavaIdentifier)
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          9393
+        </td>
+        <td>
+          4076
+          -
+          4118
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValidationPatterns.JavaIdentifier
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.param.ParameterValidationPatterns.JavaIdentifier
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          9395
+        </td>
+        <td>
+          4176
+          -
+          4191
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;src/main/java&quot;
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          9396
+        </td>
+        <td>
+          4221
+          -
+          4236
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;src/test/java&quot;
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          9397
+        </td>
+        <td>
+          4271
+          -
+          4291
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;src/test/resources&quot;
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          9398
+        </td>
+        <td>
+          4336
+          -
+          4345
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;pom.xml&quot;
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

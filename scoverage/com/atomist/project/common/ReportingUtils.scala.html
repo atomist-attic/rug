@@ -1,0 +1,312 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/project/common/ReportingUtils.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.project.common
+</span>2 <span style=''>
+</span>3 <span style=''>/**
+</span>4 <span style=''>  * Utility methods that help in error reporting
+</span>5 <span style=''>  */
+</span>6 <span style=''>object ReportingUtils {
+</span>7 <span style=''>
+</span>8 <span style=''>  /**
+</span>9 <span style=''>    * Format the fragment adding line numbers, to help with diagnostics.
+</span>10 <span style=''>    */
+</span>11 <span style=''>  def withLineNumbers(s: String): String = {
+</span>12 <span style=''>    if (</span><span style='background: #AEF1AE'>s == null</span><span style=''>) </span><span style='background: #AEF1AE'>null</span><span style=''>
+</span>13 <span style=''>    else
+</span>14 <span style=''>      </span><span style='background: #AEF1AE'>s.lines
+</span>15 <span style=''></span><span style='background: #AEF1AE'>        .zipWithIndex
+</span>16 <span style=''></span><span style='background: #AEF1AE'>        .map(tup =&gt; s&quot;${tup._2 + 1} ${tup._1}&quot;)
+</span>17 <span style=''></span><span style='background: #AEF1AE'>        .mkString(System.lineSeparator())</span><span style=''>
+</span>18 <span style=''>  }
+</span>19 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          505
+        </td>
+        <td>
+          258
+          -
+          267
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          s.==(null)
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          507
+        </td>
+        <td>
+          269
+          -
+          273
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          506
+        </td>
+        <td>
+          269
+          -
+          273
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          508
+        </td>
+        <td>
+          341
+          -
+          342
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          510
+        </td>
+        <td>
+          364
+          -
+          365
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          513
+        </td>
+        <td>
+          339
+          -
+          365
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot; &quot;, &quot;&quot;).s(tup._2.+(1), tup._1)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          512
+        </td>
+        <td>
+          357
+          -
+          363
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          tup._1
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          509
+        </td>
+        <td>
+          354
+          -
+          356
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          511
+        </td>
+        <td>
+          343
+          -
+          353
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          tup._2.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          514
+        </td>
+        <td>
+          385
+          -
+          407
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.System.lineSeparator
+        </td>
+        <td style="background: #AEF1AE">
+          java.this.lang.System.lineSeparator()
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          516
+        </td>
+        <td>
+          289
+          -
+          408
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(s).lines.zipWithIndex.map[String](((tup: (String, Int)) =&gt; scala.StringContext.apply(&quot;&quot;, &quot; &quot;, &quot;&quot;).s(tup._2.+(1), tup._1))).mkString(java.this.lang.System.lineSeparator())
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          515
+        </td>
+        <td>
+          289
+          -
+          408
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(s).lines.zipWithIndex.map[String](((tup: (String, Int)) =&gt; scala.StringContext.apply(&quot;&quot;, &quot; &quot;, &quot;&quot;).s(tup._2.+(1), tup._1))).mkString(java.this.lang.System.lineSeparator())
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

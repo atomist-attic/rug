@@ -1,0 +1,6644 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/core/ProjectMutableView.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.core
+</span>2 <span style=''>
+</span>3 <span style=''>import java.util.{Collections, Objects}
+</span>4 <span style=''>
+</span>5 <span style=''>import com.atomist.param.{ParameterValues, SimpleParameterValues}
+</span>6 <span style=''>import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, RugResolver}
+</span>7 <span style=''>import com.atomist.project.common.template._
+</span>8 <span style=''>import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
+</span>9 <span style=''>import com.atomist.rug.kind.DefaultTypeRegistry
+</span>10 <span style=''>import com.atomist.rug.runtime.Rug
+</span>11 <span style=''>import com.atomist.rug.runtime.js.interop._
+</span>12 <span style=''>import com.atomist.rug.runtime.js.{LocalRugContext, RugContext}
+</span>13 <span style=''>import com.atomist.rug.spi.{ExportFunctionParameterDescription, _}
+</span>14 <span style=''>import com.atomist.rug.{EditorNotFoundException, RugRuntimeException}
+</span>15 <span style=''>import com.atomist.source._
+</span>16 <span style=''>import com.atomist.tree.content.text.{LineInputPositionImpl, OverwritableTextTreeNode}
+</span>17 <span style=''>import com.atomist.tree.{AddressableTreeNode, TreeMaterializer, TreeNode}
+</span>18 <span style=''>import com.atomist.util.BinaryDecider
+</span>19 <span style=''>import jdk.nashorn.api.scripting.ScriptObjectMirror
+</span>20 <span style=''>import org.apache.commons.lang3.StringUtils
+</span>21 <span style=''>
+</span>22 <span style=''>import scala.collection.JavaConverters._
+</span>23 <span style=''>import scala.util.Properties
+</span>24 <span style=''>
+</span>25 <span style=''>object ProjectMutableView {
+</span>26 <span style=''>
+</span>27 <span style=''>  /**
+</span>28 <span style=''>    * There should be a MergeToolCreator for each template engine we support.
+</span>29 <span style=''>    */
+</span>30 <span style=''>  val MergeToolCreators: Seq[MergeToolCreator] = </span><span style='background: #AEF1AE'>Seq(
+</span>31 <span style=''></span><span style='background: #AEF1AE'>    new MustacheMergeToolCreator
+</span>32 <span style=''></span><span style='background: #AEF1AE'>  )</span><span style=''>
+</span>33 <span style=''>}
+</span>34 <span style=''>
+</span>35 <span style=''>/**
+</span>36 <span style=''>  * Operations on a project. Backed by an immutable ArtifactSource,
+</span>37 <span style=''>  * using copy on write.
+</span>38 <span style=''>  *
+</span>39 <span style=''>  * @param rugAs backing store of the editor
+</span>40 <span style=''>  * @param originalBackingObject original backing object (ArtifactSource). Changed on modification
+</span>41 <span style=''>  * @param atomistConfig Atomist configuration used to determine where we look for files.
+</span>42 <span style=''>  */
+</span>43 <span style=''>class ProjectMutableView(
+</span>44 <span style=''>                          val rugAs: ArtifactSource,
+</span>45 <span style=''>                          originalBackingObject: ArtifactSource,
+</span>46 <span style=''>                          atomistConfig: AtomistConfig,
+</span>47 <span style=''>                          creator: Option[Rug] = None,
+</span>48 <span style=''>                          ctx: RugContext = LocalRugContext,
+</span>49 <span style=''>                          rugResolver: Option[RugResolver] = None)
+</span>50 <span style=''>  extends ArtifactContainerMutableView[ArtifactSource](originalBackingObject, null)
+</span>51 <span style=''>    with ProjectView
+</span>52 <span style=''>    with ChangeLogging[ArtifactSource] {
+</span>53 <span style=''>
+</span>54 <span style=''>  // We need this, rather than merely a default, for Java subclasses
+</span>55 <span style=''>  def this(rugAs: ArtifactSource, originalBackingObject: ArtifactSource) =
+</span>56 <span style=''>    </span><span style='background: #AEF1AE'>this(rugAs, originalBackingObject, DefaultAtomistConfig)</span><span style=''>
+</span>57 <span style=''>
+</span>58 <span style=''>  /**
+</span>59 <span style=''>    * Create a new ProjectMutableView with an empty Rug backing archive
+</span>60 <span style=''>    */
+</span>61 <span style=''>  def this(originalBackingObject: ArtifactSource) =
+</span>62 <span style=''>    </span><span style='background: #AEF1AE'>this(EmptyArtifactSource(), originalBackingObject, DefaultAtomistConfig)</span><span style=''>
+</span>63 <span style=''>
+</span>64 <span style=''>  import ProjectMutableView._
+</span>65 <span style=''>
+</span>66 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Node content&quot;)
+</span>67 <span style=''>  override def value: String = </span><span style='background: #F0ADAD'>s&quot;project:[$name]&quot;</span><span style=''>
+</span>68 <span style=''>
+</span>69 <span style=''>  override def toString: String =
+</span>70 <span style=''>    </span><span style='background: #AEF1AE'>s&quot;ProjectMutableView[name='$name'] around $currentBackingObject\n&quot; +
+</span>71 <span style=''></span><span style='background: #AEF1AE'>      s&quot;${ArtifactSourceUtils.prettyListFiles(currentBackingObject)}&quot;</span><span style=''>
+</span>72 <span style=''>
+</span>73 <span style=''>  /**
+</span>74 <span style=''>    * Content used only for templates.
+</span>75 <span style=''>    */
+</span>76 <span style=''>  val templateContent: ArtifactSource = </span><span style='background: #AEF1AE'>atomistConfig.templateContentIn(rugAs)</span><span style=''>
+</span>77 <span style=''>
+</span>78 <span style=''>  private lazy val mergeTool =
+</span>79 <span style=''>    </span><span style='background: #AEF1AE'>new CombinedMergeToolCreator(MergeToolCreators: _*).createMergeTool(templateContent)</span><span style=''>
+</span>80 <span style=''>
+</span>81 <span style=''>  private val typeName: String = </span><span style='background: #AEF1AE'>Typed.typeToTypeName(classOf[ProjectMutableView])</span><span style=''>
+</span>82 <span style=''>
+</span>83 <span style=''>  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
+</span>84 <span style=''>    case `typeName` =&gt;
+</span>85 <span style=''>      // Special case. We don't want a &quot;project&quot; directory to confuse us
+</span>86 <span style=''>      </span><span style='background: #F0ADAD'>Seq(this)</span><span style=''>
+</span>87 <span style=''>    case _ =&gt; </span><span style='background: #AEF1AE'>kids(fieldName, this)</span><span style=''>
+</span>88 <span style=''>  }
+</span>89 <span style=''>
+</span>90 <span style=''>  @ExportFunction(readOnly = true,
+</span>91 <span style=''>    exposeAsProperty = true,
+</span>92 <span style=''>    description = &quot;Return the name of the project. If it's in GitHub, it will be the repo name. &quot; +
+</span>93 <span style=''>      &quot;If it's on the local filesystem it will be the directory name&quot;)
+</span>94 <span style=''>  override def name: String = {
+</span>95 <span style=''>    val segments = </span><span style='background: #AEF1AE'>currentBackingObject.id.name.split(&quot;/&quot;)</span><span style=''>
+</span>96 <span style=''>    </span><span style='background: #AEF1AE'>segments.reverse(0)</span><span style=''>
+</span>97 <span style=''>  }
+</span>98 <span style=''>
+</span>99 <span style=''>  @ExportFunction(readOnly = true,
+</span>100 <span style=''>    exposeAsProperty = true,
+</span>101 <span style=''>    description = &quot;The total number of files in this project&quot;)
+</span>102 <span style=''>  def fileCount: Int = </span><span style='background: #AEF1AE'>currentBackingObject.totalFileCount</span><span style=''>
+</span>103 <span style=''>
+</span>104 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Create a directory&quot;)
+</span>105 <span style=''>  def addDirectory(@ExportFunctionParameterDescription(name = &quot;name&quot;,
+</span>106 <span style=''>    description = &quot;The name of the directory being added&quot;)
+</span>107 <span style=''>                   name: String,
+</span>108 <span style=''>                   @ExportFunctionParameterDescription(name = &quot;parentPath&quot;,
+</span>109 <span style=''>                     description = &quot;The path under which the directory should be created&quot;)
+</span>110 <span style=''>                   parentPath: String): Unit = {
+</span>111 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(currentBackingObject + EmptyDirectoryArtifact(name, parentPath.split(&quot;/&quot;)))</span><span style=''>
+</span>112 <span style=''>  }
+</span>113 <span style=''>
+</span>114 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Create a directory&quot;)
+</span>115 <span style=''>  def addDirectoryAndIntermediates(
+</span>116 <span style=''>                                    @ExportFunctionParameterDescription(name = &quot;directoryPath&quot;,
+</span>117 <span style=''>                                      description = &quot;The path under which the directory and any missing intermediate directories will be created&quot;)
+</span>118 <span style=''>                                    directoryPath: String): Unit = {
+</span>119 <span style=''>    val splitPath = </span><span style='background: #AEF1AE'>directoryPath.split(&quot;/&quot;)</span><span style=''>
+</span>120 <span style=''>    val splitLength = </span><span style='background: #AEF1AE'>splitPath.length</span><span style=''>
+</span>121 <span style=''>    val directoryName = </span><span style='background: #AEF1AE'>splitPath(splitLength - 1)</span><span style=''>
+</span>122 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(currentBackingObject + EmptyDirectoryArtifact(directoryName, splitPath))</span><span style=''>
+</span>123 <span style=''>  }
+</span>124 <span style=''>
+</span>125 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Deletes a directory with the given path&quot;)
+</span>126 <span style=''>  def deleteDirectory(@ExportFunctionParameterDescription(name = &quot;path&quot;,
+</span>127 <span style=''>    description = &quot;The path to use&quot;)
+</span>128 <span style=''>                      path: String): Unit = </span><span style='background: #AEF1AE'>updateTo(currentBackingObject.filter(!_.path.equals(path), _ =&gt; true))</span><span style=''>
+</span>129 <span style=''>
+</span>130 <span style=''>  @ExportFunction(readOnly = true,
+</span>131 <span style=''>    description = &quot;Does a file with the given path exist and have the expected content?&quot;)
+</span>132 <span style=''>  def fileHasContent(@ExportFunctionParameterDescription(name = &quot;path&quot;,
+</span>133 <span style=''>    description = &quot;The path to use&quot;)
+</span>134 <span style=''>                     path: String,
+</span>135 <span style=''>                     @ExportFunctionParameterDescription(name = &quot;content&quot;,
+</span>136 <span style=''>                       description = &quot;The content to check against the given file&quot;)
+</span>137 <span style=''>                     content: String): Boolean =
+</span>138 <span style=''>    </span><span style='background: #F0ADAD'>currentBackingObject.findFile(path).exists(f =&gt; Objects.equals(content, f.content))</span><span style=''>
+</span>139 <span style=''>
+</span>140 <span style=''>  @ExportFunction(readOnly = true,
+</span>141 <span style=''>    description = &quot;The number of files directly in this directory&quot;)
+</span>142 <span style=''>  def countFilesInDirectory(@ExportFunctionParameterDescription(name = &quot;path&quot;,
+</span>143 <span style=''>    description = &quot;The path to use&quot;)
+</span>144 <span style=''>                            path: String): Int = {
+</span>145 <span style=''>    </span><span style='background: #AEF1AE'>currentBackingObject.findDirectory(path)</span><span style=''> match {
+</span>146 <span style=''>      case None =&gt; </span><span style='background: #AEF1AE'>0</span><span style=''>
+</span>147 <span style=''>      case Some(d) =&gt; </span><span style='background: #AEF1AE'>d.files.size</span><span style=''>
+</span>148 <span style=''>    }
+</span>149 <span style=''>  }
+</span>150 <span style=''>
+</span>151 <span style=''>  @ExportFunction(readOnly = true,
+</span>152 <span style=''>    description = &quot;Does a file with the given path exist and have the expected content?&quot;)
+</span>153 <span style=''>  def fileContains(@ExportFunctionParameterDescription(name = &quot;path&quot;,
+</span>154 <span style=''>    description = &quot;The path to use&quot;)
+</span>155 <span style=''>                   path: String,
+</span>156 <span style=''>                   @ExportFunctionParameterDescription(name = &quot;content&quot;,
+</span>157 <span style=''>                     description = &quot;The content to check&quot;)
+</span>158 <span style=''>                   content: String): Boolean =
+</span>159 <span style=''>    </span><span style='background: #AEF1AE'>currentBackingObject.findFile(path).exists(f =&gt; f.content != null &amp;&amp; f.content.contains(content))</span><span style=''>
+</span>160 <span style=''>
+</span>161 <span style=''>  @ExportFunction(readOnly = false,
+</span>162 <span style=''>    description = &quot;Replace all occurrences of the given string literal in this project. Use with care!&quot;)
+</span>163 <span style=''>  def replace(@ExportFunctionParameterDescription(name = &quot;literal&quot;,
+</span>164 <span style=''>    description = &quot;The string to look for&quot;)
+</span>165 <span style=''>              literal: String,
+</span>166 <span style=''>              @ExportFunctionParameterDescription(name = &quot;replaceWith&quot;,
+</span>167 <span style=''>                description = &quot;The string to replace matches with&quot;)
+</span>168 <span style=''>              replaceWith: String): Unit = {
+</span>169 <span style=''>    val fe = </span><span style='background: #AEF1AE'>SimpleFileEditor(f =&gt; !BinaryDecider.isBinaryContent(f.content),
+</span>170 <span style=''></span><span style='background: #AEF1AE'>      f =&gt; StringFileArtifact.updated(f, f.content.replace(literal, replaceWith)))</span><span style=''>
+</span>171 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(currentBackingObject ✎ fe)</span><span style=''>
+</span>172 <span style=''>  }
+</span>173 <span style=''>
+</span>174 <span style=''>  def updateFile(oldFile: FileArtifact, newFile: FileArtifact): Unit = {
+</span>175 <span style=''>    val fe = </span><span style='background: #AEF1AE'>SimpleFileEditor(f =&gt; f.path.equals(oldFile.path), f =&gt; newFile)</span><span style=''>
+</span>176 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(currentBackingObject ✎ fe)</span><span style=''>
+</span>177 <span style=''>  }
+</span>178 <span style=''>
+</span>179 <span style=''>  @ExportFunction(readOnly = false,
+</span>180 <span style=''>    description = &quot;Replace all occurrences of the given regular expression in this project&quot;)
+</span>181 <span style=''>  def regexpReplace(@ExportFunctionParameterDescription(name = &quot;regexp&quot;,
+</span>182 <span style=''>    description = &quot;The regular expression to search for&quot;)
+</span>183 <span style=''>                    regexp: String,
+</span>184 <span style=''>                    @ExportFunctionParameterDescription(name = &quot;replacement&quot;,
+</span>185 <span style=''>                      description = &quot;The string to replace matches with&quot;)
+</span>186 <span style=''>                    replacement: String): Unit = {
+</span>187 <span style=''>    </span><span style='background: #AEF1AE'>regexpReplaceWithFilter(f =&gt; true, regexp, replacement)</span><span style=''>
+</span>188 <span style=''>  }
+</span>189 <span style=''>
+</span>190 <span style=''>  /**
+</span>191 <span style=''>    * Perform a regexp replace with the given file filter.
+</span>192 <span style=''>    *
+</span>193 <span style=''>    * @param filter file filter
+</span>194 <span style=''>    * @param regexp regexp
+</span>195 <span style=''>    * @param replacement replacement for the regexp
+</span>196 <span style=''>    */
+</span>197 <span style=''>  def regexpReplaceWithFilter(
+</span>198 <span style=''>                               filter: FileArtifact =&gt; Boolean,
+</span>199 <span style=''>                               regexp: String,
+</span>200 <span style=''>                               replacement: String): Unit = {
+</span>201 <span style=''>    val fe = </span><span style='background: #AEF1AE'>SimpleFileEditor(f =&gt; filter(f) &amp;&amp; !BinaryDecider.isBinaryContent(f.content),
+</span>202 <span style=''></span><span style='background: #AEF1AE'>      f =&gt; StringFileArtifact.updated(f, f.content.replaceAll(regexp, replacement)))</span><span style=''>
+</span>203 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(currentBackingObject ✎ fe)</span><span style=''>
+</span>204 <span style=''>  }
+</span>205 <span style=''>
+</span>206 <span style=''>  @ExportFunction(readOnly = false,
+</span>207 <span style=''>    description =
+</span>208 <span style=''>      &quot;&quot;&quot;Globally replace all occurrences of the given string literal in file paths in this project&quot;&quot;&quot;,
+</span>209 <span style=''>    example = &quot;&quot;&quot;`replace &quot;com/foo/bar&quot; &quot;com/foo/baz&quot;` &quot;&quot;&quot;)
+</span>210 <span style=''>  def replaceInPath(@ExportFunctionParameterDescription(name = &quot;literal&quot;,
+</span>211 <span style=''>    description = &quot;The string to search for&quot;)
+</span>212 <span style=''>                    literal: String,
+</span>213 <span style=''>                    @ExportFunctionParameterDescription(name = &quot;replacement&quot;,
+</span>214 <span style=''>                      description = &quot;The string to replace in the paths if found&quot;)
+</span>215 <span style=''>                    replacement: String): Unit = {
+</span>216 <span style=''>    val fe = </span><span style='background: #AEF1AE'>SimpleFileEditor(f =&gt; f.path.contains(literal), f =&gt; f.withPath(f.path.replace(literal, replacement)))</span><span style=''>
+</span>217 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(currentBackingObject ✎ fe)</span><span style=''>
+</span>218 <span style=''>  }
+</span>219 <span style=''>
+</span>220 <span style=''>  @ExportFunction(readOnly = false,
+</span>221 <span style=''>    description = &quot;Move the contents of this project under the given path, preserving its present path under that&quot;,
+</span>222 <span style=''>    example = &quot;&quot;&quot;`moveUnder &quot;src/main/java&quot;` moves this file under the `src/main/java` directory &quot;&quot;&quot;)
+</span>223 <span style=''>  def moveUnder(@ExportFunctionParameterDescription(name = &quot;path&quot;,
+</span>224 <span style=''>    description = &quot;The root path to move the file to&quot;)
+</span>225 <span style=''>                path: String): Unit = {
+</span>226 <span style=''>    val moved = </span><span style='background: #F0ADAD'>currentBackingObject withPathAbove path</span><span style=''>
+</span>227 <span style=''>    </span><span style='background: #F0ADAD'>updateTo(moved)</span><span style=''>
+</span>228 <span style=''>  }
+</span>229 <span style=''>
+</span>230 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add the given file to the project. Path can contain /s. Content is a literal string&quot;)
+</span>231 <span style=''>  def addFile(@ExportFunctionParameterDescription(name = &quot;path&quot;, description = &quot;The path to use&quot;) path: String,
+</span>232 <span style=''>              @ExportFunctionParameterDescription(name = &quot;content&quot;,
+</span>233 <span style=''>                description = &quot;The content to be placed in the new file&quot;) content: String): Unit =
+</span>234 <span style=''>    </span><span style='background: #AEF1AE'>addFile(path, content, FileArtifact.DefaultMode)</span><span style=''>
+</span>235 <span style=''>
+</span>236 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add the given executable file to the project. Path can contain /s. Content is a literal string&quot;)
+</span>237 <span style=''>  def addExecutableFile(@ExportFunctionParameterDescription(name = &quot;path&quot;, description = &quot;The path to use&quot;) path: String,
+</span>238 <span style=''>                        @ExportFunctionParameterDescription(name = &quot;content&quot;,
+</span>239 <span style=''>                          description = &quot;The content to be placed in the new file&quot;) content: String): Unit =
+</span>240 <span style=''>    </span><span style='background: #AEF1AE'>addFile(path, content, FileArtifact.ExecutableMode)</span><span style=''>
+</span>241 <span style=''>
+</span>242 <span style=''>  private def addFile(path: String, content: String, mode: Int): Unit = {
+</span>243 <span style=''>    val desiredContent = </span><span style='background: #AEF1AE'>content.replace(&quot;\\n&quot;, Properties.lineSeparator)</span><span style=''>
+</span>244 <span style=''>    val exactSameFileIsAlreadyThere = </span><span style='background: #AEF1AE'>currentBackingObject.findFile(path).exists(_.content == desiredContent)</span><span style=''>
+</span>245 <span style=''>    if (</span><span style='background: #AEF1AE'>!exactSameFileIsAlreadyThere</span><span style=''>) {
+</span>246 <span style=''>      </span><span style='background: #AEF1AE'>updateTo(currentBackingObject + StringFileArtifact(path, desiredContent, mode, None))</span><span style=''>
+</span>247 <span style=''>    }
+</span>248 <span style=''>  }
+</span>249 <span style=''>
+</span>250 <span style=''>  @ExportFunction(readOnly = false,
+</span>251 <span style=''>    description = &quot;Makes a file executable&quot;)
+</span>252 <span style=''>  def makeExecutable(@ExportFunctionParameterDescription(name = &quot;path&quot;,
+</span>253 <span style=''>    description = &quot;The path to use&quot;)
+</span>254 <span style=''>                     path: String): Unit = {
+</span>255 <span style=''>    val file = </span><span style='background: #AEF1AE'>currentBackingObject.findFile(path)</span><span style=''>
+</span>256 <span style=''>    file match {
+</span>257 <span style=''>      case Some(sourceFile) =&gt;
+</span>258 <span style=''>        val executableFile = </span><span style='background: #AEF1AE'>sourceFile.withMode(FileArtifact.ExecutableMode)</span><span style=''>
+</span>259 <span style=''>        </span><span style='background: #AEF1AE'>updateTo(currentBackingObject.delete(path) + executableFile)</span><span style=''>
+</span>260 <span style=''>      case None </span><span style='background: #F0ADAD'>=&gt;</span><span style=''>
+</span>261 <span style=''>    }
+</span>262 <span style=''>  }
+</span>263 <span style=''>
+</span>264 <span style=''>  @ExportFunction(readOnly = false,
+</span>265 <span style=''>    description = &quot;Delete the given file from the project. Path can contain /s.&quot;)
+</span>266 <span style=''>  def deleteFile(@ExportFunctionParameterDescription(name = &quot;path&quot;,
+</span>267 <span style=''>    description = &quot;The path to use&quot;)
+</span>268 <span style=''>                 path: String): Unit = {
+</span>269 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(currentBackingObject.delete(path))</span><span style=''>
+</span>270 <span style=''>  }
+</span>271 <span style=''>
+</span>272 <span style=''>  @ExportFunction(readOnly = false,
+</span>273 <span style=''>    description = &quot;Copy the given file in the target project. It is not an error if it doesn't exist&quot;)
+</span>274 <span style=''>  def copyFile(@ExportFunctionParameterDescription(name = &quot;sourcePath&quot;,
+</span>275 <span style=''>    description = &quot;Source path&quot;)
+</span>276 <span style=''>               sourcePath: String,
+</span>277 <span style=''>               @ExportFunctionParameterDescription(name = &quot;destinationPath&quot;,
+</span>278 <span style=''>                 description = &quot;Destination path&quot;)
+</span>279 <span style=''>               destinationPath: String): Unit = {
+</span>280 <span style=''>    val sourceFileO = </span><span style='background: #AEF1AE'>currentBackingObject.findFile(sourcePath)</span><span style=''>
+</span>281 <span style=''>    sourceFileO match {
+</span>282 <span style=''>      case Some(sourceFile) =&gt;
+</span>283 <span style=''>        </span><span style='background: #AEF1AE'>updateTo(currentBackingObject + sourceFile.withPath(destinationPath))</span><span style=''>
+</span>284 <span style=''>      case None </span><span style='background: #F0ADAD'>=&gt;</span><span style=''>
+</span>285 <span style=''>    }
+</span>286 <span style=''>  }
+</span>287 <span style=''>
+</span>288 <span style=''>  @ExportFunction(readOnly = false,
+</span>289 <span style=''>    description = &quot;Copy the given file in the target project. Fail the editor if it isn't found or if the destination already exists&quot;)
+</span>290 <span style=''>  def copyFileOrFail(@ExportFunctionParameterDescription(name = &quot;sourcePath&quot;,
+</span>291 <span style=''>    description = &quot;Source path&quot;)
+</span>292 <span style=''>                     sourcePath: String,
+</span>293 <span style=''>                     @ExportFunctionParameterDescription(name = &quot;destinationPath&quot;,
+</span>294 <span style=''>                       description = &quot;Destination path&quot;)
+</span>295 <span style=''>                     destinationPath: String): Unit = {
+</span>296 <span style=''>    if (</span><span style='background: #F0ADAD'>fileExists(destinationPath)</span><span style=''>)
+</span>297 <span style=''>      </span><span style='background: #F0ADAD'>fail(s&quot;Attempt to copy file [$sourcePath] to existing path [$destinationPath]&quot;)</span><span style=''>
+</span>298 <span style=''>    val sourceFileO = </span><span style='background: #F0ADAD'>currentBackingObject.findFile(sourcePath)</span><span style=''>
+</span>299 <span style=''>    sourceFileO match {
+</span>300 <span style=''>      case Some(sourceFile) =&gt;
+</span>301 <span style=''>        </span><span style='background: #F0ADAD'>updateTo(currentBackingObject + sourceFile.withPath(destinationPath))</span><span style=''>
+</span>302 <span style=''>      case None =&gt;
+</span>303 <span style=''>        </span><span style='background: #F0ADAD'>fail(s&quot;Attempt to copy file [$sourcePath], which does not exist&quot;)</span><span style=''>
+</span>304 <span style=''>    }
+</span>305 <span style=''>  }
+</span>306 <span style=''>
+</span>307 <span style=''>  @ExportFunction(readOnly = false,
+</span>308 <span style=''>    description = &quot;Copy the given file from the editor's backing archive to the same path in project being edited. Fail the editor if it isn't found or if the destination already exists&quot;)
+</span>309 <span style=''>  def copyEditorBackingFileOrFail(@ExportFunctionParameterDescription(name = &quot;sourcePath&quot;, description = &quot;Source path&quot;) sourcePath: String): Unit =
+</span>310 <span style=''>    </span><span style='background: #AEF1AE'>copyEditorBackingFileOrFailToDestination(sourcePath, sourcePath)</span><span style=''>
+</span>311 <span style=''>
+</span>312 <span style=''>  @ExportFunction(readOnly = false,
+</span>313 <span style=''>    description = &quot;Copy the given file from the editor's backing archive. Fail the editor if it isn't found or if the destination already exists&quot;)
+</span>314 <span style=''>  def copyEditorBackingFileOrFailToDestination(@ExportFunctionParameterDescription(name = &quot;sourcePath&quot;, description = &quot;Source path&quot;) sourcePath: String,
+</span>315 <span style=''>                                               @ExportFunctionParameterDescription(name = &quot;destinationPath&quot;, description = &quot;Destination path&quot;) destinationPath: String): Unit = {
+</span>316 <span style=''>    if (</span><span style='background: #AEF1AE'>fileExists(destinationPath)</span><span style=''>)
+</span>317 <span style=''>      </span><span style='background: #F0ADAD'>fail(s&quot;Attempt to copy file [$sourcePath] to existing path [$destinationPath]&quot;)</span><span style=''>
+</span>318 <span style=''>    val sourceFileO = </span><span style='background: #AEF1AE'>rugAs.findFile(sourcePath)</span><span style=''>
+</span>319 <span style=''>    sourceFileO match {
+</span>320 <span style=''>      case Some(sourceFile) =&gt;
+</span>321 <span style=''>        </span><span style='background: #AEF1AE'>updateTo(currentBackingObject + sourceFile.withPath(destinationPath))</span><span style=''>
+</span>322 <span style=''>      case None =&gt;
+</span>323 <span style=''>        </span><span style='background: #F0ADAD'>fail(s&quot;Attempt to copy editor backing file [$sourcePath], which does not exist&quot;)</span><span style=''>
+</span>324 <span style=''>    }
+</span>325 <span style=''>  }
+</span>326 <span style=''>
+</span>327 <span style=''>  @ExportFunction(readOnly = false,
+</span>328 <span style=''>    description = &quot;Copy the given files from the editor's backing archive under the given path. Take the relative paths and place under new destination path&quot;)
+</span>329 <span style=''>  def copyEditorBackingFilesWithNewRelativePath(@ExportFunctionParameterDescription(name = &quot;sourcePath&quot;,
+</span>330 <span style=''>    description = &quot;Source directory&quot;)
+</span>331 <span style=''>                                                sourceDir: String,
+</span>332 <span style=''>                                                @ExportFunctionParameterDescription(name = &quot;destinationPath&quot;,
+</span>333 <span style=''>                                                  description = &quot;Destination path&quot;)
+</span>334 <span style=''>                                                destinationPath: String): Unit = {
+</span>335 <span style=''>    if (</span><span style='background: #AEF1AE'>rugAs.findFile(sourceDir).isDefined</span><span style=''>)
+</span>336 <span style=''>      </span><span style='background: #F0ADAD'>throw new InstantEditorFailureException(s&quot;Path [$sourceDir] is a file, not a directory&quot;)</span><span style=''>
+</span>337 <span style=''>    val underDir = </span><span style='background: #AEF1AE'>(rugAs / sourceDir) withPathAbove destinationPath</span><span style=''>
+</span>338 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(currentBackingObject + underDir)</span><span style=''>
+</span>339 <span style=''>  }
+</span>340 <span style=''>
+</span>341 <span style=''>  @ExportFunction(readOnly = false,
+</span>342 <span style=''>    description = &quot;Copy the given files from the editor's backing archive under the given directory into the same directory in the project being edited.&quot;)
+</span>343 <span style=''>  def copyEditorBackingFilesPreservingPath(@ExportFunctionParameterDescription(name = &quot;sourcePath&quot;,
+</span>344 <span style=''>    description = &quot;Source directory&quot;)
+</span>345 <span style=''>                                           sourceDir: String
+</span>346 <span style=''>                                          ): Unit = {
+</span>347 <span style=''>    if (</span><span style='background: #AEF1AE'>rugAs.findFile(sourceDir).isDefined</span><span style=''>)
+</span>348 <span style=''>      </span><span style='background: #AEF1AE'>throw new InstantEditorFailureException(s&quot;Path [$sourceDir] is a file, not a directory&quot;)</span><span style=''>
+</span>349 <span style=''>    val underDir = </span><span style='background: #AEF1AE'>rugAs.filter(_ =&gt; true, f =&gt; f.path.startsWith(sourceDir))</span><span style=''>
+</span>350 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(currentBackingObject + underDir)</span><span style=''>
+</span>351 <span style=''>  }
+</span>352 <span style=''>
+</span>353 <span style=''>  @ExportFunction(readOnly = false,
+</span>354 <span style=''>    description = &quot;Copy the given files from the editor's backing archive project to the project being edited. Doesn't copy Atomist content.&quot;)
+</span>355 <span style=''>  def copyEditorBackingProject(): Unit = {
+</span>356 <span style=''>    val underDir = </span><span style='background: #AEF1AE'>rugAs.filter(_ =&gt; true, f =&gt; !f.path.startsWith(atomistConfig.atomistRoot))</span><span style=''>
+</span>357 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(currentBackingObject + underDir)</span><span style=''>
+</span>358 <span style=''>  }
+</span>359 <span style=''>
+</span>360 <span style=''>  @ExportFunction(readOnly = false,
+</span>361 <span style=''>    description = &quot;Copy the given file from the editor's backing archive. Fail the editor if it isn't found or if the destination already exists&quot;)
+</span>362 <span style=''>  def copyEditorBackingFilesOrFail(@ExportFunctionParameterDescription(name = &quot;sourcePath&quot;,
+</span>363 <span style=''>    description = &quot;Source directory&quot;)
+</span>364 <span style=''>                                   sourceDir: String,
+</span>365 <span style=''>                                   @ExportFunctionParameterDescription(name = &quot;destinationPath&quot;,
+</span>366 <span style=''>                                     description = &quot;Destination path&quot;)
+</span>367 <span style=''>                                   destinationPath: String): Unit = {
+</span>368 <span style=''>    val underDir = </span><span style='background: #F0ADAD'>rugAs / sourceDir</span><span style=''>
+</span>369 <span style=''>    if (</span><span style='background: #F0ADAD'>underDir.totalFileCount == 0</span><span style=''>)
+</span>370 <span style=''>      </span><span style='background: #F0ADAD'>fail(s&quot;No files found in editor backing object [$sourceDir]&quot;)</span><span style=''>
+</span>371 <span style=''>    else
+</span>372 <span style=''>      </span><span style='background: #F0ADAD'>updateTo(currentBackingObject + underDir)</span><span style=''>
+</span>373 <span style=''>  }
+</span>374 <span style=''>
+</span>375 <span style=''>  @ExportFunction(readOnly = false,
+</span>376 <span style=''>    description = &quot;Merge the given template to the given output path.&quot;)
+</span>377 <span style=''>  def merge(@ExportFunctionParameterDescription(name = &quot;template&quot;,
+</span>378 <span style=''>    description = &quot;The name of the template within the backing Rug archive, under /.atomist / templates&quot;)
+</span>379 <span style=''>            template: String,
+</span>380 <span style=''>            @ExportFunctionParameterDescription(name = &quot;path&quot;,
+</span>381 <span style=''>              description = &quot;The path that will be the merged path within the output project.&quot;)
+</span>382 <span style=''>            path: String,
+</span>383 <span style=''>            @ExportFunctionParameterDescription(name = &quot;parameters&quot;,
+</span>384 <span style=''>              description = &quot;Parameters&quot;)
+</span>385 <span style=''>            parametersToTemplate: Any): Unit = {
+</span>386 <span style=''>    val mc = </span><span style='background: #AEF1AE'>MergeContext(mapToUse(parametersToTemplate))</span><span style=''>
+</span>387 <span style=''>    val newFile = </span><span style='background: #AEF1AE'>mergeTool.mergeToFile(mc, template).withPath(path)</span><span style=''>
+</span>388 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(currentBackingObject + newFile)</span><span style=''>
+</span>389 <span style=''>  }
+</span>390 <span style=''>
+</span>391 <span style=''>  private def mapToUse(arg: Any): Map[String, Object] = arg match {
+</span>392 <span style=''>    case som: ScriptObjectMirror =&gt;
+</span>393 <span style=''>      </span><span style='background: #AEF1AE'>NashornUtils.extractProperties(som)</span><span style=''>
+</span>394 <span style=''>    case m: Map[String, Object]@unchecked =&gt; m
+</span>395 <span style=''>    case m: java.util.Map[String, Object]@unchecked =&gt;
+</span>396 <span style=''>      import scala.collection.JavaConverters._
+</span>397 <span style=''>      </span><span style='background: #F0ADAD'>m.asScala.toMap</span><span style=''>
+</span>398 <span style=''>    case null =&gt; </span><span style='background: #F0ADAD'>Map()</span><span style=''>
+</span>399 <span style=''>  }
+</span>400 <span style=''>
+</span>401 <span style=''>  @ExportFunction(readOnly = false,
+</span>402 <span style=''>    description = &quot;Merge templates from the specified directory in the backing archive, under /.atomist/templates, to the given output path in the project being edited.&quot;)
+</span>403 <span style=''>  def mergeTemplates(@ExportFunctionParameterDescription(name = &quot;templatesPath&quot;,
+</span>404 <span style=''>    description = &quot;Source template path where content will be used to merge into target project&quot;)
+</span>405 <span style=''>                     templatesPath: String,
+</span>406 <span style=''>                     @ExportFunctionParameterDescription(name = &quot;outputPath&quot;,
+</span>407 <span style=''>                       description = &quot;The destination path within the destination project&quot;)
+</span>408 <span style=''>                     outputPath: String,
+</span>409 <span style=''>                     @ExportFunctionParameterDescription(name = &quot;ic&quot;,
+</span>410 <span style=''>                       description = &quot;Parameters to the template&quot;)
+</span>411 <span style=''>                     parametersToTemplate: Any): Unit = {
+</span>412 <span style=''>    val mc = </span><span style='background: #AEF1AE'>MergeContext(mapToUse(parametersToTemplate))</span><span style=''>
+</span>413 <span style=''>    val directoryToMerge = </span><span style='background: #AEF1AE'>templateContent / templatesPath</span><span style=''>
+</span>414 <span style=''>    val outputContent = </span><span style='background: #AEF1AE'>mergeTool.processTemplateFiles(mc, directoryToMerge).withPathAbove(outputPath)</span><span style=''>
+</span>415 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(currentBackingObject + outputContent)</span><span style=''>
+</span>416 <span style=''>  }
+</span>417 <span style=''>
+</span>418 <span style=''>  @ExportFunction(readOnly = false,
+</span>419 <span style=''>    description = &quot;Don't use. Merely intended to simplify the life of the Rug to TypeScript transpiler.&quot;)
+</span>420 <span style=''>  def projects: java.util.List[ProjectMutableView] = </span><span style='background: #F0ADAD'>Collections.singletonList(this)</span><span style=''>
+</span>421 <span style=''>
+</span>422 <span style=''>  @ExportFunction(readOnly = false,
+</span>423 <span style=''>    exposeAsProperty = true,
+</span>424 <span style=''>    description = &quot;Files in this project&quot;)
+</span>425 <span style=''>  def files: java.util.List[FileMutableView] =
+</span>426 <span style=''>    </span><span style='background: #AEF1AE'>currentBackingObject.allFiles.map(new FileMutableView(_, this)).asJava</span><span style=''>
+</span>427 <span style=''>
+</span>428 <span style=''>  /**
+</span>429 <span style=''>    * For use by scripts. Edit the project with the given
+</span>430 <span style=''>    * map of string arguments.
+</span>431 <span style=''>    *
+</span>432 <span style=''>    * @param editorName name of editor to use
+</span>433 <span style=''>    * @param params parameters to pass to the editor
+</span>434 <span style=''>    */
+</span>435 <span style=''>  protected def editWith(editorName: String,
+</span>436 <span style=''>                         params: Map[String, Object]): Unit = {
+</span>437 <span style=''>    (creator, rugResolver) match {
+</span>438 <span style=''>      case (Some(rug), Some(resolver)) =&gt; </span><span style='background: #AEF1AE'>resolver.resolve(rug, editorName)</span><span style=''> match {
+</span>439 <span style=''>        case Some(ed: ProjectEditor) =&gt;
+</span>440 <span style=''>          </span><span style='background: #AEF1AE'>ed.modify(currentBackingObject, SimpleParameterValues(params))</span><span style=''> match {
+</span>441 <span style=''>            case sm: SuccessfulModification =&gt;
+</span>442 <span style=''>              </span><span style='background: #AEF1AE'>updateTo(sm.result)</span><span style=''>
+</span>443 <span style=''>            case _: NoModificationNeeded =&gt; </span><span style='background: #F0ADAD'>currentBackingObject</span><span style=''>
+</span>444 <span style=''>            case wtf =&gt;
+</span>445 <span style=''>              </span><span style='background: #F0ADAD'>throw new RugRuntimeException(ed.name, s&quot;Unexpected editor failure: $wtf&quot;, null)</span><span style=''>
+</span>446 <span style=''>          }
+</span>447 <span style=''>        case None =&gt;
+</span>448 <span style=''>          if (</span><span style='background: #AEF1AE'>editorName.contains(&quot;:&quot;)</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>449 <span style=''></span><span style='background: #AEF1AE'>            val shortName = StringUtils.substringAfterLast(editorName, &quot;:&quot;)
+</span>450 <span style=''></span><span style='background: #AEF1AE'>            if (resolver.resolve(rug, shortName).nonEmpty) {
+</span>451 <span style=''></span><span style='background: #AEF1AE'>              </span><span style='background: #F0ADAD'>throw new EditorNotFoundException(s&quot;Could not find editor: $editorName. Did you mean: $shortName?&quot;)</span><span style='background: #AEF1AE'>
+</span>452 <span style=''></span><span style='background: #AEF1AE'>            }
+</span>453 <span style=''></span><span style='background: #AEF1AE'>          }</span><span style=''>
+</span>454 <span style=''>          </span><span style='background: #AEF1AE'>throw new EditorNotFoundException(editorName, resolver.resolvedDependencies.rugs.allRugs)</span><span style=''>;
+</span>455 <span style=''>        case _ =&gt;
+</span>456 <span style=''>          </span><span style='background: #F0ADAD'>throw new EditorNotFoundException(editorName, resolver.resolvedDependencies.rugs.allRugs)</span><span style=''>;
+</span>457 <span style=''>      }
+</span>458 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>throw new RugRuntimeException(name, s&quot;No Rug context in which to find other editor: [$editorName]&quot;)</span><span style=''>
+</span>459 <span style=''>    }
+</span>460 <span style=''>  }
+</span>461 <span style=''>
+</span>462 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Edit with the given editor&quot;)
+</span>463 <span style=''>  def editWith(
+</span>464 <span style=''>                @ExportFunctionParameterDescription(name = &quot;editorName&quot;,
+</span>465 <span style=''>                  description = &quot;Name of the editor to invoke&quot;)
+</span>466 <span style=''>                editorName: String,
+</span>467 <span style=''>                @ExportFunctionParameterDescription(name = &quot;params&quot;,
+</span>468 <span style=''>                  description = &quot;Parameters to pass to the editor&quot;)
+</span>469 <span style=''>                params: Any): Unit = {
+</span>470 <span style=''>    val m: Map[String, Object] = params match {
+</span>471 <span style=''>      case som: ScriptObjectMirror =&gt;
+</span>472 <span style=''>        // The user has created a new JavaScript object, as in { foo: &quot;bar&quot; },
+</span>473 <span style=''>        // to pass up as an argument to the invoked editor. Extract its properties
+</span>474 <span style=''>        </span><span style='background: #AEF1AE'>NashornUtils.extractProperties(som)</span><span style=''>
+</span>475 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>Map.empty</span><span style=''>
+</span>476 <span style=''>    }
+</span>477 <span style=''>    </span><span style='background: #AEF1AE'>editWith(editorName, m)</span><span style=''>
+</span>478 <span style=''>  }
+</span>479 <span style=''>
+</span>480 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Return a new Project View based on the original backing object (normally the .atomist/ directory)&quot;)
+</span>481 <span style=''>  def backingArchiveProject(): ProjectMutableView = {
+</span>482 <span style=''>    </span><span style='background: #AEF1AE'>new ProjectMutableView(EmptyArtifactSource.apply(), rugAs, atomistConfig, creator)</span><span style=''>
+</span>483 <span style=''>  }
+</span>484 <span style=''>
+</span>485 <span style=''>  /**
+</span>486 <span style=''>    * Convenient method to apply an editor.
+</span>487 <span style=''>    */
+</span>488 <span style=''>  protected def applyEditor(
+</span>489 <span style=''>                             ed: ProjectEditor,
+</span>490 <span style=''>                             poa: ParameterValues = SimpleParameterValues.Empty): ArtifactSource = {
+</span>491 <span style=''>    </span><span style='background: #F0ADAD'>ed.modify(currentBackingObject, poa)</span><span style=''> match {
+</span>492 <span style=''>      case sm: SuccessfulModification =&gt; </span><span style='background: #F0ADAD'>sm.result</span><span style=''>
+</span>493 <span style=''>      case _: NoModificationNeeded =&gt; </span><span style='background: #F0ADAD'>currentBackingObject</span><span style=''>
+</span>494 <span style=''>      case wtf =&gt;
+</span>495 <span style=''>        </span><span style='background: #F0ADAD'>throw new RugRuntimeException(ed.name, s&quot;Unexpected editor failure: $wtf&quot;, null)</span><span style=''>
+</span>496 <span style=''>    }
+</span>497 <span style=''>  }
+</span>498 <span style=''>
+</span>499 <span style=''>  @ExportFunction(readOnly = true,
+</span>500 <span style=''>    exposeAsProperty = true,
+</span>501 <span style=''>    exposeResultDirectlyToNashorn = true,
+</span>502 <span style=''>    description = &quot;Provides access additional context, such as the PathExpressionEngine&quot;)
+</span>503 <span style=''>  def context: ProjectContext = </span><span style='background: #AEF1AE'>ctx</span><span style=''> match {
+</span>504 <span style=''>    case pc: ProjectContext =&gt; pc
+</span>505 <span style=''>    case _ =&gt; </span><span style='background: #AEF1AE'>new ProjectContext(ctx)</span><span style=''>
+</span>506 <span style=''>  }
+</span>507 <span style=''>
+</span>508 <span style=''>  import com.atomist.tree.pathexpression.PathExpressionParser._
+</span>509 <span style=''>
+</span>510 <span style=''>  @ExportFunction(readOnly = true,
+</span>511 <span style=''>    description = &quot;Return the path expression to this point in the given file&quot;)
+</span>512 <span style=''>  def pathTo(path: String, kind: String, lineFrom1: Int, colFrom1: Int): String = {
+</span>513 <span style=''>    val nodeO = </span><span style='background: #AEF1AE'>nodeAt(path, kind, lineFrom1, colFrom1)</span><span style=''>
+</span>514 <span style=''>    </span><span style='background: #AEF1AE'>nodeO.collect {
+</span>515 <span style=''></span><span style='background: #AEF1AE'>      case n: AddressableTreeNode =&gt; n.address.dropWhile(_ != '/')
+</span>516 <span style=''></span><span style='background: #AEF1AE'>    }.getOrElse {
+</span>517 <span style=''></span><span style='background: #AEF1AE'>      // Return the path to the file if it's valid, even if we can't resolve a structure within it
+</span>518 <span style=''></span><span style='background: #AEF1AE'>      if (fileExists(path) &amp;&amp; DefaultTypeRegistry.findByName(kind).isDefined)
+</span>519 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>pathToRootContainer(path, kind)</span><span style='background: #AEF1AE'>
+</span>520 <span style=''></span><span style='background: #AEF1AE'>      else null
+</span>521 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>522 <span style=''>  }
+</span>523 <span style=''>
+</span>524 <span style=''>  private def pathToRootContainer(path: String, kind: String) = </span><span style='background: #AEF1AE'>s&quot;/File()[@path='$path']/$kind()&quot;</span><span style=''>
+</span>525 <span style=''>
+</span>526 <span style=''>  private def nodeAt(path: String, kind: String, lineFrom1: Int, colFrom1: Int): Option[TreeNode] = {
+</span>527 <span style=''>    val pexpr = </span><span style='background: #AEF1AE'>pathToRootContainer(path, kind)</span><span style=''>
+</span>528 <span style=''>    </span><span style='background: #AEF1AE'>ctx.pathExpressionEngine.ee.evaluate(this, pexpr)</span><span style=''> match {
+</span>529 <span style=''>      case Right(nodes) if </span><span style='background: #AEF1AE'>nodes.size == 1</span><span style=''> =&gt;
+</span>530 <span style=''>        val theNode = </span><span style='background: #AEF1AE'>nodes.head</span><span style=''>
+</span>531 <span style=''>        //println(theNode.toString)
+</span>532 <span style=''>        theNode match {
+</span>533 <span style=''>          case ow: OverwritableTextTreeNode =&gt;
+</span>534 <span style=''>            val pos = </span><span style='background: #AEF1AE'>LineInputPositionImpl(ow.file.content, lineFrom1, colFrom1)</span><span style=''>
+</span>535 <span style=''>            </span><span style='background: #AEF1AE'>ow.nodeAt(pos)</span><span style=''>
+</span>536 <span style=''>          case _ =&gt; </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>537 <span style=''>        }
+</span>538 <span style=''>      case Right(nodes) if </span><span style='background: #AEF1AE'>nodes.size &gt; 1</span><span style=''> =&gt;
+</span>539 <span style=''>        </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Found ${nodes.size} hits for [$pexpr], not 1&quot;)</span><span style=''>
+</span>540 <span style=''>      case x =&gt;
+</span>541 <span style=''>        //println(s&quot;Unexpected result [$x] for [$pexpr]&quot;)
+</span>542 <span style=''>        </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>543 <span style=''>    }
+</span>544 <span style=''>  }
+</span>545 <span style=''>}
+</span>546 <span style=''>
+</span>547 <span style=''>/**
+</span>548 <span style=''>  * For backwards compatibility
+</span>549 <span style=''>  */
+</span>550 <span style=''>class ProjectContext(ctx: RugContext) extends RugContext {
+</span>551 <span style=''>
+</span>552 <span style=''>  override def typeRegistry: TypeRegistry = </span><span style='background: #F0ADAD'>DefaultTypeRegistry</span><span style=''>
+</span>553 <span style=''>
+</span>554 <span style=''>  override def pathExpressionEngine: jsPathExpressionEngine = </span><span style='background: #AEF1AE'>ctx.pathExpressionEngine</span><span style=''>
+</span>555 <span style=''>
+</span>556 <span style=''>  /**
+</span>557 <span style=''>    * Id of the team we're working on behalf of
+</span>558 <span style=''>    */
+</span>559 <span style=''>  override def teamId: String = </span><span style='background: #F0ADAD'>ctx.teamId</span><span style=''>
+</span>560 <span style=''>
+</span>561 <span style=''>  /**
+</span>562 <span style=''>    * Used to hydrate nodes before running a path expression
+</span>563 <span style=''>    */
+</span>564 <span style=''>  override def treeMaterializer: TreeMaterializer = </span><span style='background: #F0ADAD'>ctx.treeMaterializer</span><span style=''>
+</span>565 <span style=''>
+</span>566 <span style=''>  override def contextRoot(): AnyRef = </span><span style='background: #F0ADAD'>ctx.contextRoot()</span><span style=''>
+</span>567 <span style=''>
+</span>568 <span style=''>  def gitProjectLoader: AnyRef = </span><span style='background: #AEF1AE'>new jsGitProjectLoader(ctx.repoResolver)</span><span style=''>
+</span>569 <span style=''>
+</span>570 <span style=''>  @ExposeAsFunction
+</span>571 <span style=''>  def emptyProject() = </span><span style='background: #AEF1AE'>new ProjectMutableView(originalBackingObject = EmptyArtifactSource(&quot;!!ThisValueWillBeOverwritten&quot;))</span><span style=''>
+</span>572 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          926
+        </td>
+        <td>
+          1259
+          -
+          1300
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.project.common.template.MustacheMergeToolCreator](new com.atomist.project.common.template.MustacheMergeToolCreator())
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          925
+        </td>
+        <td>
+          1268
+          -
+          1296
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.common.template.MustacheMergeToolCreator.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.project.common.template.MustacheMergeToolCreator()
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          932
+        </td>
+        <td>
+          2322
+          -
+          2322
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          929
+        </td>
+        <td>
+          2322
+          -
+          2322
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;$default$5
+        </td>
+        <td style="background: #AEF1AE">
+          core.this.ProjectMutableView.&lt;init&gt;$default$5
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          931
+        </td>
+        <td>
+          2322
+          -
+          2378
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.&lt;init&gt;(rugAs, originalBackingObject, com.atomist.project.archive.DefaultAtomistConfig, core.this.ProjectMutableView.&lt;init&gt;$default$4, core.this.ProjectMutableView.&lt;init&gt;$default$5, core.this.ProjectMutableView.&lt;init&gt;$default$6)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          928
+        </td>
+        <td>
+          2322
+          -
+          2322
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          core.this.ProjectMutableView.&lt;init&gt;$default$4
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          927
+        </td>
+        <td>
+          2357
+          -
+          2377
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.DefaultAtomistConfig
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.project.archive.DefaultAtomistConfig
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          930
+        </td>
+        <td>
+          2322
+          -
+          2322
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;$default$6
+        </td>
+        <td style="background: #AEF1AE">
+          core.this.ProjectMutableView.&lt;init&gt;$default$6
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          935
+        </td>
+        <td>
+          2572
+          -
+          2592
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.DefaultAtomistConfig
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.project.archive.DefaultAtomistConfig
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          938
+        </td>
+        <td>
+          2521
+          -
+          2521
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;$default$6
+        </td>
+        <td style="background: #AEF1AE">
+          core.this.ProjectMutableView.&lt;init&gt;$default$6
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          937
+        </td>
+        <td>
+          2521
+          -
+          2521
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;$default$5
+        </td>
+        <td style="background: #AEF1AE">
+          core.this.ProjectMutableView.&lt;init&gt;$default$5
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          940
+        </td>
+        <td>
+          2521
+          -
+          2521
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          934
+        </td>
+        <td>
+          2526
+          -
+          2547
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.EmptyArtifactSource.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.EmptyArtifactSource.apply(com.atomist.source.EmptyArtifactSource.apply$default$1)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          936
+        </td>
+        <td>
+          2521
+          -
+          2521
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          core.this.ProjectMutableView.&lt;init&gt;$default$4
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          939
+        </td>
+        <td>
+          2521
+          -
+          2593
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.&lt;init&gt;(com.atomist.source.EmptyArtifactSource.apply(com.atomist.source.EmptyArtifactSource.apply$default$1), originalBackingObject, com.atomist.project.archive.DefaultAtomistConfig, core.this.ProjectMutableView.&lt;init&gt;$default$4, core.this.ProjectMutableView.&lt;init&gt;$default$5, core.this.ProjectMutableView.&lt;init&gt;$default$6)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          933
+        </td>
+        <td>
+          2526
+          -
+          2526
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.EmptyArtifactSource.apply$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.EmptyArtifactSource.apply$default$1
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          941
+        </td>
+        <td>
+          2724
+          -
+          2734
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;project:[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          944
+        </td>
+        <td>
+          2722
+          -
+          2740
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;project:[&quot;, &quot;]&quot;).s(ProjectMutableView.this.name)
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          943
+        </td>
+        <td>
+          2734
+          -
+          2738
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.name
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.name
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          942
+        </td>
+        <td>
+          2738
+          -
+          2740
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          947
+        </td>
+        <td>
+          2843
+          -
+          2846
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          946
+        </td>
+        <td>
+          2812
+          -
+          2823
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\'] around &quot;
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          955
+        </td>
+        <td>
+          2780
+          -
+          2918
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;ProjectMutableView[name=\'&quot;, &quot;\'] around &quot;, &quot;\\n&quot;).s(ProjectMutableView.this.name, ProjectMutableView.this.currentBackingObject).+(scala.StringContext.apply(&quot;&quot;, &quot;&quot;).s(com.atomist.source.ArtifactSourceUtils.prettyListFiles(ProjectMutableView.this.currentBackingObject)))
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          949
+        </td>
+        <td>
+          2823
+          -
+          2843
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          945
+        </td>
+        <td>
+          2782
+          -
+          2808
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;ProjectMutableView[name=\'&quot;
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          948
+        </td>
+        <td>
+          2808
+          -
+          2812
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.name
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.name
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          950
+        </td>
+        <td>
+          2857
+          -
+          2858
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          953
+        </td>
+        <td>
+          2859
+          -
+          2916
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSourceUtils.prettyListFiles
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.ArtifactSourceUtils.prettyListFiles(ProjectMutableView.this.currentBackingObject)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          952
+        </td>
+        <td>
+          2895
+          -
+          2915
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          954
+        </td>
+        <td>
+          2855
+          -
+          2918
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;&quot;).s(com.atomist.source.ArtifactSourceUtils.prettyListFiles(ProjectMutableView.this.currentBackingObject))
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          951
+        </td>
+        <td>
+          2917
+          -
+          2918
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          956
+        </td>
+        <td>
+          3044
+          -
+          3049
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.rugAs
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.rugAs
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          957
+        </td>
+        <td>
+          3012
+          -
+          3050
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.AtomistConfig.templateContentIn
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.atomistConfig.templateContentIn(ProjectMutableView.this.rugAs)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          959
+        </td>
+        <td>
+          3155
+          -
+          3170
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.templateContent
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.templateContent
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          958
+        </td>
+        <td>
+          3116
+          -
+          3133
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.MergeToolCreators
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.MergeToolCreators
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          960
+        </td>
+        <td>
+          3087
+          -
+          3171
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.common.template.CombinedMergeToolCreator.createMergeTool
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.project.common.template.CombinedMergeToolCreator((ProjectMutableView.MergeToolCreators: _*)).createMergeTool(ProjectMutableView.this.templateContent)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          962
+        </td>
+        <td>
+          3212
+          -
+          3212
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          961
+        </td>
+        <td>
+          3227
+          -
+          3254
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.rug.kind.core.ProjectMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          963
+        </td>
+        <td>
+          3206
+          -
+          3255
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName(classOf[com.atomist.rug.kind.core.ProjectMutableView], com.atomist.rug.spi.Typed.typeToTypeName$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          964
+        </td>
+        <td>
+          3448
+          -
+          3457
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[com.atomist.rug.kind.core.ProjectMutableView](this)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          965
+        </td>
+        <td>
+          3472
+          -
+          3493
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ArtifactContainerMutableView.kids
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.kids(fieldName, this)
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          966
+        </td>
+        <td>
+          3785
+          -
+          3824
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.split
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.id.name.split(&quot;/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          967
+        </td>
+        <td>
+          3829
+          -
+          3848
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Array.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[String](segments).reverse.apply(0)
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          968
+        </td>
+        <td>
+          4004
+          -
+          4039
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.ArtifactContainer.totalFileCount
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.totalFileCount
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          971
+        </td>
+        <td>
+          4526
+          -
+          4577
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.EmptyDirectoryArtifact.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.EmptyDirectoryArtifact.apply(name, scala.this.Predef.wrapRefArray[String](parentPath.split(&quot;/&quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          973
+        </td>
+        <td>
+          4494
+          -
+          4578
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.+(com.atomist.source.EmptyDirectoryArtifact.apply(name, scala.this.Predef.wrapRefArray[String](parentPath.split(&quot;/&quot;)))))
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          970
+        </td>
+        <td>
+          4555
+          -
+          4576
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.LowPriorityImplicits.wrapRefArray
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.wrapRefArray[String](parentPath.split(&quot;/&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          969
+        </td>
+        <td>
+          4555
+          -
+          4576
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.split
+        </td>
+        <td style="background: #AEF1AE">
+          parentPath.split(&quot;/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          972
+        </td>
+        <td>
+          4503
+          -
+          4577
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.+
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.+(com.atomist.source.EmptyDirectoryArtifact.apply(name, scala.this.Predef.wrapRefArray[String](parentPath.split(&quot;/&quot;))))
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          974
+        </td>
+        <td>
+          5023
+          -
+          5047
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.split
+        </td>
+        <td style="background: #AEF1AE">
+          directoryPath.split(&quot;/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          975
+        </td>
+        <td>
+          5070
+          -
+          5086
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Array.length
+        </td>
+        <td style="background: #AEF1AE">
+          splitPath.length
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          977
+        </td>
+        <td>
+          5111
+          -
+          5137
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Array.apply
+        </td>
+        <td style="background: #AEF1AE">
+          splitPath.apply(splitLength.-(1))
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          976
+        </td>
+        <td>
+          5121
+          -
+          5136
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          splitLength.-(1)
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          980
+        </td>
+        <td>
+          5151
+          -
+          5222
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.+
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.+(com.atomist.source.EmptyDirectoryArtifact.apply(directoryName, scala.this.Predef.wrapRefArray[String](splitPath)))
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          979
+        </td>
+        <td>
+          5174
+          -
+          5222
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.EmptyDirectoryArtifact.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.EmptyDirectoryArtifact.apply(directoryName, scala.this.Predef.wrapRefArray[String](splitPath))
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          978
+        </td>
+        <td>
+          5212
+          -
+          5221
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.LowPriorityImplicits.wrapRefArray
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.wrapRefArray[String](splitPath)
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          981
+        </td>
+        <td>
+          5142
+          -
+          5223
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.+(com.atomist.source.EmptyDirectoryArtifact.apply(directoryName, scala.this.Predef.wrapRefArray[String](splitPath))))
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          983
+        </td>
+        <td>
+          5539
+          -
+          5543
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          982
+        </td>
+        <td>
+          5512
+          -
+          5532
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.path.equals(path).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          985
+        </td>
+        <td>
+          5475
+          -
+          5545
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.filter(((x$1: com.atomist.source.DirectoryArtifact) =&gt; x$1.path.equals(path).unary_!), ((x$2: com.atomist.source.FileArtifact) =&gt; true)))
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          984
+        </td>
+        <td>
+          5484
+          -
+          5544
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.filter
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.filter(((x$1: com.atomist.source.DirectoryArtifact) =&gt; x$1.path.equals(path).unary_!), ((x$2: com.atomist.source.FileArtifact) =&gt; true))
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          986
+        </td>
+        <td>
+          6100
+          -
+          6109
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #F0ADAD">
+          f.content
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          988
+        </td>
+        <td>
+          6028
+          -
+          6111
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.exists
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.currentBackingObject.findFile(path).exists(((f: com.atomist.source.FileArtifact) =&gt; java.util.Objects.equals(content, f.content)))
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          987
+        </td>
+        <td>
+          6076
+          -
+          6110
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Objects.equals
+        </td>
+        <td style="background: #F0ADAD">
+          java.util.Objects.equals(content, f.content)
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          989
+        </td>
+        <td>
+          6387
+          -
+          6427
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactContainer.findDirectory
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.findDirectory(path)
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          990
+        </td>
+        <td>
+          6455
+          -
+          6456
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          991
+        </td>
+        <td>
+          6479
+          -
+          6491
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #AEF1AE">
+          d.files.size
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          992
+        </td>
+        <td>
+          7012
+          -
+          7016
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          995
+        </td>
+        <td>
+          6951
+          -
+          7048
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.exists
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.findFile(path).exists(((f: com.atomist.source.FileArtifact) =&gt; f.content.!=(null).&amp;&amp;(f.content.contains(content))))
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          994
+        </td>
+        <td>
+          6999
+          -
+          7047
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          f.content.!=(null).&amp;&amp;(f.content.contains(content))
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          993
+        </td>
+        <td>
+          7020
+          -
+          7047
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.contains
+        </td>
+        <td style="background: #AEF1AE">
+          f.content.contains(content)
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          997
+        </td>
+        <td>
+          7554
+          -
+          7595
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.BinaryDecider.isBinaryContent(f.content).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          1000
+        </td>
+        <td>
+          7532
+          -
+          7679
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.SimpleFileEditor.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.SimpleFileEditor.apply(((f: com.atomist.source.FileArtifact) =&gt; com.atomist.util.BinaryDecider.isBinaryContent(f.content).unary_!), ((f: com.atomist.source.FileArtifact) =&gt; com.atomist.source.StringFileArtifact.updated(f, f.content.replace(literal, replaceWith))))
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          996
+        </td>
+        <td>
+          7585
+          -
+          7594
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          f.content
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          998
+        </td>
+        <td>
+          7638
+          -
+          7677
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          f.content.replace(literal, replaceWith)
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          999
+        </td>
+        <td>
+          7608
+          -
+          7678
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.StringFileArtifact.updated
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.StringFileArtifact.updated(f, f.content.replace(literal, replaceWith))
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          1001
+        </td>
+        <td>
+          7693
+          -
+          7718
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.✎
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.✎(fe)
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          1002
+        </td>
+        <td>
+          7684
+          -
+          7719
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.✎(fe))
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          1004
+        </td>
+        <td>
+          7833
+          -
+          7860
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          f.path.equals(oldFile.path)
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          1003
+        </td>
+        <td>
+          7847
+          -
+          7859
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.path
+        </td>
+        <td style="background: #AEF1AE">
+          oldFile.path
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          1005
+        </td>
+        <td>
+          7811
+          -
+          7875
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.SimpleFileEditor.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.SimpleFileEditor.apply(((f: com.atomist.source.FileArtifact) =&gt; f.path.equals(oldFile.path)), ((f: com.atomist.source.FileArtifact) =&gt; newFile))
+        </td>
+      </tr><tr>
+        <td>
+          176
+        </td>
+        <td>
+          1007
+        </td>
+        <td>
+          7880
+          -
+          7915
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.✎(fe))
+        </td>
+      </tr><tr>
+        <td>
+          176
+        </td>
+        <td>
+          1006
+        </td>
+        <td>
+          7889
+          -
+          7914
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.✎
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.✎(fe)
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          1009
+        </td>
+        <td>
+          8424
+          -
+          8479
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.regexpReplaceWithFilter
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.regexpReplaceWithFilter(((f: com.atomist.source.FileArtifact) =&gt; true), regexp, replacement)
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          1008
+        </td>
+        <td>
+          8453
+          -
+          8457
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          201
+        </td>
+        <td>
+          1010
+        </td>
+        <td>
+          8957
+          -
+          8966
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          f.content
+        </td>
+      </tr><tr>
+        <td>
+          201
+        </td>
+        <td>
+          1015
+        </td>
+        <td>
+          8891
+          -
+          9053
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.SimpleFileEditor.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.SimpleFileEditor.apply(((f: com.atomist.source.FileArtifact) =&gt; filter.apply(f).&amp;&amp;(com.atomist.util.BinaryDecider.isBinaryContent(f.content).unary_!)), ((f: com.atomist.source.FileArtifact) =&gt; com.atomist.source.StringFileArtifact.updated(f, f.content.replaceAll(regexp, replacement))))
+        </td>
+      </tr><tr>
+        <td>
+          201
+        </td>
+        <td>
+          1012
+        </td>
+        <td>
+          8913
+          -
+          8967
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          filter.apply(f).&amp;&amp;(com.atomist.util.BinaryDecider.isBinaryContent(f.content).unary_!)
+        </td>
+      </tr><tr>
+        <td>
+          201
+        </td>
+        <td>
+          1011
+        </td>
+        <td>
+          8926
+          -
+          8967
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.BinaryDecider.isBinaryContent(f.content).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          202
+        </td>
+        <td>
+          1013
+        </td>
+        <td>
+          9010
+          -
+          9051
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replaceAll
+        </td>
+        <td style="background: #AEF1AE">
+          f.content.replaceAll(regexp, replacement)
+        </td>
+      </tr><tr>
+        <td>
+          202
+        </td>
+        <td>
+          1014
+        </td>
+        <td>
+          8980
+          -
+          9052
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.StringFileArtifact.updated
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.StringFileArtifact.updated(f, f.content.replaceAll(regexp, replacement))
+        </td>
+      </tr><tr>
+        <td>
+          203
+        </td>
+        <td>
+          1016
+        </td>
+        <td>
+          9067
+          -
+          9092
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.✎
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.✎(fe)
+        </td>
+      </tr><tr>
+        <td>
+          203
+        </td>
+        <td>
+          1017
+        </td>
+        <td>
+          9058
+          -
+          9093
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.✎(fe))
+        </td>
+      </tr><tr>
+        <td>
+          216
+        </td>
+        <td>
+          1019
+        </td>
+        <td>
+          9763
+          -
+          9799
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          f.path.replace(literal, replacement)
+        </td>
+      </tr><tr>
+        <td>
+          216
+        </td>
+        <td>
+          1018
+        </td>
+        <td>
+          9721
+          -
+          9745
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.contains
+        </td>
+        <td style="background: #AEF1AE">
+          f.path.contains(literal)
+        </td>
+      </tr><tr>
+        <td>
+          216
+        </td>
+        <td>
+          1021
+        </td>
+        <td>
+          9699
+          -
+          9801
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.SimpleFileEditor.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.SimpleFileEditor.apply(((f: com.atomist.source.FileArtifact) =&gt; f.path.contains(literal)), ((f: com.atomist.source.FileArtifact) =&gt; f.withPath(f.path.replace(literal, replacement))))
+        </td>
+      </tr><tr>
+        <td>
+          216
+        </td>
+        <td>
+          1020
+        </td>
+        <td>
+          9752
+          -
+          9800
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.withPath
+        </td>
+        <td style="background: #AEF1AE">
+          f.withPath(f.path.replace(literal, replacement))
+        </td>
+      </tr><tr>
+        <td>
+          217
+        </td>
+        <td>
+          1022
+        </td>
+        <td>
+          9815
+          -
+          9840
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.✎
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.✎(fe)
+        </td>
+      </tr><tr>
+        <td>
+          217
+        </td>
+        <td>
+          1023
+        </td>
+        <td>
+          9806
+          -
+          9841
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.✎(fe))
+        </td>
+      </tr><tr>
+        <td>
+          226
+        </td>
+        <td>
+          1024
+        </td>
+        <td>
+          10279
+          -
+          10318
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.withPathAbove
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.currentBackingObject.withPathAbove(path)
+        </td>
+      </tr><tr>
+        <td>
+          227
+        </td>
+        <td>
+          1025
+        </td>
+        <td>
+          10323
+          -
+          10338
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.updateTo(moved)
+        </td>
+      </tr><tr>
+        <td>
+          234
+        </td>
+        <td>
+          1027
+        </td>
+        <td>
+          10764
+          -
+          10812
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.addFile
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.addFile(path, content, com.atomist.source.FileArtifact.DefaultMode)
+        </td>
+      </tr><tr>
+        <td>
+          234
+        </td>
+        <td>
+          1026
+        </td>
+        <td>
+          10787
+          -
+          10811
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.DefaultMode
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.FileArtifact.DefaultMode
+        </td>
+      </tr><tr>
+        <td>
+          240
+        </td>
+        <td>
+          1028
+        </td>
+        <td>
+          11298
+          -
+          11325
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.ExecutableMode
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.FileArtifact.ExecutableMode
+        </td>
+      </tr><tr>
+        <td>
+          240
+        </td>
+        <td>
+          1029
+        </td>
+        <td>
+          11275
+          -
+          11326
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.addFile
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.addFile(path, content, com.atomist.source.FileArtifact.ExecutableMode)
+        </td>
+      </tr><tr>
+        <td>
+          243
+        </td>
+        <td>
+          1031
+        </td>
+        <td>
+          11450
+          -
+          11474
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.PropertiesTrait.lineSeparator
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Properties.lineSeparator
+        </td>
+      </tr><tr>
+        <td>
+          243
+        </td>
+        <td>
+          1030
+        </td>
+        <td>
+          11443
+          -
+          11448
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          243
+        </td>
+        <td>
+          1032
+        </td>
+        <td>
+          11427
+          -
+          11475
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          content.replace(&quot;\\n&quot;, scala.util.Properties.lineSeparator)
+        </td>
+      </tr><tr>
+        <td>
+          244
+        </td>
+        <td>
+          1034
+        </td>
+        <td>
+          11514
+          -
+          11585
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.exists
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.findFile(path).exists(((x$3: com.atomist.source.FileArtifact) =&gt; x$3.content.==(desiredContent)))
+        </td>
+      </tr><tr>
+        <td>
+          244
+        </td>
+        <td>
+          1033
+        </td>
+        <td>
+          11557
+          -
+          11584
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$3.content.==(desiredContent)
+        </td>
+      </tr><tr>
+        <td>
+          245
+        </td>
+        <td>
+          1042
+        </td>
+        <td>
+          11590
+          -
+          11590
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          245
+        </td>
+        <td>
+          1041
+        </td>
+        <td>
+          11590
+          -
+          11590
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          245
+        </td>
+        <td>
+          1035
+        </td>
+        <td>
+          11594
+          -
+          11622
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          exactSameFileIsAlreadyThere.unary_!
+        </td>
+      </tr><tr>
+        <td>
+          246
+        </td>
+        <td>
+          1037
+        </td>
+        <td>
+          11664
+          -
+          11716
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.StringFileArtifact.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.StringFileArtifact.apply(path, desiredContent, mode, scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          246
+        </td>
+        <td>
+          1040
+        </td>
+        <td>
+          11632
+          -
+          11717
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.+(com.atomist.source.StringFileArtifact.apply(path, desiredContent, mode, scala.None)))
+        </td>
+      </tr><tr>
+        <td>
+          246
+        </td>
+        <td>
+          1036
+        </td>
+        <td>
+          11711
+          -
+          11715
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          246
+        </td>
+        <td>
+          1039
+        </td>
+        <td>
+          11632
+          -
+          11717
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.+(com.atomist.source.StringFileArtifact.apply(path, desiredContent, mode, scala.None)))
+        </td>
+      </tr><tr>
+        <td>
+          246
+        </td>
+        <td>
+          1038
+        </td>
+        <td>
+          11641
+          -
+          11716
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.+
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.+(com.atomist.source.StringFileArtifact.apply(path, desiredContent, mode, scala.None))
+        </td>
+      </tr><tr>
+        <td>
+          255
+        </td>
+        <td>
+          1043
+        </td>
+        <td>
+          11979
+          -
+          12014
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactContainer.findFile
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.findFile(path)
+        </td>
+      </tr><tr>
+        <td>
+          258
+        </td>
+        <td>
+          1045
+        </td>
+        <td>
+          12092
+          -
+          12140
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.withMode
+        </td>
+        <td style="background: #AEF1AE">
+          sourceFile.withMode(com.atomist.source.FileArtifact.ExecutableMode)
+        </td>
+      </tr><tr>
+        <td>
+          258
+        </td>
+        <td>
+          1044
+        </td>
+        <td>
+          12112
+          -
+          12139
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.ExecutableMode
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.FileArtifact.ExecutableMode
+        </td>
+      </tr><tr>
+        <td>
+          259
+        </td>
+        <td>
+          1046
+        </td>
+        <td>
+          12158
+          -
+          12208
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.+
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.delete(path).+(executableFile)
+        </td>
+      </tr><tr>
+        <td>
+          259
+        </td>
+        <td>
+          1047
+        </td>
+        <td>
+          12149
+          -
+          12209
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.delete(path).+(executableFile))
+        </td>
+      </tr><tr>
+        <td>
+          260
+        </td>
+        <td>
+          1048
+        </td>
+        <td>
+          12226
+          -
+          12228
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          269
+        </td>
+        <td>
+          1049
+        </td>
+        <td>
+          12517
+          -
+          12550
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.delete
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.delete(path)
+        </td>
+      </tr><tr>
+        <td>
+          269
+        </td>
+        <td>
+          1050
+        </td>
+        <td>
+          12508
+          -
+          12551
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.delete(path))
+        </td>
+      </tr><tr>
+        <td>
+          280
+        </td>
+        <td>
+          1051
+        </td>
+        <td>
+          13036
+          -
+          13077
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactContainer.findFile
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.findFile(sourcePath)
+        </td>
+      </tr><tr>
+        <td>
+          283
+        </td>
+        <td>
+          1052
+        </td>
+        <td>
+          13173
+          -
+          13209
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.withPath
+        </td>
+        <td style="background: #AEF1AE">
+          sourceFile.withPath(destinationPath)
+        </td>
+      </tr><tr>
+        <td>
+          283
+        </td>
+        <td>
+          1054
+        </td>
+        <td>
+          13141
+          -
+          13210
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.+(sourceFile.withPath(destinationPath)))
+        </td>
+      </tr><tr>
+        <td>
+          283
+        </td>
+        <td>
+          1053
+        </td>
+        <td>
+          13150
+          -
+          13209
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.+
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.+(sourceFile.withPath(destinationPath))
+        </td>
+      </tr><tr>
+        <td>
+          284
+        </td>
+        <td>
+          1055
+        </td>
+        <td>
+          13227
+          -
+          13229
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          296
+        </td>
+        <td>
+          1061
+        </td>
+        <td>
+          13764
+          -
+          13764
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          296
+        </td>
+        <td>
+          1060
+        </td>
+        <td>
+          13764
+          -
+          13764
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          296
+        </td>
+        <td>
+          1056
+        </td>
+        <td>
+          13768
+          -
+          13795
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ArtifactContainerMutableView.fileExists
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.fileExists(destinationPath)
+        </td>
+      </tr><tr>
+        <td>
+          297
+        </td>
+        <td>
+          1058
+        </td>
+        <td>
+          13803
+          -
+          13882
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.CommonViewOperations.fail
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.fail(scala.StringContext.apply(&quot;Attempt to copy file [&quot;, &quot;] to existing path [&quot;, &quot;]&quot;).s(sourcePath, destinationPath))
+        </td>
+      </tr><tr>
+        <td>
+          297
+        </td>
+        <td>
+          1057
+        </td>
+        <td>
+          13808
+          -
+          13881
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Attempt to copy file [&quot;, &quot;] to existing path [&quot;, &quot;]&quot;).s(sourcePath, destinationPath)
+        </td>
+      </tr><tr>
+        <td>
+          297
+        </td>
+        <td>
+          1059
+        </td>
+        <td>
+          13803
+          -
+          13882
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.spi.CommonViewOperations.fail
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.fail(scala.StringContext.apply(&quot;Attempt to copy file [&quot;, &quot;] to existing path [&quot;, &quot;]&quot;).s(sourcePath, destinationPath))
+        </td>
+      </tr><tr>
+        <td>
+          298
+        </td>
+        <td>
+          1062
+        </td>
+        <td>
+          13905
+          -
+          13946
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactContainer.findFile
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.currentBackingObject.findFile(sourcePath)
+        </td>
+      </tr><tr>
+        <td>
+          301
+        </td>
+        <td>
+          1064
+        </td>
+        <td>
+          14019
+          -
+          14078
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.+
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.currentBackingObject.+(sourceFile.withPath(destinationPath))
+        </td>
+      </tr><tr>
+        <td>
+          301
+        </td>
+        <td>
+          1063
+        </td>
+        <td>
+          14042
+          -
+          14078
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.withPath
+        </td>
+        <td style="background: #F0ADAD">
+          sourceFile.withPath(destinationPath)
+        </td>
+      </tr><tr>
+        <td>
+          301
+        </td>
+        <td>
+          1065
+        </td>
+        <td>
+          14010
+          -
+          14079
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.+(sourceFile.withPath(destinationPath)))
+        </td>
+      </tr><tr>
+        <td>
+          303
+        </td>
+        <td>
+          1067
+        </td>
+        <td>
+          14107
+          -
+          14172
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.CommonViewOperations.fail
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.fail(scala.StringContext.apply(&quot;Attempt to copy file [&quot;, &quot;], which does not exist&quot;).s(sourcePath))
+        </td>
+      </tr><tr>
+        <td>
+          303
+        </td>
+        <td>
+          1066
+        </td>
+        <td>
+          14112
+          -
+          14171
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Attempt to copy file [&quot;, &quot;], which does not exist&quot;).s(sourcePath)
+        </td>
+      </tr><tr>
+        <td>
+          310
+        </td>
+        <td>
+          1068
+        </td>
+        <td>
+          14560
+          -
+          14624
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.copyEditorBackingFileOrFailToDestination
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.copyEditorBackingFileOrFailToDestination(sourcePath, sourcePath)
+        </td>
+      </tr><tr>
+        <td>
+          316
+        </td>
+        <td>
+          1073
+        </td>
+        <td>
+          15144
+          -
+          15144
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          316
+        </td>
+        <td>
+          1069
+        </td>
+        <td>
+          15148
+          -
+          15175
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ArtifactContainerMutableView.fileExists
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.fileExists(destinationPath)
+        </td>
+      </tr><tr>
+        <td>
+          316
+        </td>
+        <td>
+          1074
+        </td>
+        <td>
+          15144
+          -
+          15144
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          317
+        </td>
+        <td>
+          1070
+        </td>
+        <td>
+          15188
+          -
+          15261
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Attempt to copy file [&quot;, &quot;] to existing path [&quot;, &quot;]&quot;).s(sourcePath, destinationPath)
+        </td>
+      </tr><tr>
+        <td>
+          317
+        </td>
+        <td>
+          1072
+        </td>
+        <td>
+          15183
+          -
+          15262
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.spi.CommonViewOperations.fail
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.fail(scala.StringContext.apply(&quot;Attempt to copy file [&quot;, &quot;] to existing path [&quot;, &quot;]&quot;).s(sourcePath, destinationPath))
+        </td>
+      </tr><tr>
+        <td>
+          317
+        </td>
+        <td>
+          1071
+        </td>
+        <td>
+          15183
+          -
+          15262
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.CommonViewOperations.fail
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.fail(scala.StringContext.apply(&quot;Attempt to copy file [&quot;, &quot;] to existing path [&quot;, &quot;]&quot;).s(sourcePath, destinationPath))
+        </td>
+      </tr><tr>
+        <td>
+          318
+        </td>
+        <td>
+          1075
+        </td>
+        <td>
+          15285
+          -
+          15311
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactContainer.findFile
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.rugAs.findFile(sourcePath)
+        </td>
+      </tr><tr>
+        <td>
+          321
+        </td>
+        <td>
+          1076
+        </td>
+        <td>
+          15407
+          -
+          15443
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.withPath
+        </td>
+        <td style="background: #AEF1AE">
+          sourceFile.withPath(destinationPath)
+        </td>
+      </tr><tr>
+        <td>
+          321
+        </td>
+        <td>
+          1078
+        </td>
+        <td>
+          15375
+          -
+          15444
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.+(sourceFile.withPath(destinationPath)))
+        </td>
+      </tr><tr>
+        <td>
+          321
+        </td>
+        <td>
+          1077
+        </td>
+        <td>
+          15384
+          -
+          15443
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.+
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.+(sourceFile.withPath(destinationPath))
+        </td>
+      </tr><tr>
+        <td>
+          323
+        </td>
+        <td>
+          1079
+        </td>
+        <td>
+          15477
+          -
+          15551
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Attempt to copy editor backing file [&quot;, &quot;], which does not exist&quot;).s(sourcePath)
+        </td>
+      </tr><tr>
+        <td>
+          323
+        </td>
+        <td>
+          1080
+        </td>
+        <td>
+          15472
+          -
+          15552
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.CommonViewOperations.fail
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.fail(scala.StringContext.apply(&quot;Attempt to copy editor backing file [&quot;, &quot;], which does not exist&quot;).s(sourcePath))
+        </td>
+      </tr><tr>
+        <td>
+          335
+        </td>
+        <td>
+          1085
+        </td>
+        <td>
+          16250
+          -
+          16250
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          335
+        </td>
+        <td>
+          1084
+        </td>
+        <td>
+          16250
+          -
+          16250
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          335
+        </td>
+        <td>
+          1081
+        </td>
+        <td>
+          16254
+          -
+          16289
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.rugAs.findFile(sourceDir).isDefined
+        </td>
+      </tr><tr>
+        <td>
+          336
+        </td>
+        <td>
+          1082
+        </td>
+        <td>
+          16297
+          -
+          16385
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.spi.InstantEditorFailureException(scala.StringContext.apply(&quot;Path [&quot;, &quot;] is a file, not a directory&quot;).s(sourceDir))
+        </td>
+      </tr><tr>
+        <td>
+          336
+        </td>
+        <td>
+          1083
+        </td>
+        <td>
+          16297
+          -
+          16385
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.spi.InstantEditorFailureException(scala.StringContext.apply(&quot;Path [&quot;, &quot;] is a file, not a directory&quot;).s(sourceDir))
+        </td>
+      </tr><tr>
+        <td>
+          337
+        </td>
+        <td>
+          1086
+        </td>
+        <td>
+          16405
+          -
+          16454
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.withPathAbove
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.rugAs./(sourceDir).withPathAbove(destinationPath)
+        </td>
+      </tr><tr>
+        <td>
+          338
+        </td>
+        <td>
+          1088
+        </td>
+        <td>
+          16459
+          -
+          16500
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.+(underDir))
+        </td>
+      </tr><tr>
+        <td>
+          338
+        </td>
+        <td>
+          1087
+        </td>
+        <td>
+          16468
+          -
+          16499
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.+
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.+(underDir)
+        </td>
+      </tr><tr>
+        <td>
+          347
+        </td>
+        <td>
+          1093
+        </td>
+        <td>
+          16954
+          -
+          16954
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          347
+        </td>
+        <td>
+          1089
+        </td>
+        <td>
+          16958
+          -
+          16993
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.rugAs.findFile(sourceDir).isDefined
+        </td>
+      </tr><tr>
+        <td>
+          347
+        </td>
+        <td>
+          1092
+        </td>
+        <td>
+          16954
+          -
+          16954
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          348
+        </td>
+        <td>
+          1091
+        </td>
+        <td>
+          17001
+          -
+          17089
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new com.atomist.rug.spi.InstantEditorFailureException(scala.StringContext.apply(&quot;Path [&quot;, &quot;] is a file, not a directory&quot;).s(sourceDir))
+        </td>
+      </tr><tr>
+        <td>
+          348
+        </td>
+        <td>
+          1090
+        </td>
+        <td>
+          17001
+          -
+          17089
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new com.atomist.rug.spi.InstantEditorFailureException(scala.StringContext.apply(&quot;Path [&quot;, &quot;] is a file, not a directory&quot;).s(sourceDir))
+        </td>
+      </tr><tr>
+        <td>
+          349
+        </td>
+        <td>
+          1094
+        </td>
+        <td>
+          17127
+          -
+          17131
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          349
+        </td>
+        <td>
+          1096
+        </td>
+        <td>
+          17109
+          -
+          17167
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.filter
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.rugAs.filter(((x$4: com.atomist.source.DirectoryArtifact) =&gt; true), ((f: com.atomist.source.FileArtifact) =&gt; f.path.startsWith(sourceDir)))
+        </td>
+      </tr><tr>
+        <td>
+          349
+        </td>
+        <td>
+          1095
+        </td>
+        <td>
+          17138
+          -
+          17166
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.startsWith
+        </td>
+        <td style="background: #AEF1AE">
+          f.path.startsWith(sourceDir)
+        </td>
+      </tr><tr>
+        <td>
+          350
+        </td>
+        <td>
+          1097
+        </td>
+        <td>
+          17181
+          -
+          17212
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.+
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.+(underDir)
+        </td>
+      </tr><tr>
+        <td>
+          350
+        </td>
+        <td>
+          1098
+        </td>
+        <td>
+          17172
+          -
+          17213
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.+(underDir))
+        </td>
+      </tr><tr>
+        <td>
+          356
+        </td>
+        <td>
+          1100
+        </td>
+        <td>
+          17508
+          -
+          17533
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.AtomistConfig.atomistRoot
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.atomistConfig.atomistRoot
+        </td>
+      </tr><tr>
+        <td>
+          356
+        </td>
+        <td>
+          1102
+        </td>
+        <td>
+          17460
+          -
+          17535
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.filter
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.rugAs.filter(((x$5: com.atomist.source.DirectoryArtifact) =&gt; true), ((f: com.atomist.source.FileArtifact) =&gt; f.path.startsWith(ProjectMutableView.this.atomistConfig.atomistRoot).unary_!))
+        </td>
+      </tr><tr>
+        <td>
+          356
+        </td>
+        <td>
+          1099
+        </td>
+        <td>
+          17478
+          -
+          17482
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          356
+        </td>
+        <td>
+          1101
+        </td>
+        <td>
+          17489
+          -
+          17534
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          f.path.startsWith(ProjectMutableView.this.atomistConfig.atomistRoot).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          357
+        </td>
+        <td>
+          1104
+        </td>
+        <td>
+          17540
+          -
+          17581
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.+(underDir))
+        </td>
+      </tr><tr>
+        <td>
+          357
+        </td>
+        <td>
+          1103
+        </td>
+        <td>
+          17549
+          -
+          17580
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.+
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.+(underDir)
+        </td>
+      </tr><tr>
+        <td>
+          368
+        </td>
+        <td>
+          1105
+        </td>
+        <td>
+          18211
+          -
+          18228
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource./
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.rugAs./(sourceDir)
+        </td>
+      </tr><tr>
+        <td>
+          369
+        </td>
+        <td>
+          1106
+        </td>
+        <td>
+          18237
+          -
+          18265
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #F0ADAD">
+          underDir.totalFileCount.==(0)
+        </td>
+      </tr><tr>
+        <td>
+          370
+        </td>
+        <td>
+          1109
+        </td>
+        <td>
+          18273
+          -
+          18334
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.spi.CommonViewOperations.fail
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.fail(scala.StringContext.apply(&quot;No files found in editor backing object [&quot;, &quot;]&quot;).s(sourceDir))
+        </td>
+      </tr><tr>
+        <td>
+          370
+        </td>
+        <td>
+          1108
+        </td>
+        <td>
+          18273
+          -
+          18334
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.CommonViewOperations.fail
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.fail(scala.StringContext.apply(&quot;No files found in editor backing object [&quot;, &quot;]&quot;).s(sourceDir))
+        </td>
+      </tr><tr>
+        <td>
+          370
+        </td>
+        <td>
+          1107
+        </td>
+        <td>
+          18278
+          -
+          18333
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;No files found in editor backing object [&quot;, &quot;]&quot;).s(sourceDir)
+        </td>
+      </tr><tr>
+        <td>
+          372
+        </td>
+        <td>
+          1111
+        </td>
+        <td>
+          18350
+          -
+          18391
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.+(underDir))
+        </td>
+      </tr><tr>
+        <td>
+          372
+        </td>
+        <td>
+          1110
+        </td>
+        <td>
+          18359
+          -
+          18390
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.+
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.currentBackingObject.+(underDir)
+        </td>
+      </tr><tr>
+        <td>
+          372
+        </td>
+        <td>
+          1112
+        </td>
+        <td>
+          18350
+          -
+          18391
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.+(underDir))
+        </td>
+      </tr><tr>
+        <td>
+          386
+        </td>
+        <td>
+          1114
+        </td>
+        <td>
+          19066
+          -
+          19110
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.common.template.MergeContext.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.project.common.template.MergeContext.apply(ProjectMutableView.this.mapToUse(parametersToTemplate))
+        </td>
+      </tr><tr>
+        <td>
+          386
+        </td>
+        <td>
+          1113
+        </td>
+        <td>
+          19079
+          -
+          19109
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.mapToUse
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.mapToUse(parametersToTemplate)
+        </td>
+      </tr><tr>
+        <td>
+          387
+        </td>
+        <td>
+          1115
+        </td>
+        <td>
+          19129
+          -
+          19179
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.withPath
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.mergeTool.mergeToFile(mc, template).withPath(path)
+        </td>
+      </tr><tr>
+        <td>
+          388
+        </td>
+        <td>
+          1117
+        </td>
+        <td>
+          19184
+          -
+          19224
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.+(newFile))
+        </td>
+      </tr><tr>
+        <td>
+          388
+        </td>
+        <td>
+          1116
+        </td>
+        <td>
+          19193
+          -
+          19223
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.+
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.+(newFile)
+        </td>
+      </tr><tr>
+        <td>
+          393
+        </td>
+        <td>
+          1118
+        </td>
+        <td>
+          19340
+          -
+          19375
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.extractProperties
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornUtils.extractProperties(som)
+        </td>
+      </tr><tr>
+        <td>
+          397
+        </td>
+        <td>
+          1120
+        </td>
+        <td>
+          19531
+          -
+          19546
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toMap
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.JavaConverters.mapAsScalaMapConverter[String, Object](m).asScala.toMap[String, Object](scala.this.Predef.$conforms[(String, Object)])
+        </td>
+      </tr><tr>
+        <td>
+          397
+        </td>
+        <td>
+          1119
+        </td>
+        <td>
+          19541
+          -
+          19541
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.$conforms[(String, Object)]
+        </td>
+      </tr><tr>
+        <td>
+          398
+        </td>
+        <td>
+          1121
+        </td>
+        <td>
+          19564
+          -
+          19569
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenMapFactory.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.Map.apply[String, Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          412
+        </td>
+        <td>
+          1123
+        </td>
+        <td>
+          20424
+          -
+          20468
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.common.template.MergeContext.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.project.common.template.MergeContext.apply(ProjectMutableView.this.mapToUse(parametersToTemplate))
+        </td>
+      </tr><tr>
+        <td>
+          412
+        </td>
+        <td>
+          1122
+        </td>
+        <td>
+          20437
+          -
+          20467
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.mapToUse
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.mapToUse(parametersToTemplate)
+        </td>
+      </tr><tr>
+        <td>
+          413
+        </td>
+        <td>
+          1124
+        </td>
+        <td>
+          20496
+          -
+          20527
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource./
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.templateContent./(templatesPath)
+        </td>
+      </tr><tr>
+        <td>
+          414
+        </td>
+        <td>
+          1125
+        </td>
+        <td>
+          20552
+          -
+          20630
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.withPathAbove
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.mergeTool.processTemplateFiles(mc, directoryToMerge).withPathAbove(outputPath)
+        </td>
+      </tr><tr>
+        <td>
+          415
+        </td>
+        <td>
+          1127
+        </td>
+        <td>
+          20635
+          -
+          20681
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(ProjectMutableView.this.currentBackingObject.+(outputContent))
+        </td>
+      </tr><tr>
+        <td>
+          415
+        </td>
+        <td>
+          1126
+        </td>
+        <td>
+          20644
+          -
+          20680
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.+
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.+(outputContent)
+        </td>
+      </tr><tr>
+        <td>
+          420
+        </td>
+        <td>
+          1128
+        </td>
+        <td>
+          20882
+          -
+          20913
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Collections.singletonList
+        </td>
+        <td style="background: #F0ADAD">
+          java.util.Collections.singletonList[com.atomist.rug.kind.core.ProjectMutableView](this)
+        </td>
+      </tr><tr>
+        <td>
+          426
+        </td>
+        <td>
+          1129
+        </td>
+        <td>
+          21108
+          -
+          21136
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new FileMutableView(x$6, this)
+        </td>
+      </tr><tr>
+        <td>
+          426
+        </td>
+        <td>
+          1132
+        </td>
+        <td>
+          21074
+          -
+          21144
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsJava.asJava
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.seqAsJavaListConverter[com.atomist.rug.kind.core.FileMutableView](ProjectMutableView.this.currentBackingObject.allFiles.map[com.atomist.rug.kind.core.FileMutableView, Seq[com.atomist.rug.kind.core.FileMutableView]](((x$6: com.atomist.source.FileArtifact) =&gt; new FileMutableView(x$6, this)))(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.core.FileMutableView])).asJava
+        </td>
+      </tr><tr>
+        <td>
+          426
+        </td>
+        <td>
+          1131
+        </td>
+        <td>
+          21074
+          -
+          21137
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject.allFiles.map[com.atomist.rug.kind.core.FileMutableView, Seq[com.atomist.rug.kind.core.FileMutableView]](((x$6: com.atomist.source.FileArtifact) =&gt; new FileMutableView(x$6, this)))(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.core.FileMutableView])
+        </td>
+      </tr><tr>
+        <td>
+          426
+        </td>
+        <td>
+          1130
+        </td>
+        <td>
+          21107
+          -
+          21107
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.kind.core.FileMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          438
+        </td>
+        <td>
+          1133
+        </td>
+        <td>
+          21539
+          -
+          21572
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.RugResolver.resolve
+        </td>
+        <td style="background: #AEF1AE">
+          resolver.resolve(rug, editorName)
+        </td>
+      </tr><tr>
+        <td>
+          440
+        </td>
+        <td>
+          1136
+        </td>
+        <td>
+          21631
+          -
+          21693
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.ProjectEditor.modify
+        </td>
+        <td style="background: #AEF1AE">
+          ed.modify(ProjectMutableView.this.currentBackingObject, com.atomist.param.SimpleParameterValues.apply(params))
+        </td>
+      </tr><tr>
+        <td>
+          440
+        </td>
+        <td>
+          1135
+        </td>
+        <td>
+          21663
+          -
+          21692
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValues.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.param.SimpleParameterValues.apply(params)
+        </td>
+      </tr><tr>
+        <td>
+          440
+        </td>
+        <td>
+          1134
+        </td>
+        <td>
+          21641
+          -
+          21661
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          442
+        </td>
+        <td>
+          1138
+        </td>
+        <td>
+          21763
+          -
+          21782
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.updateTo(sm.result)
+        </td>
+      </tr><tr>
+        <td>
+          442
+        </td>
+        <td>
+          1137
+        </td>
+        <td>
+          21772
+          -
+          21781
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.edit.SuccessfulModification.result
+        </td>
+        <td style="background: #AEF1AE">
+          sm.result
+        </td>
+      </tr><tr>
+        <td>
+          443
+        </td>
+        <td>
+          1140
+        </td>
+        <td>
+          21827
+          -
+          21827
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          443
+        </td>
+        <td>
+          1139
+        </td>
+        <td>
+          21827
+          -
+          21847
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          445
+        </td>
+        <td>
+          1141
+        </td>
+        <td>
+          21886
+          -
+          21966
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugRuntimeException(ed.name, scala.StringContext.apply(&quot;Unexpected editor failure: &quot;, &quot;&quot;).s(wtf), null)
+        </td>
+      </tr><tr>
+        <td>
+          448
+        </td>
+        <td>
+          1142
+        </td>
+        <td>
+          22014
+          -
+          22038
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.contains
+        </td>
+        <td style="background: #AEF1AE">
+          editorName.contains(&quot;:&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          448
+        </td>
+        <td>
+          1151
+        </td>
+        <td>
+          22010
+          -
+          22010
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          448
+        </td>
+        <td>
+          1150
+        </td>
+        <td>
+          22010
+          -
+          22010
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          448
+        </td>
+        <td>
+          1149
+        </td>
+        <td>
+          22040
+          -
+          22318
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val shortName: String = org.apache.commons.lang3.StringUtils.substringAfterLast(editorName, &quot;:&quot;);
+  if (resolver.resolve(rug, shortName).nonEmpty)
+    throw new com.atomist.rug.EditorNotFoundException(scala.StringContext.apply(&quot;Could not find editor: &quot;, &quot;. Did you mean: &quot;, &quot;?&quot;).s(editorName, shortName))
+  else
+    ()
+}
+        </td>
+      </tr><tr>
+        <td>
+          449
+        </td>
+        <td>
+          1143
+        </td>
+        <td>
+          22070
+          -
+          22117
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.apache.commons.lang3.StringUtils.substringAfterLast
+        </td>
+        <td style="background: #AEF1AE">
+          org.apache.commons.lang3.StringUtils.substringAfterLast(editorName, &quot;:&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          450
+        </td>
+        <td>
+          1144
+        </td>
+        <td>
+          22134
+          -
+          22175
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          resolver.resolve(rug, shortName).nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          450
+        </td>
+        <td>
+          1147
+        </td>
+        <td>
+          22130
+          -
+          22130
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          450
+        </td>
+        <td>
+          1148
+        </td>
+        <td>
+          22130
+          -
+          22130
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          451
+        </td>
+        <td>
+          1145
+        </td>
+        <td>
+          22193
+          -
+          22292
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.EditorNotFoundException(scala.StringContext.apply(&quot;Could not find editor: &quot;, &quot;. Did you mean: &quot;, &quot;?&quot;).s(editorName, shortName))
+        </td>
+      </tr><tr>
+        <td>
+          451
+        </td>
+        <td>
+          1146
+        </td>
+        <td>
+          22193
+          -
+          22292
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.EditorNotFoundException(scala.StringContext.apply(&quot;Could not find editor: &quot;, &quot;. Did you mean: &quot;, &quot;?&quot;).s(editorName, shortName))
+        </td>
+      </tr><tr>
+        <td>
+          454
+        </td>
+        <td>
+          1152
+        </td>
+        <td>
+          22329
+          -
+          22418
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new com.atomist.rug.EditorNotFoundException(editorName, resolver.resolvedDependencies.rugs.allRugs)
+        </td>
+      </tr><tr>
+        <td>
+          456
+        </td>
+        <td>
+          1153
+        </td>
+        <td>
+          22448
+          -
+          22537
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.EditorNotFoundException(editorName, resolver.resolvedDependencies.rugs.allRugs)
+        </td>
+      </tr><tr>
+        <td>
+          458
+        </td>
+        <td>
+          1154
+        </td>
+        <td>
+          22563
+          -
+          22662
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugRuntimeException(ProjectMutableView.this.name, scala.StringContext.apply(&quot;No Rug context in which to find other editor: [&quot;, &quot;]&quot;).s(editorName), rug.this.RugRuntimeException.&lt;init&gt;$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          474
+        </td>
+        <td>
+          1155
+        </td>
+        <td>
+          23375
+          -
+          23410
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.extractProperties
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornUtils.extractProperties(som)
+        </td>
+      </tr><tr>
+        <td>
+          475
+        </td>
+        <td>
+          1156
+        </td>
+        <td>
+          23427
+          -
+          23436
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Map.empty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Map.empty[String, Nothing]
+        </td>
+      </tr><tr>
+        <td>
+          477
+        </td>
+        <td>
+          1157
+        </td>
+        <td>
+          23447
+          -
+          23470
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.editWith
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.editWith(editorName, m)
+        </td>
+      </tr><tr>
+        <td>
+          482
+        </td>
+        <td>
+          1160
+        </td>
+        <td>
+          23736
+          -
+          23741
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.rugAs
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.rugAs
+        </td>
+      </tr><tr>
+        <td>
+          482
+        </td>
+        <td>
+          1162
+        </td>
+        <td>
+          23758
+          -
+          23765
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.creator
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.creator
+        </td>
+      </tr><tr>
+        <td>
+          482
+        </td>
+        <td>
+          1165
+        </td>
+        <td>
+          23684
+          -
+          23766
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new ProjectMutableView(com.atomist.source.EmptyArtifactSource.apply(com.atomist.source.EmptyArtifactSource.apply$default$1), ProjectMutableView.this.rugAs, ProjectMutableView.this.atomistConfig, ProjectMutableView.this.creator, core.this.ProjectMutableView.&lt;init&gt;$default$5, core.this.ProjectMutableView.&lt;init&gt;$default$6)
+        </td>
+      </tr><tr>
+        <td>
+          482
+        </td>
+        <td>
+          1159
+        </td>
+        <td>
+          23707
+          -
+          23734
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.EmptyArtifactSource.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.EmptyArtifactSource.apply(com.atomist.source.EmptyArtifactSource.apply$default$1)
+        </td>
+      </tr><tr>
+        <td>
+          482
+        </td>
+        <td>
+          1158
+        </td>
+        <td>
+          23727
+          -
+          23727
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.EmptyArtifactSource.apply$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.EmptyArtifactSource.apply$default$1
+        </td>
+      </tr><tr>
+        <td>
+          482
+        </td>
+        <td>
+          1161
+        </td>
+        <td>
+          23743
+          -
+          23756
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.atomistConfig
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.atomistConfig
+        </td>
+      </tr><tr>
+        <td>
+          482
+        </td>
+        <td>
+          1164
+        </td>
+        <td>
+          23684
+          -
+          23684
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;$default$6
+        </td>
+        <td style="background: #AEF1AE">
+          core.this.ProjectMutableView.&lt;init&gt;$default$6
+        </td>
+      </tr><tr>
+        <td>
+          482
+        </td>
+        <td>
+          1163
+        </td>
+        <td>
+          23684
+          -
+          23684
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;$default$5
+        </td>
+        <td style="background: #AEF1AE">
+          core.this.ProjectMutableView.&lt;init&gt;$default$5
+        </td>
+      </tr><tr>
+        <td>
+          491
+        </td>
+        <td>
+          1167
+        </td>
+        <td>
+          24011
+          -
+          24047
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.ProjectEditor.modify
+        </td>
+        <td style="background: #F0ADAD">
+          ed.modify(ProjectMutableView.this.currentBackingObject, poa)
+        </td>
+      </tr><tr>
+        <td>
+          491
+        </td>
+        <td>
+          1166
+        </td>
+        <td>
+          24021
+          -
+          24041
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          492
+        </td>
+        <td>
+          1168
+        </td>
+        <td>
+          24097
+          -
+          24106
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.edit.SuccessfulModification.result
+        </td>
+        <td style="background: #F0ADAD">
+          sm.result
+        </td>
+      </tr><tr>
+        <td>
+          493
+        </td>
+        <td>
+          1169
+        </td>
+        <td>
+          24145
+          -
+          24165
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          495
+        </td>
+        <td>
+          1170
+        </td>
+        <td>
+          24192
+          -
+          24272
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugRuntimeException(ed.name, scala.StringContext.apply(&quot;Unexpected editor failure: &quot;, &quot;&quot;).s(wtf), null)
+        </td>
+      </tr><tr>
+        <td>
+          503
+        </td>
+        <td>
+          1171
+        </td>
+        <td>
+          24512
+          -
+          24515
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.ctx
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.ctx
+        </td>
+      </tr><tr>
+        <td>
+          505
+        </td>
+        <td>
+          1173
+        </td>
+        <td>
+          24572
+          -
+          24595
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectContext.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new ProjectContext(ProjectMutableView.this.ctx)
+        </td>
+      </tr><tr>
+        <td>
+          505
+        </td>
+        <td>
+          1172
+        </td>
+        <td>
+          24591
+          -
+          24594
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.ctx
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.ctx
+        </td>
+      </tr><tr>
+        <td>
+          513
+        </td>
+        <td>
+          1174
+        </td>
+        <td>
+          24881
+          -
+          24920
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.nodeAt
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.nodeAt(path, kind, lineFrom1, colFrom1)
+        </td>
+      </tr><tr>
+        <td>
+          514
+        </td>
+        <td>
+          1178
+        </td>
+        <td>
+          24939
+          -
+          24939
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          515
+        </td>
+        <td>
+          1177
+        </td>
+        <td>
+          24978
+          -
+          25007
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.dropWhile
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(n.address).dropWhile(((x$7: Char) =&gt; x$7.!=('/')))
+        </td>
+      </tr><tr>
+        <td>
+          515
+        </td>
+        <td>
+          1176
+        </td>
+        <td>
+          24998
+          -
+          25006
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Char.!=
+        </td>
+        <td style="background: #AEF1AE">
+          x$7.!=('/')
+        </td>
+      </tr><tr>
+        <td>
+          515
+        </td>
+        <td>
+          1175
+        </td>
+        <td>
+          24978
+          -
+          24987
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.AddressableGraphNode.address
+        </td>
+        <td style="background: #AEF1AE">
+          n.address
+        </td>
+      </tr><tr>
+        <td>
+          516
+        </td>
+        <td>
+          1185
+        </td>
+        <td>
+          24925
+          -
+          25264
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          nodeO.collect[String](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.tree.TreeNode,String] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.tree.TreeNode =&gt; String&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.tree.TreeNode, B1 &gt;: String](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[com.atomist.tree.TreeNode]: com.atomist.tree.TreeNode): com.atomist.tree.TreeNode @unchecked) match {
+      case (n @ (_: com.atomist.tree.AddressableTreeNode)) =&gt; scala.this.Predef.augmentString(n.address).dropWhile(((x$7: Char) =&gt; x$7.!=('/')))
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: com.atomist.tree.TreeNode): Boolean = ((x1.asInstanceOf[com.atomist.tree.TreeNode]: com.atomist.tree.TreeNode): com.atomist.tree.TreeNode @unchecked) match {
+      case (n @ (_: com.atomist.tree.AddressableTreeNode)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.tree.TreeNode,String])).getOrElse[String](if (ProjectMutableView.this.fileExists(path).&amp;&amp;(com.atomist.rug.kind.DefaultTypeRegistry.findByName(kind).isDefined))
+  ProjectMutableView.this.pathToRootContainer(path, kind)
+else
+  null)
+        </td>
+      </tr><tr>
+        <td>
+          518
+        </td>
+        <td>
+          1180
+        </td>
+        <td>
+          25135
+          -
+          25201
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.fileExists(path).&amp;&amp;(com.atomist.rug.kind.DefaultTypeRegistry.findByName(kind).isDefined)
+        </td>
+      </tr><tr>
+        <td>
+          518
+        </td>
+        <td>
+          1179
+        </td>
+        <td>
+          25155
+          -
+          25201
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.DefaultTypeRegistry.findByName(kind).isDefined
+        </td>
+      </tr><tr>
+        <td>
+          519
+        </td>
+        <td>
+          1182
+        </td>
+        <td>
+          25211
+          -
+          25242
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.pathToRootContainer
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.pathToRootContainer(path, kind)
+        </td>
+      </tr><tr>
+        <td>
+          519
+        </td>
+        <td>
+          1181
+        </td>
+        <td>
+          25211
+          -
+          25242
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.pathToRootContainer
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectMutableView.this.pathToRootContainer(path, kind)
+        </td>
+      </tr><tr>
+        <td>
+          520
+        </td>
+        <td>
+          1183
+        </td>
+        <td>
+          25254
+          -
+          25258
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          520
+        </td>
+        <td>
+          1184
+        </td>
+        <td>
+          25254
+          -
+          25258
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          524
+        </td>
+        <td>
+          1186
+        </td>
+        <td>
+          25334
+          -
+          25367
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;/File()[@path=\'&quot;, &quot;\']/&quot;, &quot;()&quot;).s(path, kind)
+        </td>
+      </tr><tr>
+        <td>
+          527
+        </td>
+        <td>
+          1187
+        </td>
+        <td>
+          25487
+          -
+          25518
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.pathToRootContainer
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.pathToRootContainer(path, kind)
+        </td>
+      </tr><tr>
+        <td>
+          528
+        </td>
+        <td>
+          1189
+        </td>
+        <td>
+          25566
+          -
+          25571
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.parseString
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.pathexpression.PathExpressionParser.parseString(pexpr)
+        </td>
+      </tr><tr>
+        <td>
+          528
+        </td>
+        <td>
+          1192
+        </td>
+        <td>
+          25523
+          -
+          25572
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExpressionEngine.evaluate
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.evaluate(x$8, x$9, x$10, x$11)
+        </td>
+      </tr><tr>
+        <td>
+          528
+        </td>
+        <td>
+          1188
+        </td>
+        <td>
+          25523
+          -
+          25550
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsPathExpressionEngine.ee
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectMutableView.this.ctx.pathExpressionEngine.ee
+        </td>
+      </tr><tr>
+        <td>
+          528
+        </td>
+        <td>
+          1191
+        </td>
+        <td>
+          25551
+          -
+          25551
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExpressionEngine.evaluate$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.evaluate$default$4
+        </td>
+      </tr><tr>
+        <td>
+          528
+        </td>
+        <td>
+          1190
+        </td>
+        <td>
+          25551
+          -
+          25551
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExpressionEngine.evaluate$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.evaluate$default$3
+        </td>
+      </tr><tr>
+        <td>
+          529
+        </td>
+        <td>
+          1193
+        </td>
+        <td>
+          25608
+          -
+          25623
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          nodes.size.==(1)
+        </td>
+      </tr><tr>
+        <td>
+          530
+        </td>
+        <td>
+          1194
+        </td>
+        <td>
+          25649
+          -
+          25659
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          nodes.head
+        </td>
+      </tr><tr>
+        <td>
+          534
+        </td>
+        <td>
+          1196
+        </td>
+        <td>
+          25789
+          -
+          25848
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineInputPositionImpl.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.content.text.LineInputPositionImpl.apply(ow.file.content, lineFrom1, colFrom1)
+        </td>
+      </tr><tr>
+        <td>
+          534
+        </td>
+        <td>
+          1195
+        </td>
+        <td>
+          25811
+          -
+          25826
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.content
+        </td>
+        <td style="background: #AEF1AE">
+          ow.file.content
+        </td>
+      </tr><tr>
+        <td>
+          535
+        </td>
+        <td>
+          1197
+        </td>
+        <td>
+          25861
+          -
+          25875
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.nodeAt
+        </td>
+        <td style="background: #AEF1AE">
+          ow.nodeAt(pos)
+        </td>
+      </tr><tr>
+        <td>
+          536
+        </td>
+        <td>
+          1198
+        </td>
+        <td>
+          25896
+          -
+          25900
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          538
+        </td>
+        <td>
+          1199
+        </td>
+        <td>
+          25938
+          -
+          25952
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          nodes.size.&gt;(1)
+        </td>
+      </tr><tr>
+        <td>
+          539
+        </td>
+        <td>
+          1200
+        </td>
+        <td>
+          25964
+          -
+          26047
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Found &quot;, &quot; hits for [&quot;, &quot;], not 1&quot;).s(nodes.size, pexpr))
+        </td>
+      </tr><tr>
+        <td>
+          542
+        </td>
+        <td>
+          1201
+        </td>
+        <td>
+          26130
+          -
+          26134
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          552
+        </td>
+        <td>
+          1202
+        </td>
+        <td>
+          26293
+          -
+          26312
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.DefaultTypeRegistry
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.kind.DefaultTypeRegistry
+        </td>
+      </tr><tr>
+        <td>
+          554
+        </td>
+        <td>
+          1203
+        </td>
+        <td>
+          26376
+          -
+          26400
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.RugContext.pathExpressionEngine
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectContext.this.ctx.pathExpressionEngine
+        </td>
+      </tr><tr>
+        <td>
+          559
+        </td>
+        <td>
+          1204
+        </td>
+        <td>
+          26495
+          -
+          26505
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.RugContext.teamId
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectContext.this.ctx.teamId
+        </td>
+      </tr><tr>
+        <td>
+          564
+        </td>
+        <td>
+          1205
+        </td>
+        <td>
+          26633
+          -
+          26653
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.RugContext.treeMaterializer
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectContext.this.ctx.treeMaterializer
+        </td>
+      </tr><tr>
+        <td>
+          566
+        </td>
+        <td>
+          1206
+        </td>
+        <td>
+          26694
+          -
+          26711
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.RugContext.contextRoot
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectContext.this.ctx.contextRoot()
+        </td>
+      </tr><tr>
+        <td>
+          568
+        </td>
+        <td>
+          1207
+        </td>
+        <td>
+          26769
+          -
+          26785
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.ExecutionContext.repoResolver
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectContext.this.ctx.repoResolver
+        </td>
+      </tr><tr>
+        <td>
+          568
+        </td>
+        <td>
+          1208
+        </td>
+        <td>
+          26746
+          -
+          26786
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsGitProjectLoader.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.runtime.js.interop.jsGitProjectLoader(ProjectContext.this.ctx.repoResolver)
+        </td>
+      </tr><tr>
+        <td>
+          571
+        </td>
+        <td>
+          1210
+        </td>
+        <td>
+          26831
+          -
+          26930
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new ProjectMutableView(com.atomist.source.EmptyArtifactSource.apply(&quot;!!ThisValueWillBeOverwritten&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          571
+        </td>
+        <td>
+          1209
+        </td>
+        <td>
+          26878
+          -
+          26929
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.EmptyArtifactSource.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.EmptyArtifactSource.apply(&quot;!!ThisValueWillBeOverwritten&quot;)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

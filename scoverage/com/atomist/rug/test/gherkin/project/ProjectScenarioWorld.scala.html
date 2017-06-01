@@ -1,0 +1,1586 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/test/gherkin/project/ProjectScenarioWorld.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.test.gherkin.project
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.param.{SimpleParameterValue, SimpleParameterValues}
+</span>4 <span style=''>import com.atomist.project.archive.Rugs
+</span>5 <span style=''>import com.atomist.project.common.InvalidParametersException
+</span>6 <span style=''>import com.atomist.project.edit.{FailedModificationAttempt, ModificationAttempt, ProjectEditor, SuccessfulModification}
+</span>7 <span style=''>import com.atomist.project.generate.ProjectGenerator
+</span>8 <span style=''>import com.atomist.rug.RugNotFoundException
+</span>9 <span style=''>import com.atomist.rug.kind.core.{ProjectContext, ProjectMutableView, RepoResolver}
+</span>10 <span style=''>import com.atomist.rug.runtime.js.interop.NashornUtils
+</span>11 <span style=''>import com.atomist.rug.runtime.js.{BaseRugContext, JavaScriptProjectOperation, LocalRugContext}
+</span>12 <span style=''>import com.atomist.rug.test.gherkin._
+</span>13 <span style=''>import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
+</span>14 <span style=''>import com.atomist.source.git.GitRepositoryCloner
+</span>15 <span style=''>
+</span>16 <span style=''>/**
+</span>17 <span style=''>  * Convenient methods for working with projects
+</span>18 <span style=''>  */
+</span>19 <span style=''>class ProjectScenarioWorld(
+</span>20 <span style=''>                            definitions: Definitions,
+</span>21 <span style=''>                            rugs: Option[Rugs],
+</span>22 <span style=''>                            config: GherkinRunnerConfig)
+</span>23 <span style=''>  extends ScenarioWorld(definitions, rugs, config) {
+</span>24 <span style=''>
+</span>25 <span style=''>  private var editorResults: Seq[Either[Throwable, ModificationAttempt]] = </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>  private var project = </span><span style='background: #AEF1AE'>new ProjectMutableView(rugAs = definitions.jsc.rugAs, originalBackingObject = EmptyArtifactSource(&quot;project-scenario-world&quot;))</span><span style=''>
+</span>28 <span style=''>
+</span>29 <span style=''>  override def target: AnyRef = </span><span style='background: #AEF1AE'>project</span><span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>  /**
+</span>32 <span style=''>    * Return the editor with the given name or throw an exception
+</span>33 <span style=''>    */
+</span>34 <span style=''>  def editor(name: String): ProjectEditor = {
+</span>35 <span style=''>    </span><span style='background: #AEF1AE'>rugs</span><span style=''> match {
+</span>36 <span style=''>      case Some(r) =&gt;
+</span>37 <span style=''>        </span><span style='background: #AEF1AE'>r.editors.find(e =&gt; e.name == name)</span><span style=''> match {
+</span>38 <span style=''>          case Some(e) =&gt; e
+</span>39 <span style=''>          case _ =&gt; </span><span style='background: #F0ADAD'>throw new RugNotFoundException(
+</span>40 <span style=''></span><span style='background: #F0ADAD'>            s&quot;Editor with name '$name' can not be found in current context. Known editors are [${r.editorNames.mkString(&quot;, &quot;)}]&quot;)</span><span style=''>
+</span>41 <span style=''>        }
+</span>42 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>throw new RugNotFoundException(&quot;No context provided&quot;)</span><span style=''>
+</span>43 <span style=''>    }
+</span>44 <span style=''>  }
+</span>45 <span style=''>
+</span>46 <span style=''>  def setProject(p: ProjectMutableView): Unit = {
+</span>47 <span style=''>    </span><span style='background: #AEF1AE'>project = p</span><span style=''>
+</span>48 <span style=''>  }
+</span>49 <span style=''>
+</span>50 <span style=''>  /**
+</span>51 <span style=''>    * Return the generator with the given name.
+</span>52 <span style=''>    * Throw an exception if it can't be found.
+</span>53 <span style=''>    */
+</span>54 <span style=''>  def generator(name: String): ProjectGenerator = {
+</span>55 <span style=''>    </span><span style='background: #AEF1AE'>rugs</span><span style=''> match {
+</span>56 <span style=''>      case Some(r) =&gt;
+</span>57 <span style=''>        </span><span style='background: #AEF1AE'>r.generators.find(g =&gt; g.name == name)</span><span style=''> match {
+</span>58 <span style=''>          case Some(g) =&gt; g
+</span>59 <span style=''>          case _ =&gt; </span><span style='background: #F0ADAD'>throw new RugNotFoundException(
+</span>60 <span style=''></span><span style='background: #F0ADAD'>            s&quot;Generator with name '$name' can not be found in current context. Known generators are [${r.generatorNames.mkString(&quot;, &quot;)}]&quot;)</span><span style=''>
+</span>61 <span style=''>        }
+</span>62 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>throw new RugNotFoundException(&quot;No context provided&quot;)</span><span style=''>
+</span>63 <span style=''>    }
+</span>64 <span style=''>  }
+</span>65 <span style=''>
+</span>66 <span style=''>
+</span>67 <span style=''>  /**
+</span>68 <span style=''>    * Edit a project with the given editor, passed in from JavaScript.
+</span>69 <span style=''>    * We expect the JavaScript op to have been populated.
+</span>70 <span style=''>    */
+</span>71 <span style=''>  def generateWith(generator: ProjectGenerator, projectName: String, params: Any): Unit = {
+</span>72 <span style=''>    val resultAs = </span><span style='background: #AEF1AE'>generator.generate(projectName, parameters(params), new ProjectContext(ProjectGenerationContext))</span><span style=''>
+</span>73 <span style=''>    </span><span style='background: #AEF1AE'>project.updateTo(resultAs)</span><span style=''>
+</span>74 <span style=''>  }
+</span>75 <span style=''>
+</span>76 <span style=''>  // for calling from nashorn which doesn't like default parameter values!
+</span>77 <span style=''>  def generateWith(generator: ProjectGenerator, projectName: String): Unit = {
+</span>78 <span style=''>    </span><span style='background: #F0ADAD'>generateWith(generator, projectName, null)</span><span style=''>
+</span>79 <span style=''>  }
+</span>80 <span style=''>
+</span>81 <span style=''>  /**
+</span>82 <span style=''>    * Generate a project with the given editor, passed in from JavaScript.
+</span>83 <span style=''>    * We expect the JavaScript op to have been populated.
+</span>84 <span style=''>    */
+</span>85 <span style=''>  def editWith(editor: ProjectEditor, params: Any): Unit = {
+</span>86 <span style=''>    import scala.util.control.Exception._
+</span>87 <span style=''>
+</span>88 <span style=''>    val editorResult = </span><span style='background: #AEF1AE'>allCatch.either(editor.modify(project.currentBackingObject, parameters(params)))</span><span style=''>
+</span>89 <span style=''>    </span><span style='background: #AEF1AE'>editorResults = editorResults :+ editorResult</span><span style=''>
+</span>90 <span style=''>    editorResult match {
+</span>91 <span style=''>      case Right(sm: SuccessfulModification) =&gt;
+</span>92 <span style=''>        </span><span style='background: #AEF1AE'>project.updateTo(sm.result)</span><span style=''>
+</span>93 <span style=''>      case Right(_) </span><span style='background: #F0ADAD'>=&gt;</span><span style=''>
+</span>94 <span style=''>      // We've already logged it. Do nothing
+</span>95 <span style=''>      case Left(ipe: InvalidParametersException) =&gt;
+</span>96 <span style=''>        </span><span style='background: #AEF1AE'>throw ipe</span><span style=''>
+</span>97 <span style=''>      case Left(unknown) =&gt;
+</span>98 <span style=''>        </span><span style='background: #F0ADAD'>throw unknown</span><span style=''>
+</span>99 <span style=''>    }
+</span>100 <span style=''>  }
+</span>101 <span style=''>  // for calling from nashorn which doesn't like default parameter values!
+</span>102 <span style=''>  def editWith(editor: ProjectEditor): Unit = {
+</span>103 <span style=''>    </span><span style='background: #AEF1AE'>editWith(editor, null)</span><span style=''>
+</span>104 <span style=''>  }
+</span>105 <span style=''>
+</span>106 <span style=''>  def modificationsMade: Boolean = </span><span style='background: #AEF1AE'>editorResults.exists {
+</span>107 <span style=''></span><span style='background: #AEF1AE'>    case Right(_: SuccessfulModification) =&gt; true
+</span>108 <span style=''></span><span style='background: #AEF1AE'>    case _ =&gt; </span><span style='background: #F0ADAD'>false</span><span style='background: #AEF1AE'>
+</span>109 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>110 <span style=''>
+</span>111 <span style=''>  def failed: Boolean = </span><span style='background: #F0ADAD'>editorResults.exists {
+</span>112 <span style=''></span><span style='background: #F0ADAD'>    case Left(_) =&gt; true
+</span>113 <span style=''></span><span style='background: #F0ADAD'>    case Right(_: FailedModificationAttempt) =&gt; true
+</span>114 <span style=''></span><span style='background: #F0ADAD'>    case _ =&gt; false
+</span>115 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>116 <span style=''>
+</span>117 <span style=''>  def editorsRun: Int = </span><span style='background: #AEF1AE'>editorResults.size</span><span style=''>
+</span>118 <span style=''>
+</span>119 <span style=''>  // TODO could probably pull this up
+</span>120 <span style=''>  @throws[InvalidParametersException]
+</span>121 <span style=''>  private def validateParams(op: JavaScriptProjectOperation): Unit = {
+</span>122 <span style=''>    // Pull parameters from script object mirror
+</span>123 <span style=''>    val paramValues = </span><span style='background: #F0ADAD'>op.jsVar.getOwnKeys(true).map(k =&gt; {
+</span>124 <span style=''></span><span style='background: #F0ADAD'>      SimpleParameterValue(k, NashornUtils.stringProperty(op.jsVar, k, &quot;&quot;))
+</span>125 <span style=''></span><span style='background: #F0ADAD'>    })</span><span style=''>
+</span>126 <span style=''>    </span><span style='background: #F0ADAD'>op.validateParameters(SimpleParameterValues(paramValues))</span><span style=''>
+</span>127 <span style=''>  }
+</span>128 <span style=''>
+</span>129 <span style=''>}
+</span>130 <span style=''>
+</span>131 <span style=''>/**
+</span>132 <span style=''>  * Context that allows us to clone public github repos, which is
+</span>133 <span style=''>  * what we want in testing seed style generators
+</span>134 <span style=''>  */
+</span>135 <span style=''>private object ProjectGenerationContext extends BaseRugContext {
+</span>136 <span style=''>
+</span>137 <span style=''>  override def repoResolver: Option[RepoResolver] = </span><span style='background: #F0ADAD'>Some(GitRepoResolver)</span><span style=''>
+</span>138 <span style=''>}
+</span>139 <span style=''>
+</span>140 <span style=''>private object GitRepoResolver extends RepoResolver {
+</span>141 <span style=''>
+</span>142 <span style=''>  private val cloner = </span><span style='background: #F0ADAD'>new GitRepositoryCloner(&quot;&quot;)</span><span style=''>;
+</span>143 <span style=''>
+</span>144 <span style=''>  override def resolveBranch(owner: String, repoName: String, branch: String): ArtifactSource = {
+</span>145 <span style=''>    </span><span style='background: #F0ADAD'>cloner.clone(owner = owner, repo = repoName, branch= Some(branch))</span><span style=''>
+</span>146 <span style=''>  }
+</span>147 <span style=''>
+</span>148 <span style=''>
+</span>149 <span style=''>  override def resolveSha(owner: String, repoName: String, sha: String): ArtifactSource = {
+</span>150 <span style=''>    </span><span style='background: #F0ADAD'>cloner.clone(owner = owner, repo = repoName, sha = Some(sha))</span><span style=''>
+</span>151 <span style=''>  }
+</span>152 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          6083
+        </td>
+        <td>
+          1197
+          -
+          1200
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          6085
+        </td>
+        <td>
+          1304
+          -
+          1349
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.EmptyArtifactSource.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.EmptyArtifactSource.apply(&quot;project-scenario-world&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          6084
+        </td>
+        <td>
+          1257
+          -
+          1278
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptContext.rugAs
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectScenarioWorld.this.definitions.jsc.rugAs
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          6086
+        </td>
+        <td>
+          1226
+          -
+          1350
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.kind.core.ProjectMutableView(ProjectScenarioWorld.this.definitions.jsc.rugAs, com.atomist.source.EmptyArtifactSource.apply(&quot;project-scenario-world&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          6087
+        </td>
+        <td>
+          1384
+          -
+          1391
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.project.ProjectScenarioWorld.project
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectScenarioWorld.this.project
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          6088
+        </td>
+        <td>
+          1522
+          -
+          1526
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.project.ProjectScenarioWorld.rugs
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectScenarioWorld.this.rugs
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          6090
+        </td>
+        <td>
+          1565
+          -
+          1600
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #AEF1AE">
+          r.editors.find(((e: com.atomist.project.edit.ProjectEditor) =&gt; e.name.==(name)))
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          6089
+        </td>
+        <td>
+          1585
+          -
+          1599
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          e.name.==(name)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          6091
+        </td>
+        <td>
+          1657
+          -
+          1818
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugNotFoundException(scala.StringContext.apply(&quot;Editor with name \'&quot;, &quot;\' can not be found in current context. Known editors are [&quot;, &quot;]&quot;).s(name, r.editorNames.mkString(&quot;, &quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          6092
+        </td>
+        <td>
+          1845
+          -
+          1898
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugNotFoundException(&quot;No context provided&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          6093
+        </td>
+        <td>
+          1964
+          -
+          1975
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.project.ProjectScenarioWorld.project_=
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectScenarioWorld.this.project_=(p)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          6094
+        </td>
+        <td>
+          2145
+          -
+          2149
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.project.ProjectScenarioWorld.rugs
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectScenarioWorld.this.rugs
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          6096
+        </td>
+        <td>
+          2188
+          -
+          2226
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #AEF1AE">
+          r.generators.find(((g: com.atomist.project.generate.ProjectGenerator) =&gt; g.name.==(name)))
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          6095
+        </td>
+        <td>
+          2211
+          -
+          2225
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          g.name.==(name)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          6097
+        </td>
+        <td>
+          2283
+          -
+          2453
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugNotFoundException(scala.StringContext.apply(&quot;Generator with name \'&quot;, &quot;\' can not be found in current context. Known generators are [&quot;, &quot;]&quot;).s(name, r.generatorNames.mkString(&quot;, &quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          6098
+        </td>
+        <td>
+          2480
+          -
+          2533
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugNotFoundException(&quot;No context provided&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          6100
+        </td>
+        <td>
+          2851
+          -
+          2895
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectContext.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.kind.core.ProjectContext(ProjectGenerationContext)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          6099
+        </td>
+        <td>
+          2831
+          -
+          2849
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.parameters
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectScenarioWorld.this.parameters(params)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          6101
+        </td>
+        <td>
+          2799
+          -
+          2896
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.generate.ProjectGenerator.generate
+        </td>
+        <td style="background: #AEF1AE">
+          generator.generate(projectName, ProjectScenarioWorld.this.parameters(params), new com.atomist.rug.kind.core.ProjectContext(ProjectGenerationContext))
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6102
+        </td>
+        <td>
+          2901
+          -
+          2927
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectScenarioWorld.this.project.updateTo(resultAs)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          6103
+        </td>
+        <td>
+          3091
+          -
+          3133
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.project.ProjectScenarioWorld.generateWith
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectScenarioWorld.this.generateWith(generator, projectName, null)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          6106
+        </td>
+        <td>
+          3428
+          -
+          3491
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.ProjectEditor.modify
+        </td>
+        <td style="background: #AEF1AE">
+          editor.modify(ProjectScenarioWorld.this.project.currentBackingObject, ProjectScenarioWorld.this.parameters(params))
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          6105
+        </td>
+        <td>
+          3472
+          -
+          3490
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.parameters
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectScenarioWorld.this.parameters(params)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          6104
+        </td>
+        <td>
+          3442
+          -
+          3470
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectScenarioWorld.this.project.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          6107
+        </td>
+        <td>
+          3412
+          -
+          3492
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.control.Exception.Catch.either
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.control.Exception.allCatch[Nothing].either[com.atomist.project.edit.ModificationAttempt](editor.modify(ProjectScenarioWorld.this.project.currentBackingObject, ProjectScenarioWorld.this.parameters(params)))
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          6109
+        </td>
+        <td>
+          3513
+          -
+          3542
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectScenarioWorld.this.editorResults.:+[Either[Throwable,com.atomist.project.edit.ModificationAttempt], Seq[Either[Throwable,com.atomist.project.edit.ModificationAttempt]]](editorResult)(collection.this.Seq.canBuildFrom[Either[Throwable,com.atomist.project.edit.ModificationAttempt]])
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          6108
+        </td>
+        <td>
+          3527
+          -
+          3527
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Either[Throwable,com.atomist.project.edit.ModificationAttempt]]
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          6110
+        </td>
+        <td>
+          3497
+          -
+          3542
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.project.ProjectScenarioWorld.editorResults_=
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectScenarioWorld.this.editorResults_=(ProjectScenarioWorld.this.editorResults.:+[Either[Throwable,com.atomist.project.edit.ModificationAttempt], Seq[Either[Throwable,com.atomist.project.edit.ModificationAttempt]]](editorResult)(collection.this.Seq.canBuildFrom[Either[Throwable,com.atomist.project.edit.ModificationAttempt]]))
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          6112
+        </td>
+        <td>
+          3624
+          -
+          3651
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectScenarioWorld.this.project.updateTo(sm.result)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          6111
+        </td>
+        <td>
+          3641
+          -
+          3650
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.edit.SuccessfulModification.result
+        </td>
+        <td style="background: #AEF1AE">
+          sm.result
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          6113
+        </td>
+        <td>
+          3672
+          -
+          3674
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          6114
+        </td>
+        <td>
+          3780
+          -
+          3789
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw ipe
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          6115
+        </td>
+        <td>
+          3826
+          -
+          3839
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw unknown
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          6116
+        </td>
+        <td>
+          3977
+          -
+          3999
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.project.ProjectScenarioWorld.editWith
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectScenarioWorld.this.editWith(editor, null)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          6119
+        </td>
+        <td>
+          4040
+          -
+          4136
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectScenarioWorld.this.editorResults.exists(((x0$1: Either[Throwable,com.atomist.project.edit.ModificationAttempt]) =&gt; x0$1 match {
+  case (b: com.atomist.project.edit.ModificationAttempt)scala.util.Right[Throwable,com.atomist.project.edit.ModificationAttempt]((_: com.atomist.project.edit.SuccessfulModification)) =&gt; true
+  case _ =&gt; false
+}))
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          6117
+        </td>
+        <td>
+          4108
+          -
+          4112
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          6118
+        </td>
+        <td>
+          4127
+          -
+          4132
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          6123
+        </td>
+        <td>
+          4162
+          -
+          4286
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectScenarioWorld.this.editorResults.exists(((x0$2: Either[Throwable,com.atomist.project.edit.ModificationAttempt]) =&gt; x0$2 match {
+  case (a: Throwable)scala.util.Left[Throwable,com.atomist.project.edit.ModificationAttempt](_) =&gt; true
+  case (b: com.atomist.project.edit.ModificationAttempt)scala.util.Right[Throwable,com.atomist.project.edit.ModificationAttempt]((_: com.atomist.project.edit.FailedModificationAttempt)) =&gt; true
+  case _ =&gt; false
+}))
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          6120
+        </td>
+        <td>
+          4205
+          -
+          4209
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          6121
+        </td>
+        <td>
+          4258
+          -
+          4262
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          6122
+        </td>
+        <td>
+          4277
+          -
+          4282
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          6124
+        </td>
+        <td>
+          4312
+          -
+          4330
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectScenarioWorld.this.editorResults.size
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          6130
+        </td>
+        <td>
+          4579
+          -
+          4579
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.Array.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Array.canBuildFrom[com.atomist.param.SimpleParameterValue]((ClassTag.apply[com.atomist.param.SimpleParameterValue](classOf[com.atomist.param.SimpleParameterValue]): scala.reflect.ClassTag[com.atomist.param.SimpleParameterValue]))
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          6125
+        </td>
+        <td>
+          4550
+          -
+          4575
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getOwnKeys
+        </td>
+        <td style="background: #F0ADAD">
+          op.jsVar.getOwnKeys(true)
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          6131
+        </td>
+        <td>
+          4550
+          -
+          4669
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.refArrayOps[String](op.jsVar.getOwnKeys(true)).map[com.atomist.param.SimpleParameterValue, Array[com.atomist.param.SimpleParameterValue]](((k: String) =&gt; com.atomist.param.SimpleParameterValue.apply(k, com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty(op.jsVar, k, &quot;&quot;))))(scala.this.Array.canBuildFrom[com.atomist.param.SimpleParameterValue]((ClassTag.apply[com.atomist.param.SimpleParameterValue](classOf[com.atomist.param.SimpleParameterValue]): scala.reflect.ClassTag[com.atomist.param.SimpleParameterValue])))
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          6127
+        </td>
+        <td>
+          4658
+          -
+          4660
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          6129
+        </td>
+        <td>
+          4593
+          -
+          4662
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValue.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.param.SimpleParameterValue.apply(k, com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty(op.jsVar, k, &quot;&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          6126
+        </td>
+        <td>
+          4645
+          -
+          4653
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptProjectOperation.jsVar
+        </td>
+        <td style="background: #F0ADAD">
+          op.jsVar
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          6128
+        </td>
+        <td>
+          4617
+          -
+          4661
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty(op.jsVar, k, &quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          6133
+        </td>
+        <td>
+          4696
+          -
+          4730
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValues.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.param.SimpleParameterValues.apply(scala.this.Predef.wrapRefArray[com.atomist.param.SimpleParameterValue](paramValues))
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          6132
+        </td>
+        <td>
+          4718
+          -
+          4729
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.LowPriorityImplicits.wrapRefArray
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.wrapRefArray[com.atomist.param.SimpleParameterValue](paramValues)
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          6134
+        </td>
+        <td>
+          4674
+          -
+          4731
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.ParameterizedSupport.validateParameters
+        </td>
+        <td style="background: #F0ADAD">
+          op.validateParameters(com.atomist.param.SimpleParameterValues.apply(scala.this.Predef.wrapRefArray[com.atomist.param.SimpleParameterValue](paramValues)))
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          6135
+        </td>
+        <td>
+          4983
+          -
+          5004
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[com.atomist.rug.test.gherkin.project.GitRepoResolver.type](GitRepoResolver)
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          6136
+        </td>
+        <td>
+          5110
+          -
+          5112
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          6138
+        </td>
+        <td>
+          5086
+          -
+          5113
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.git.GitRepositoryCloner.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new com.atomist.source.git.GitRepositoryCloner(&quot;&quot;, git.this.GitRepositoryCloner.&lt;init&gt;$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          6137
+        </td>
+        <td>
+          5086
+          -
+          5086
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.git.GitRepositoryCloner.&lt;init&gt;$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          git.this.GitRepositoryCloner.&lt;init&gt;$default$2
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          6139
+        </td>
+        <td>
+          5271
+          -
+          5283
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](branch)
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          6142
+        </td>
+        <td>
+          5225
+          -
+          5225
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.git.GitRepositoryCloner.clone$default$6
+        </td>
+        <td style="background: #F0ADAD">
+          GitRepoResolver.this.cloner.clone$default$6
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          6141
+        </td>
+        <td>
+          5225
+          -
+          5225
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.git.GitRepositoryCloner.clone$default$5
+        </td>
+        <td style="background: #F0ADAD">
+          GitRepoResolver.this.cloner.clone$default$5
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          6143
+        </td>
+        <td>
+          5218
+          -
+          5284
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.git.GitRepositoryCloner.clone
+        </td>
+        <td style="background: #F0ADAD">
+          GitRepoResolver.this.cloner.clone(x$2, x$1, x$3, x$4, x$5, x$6)
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          6140
+        </td>
+        <td>
+          5225
+          -
+          5225
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.git.GitRepositoryCloner.clone$default$4
+        </td>
+        <td style="background: #F0ADAD">
+          GitRepoResolver.this.cloner.clone$default$4
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          6148
+        </td>
+        <td>
+          5387
+          -
+          5448
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.git.GitRepositoryCloner.clone
+        </td>
+        <td style="background: #F0ADAD">
+          GitRepoResolver.this.cloner.clone(x$8, x$7, x$10, x$9, x$11, x$12)
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          6145
+        </td>
+        <td>
+          5394
+          -
+          5394
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.git.GitRepositoryCloner.clone$default$3
+        </td>
+        <td style="background: #F0ADAD">
+          GitRepoResolver.this.cloner.clone$default$3
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          6147
+        </td>
+        <td>
+          5394
+          -
+          5394
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.git.GitRepositoryCloner.clone$default$6
+        </td>
+        <td style="background: #F0ADAD">
+          GitRepoResolver.this.cloner.clone$default$6
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          6144
+        </td>
+        <td>
+          5438
+          -
+          5447
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](sha)
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          6146
+        </td>
+        <td>
+          5394
+          -
+          5394
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.git.GitRepositoryCloner.clone$default$5
+        </td>
+        <td style="background: #F0ADAD">
+          GitRepoResolver.this.cloner.clone$default$5
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

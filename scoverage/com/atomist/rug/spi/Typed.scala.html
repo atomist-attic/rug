@@ -1,0 +1,1075 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/spi/Typed.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.spi
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.util.lang.JavaHelpers
+</span>5 <span style=''>
+</span>6 <span style=''>object Typed {
+</span>7 <span style=''>
+</span>8 <span style=''>  def typeFor(node: GraphNode, typeRegistry: TypeRegistry): Typed = {
+</span>9 <span style=''>    val nodeTypes: Set[Typed] =
+</span>10 <span style=''>      </span><span style='background: #AEF1AE'>node.nodeTags.flatMap(t =&gt; typeRegistry.findByName(t))</span><span style=''>
+</span>11 <span style=''>    </span><span style='background: #AEF1AE'>UnionType(nodeTypes)</span><span style=''>
+</span>12 <span style=''>  }
+</span>13 <span style=''>
+</span>14 <span style=''>  private[spi] def trimSuffix(suffix: String, orig: String): String =
+</span>15 <span style=''>    if (</span><span style='background: #AEF1AE'>orig == suffix</span><span style=''>)
+</span>16 <span style=''>      </span><span style='background: #AEF1AE'>orig</span><span style=''>
+</span>17 <span style=''>    else
+</span>18 <span style=''>      </span><span style='background: #AEF1AE'>orig stripSuffix suffix</span><span style=''>
+</span>19 <span style=''>
+</span>20 <span style=''>  private val TypeSuffix = </span><span style='background: #AEF1AE'>&quot;Type&quot;</span><span style=''>
+</span>21 <span style=''>  private val TreeNodeSuffix = </span><span style='background: #AEF1AE'>&quot;TreeNode&quot;</span><span style=''>
+</span>22 <span style=''>  private val MutableViewSuffix = </span><span style='background: #AEF1AE'>&quot;MutableView&quot;</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>  def typeClassToTypeName(tc: Class[_]): String = </span><span style='background: #AEF1AE'>trimSuffix(TypeSuffix, tc.getSimpleName)</span><span style=''>
+</span>25 <span style=''>
+</span>26 <span style=''>  def typeClassesToTypeNames(tcs: Class[_]*): Set[String] = </span><span style='background: #F0ADAD'>tcs.map(typeClassToTypeName).toSet</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>  def typeToTypeName(tc: Class[_], searchable: Boolean = true): String = {
+</span>29 <span style=''>    val raw = </span><span style='background: #AEF1AE'>trimSuffix(TreeNodeSuffix, trimSuffix(MutableViewSuffix, tc.getSimpleName))</span><span style=''>
+</span>30 <span style=''>    if (searchable) </span><span style='background: #AEF1AE'>raw</span><span style=''>
+</span>31 <span style=''>    else </span><span style='background: #AEF1AE'>JavaHelpers.lowerize(raw)</span><span style=''>
+</span>32 <span style=''>  }
+</span>33 <span style=''>
+</span>34 <span style=''>}
+</span>35 <span style=''>
+</span>36 <span style=''>/**
+</span>37 <span style=''>  * Extended by language elements to return as much type information as
+</span>38 <span style=''>  * possible to help with compile time validation and tooling.
+</span>39 <span style=''>  */
+</span>40 <span style=''>trait Typed {
+</span>41 <span style=''>
+</span>42 <span style=''>  /**
+</span>43 <span style=''>    * Name for use in Rug scripts. e.g &quot;file&quot; in &quot;with File f&quot;.
+</span>44 <span style=''>    *
+</span>45 <span style=''>    * @return alias for use in Rug scripts
+</span>46 <span style=''>    */
+</span>47 <span style=''>  val name: String = </span><span style='background: #AEF1AE'>Typed.typeClassToTypeName(getClass)</span><span style=''>
+</span>48 <span style=''>
+</span>49 <span style=''>  /**
+</span>50 <span style=''>    * Description of this type.
+</span>51 <span style=''>    */
+</span>52 <span style=''>  def description: String
+</span>53 <span style=''>
+</span>54 <span style=''>  /**
+</span>55 <span style=''>    * Operations on the type including its inheritance hierarchy.
+</span>56 <span style=''>    */
+</span>57 <span style=''>  def allOperations: Seq[TypeOperation]
+</span>58 <span style=''>
+</span>59 <span style=''>  /**
+</span>60 <span style=''>    * Operations on the type.
+</span>61 <span style=''>    */
+</span>62 <span style=''>  def operations: Seq[TypeOperation]
+</span>63 <span style=''>}
+</span>64 <span style=''>
+</span>65 <span style=''>/**
+</span>66 <span style=''>  * Return a type that exposes all the operations on the given set of types.
+</span>67 <span style=''>  *
+</span>68 <span style=''>  * @param types set of types to expose
+</span>69 <span style=''>  */
+</span>70 <span style=''>private case class UnionType(types: Set[Typed]) extends Typed {
+</span>71 <span style=''>
+</span>72 <span style=''>  private val typesToUnion = </span><span style='background: #AEF1AE'>Set(TypeOperation.TreeNodeType) ++ types</span><span style=''>
+</span>73 <span style=''>
+</span>74 <span style=''>  override val name: String = </span><span style='background: #AEF1AE'>typesToUnion.map(_.name).mkString(&quot; &amp; &quot;)</span><span style=''>
+</span>75 <span style=''>
+</span>76 <span style=''>  override def description: String = </span><span style='background: #F0ADAD'>name</span><span style=''>
+</span>77 <span style=''>
+</span>78 <span style=''>  // TODO what about duplicate names?
+</span>79 <span style=''>  override val allOperations: Seq[TypeOperation] =
+</span>80 <span style=''>    </span><span style='background: #AEF1AE'>typesToUnion.flatMap(_.allOperations).toSeq</span><span style=''>
+</span>81 <span style=''>
+</span>82 <span style=''>  override val operations: Seq[TypeOperation] =
+</span>83 <span style=''>    </span><span style='background: #AEF1AE'>typesToUnion.flatMap(_.operations).toSeq</span><span style=''>
+</span>84 <span style=''>
+</span>85 <span style=''>  override def toString: String =
+</span>86 <span style=''>    </span><span style='background: #AEF1AE'>s&quot;$name: ops=${allOperations.sortBy(_.name).map(_.name).mkString(&quot;,&quot;)}&quot;</span><span style=''>
+</span>87 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          5457
+        </td>
+        <td>
+          257
+          -
+          283
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[com.atomist.rug.spi.Typed](typeRegistry.findByName(t))
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          5456
+        </td>
+        <td>
+          257
+          -
+          283
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeRegistry.findByName
+        </td>
+        <td style="background: #AEF1AE">
+          typeRegistry.findByName(t)
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          5459
+        </td>
+        <td>
+          230
+          -
+          284
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          node.nodeTags.flatMap[com.atomist.rug.spi.Typed, Set[com.atomist.rug.spi.Typed]](((t: String) =&gt; scala.this.Option.option2Iterable[com.atomist.rug.spi.Typed](typeRegistry.findByName(t))))(immutable.this.Set.canBuildFrom[com.atomist.rug.spi.Typed])
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          5458
+        </td>
+        <td>
+          251
+          -
+          251
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Set.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Set.canBuildFrom[com.atomist.rug.spi.Typed]
+        </td>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          5460
+        </td>
+        <td>
+          289
+          -
+          309
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.UnionType.apply
+        </td>
+        <td style="background: #AEF1AE">
+          UnionType.apply(nodeTypes)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          5461
+        </td>
+        <td>
+          393
+          -
+          407
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          orig.==(suffix)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          5462
+        </td>
+        <td>
+          415
+          -
+          419
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.orig
+        </td>
+        <td style="background: #AEF1AE">
+          orig
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          5463
+        </td>
+        <td>
+          435
+          -
+          458
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.stripSuffix
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(orig).stripSuffix(suffix)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          5464
+        </td>
+        <td>
+          435
+          -
+          458
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.stripSuffix
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(orig).stripSuffix(suffix)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          5465
+        </td>
+        <td>
+          487
+          -
+          493
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Type&quot;
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          5466
+        </td>
+        <td>
+          525
+          -
+          535
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;TreeNode&quot;
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5467
+        </td>
+        <td>
+          570
+          -
+          583
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;MutableView&quot;
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          5469
+        </td>
+        <td>
+          658
+          -
+          674
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getSimpleName
+        </td>
+        <td style="background: #AEF1AE">
+          tc.getSimpleName()
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          5468
+        </td>
+        <td>
+          646
+          -
+          656
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.TypeSuffix
+        </td>
+        <td style="background: #AEF1AE">
+          Typed.this.TypeSuffix
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          5470
+        </td>
+        <td>
+          635
+          -
+          675
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.trimSuffix
+        </td>
+        <td style="background: #AEF1AE">
+          Typed.this.trimSuffix(Typed.this.TypeSuffix, tc.getSimpleName())
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5472
+        </td>
+        <td>
+          744
+          -
+          744
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5471
+        </td>
+        <td>
+          745
+          -
+          764
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeClassToTypeName
+        </td>
+        <td style="background: #F0ADAD">
+          Typed.this.typeClassToTypeName(tc)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5473
+        </td>
+        <td>
+          737
+          -
+          771
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #F0ADAD">
+          tcs.map[String, Seq[String]]({
+  ((tc: Class[_]) =&gt; Typed.this.typeClassToTypeName(tc))
+})(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          5478
+        </td>
+        <td>
+          862
+          -
+          937
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.trimSuffix
+        </td>
+        <td style="background: #AEF1AE">
+          Typed.this.trimSuffix(Typed.this.TreeNodeSuffix, Typed.this.trimSuffix(Typed.this.MutableViewSuffix, tc.getSimpleName()))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          5475
+        </td>
+        <td>
+          900
+          -
+          917
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.MutableViewSuffix
+        </td>
+        <td style="background: #AEF1AE">
+          Typed.this.MutableViewSuffix
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          5474
+        </td>
+        <td>
+          873
+          -
+          887
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.TreeNodeSuffix
+        </td>
+        <td style="background: #AEF1AE">
+          Typed.this.TreeNodeSuffix
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          5477
+        </td>
+        <td>
+          889
+          -
+          936
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.trimSuffix
+        </td>
+        <td style="background: #AEF1AE">
+          Typed.this.trimSuffix(Typed.this.MutableViewSuffix, tc.getSimpleName())
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          5476
+        </td>
+        <td>
+          919
+          -
+          935
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getSimpleName
+        </td>
+        <td style="background: #AEF1AE">
+          tc.getSimpleName()
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          5479
+        </td>
+        <td>
+          958
+          -
+          961
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.raw
+        </td>
+        <td style="background: #AEF1AE">
+          raw
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          5481
+        </td>
+        <td>
+          971
+          -
+          996
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.lowerize
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.lang.JavaHelpers.lowerize(raw)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          5480
+        </td>
+        <td>
+          971
+          -
+          996
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.lowerize
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.lang.JavaHelpers.lowerize(raw)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          5483
+        </td>
+        <td>
+          1311
+          -
+          1346
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeClassToTypeName
+        </td>
+        <td style="background: #AEF1AE">
+          Typed.typeClassToTypeName(Typed.this.getClass())
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          5482
+        </td>
+        <td>
+          1337
+          -
+          1345
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.getClass
+        </td>
+        <td style="background: #AEF1AE">
+          Typed.this.getClass()
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          5484
+        </td>
+        <td>
+          1851
+          -
+          1877
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.TreeNodeType
+        </td>
+        <td style="background: #AEF1AE">
+          TypeOperation.TreeNodeType
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          5486
+        </td>
+        <td>
+          1847
+          -
+          1887
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[com.atomist.rug.spi.Typed](TypeOperation.TreeNodeType).++(UnionType.this.types)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          5485
+        </td>
+        <td>
+          1882
+          -
+          1887
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.UnionType.types
+        </td>
+        <td style="background: #AEF1AE">
+          UnionType.this.types
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          5487
+        </td>
+        <td>
+          1919
+          -
+          1959
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          UnionType.this.typesToUnion.map[String, scala.collection.immutable.Set[String]](((x$1: com.atomist.rug.spi.Typed) =&gt; x$1.name))(immutable.this.Set.canBuildFrom[String]).mkString(&quot; &amp; &quot;)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          5488
+        </td>
+        <td>
+          1998
+          -
+          2002
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.UnionType.name
+        </td>
+        <td style="background: #F0ADAD">
+          UnionType.this.name
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          5490
+        </td>
+        <td>
+          2117
+          -
+          2117
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Set.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Set.canBuildFrom[com.atomist.rug.spi.TypeOperation]
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          5489
+        </td>
+        <td>
+          2118
+          -
+          2133
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.allOperations
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.allOperations
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          5491
+        </td>
+        <td>
+          2097
+          -
+          2140
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SetLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          UnionType.this.typesToUnion.flatMap[com.atomist.rug.spi.TypeOperation, scala.collection.immutable.Set[com.atomist.rug.spi.TypeOperation]](((x$2: com.atomist.rug.spi.Typed) =&gt; x$2.allOperations))(immutable.this.Set.canBuildFrom[com.atomist.rug.spi.TypeOperation]).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          5493
+        </td>
+        <td>
+          2214
+          -
+          2214
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Set.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Set.canBuildFrom[com.atomist.rug.spi.TypeOperation]
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          5492
+        </td>
+        <td>
+          2215
+          -
+          2227
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.operations
+        </td>
+        <td style="background: #AEF1AE">
+          x$3.operations
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          5494
+        </td>
+        <td>
+          2194
+          -
+          2234
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SetLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          UnionType.this.typesToUnion.flatMap[com.atomist.rug.spi.TypeOperation, scala.collection.immutable.Set[com.atomist.rug.spi.TypeOperation]](((x$3: com.atomist.rug.spi.Typed) =&gt; x$3.operations))(immutable.this.Set.canBuildFrom[com.atomist.rug.spi.TypeOperation]).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          5496
+        </td>
+        <td>
+          2281
+          -
+          2288
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;: ops=&quot;
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          5499
+        </td>
+        <td>
+          2289
+          -
+          2343
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          UnionType.this.allOperations.sortBy[String](((x$4: com.atomist.rug.spi.TypeOperation) =&gt; x$4.name))(math.this.Ordering.String).map[String, Seq[String]](((x$5: com.atomist.rug.spi.TypeOperation) =&gt; x$5.name))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;,&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          5495
+        </td>
+        <td>
+          2276
+          -
+          2277
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          5498
+        </td>
+        <td>
+          2277
+          -
+          2281
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.UnionType.name
+        </td>
+        <td style="background: #AEF1AE">
+          UnionType.this.name
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          5497
+        </td>
+        <td>
+          2344
+          -
+          2345
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          5500
+        </td>
+        <td>
+          2274
+          -
+          2345
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;: ops=&quot;, &quot;&quot;).s(UnionType.this.name, UnionType.this.allOperations.sortBy[String](((x$4: com.atomist.rug.spi.TypeOperation) =&gt; x$4.name))(math.this.Ordering.String).map[String, Seq[String]](((x$5: com.atomist.rug.spi.TypeOperation) =&gt; x$5.name))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;,&quot;))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,2095 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/spi/AnnotatedRugFunction.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.spi
+</span>2 <span style=''>
+</span>3 <span style=''>import java.lang.reflect.{InvocationTargetException, Method}
+</span>4 <span style=''>
+</span>5 <span style=''>import com.atomist.param.{Parameter, ParameterValues, Tag}
+</span>6 <span style=''>import org.springframework.core.annotation.AnnotationUtils
+</span>7 <span style=''>
+</span>8 <span style=''>/**
+</span>9 <span style=''>  * Use this for a terser way to define RugFunctions in Scala.
+</span>10 <span style=''>  */
+</span>11 <span style=''>trait AnnotatedRugFunction extends RugFunction {
+</span>12 <span style=''>
+</span>13 <span style=''>  override def secrets: Seq[Secret] = {
+</span>14 <span style=''>    </span><span style='background: #AEF1AE'>functionMethod().getParameters.flatMap(p =&gt; {
+</span>15 <span style=''></span><span style='background: #AEF1AE'>      AnnotationUtils.findAnnotation(p, classOf[com.atomist.rug.spi.annotation.Secret]) match {
+</span>16 <span style=''></span><span style='background: #AEF1AE'>        case s: com.atomist.rug.spi.annotation.Secret =&gt; Some(Secret(s.name(), s.path()))
+</span>17 <span style=''></span><span style='background: #AEF1AE'>        case _ =&gt; None
+</span>18 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>19 <span style=''></span><span style='background: #AEF1AE'>    }).toSeq</span><span style=''>
+</span>20 <span style=''>  }
+</span>21 <span style=''>
+</span>22 <span style=''>  override def name: String = </span><span style='background: #AEF1AE'>functionAnnotation().name()</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>  override def description: String = </span><span style='background: #AEF1AE'>functionAnnotation().description()</span><span style=''>
+</span>25 <span style=''>
+</span>26 <span style=''>  override def tags: Seq[Tag] = </span><span style='background: #AEF1AE'>functionAnnotation().tags().map(t =&gt; Tag(t.name(), t.name())).toSeq</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>  private def functionAnnotation(): com.atomist.rug.spi.annotation.RugFunction =
+</span>29 <span style=''>    </span><span style='background: #AEF1AE'>functionMethod().getAnnotation(classOf[com.atomist.rug.spi.annotation.RugFunction])</span><span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>  private def functionMethod(): Method = {
+</span>32 <span style=''>    </span><span style='background: #AEF1AE'>getClass.getMethods.find(m =&gt; m.getAnnotation(classOf[com.atomist.rug.spi.annotation.RugFunction]) != null)</span><span style=''> match {
+</span>33 <span style=''>      case Some(m) =&gt; m
+</span>34 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;${getClass.getName} has no method annotated with @RugFunction&quot;)</span><span style=''>
+</span>35 <span style=''>    }
+</span>36 <span style=''>  }
+</span>37 <span style=''>
+</span>38 <span style=''>  override def parameters: Seq[Parameter] = </span><span style='background: #AEF1AE'>functionMethod().getParameters.flatMap(p =&gt; {
+</span>39 <span style=''></span><span style='background: #AEF1AE'>    AnnotationUtils.findAnnotation(p, classOf[com.atomist.rug.spi.annotation.Parameter]) match {
+</span>40 <span style=''></span><span style='background: #AEF1AE'>      case pa: com.atomist.rug.spi.annotation.Parameter =&gt;
+</span>41 <span style=''></span><span style='background: #AEF1AE'>        Some(Parameter(pa.name(), pa.pattern(), pa.defaultValue()))
+</span>42 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; None
+</span>43 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>44 <span style=''></span><span style='background: #AEF1AE'>  }).toSeq</span><span style=''>
+</span>45 <span style=''>
+</span>46 <span style=''>  override def run(parameters: ParameterValues): FunctionResponse = {
+</span>47 <span style=''>    val method = </span><span style='background: #AEF1AE'>functionMethod()</span><span style=''>
+</span>48 <span style=''>    val args = </span><span style='background: #AEF1AE'>method.getParameters.map(p =&gt; {
+</span>49 <span style=''></span><span style='background: #AEF1AE'>      val parameterAnnotation = p.getAnnotation(classOf[com.atomist.rug.spi.annotation.Parameter])
+</span>50 <span style=''></span><span style='background: #AEF1AE'>      val secretAnnotation = p.getAnnotation(classOf[com.atomist.rug.spi.annotation.Secret])
+</span>51 <span style=''></span><span style='background: #AEF1AE'>      if (parameterAnnotation == null &amp;&amp; secretAnnotation != null) {
+</span>52 <span style=''></span><span style='background: #AEF1AE'>        convert(p, parameters.paramValue(secretAnnotation.name()))
+</span>53 <span style=''></span><span style='background: #AEF1AE'>      } else if (parameterAnnotation != null &amp;&amp; secretAnnotation == null &amp;&amp; parameterAnnotation.required()) {
+</span>54 <span style=''></span><span style='background: #AEF1AE'>        convert(p, parameters.paramValue(parameterAnnotation.name()))
+</span>55 <span style=''></span><span style='background: #AEF1AE'>      } else if (parameterAnnotation == null &amp;&amp; </span><span style='background: #F0ADAD'>secretAnnotation == null</span><span style='background: #AEF1AE'>) {
+</span>56 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Parameter ${p.getName} not annotated with either @Secret or @Parameter&quot;)</span><span style='background: #AEF1AE'>
+</span>57 <span style=''></span><span style='background: #AEF1AE'>      } else {
+</span>58 <span style=''></span><span style='background: #AEF1AE'>        null
+</span>59 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>60 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
+</span>61 <span style=''>    try {
+</span>62 <span style=''>      </span><span style='background: #AEF1AE'>method.invoke(this, args: _*).asInstanceOf[FunctionResponse]</span><span style=''>
+</span>63 <span style=''>    }
+</span>64 <span style=''>    catch {
+</span>65 <span style=''>      case ite: InvocationTargetException =&gt; </span><span style='background: #F0ADAD'>throw ite.getCause</span><span style=''>
+</span>66 <span style=''>    }
+</span>67 <span style=''>  }
+</span>68 <span style=''>
+</span>69 <span style=''>  /**
+</span>70 <span style=''>    * Convert the parameter value based on the type of the parameter.
+</span>71 <span style=''>    */
+</span>72 <span style=''>  private def convert(param: java.lang.reflect.Parameter, avalue: Any): Object = {
+</span>73 <span style=''>    avalue match {
+</span>74 <span style=''>      case o: String =&gt; </span><span style='background: #AEF1AE'>param.getType</span><span style=''> match {
+</span>75 <span style=''>        case p if </span><span style='background: #AEF1AE'>p == classOf[Int]</span><span style=''> =&gt; </span><span style='background: #AEF1AE'>o.toInt.asInstanceOf[Object]</span><span style=''>
+</span>76 <span style=''>        case p if </span><span style='background: #AEF1AE'>p == classOf[Integer]</span><span style=''> =&gt; </span><span style='background: #F0ADAD'>Integer.parseInt(o).asInstanceOf[Object]</span><span style=''>
+</span>77 <span style=''>        case p if </span><span style='background: #AEF1AE'>p == classOf[Boolean]</span><span style=''> =&gt; </span><span style='background: #F0ADAD'>o.toBoolean.asInstanceOf[Object]</span><span style=''>
+</span>78 <span style=''>        case p if </span><span style='background: #AEF1AE'>p == classOf[java.lang.Boolean]</span><span style=''> =&gt; </span><span style='background: #F0ADAD'>java.lang.Boolean.parseBoolean(o).asInstanceOf[Object]</span><span style=''>
+</span>79 <span style=''>        case p if </span><span style='background: #AEF1AE'>p == classOf[Double]</span><span style=''> =&gt; </span><span style='background: #F0ADAD'>o.toDouble.asInstanceOf[Object]</span><span style=''>
+</span>80 <span style=''>        case p if </span><span style='background: #AEF1AE'>p == classOf[java.lang.Double]</span><span style=''> =&gt; </span><span style='background: #F0ADAD'>java.lang.Double.parseDouble(o).asInstanceOf[Object]</span><span style=''>
+</span>81 <span style=''>        case p if </span><span style='background: #AEF1AE'>p == classOf[Float]</span><span style=''> =&gt; </span><span style='background: #F0ADAD'>o.toFloat.asInstanceOf[Object]</span><span style=''>
+</span>82 <span style=''>        case p if </span><span style='background: #AEF1AE'>p == classOf[java.lang.Float]</span><span style=''> =&gt; </span><span style='background: #F0ADAD'>java.lang.Float.parseFloat(o).asInstanceOf[Object]</span><span style=''>
+</span>83 <span style=''>        case p if </span><span style='background: #AEF1AE'>p == classOf[String]</span><span style=''> =&gt; </span><span style='background: #AEF1AE'>o.asInstanceOf[Object]</span><span style=''>
+</span>84 <span style=''>      }
+</span>85 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>avalue.asInstanceOf[Object]</span><span style=''>
+</span>86 <span style=''>    }
+</span>87 <span style=''>  }
+</span>88 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          5139
+        </td>
+        <td>
+          376
+          -
+          645
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[java.lang.reflect.Parameter](AnnotatedRugFunction.this.functionMethod().getParameters()).flatMap[com.atomist.rug.spi.Secret, Array[com.atomist.rug.spi.Secret]](((p: java.lang.reflect.Parameter) =&gt; org.springframework.core.annotation.AnnotationUtils.findAnnotation[com.atomist.rug.spi.annotation.Secret](p, classOf[com.atomist.rug.spi.annotation.Secret]) match {
+  case (s @ (_: com.atomist.rug.spi.annotation.Secret)) =&gt; scala.this.Option.option2Iterable[com.atomist.rug.spi.Secret](scala.Some.apply[com.atomist.rug.spi.Secret](Secret.apply(s.name(), s.path())))
+  case _ =&gt; scala.this.Option.option2Iterable[Nothing](scala.None)
+}))(scala.this.Array.canBuildFrom[com.atomist.rug.spi.Secret]((ClassTag.apply[com.atomist.rug.spi.Secret](classOf[com.atomist.rug.spi.Secret]): scala.reflect.ClassTag[com.atomist.rug.spi.Secret])))
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          5129
+        </td>
+        <td>
+          376
+          -
+          406
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Executable.getParameters
+        </td>
+        <td style="background: #AEF1AE">
+          AnnotatedRugFunction.this.functionMethod().getParameters()
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          5138
+        </td>
+        <td>
+          414
+          -
+          414
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.Array.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Array.canBuildFrom[com.atomist.rug.spi.Secret]((ClassTag.apply[com.atomist.rug.spi.Secret](classOf[com.atomist.rug.spi.Secret]): scala.reflect.ClassTag[com.atomist.rug.spi.Secret]))
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          5130
+        </td>
+        <td>
+          428
+          -
+          509
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.springframework.core.annotation.AnnotationUtils.findAnnotation
+        </td>
+        <td style="background: #AEF1AE">
+          org.springframework.core.annotation.AnnotationUtils.findAnnotation[com.atomist.rug.spi.annotation.Secret](p, classOf[com.atomist.rug.spi.annotation.Secret])
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          5131
+        </td>
+        <td>
+          587
+          -
+          595
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.annotation.Secret.name
+        </td>
+        <td style="background: #AEF1AE">
+          s.name()
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          5134
+        </td>
+        <td>
+          575
+          -
+          607
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.spi.Secret](Secret.apply(s.name(), s.path()))
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          5133
+        </td>
+        <td>
+          580
+          -
+          606
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Secret.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Secret.apply(s.name(), s.path())
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          5132
+        </td>
+        <td>
+          597
+          -
+          605
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.annotation.Secret.path
+        </td>
+        <td style="background: #AEF1AE">
+          s.path()
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          5135
+        </td>
+        <td>
+          575
+          -
+          607
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[com.atomist.rug.spi.Secret](scala.Some.apply[com.atomist.rug.spi.Secret](Secret.apply(s.name(), s.path())))
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          5137
+        </td>
+        <td>
+          626
+          -
+          630
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[Nothing](scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          5136
+        </td>
+        <td>
+          626
+          -
+          630
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          5140
+        </td>
+        <td>
+          376
+          -
+          651
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[com.atomist.rug.spi.Secret](scala.this.Predef.refArrayOps[java.lang.reflect.Parameter](AnnotatedRugFunction.this.functionMethod().getParameters()).flatMap[com.atomist.rug.spi.Secret, Array[com.atomist.rug.spi.Secret]](((p: java.lang.reflect.Parameter) =&gt; org.springframework.core.annotation.AnnotationUtils.findAnnotation[com.atomist.rug.spi.annotation.Secret](p, classOf[com.atomist.rug.spi.annotation.Secret]) match {
+  case (s @ (_: com.atomist.rug.spi.annotation.Secret)) =&gt; scala.this.Option.option2Iterable[com.atomist.rug.spi.Secret](scala.Some.apply[com.atomist.rug.spi.Secret](Secret.apply(s.name(), s.path())))
+  case _ =&gt; scala.this.Option.option2Iterable[Nothing](scala.None)
+}))(scala.this.Array.canBuildFrom[com.atomist.rug.spi.Secret]((ClassTag.apply[com.atomist.rug.spi.Secret](classOf[com.atomist.rug.spi.Secret]): scala.reflect.ClassTag[com.atomist.rug.spi.Secret])))).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5141
+        </td>
+        <td>
+          687
+          -
+          714
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.annotation.RugFunction.name
+        </td>
+        <td style="background: #AEF1AE">
+          AnnotatedRugFunction.this.functionAnnotation().name()
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          5142
+        </td>
+        <td>
+          753
+          -
+          787
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.annotation.RugFunction.description
+        </td>
+        <td style="background: #AEF1AE">
+          AnnotatedRugFunction.this.functionAnnotation().description()
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5146
+        </td>
+        <td>
+          858
+          -
+          881
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Tag.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.param.Tag.apply(t.name(), t.name())
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5149
+        </td>
+        <td>
+          821
+          -
+          888
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[com.atomist.param.Tag](scala.this.Predef.refArrayOps[com.atomist.rug.spi.annotation.Tag](AnnotatedRugFunction.this.functionAnnotation().tags()).map[com.atomist.param.Tag, Array[com.atomist.param.Tag]](((t: com.atomist.rug.spi.annotation.Tag) =&gt; com.atomist.param.Tag.apply(t.name(), t.name())))(scala.this.Array.canBuildFrom[com.atomist.param.Tag]((ClassTag.apply[com.atomist.param.Tag](classOf[com.atomist.param.Tag]): scala.reflect.ClassTag[com.atomist.param.Tag])))).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5143
+        </td>
+        <td>
+          821
+          -
+          848
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.annotation.RugFunction.tags
+        </td>
+        <td style="background: #AEF1AE">
+          AnnotatedRugFunction.this.functionAnnotation().tags()
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5145
+        </td>
+        <td>
+          872
+          -
+          880
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.annotation.Tag.name
+        </td>
+        <td style="background: #AEF1AE">
+          t.name()
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5148
+        </td>
+        <td>
+          821
+          -
+          882
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[com.atomist.rug.spi.annotation.Tag](AnnotatedRugFunction.this.functionAnnotation().tags()).map[com.atomist.param.Tag, Array[com.atomist.param.Tag]](((t: com.atomist.rug.spi.annotation.Tag) =&gt; com.atomist.param.Tag.apply(t.name(), t.name())))(scala.this.Array.canBuildFrom[com.atomist.param.Tag]((ClassTag.apply[com.atomist.param.Tag](classOf[com.atomist.param.Tag]): scala.reflect.ClassTag[com.atomist.param.Tag])))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5144
+        </td>
+        <td>
+          862
+          -
+          870
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.annotation.Tag.name
+        </td>
+        <td style="background: #AEF1AE">
+          t.name()
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5147
+        </td>
+        <td>
+          852
+          -
+          852
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.Array.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Array.canBuildFrom[com.atomist.param.Tag]((ClassTag.apply[com.atomist.param.Tag](classOf[com.atomist.param.Tag]): scala.reflect.ClassTag[com.atomist.param.Tag]))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          5150
+        </td>
+        <td>
+          975
+          -
+          1058
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Method.getAnnotation
+        </td>
+        <td style="background: #AEF1AE">
+          AnnotatedRugFunction.this.functionMethod().getAnnotation[com.atomist.rug.spi.annotation.RugFunction](classOf[com.atomist.rug.spi.annotation.RugFunction])
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          5152
+        </td>
+        <td>
+          1137
+          -
+          1213
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          m.getAnnotation[com.atomist.rug.spi.annotation.RugFunction](classOf[com.atomist.rug.spi.annotation.RugFunction]).!=(null)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          5151
+        </td>
+        <td>
+          1107
+          -
+          1126
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getMethods
+        </td>
+        <td style="background: #AEF1AE">
+          AnnotatedRugFunction.this.getClass().getMethods()
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          5153
+        </td>
+        <td>
+          1107
+          -
+          1214
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.find
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[java.lang.reflect.Method](AnnotatedRugFunction.this.getClass().getMethods()).find(((m: java.lang.reflect.Method) =&gt; m.getAnnotation[com.atomist.rug.spi.annotation.RugFunction](classOf[com.atomist.rug.spi.annotation.RugFunction]).!=(null)))
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          5154
+        </td>
+        <td>
+          1263
+          -
+          1363
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;&quot;, &quot; has no method annotated with @RugFunction&quot;).s(AnnotatedRugFunction.this.getClass().getName()))
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          5155
+        </td>
+        <td>
+          1419
+          -
+          1449
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Executable.getParameters
+        </td>
+        <td style="background: #AEF1AE">
+          AnnotatedRugFunction.this.functionMethod().getParameters()
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          5166
+        </td>
+        <td>
+          1419
+          -
+          1720
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[java.lang.reflect.Parameter](AnnotatedRugFunction.this.functionMethod().getParameters()).flatMap[com.atomist.param.Parameter, Array[com.atomist.param.Parameter]](((p: java.lang.reflect.Parameter) =&gt; org.springframework.core.annotation.AnnotationUtils.findAnnotation[com.atomist.rug.spi.annotation.Parameter](p, classOf[com.atomist.rug.spi.annotation.Parameter]) match {
+  case (pa @ (_: com.atomist.rug.spi.annotation.Parameter)) =&gt; scala.this.Option.option2Iterable[com.atomist.param.Parameter](scala.Some.apply[com.atomist.param.Parameter](com.atomist.param.Parameter.apply(pa.name(), pa.pattern(), pa.defaultValue())))
+  case _ =&gt; scala.this.Option.option2Iterable[Nothing](scala.None)
+}))(scala.this.Array.canBuildFrom[com.atomist.param.Parameter]((ClassTag.apply[com.atomist.param.Parameter](classOf[com.atomist.param.Parameter]): scala.reflect.ClassTag[com.atomist.param.Parameter])))
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          5165
+        </td>
+        <td>
+          1457
+          -
+          1457
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.Array.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Array.canBuildFrom[com.atomist.param.Parameter]((ClassTag.apply[com.atomist.param.Parameter](classOf[com.atomist.param.Parameter]): scala.reflect.ClassTag[com.atomist.param.Parameter]))
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          5156
+        </td>
+        <td>
+          1469
+          -
+          1553
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.springframework.core.annotation.AnnotationUtils.findAnnotation
+        </td>
+        <td style="background: #AEF1AE">
+          org.springframework.core.annotation.AnnotationUtils.findAnnotation[com.atomist.rug.spi.annotation.Parameter](p, classOf[com.atomist.rug.spi.annotation.Parameter])
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          5158
+        </td>
+        <td>
+          1655
+          -
+          1667
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.annotation.Parameter.pattern
+        </td>
+        <td style="background: #AEF1AE">
+          pa.pattern()
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          5161
+        </td>
+        <td>
+          1629
+          -
+          1688
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.param.Parameter](com.atomist.param.Parameter.apply(pa.name(), pa.pattern(), pa.defaultValue()))
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          5160
+        </td>
+        <td>
+          1634
+          -
+          1687
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.param.Parameter.apply(pa.name(), pa.pattern(), pa.defaultValue())
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          5157
+        </td>
+        <td>
+          1644
+          -
+          1653
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.annotation.Parameter.name
+        </td>
+        <td style="background: #AEF1AE">
+          pa.name()
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          5159
+        </td>
+        <td>
+          1669
+          -
+          1686
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.annotation.Parameter.defaultValue
+        </td>
+        <td style="background: #AEF1AE">
+          pa.defaultValue()
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          5162
+        </td>
+        <td>
+          1629
+          -
+          1688
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[com.atomist.param.Parameter](scala.Some.apply[com.atomist.param.Parameter](com.atomist.param.Parameter.apply(pa.name(), pa.pattern(), pa.defaultValue())))
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          5164
+        </td>
+        <td>
+          1705
+          -
+          1709
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[Nothing](scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          5163
+        </td>
+        <td>
+          1705
+          -
+          1709
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          5167
+        </td>
+        <td>
+          1419
+          -
+          1726
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[com.atomist.param.Parameter](scala.this.Predef.refArrayOps[java.lang.reflect.Parameter](AnnotatedRugFunction.this.functionMethod().getParameters()).flatMap[com.atomist.param.Parameter, Array[com.atomist.param.Parameter]](((p: java.lang.reflect.Parameter) =&gt; org.springframework.core.annotation.AnnotationUtils.findAnnotation[com.atomist.rug.spi.annotation.Parameter](p, classOf[com.atomist.rug.spi.annotation.Parameter]) match {
+  case (pa @ (_: com.atomist.rug.spi.annotation.Parameter)) =&gt; scala.this.Option.option2Iterable[com.atomist.param.Parameter](scala.Some.apply[com.atomist.param.Parameter](com.atomist.param.Parameter.apply(pa.name(), pa.pattern(), pa.defaultValue())))
+  case _ =&gt; scala.this.Option.option2Iterable[Nothing](scala.None)
+}))(scala.this.Array.canBuildFrom[com.atomist.param.Parameter]((ClassTag.apply[com.atomist.param.Parameter](classOf[com.atomist.param.Parameter]): scala.reflect.ClassTag[com.atomist.param.Parameter])))).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          5168
+        </td>
+        <td>
+          1815
+          -
+          1831
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.AnnotatedRugFunction.functionMethod
+        </td>
+        <td style="background: #AEF1AE">
+          AnnotatedRugFunction.this.functionMethod()
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          5197
+        </td>
+        <td>
+          1847
+          -
+          2623
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[java.lang.reflect.Parameter](method.getParameters()).map[Object, Array[Object]](((p: java.lang.reflect.Parameter) =&gt; {
+  val parameterAnnotation: com.atomist.rug.spi.annotation.Parameter = p.getAnnotation[com.atomist.rug.spi.annotation.Parameter](classOf[com.atomist.rug.spi.annotation.Parameter]);
+  val secretAnnotation: com.atomist.rug.spi.annotation.Secret = p.getAnnotation[com.atomist.rug.spi.annotation.Secret](classOf[com.atomist.rug.spi.annotation.Secret]);
+  if (parameterAnnotation.==(null).&amp;&amp;(secretAnnotation.!=(null)))
+    AnnotatedRugFunction.this.convert(p, parameters.paramValue(secretAnnotation.name()))
+  else
+    if (parameterAnnotation.!=(null).&amp;&amp;(secretAnnotation.==(null)).&amp;&amp;(parameterAnnotation.required()))
+      AnnotatedRugFunction.this.convert(p, parameters.paramValue(parameterAnnotation.name()))
+    else
+      if (parameterAnnotation.==(null).&amp;&amp;(secretAnnotation.==(null)))
+        throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Parameter &quot;, &quot; not annotated with either @Secret or @Parameter&quot;).s(p.getName()))
+      else
+        null
+}))(scala.this.Array.canBuildFrom[Object]((ClassTag.Object: scala.reflect.ClassTag[Object])))
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          5196
+        </td>
+        <td>
+          1871
+          -
+          1871
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.Array.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Array.canBuildFrom[Object]((ClassTag.Object: scala.reflect.ClassTag[Object]))
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          5169
+        </td>
+        <td>
+          1847
+          -
+          1867
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Executable.getParameters
+        </td>
+        <td style="background: #AEF1AE">
+          method.getParameters()
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5170
+        </td>
+        <td>
+          1911
+          -
+          1977
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Parameter.getAnnotation
+        </td>
+        <td style="background: #AEF1AE">
+          p.getAnnotation[com.atomist.rug.spi.annotation.Parameter](classOf[com.atomist.rug.spi.annotation.Parameter])
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          5171
+        </td>
+        <td>
+          2007
+          -
+          2070
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Parameter.getAnnotation
+        </td>
+        <td style="background: #AEF1AE">
+          p.getAnnotation[com.atomist.rug.spi.annotation.Secret](classOf[com.atomist.rug.spi.annotation.Secret])
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          5173
+        </td>
+        <td>
+          2112
+          -
+          2136
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          secretAnnotation.!=(null)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          5172
+        </td>
+        <td>
+          2104
+          -
+          2108
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          5174
+        </td>
+        <td>
+          2081
+          -
+          2136
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          parameterAnnotation.==(null).&amp;&amp;(secretAnnotation.!=(null))
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          5176
+        </td>
+        <td>
+          2159
+          -
+          2205
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.ParameterValues.paramValue
+        </td>
+        <td style="background: #AEF1AE">
+          parameters.paramValue(secretAnnotation.name())
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          5178
+        </td>
+        <td>
+          2148
+          -
+          2206
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.spi.AnnotatedRugFunction.convert
+        </td>
+        <td style="background: #AEF1AE">
+          AnnotatedRugFunction.this.convert(p, parameters.paramValue(secretAnnotation.name()))
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          5175
+        </td>
+        <td>
+          2181
+          -
+          2204
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.annotation.Secret.name
+        </td>
+        <td style="background: #AEF1AE">
+          secretAnnotation.name()
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          5177
+        </td>
+        <td>
+          2148
+          -
+          2206
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.AnnotatedRugFunction.convert
+        </td>
+        <td style="background: #AEF1AE">
+          AnnotatedRugFunction.this.convert(p, parameters.paramValue(secretAnnotation.name()))
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          5179
+        </td>
+        <td>
+          2247
+          -
+          2251
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          5182
+        </td>
+        <td>
+          2224
+          -
+          2313
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          parameterAnnotation.!=(null).&amp;&amp;(secretAnnotation.==(null)).&amp;&amp;(parameterAnnotation.required())
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          5181
+        </td>
+        <td>
+          2283
+          -
+          2313
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.annotation.Parameter.required
+        </td>
+        <td style="background: #AEF1AE">
+          parameterAnnotation.required()
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          5195
+        </td>
+        <td>
+          2220
+          -
+          2616
+        </td>
+        <td>
+          If
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          if (parameterAnnotation.!=(null).&amp;&amp;(secretAnnotation.==(null)).&amp;&amp;(parameterAnnotation.required()))
+  AnnotatedRugFunction.this.convert(p, parameters.paramValue(parameterAnnotation.name()))
+else
+  if (parameterAnnotation.==(null).&amp;&amp;(secretAnnotation.==(null)))
+    throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Parameter &quot;, &quot; not annotated with either @Secret or @Parameter&quot;).s(p.getName()))
+  else
+    null
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          5180
+        </td>
+        <td>
+          2255
+          -
+          2279
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          secretAnnotation.==(null)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          5185
+        </td>
+        <td>
+          2325
+          -
+          2386
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.AnnotatedRugFunction.convert
+        </td>
+        <td style="background: #AEF1AE">
+          AnnotatedRugFunction.this.convert(p, parameters.paramValue(parameterAnnotation.name()))
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          5184
+        </td>
+        <td>
+          2336
+          -
+          2385
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.ParameterValues.paramValue
+        </td>
+        <td style="background: #AEF1AE">
+          parameters.paramValue(parameterAnnotation.name())
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          5183
+        </td>
+        <td>
+          2358
+          -
+          2384
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.annotation.Parameter.name
+        </td>
+        <td style="background: #AEF1AE">
+          parameterAnnotation.name()
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          5186
+        </td>
+        <td>
+          2325
+          -
+          2386
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.spi.AnnotatedRugFunction.convert
+        </td>
+        <td style="background: #AEF1AE">
+          AnnotatedRugFunction.this.convert(p, parameters.paramValue(parameterAnnotation.name()))
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          5188
+        </td>
+        <td>
+          2435
+          -
+          2459
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          secretAnnotation.==(null)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          5194
+        </td>
+        <td>
+          2400
+          -
+          2616
+        </td>
+        <td>
+          If
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          if (parameterAnnotation.==(null).&amp;&amp;(secretAnnotation.==(null)))
+  throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Parameter &quot;, &quot; not annotated with either @Secret or @Parameter&quot;).s(p.getName()))
+else
+  null
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          5187
+        </td>
+        <td>
+          2427
+          -
+          2431
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          5189
+        </td>
+        <td>
+          2404
+          -
+          2459
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          parameterAnnotation.==(null).&amp;&amp;(secretAnnotation.==(null))
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          5191
+        </td>
+        <td>
+          2471
+          -
+          2580
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Parameter &quot;, &quot; not annotated with either @Secret or @Parameter&quot;).s(p.getName()))
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          5190
+        </td>
+        <td>
+          2471
+          -
+          2580
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Parameter &quot;, &quot; not annotated with either @Secret or @Parameter&quot;).s(p.getName()))
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          5193
+        </td>
+        <td>
+          2604
+          -
+          2608
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          5192
+        </td>
+        <td>
+          2604
+          -
+          2608
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          5199
+        </td>
+        <td>
+          2640
+          -
+          2700
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          method.invoke(this, (args: _*)).asInstanceOf[com.atomist.rug.spi.FunctionResponse]
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          5198
+        </td>
+        <td>
+          2640
+          -
+          2700
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          method.invoke(this, (args: _*)).asInstanceOf[com.atomist.rug.spi.FunctionResponse]
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          5200
+        </td>
+        <td>
+          2764
+          -
+          2782
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw ite.getCause()
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          5201
+        </td>
+        <td>
+          3003
+          -
+          3016
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Parameter.getType
+        </td>
+        <td style="background: #AEF1AE">
+          param.getType()
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          5203
+        </td>
+        <td>
+          3064
+          -
+          3092
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(o).toInt.asInstanceOf[Object]
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          5202
+        </td>
+        <td>
+          3043
+          -
+          3060
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          p.==(classOf[scala.Int])
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          5205
+        </td>
+        <td>
+          3136
+          -
+          3176
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          java.this.lang.Integer.parseInt(o).asInstanceOf[Object]
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          5204
+        </td>
+        <td>
+          3111
+          -
+          3132
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          p.==(classOf[java.lang.Integer])
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          5206
+        </td>
+        <td>
+          3195
+          -
+          3216
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          p.==(classOf[scala.Boolean])
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          5207
+        </td>
+        <td>
+          3220
+          -
+          3252
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.augmentString(o).toBoolean.asInstanceOf[Object]
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          5209
+        </td>
+        <td>
+          3306
+          -
+          3360
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          java.lang.Boolean.parseBoolean(o).asInstanceOf[Object]
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          5208
+        </td>
+        <td>
+          3271
+          -
+          3302
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          p.==(classOf[java.lang.Boolean])
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          5211
+        </td>
+        <td>
+          3403
+          -
+          3434
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.augmentString(o).toDouble.asInstanceOf[Object]
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          5210
+        </td>
+        <td>
+          3379
+          -
+          3399
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          p.==(classOf[scala.Double])
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          5212
+        </td>
+        <td>
+          3453
+          -
+          3483
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          p.==(classOf[java.lang.Double])
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          5213
+        </td>
+        <td>
+          3487
+          -
+          3539
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          java.lang.Double.parseDouble(o).asInstanceOf[Object]
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          5215
+        </td>
+        <td>
+          3581
+          -
+          3611
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.augmentString(o).toFloat.asInstanceOf[Object]
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          5214
+        </td>
+        <td>
+          3558
+          -
+          3577
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          p.==(classOf[scala.Float])
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          5217
+        </td>
+        <td>
+          3663
+          -
+          3713
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          java.lang.Float.parseFloat(o).asInstanceOf[Object]
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          5216
+        </td>
+        <td>
+          3630
+          -
+          3659
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          p.==(classOf[java.lang.Float])
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          5218
+        </td>
+        <td>
+          3732
+          -
+          3752
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          p.==(classOf[java.lang.String])
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          5219
+        </td>
+        <td>
+          3756
+          -
+          3778
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          o.asInstanceOf[Object]
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          5220
+        </td>
+        <td>
+          3803
+          -
+          3830
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          avalue.asInstanceOf[Object]
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

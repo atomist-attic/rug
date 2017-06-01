@@ -1,0 +1,411 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/project/edit/ProjectEditorUtils.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.project.edit
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.source._
+</span>4 <span style=''>import com.typesafe.scalalogging.LazyLogging
+</span>5 <span style=''>
+</span>6 <span style=''>/**
+</span>7 <span style=''>  * Convenience methods for working with results.
+</span>8 <span style=''>  */
+</span>9 <span style=''>object ProjectEditorUtils extends LazyLogging {
+</span>10 <span style=''>
+</span>11 <span style=''>  /**
+</span>12 <span style=''>    * Replace files with the given paths in this ArtifactSource.
+</span>13 <span style=''>    * Add if not found.
+</span>14 <span style=''>    */
+</span>15 <span style=''>  def replace(as: ArtifactSource, modifiedFiles: FileArtifact*): ArtifactSource = {
+</span>16 <span style=''>    val fe = </span><span style='background: #AEF1AE'>SimpleFileEditor(f =&gt; modifiedFiles.exists(mf =&gt; {
+</span>17 <span style=''></span><span style='background: #AEF1AE'>      logger.debug(s&quot;Comparing ${mf.path} and ${f.path}&quot;)
+</span>18 <span style=''></span><span style='background: #AEF1AE'>      mf.path equals f.path
+</span>19 <span style=''></span><span style='background: #AEF1AE'>    }), f =&gt; f)</span><span style=''>
+</span>20 <span style=''>    val result = </span><span style='background: #AEF1AE'>as ✎ fe</span><span style=''>
+</span>21 <span style=''>    val nonExistingFiles = </span><span style='background: #AEF1AE'>modifiedFiles.filter(mf =&gt; as.findFile(mf.path).isEmpty)</span><span style=''>
+</span>22 <span style=''>    </span><span style='background: #AEF1AE'>result + nonExistingFiles</span><span style=''>
+</span>23 <span style=''>  }
+</span>24 <span style=''>
+</span>25 <span style=''>  /**
+</span>26 <span style=''>    * Append the given string to a file
+</span>27 <span style=''>    */
+</span>28 <span style=''>  def appendToFile(as: ArtifactSource, targetFile: FileArtifact, what: String): ArtifactSource = {
+</span>29 <span style=''>    val moddedFile = </span><span style='background: #AEF1AE'>StringFileArtifact(targetFile.path, targetFile.content + what)</span><span style=''>
+</span>30 <span style=''>    </span><span style='background: #AEF1AE'>replace(as, moddedFile)</span><span style=''>
+</span>31 <span style=''>  }
+</span>32 <span style=''>
+</span>33 <span style=''>  /**
+</span>34 <span style=''>    * Returns a new or existing FileArtifact.
+</span>35 <span style=''>    *
+</span>36 <span style=''>    * @param as the ArtifactSource
+</span>37 <span style=''>    * @param path the path
+</span>38 <span style=''>    * @param content the content
+</span>39 <span style=''>    * @return a new file or an existing file with the given content
+</span>40 <span style=''>    */
+</span>41 <span style=''>  def newOrExistingFile(as: ArtifactSource, path: String, content: String = &quot;&quot;): FileArtifact =
+</span>42 <span style=''>    </span><span style='background: #AEF1AE'>as.findFile(path).getOrElse(StringFileArtifact(path, content))</span><span style=''>
+</span>43 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          684
+        </td>
+        <td>
+          415
+          -
+          567
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.SimpleFileEditor.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.SimpleFileEditor.apply(((f: com.atomist.source.FileArtifact) =&gt; modifiedFiles.exists(((mf: com.atomist.source.FileArtifact) =&gt; {
+  (if (ProjectEditorUtils.this.logger.underlying.isDebugEnabled())
+    ProjectEditorUtils.this.logger.underlying.debug(scala.StringContext.apply(&quot;Comparing &quot;, &quot; and &quot;, &quot;&quot;).s(mf.path, f.path))
+  else
+    (): Unit);
+  mf.path.equals(f.path)
+}))), ((f: com.atomist.source.FileArtifact) =&gt; f))
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          683
+        </td>
+        <td>
+          437
+          -
+          558
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #AEF1AE">
+          modifiedFiles.exists(((mf: com.atomist.source.FileArtifact) =&gt; {
+  (if (ProjectEditorUtils.this.logger.underlying.isDebugEnabled())
+    ProjectEditorUtils.this.logger.underlying.debug(scala.StringContext.apply(&quot;Comparing &quot;, &quot; and &quot;, &quot;&quot;).s(mf.path, f.path))
+  else
+    (): Unit);
+  mf.path.equals(f.path)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          681
+        </td>
+        <td>
+          545
+          -
+          551
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.path
+        </td>
+        <td style="background: #AEF1AE">
+          f.path
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          682
+        </td>
+        <td>
+          530
+          -
+          551
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          mf.path.equals(f.path)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          685
+        </td>
+        <td>
+          585
+          -
+          592
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.✎
+        </td>
+        <td style="background: #AEF1AE">
+          as.✎(fe)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          687
+        </td>
+        <td>
+          647
+          -
+          675
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          as.findFile(mf.path).isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          686
+        </td>
+        <td>
+          659
+          -
+          666
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.path
+        </td>
+        <td style="background: #AEF1AE">
+          mf.path
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          688
+        </td>
+        <td>
+          620
+          -
+          676
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          modifiedFiles.filter(((mf: com.atomist.source.FileArtifact) =&gt; as.findFile(mf.path).isEmpty))
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          689
+        </td>
+        <td>
+          681
+          -
+          706
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.+
+        </td>
+        <td style="background: #AEF1AE">
+          result.+(nonExistingFiles)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          690
+        </td>
+        <td>
+          904
+          -
+          919
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.path
+        </td>
+        <td style="background: #AEF1AE">
+          targetFile.path
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          692
+        </td>
+        <td>
+          885
+          -
+          947
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.StringFileArtifact.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.StringFileArtifact.apply(targetFile.path, targetFile.content.+(what))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          691
+        </td>
+        <td>
+          921
+          -
+          946
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          targetFile.content.+(what)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          693
+        </td>
+        <td>
+          952
+          -
+          975
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.ProjectEditorUtils.replace
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectEditorUtils.this.replace(as, moddedFile)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          695
+        </td>
+        <td>
+          1309
+          -
+          1371
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          as.findFile(path).getOrElse[com.atomist.source.FileArtifact](com.atomist.source.StringFileArtifact.apply(path, content))
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          694
+        </td>
+        <td>
+          1337
+          -
+          1370
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.StringFileArtifact.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.StringFileArtifact.apply(path, content)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

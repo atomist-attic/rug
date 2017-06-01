@@ -1,0 +1,404 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/java/support/JavaAssertions.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.java.support
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.source.ArtifactSource
+</span>4 <span style=''>import com.atomist.util.lang.{JavaHelpers, MavenConstants}
+</span>5 <span style=''>
+</span>6 <span style=''>object JavaAssertions {
+</span>7 <span style=''>
+</span>8 <span style=''>  val isJava: ArtifactSource =&gt; Boolean = project =&gt;
+</span>9 <span style=''>    </span><span style='background: #AEF1AE'>project.allFiles.exists(JavaHelpers.isJavaSourceArtifact(_))</span><span style=''>
+</span>10 <span style=''>
+</span>11 <span style=''>  val isMaven: ArtifactSource =&gt; Boolean =
+</span>12 <span style=''>    project =&gt; </span><span style='background: #F0ADAD'>project.findFile(MavenConstants.PomPath).isDefined</span><span style=''>
+</span>13 <span style=''>
+</span>14 <span style=''>  val isSpring: ArtifactSource =&gt; Boolean = project =&gt;
+</span>15 <span style=''>    </span><span style='background: #AEF1AE'>project.findFile(MavenConstants.PomPath).exists(f =&gt; </span><span style='background: #F0ADAD'>f.content.contains(&quot;org.springframework&quot;)</span><span style='background: #AEF1AE'>)</span><span style=''>
+</span>16 <span style=''>
+</span>17 <span style=''>  val SpringBootStarterParent: String = </span><span style='background: #AEF1AE'>&quot;spring-boot-starter-parent&quot;</span><span style=''>
+</span>18 <span style=''>
+</span>19 <span style=''>  val ApplicationPropertiesFilePath = </span><span style='background: #AEF1AE'>&quot;src/main/resources/application.properties&quot;</span><span style=''>
+</span>20 <span style=''>
+</span>21 <span style=''>  def hasApplicationProperties(as: ArtifactSource): Boolean =
+</span>22 <span style=''>    </span><span style='background: #F0ADAD'>as.findFile(ApplicationPropertiesFilePath).isDefined</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>  val isSpringBoot: ArtifactSource =&gt; Boolean = project =&gt;
+</span>25 <span style=''>    </span><span style='background: #F0ADAD'>isSpring(project) &amp;&amp;
+</span>26 <span style=''></span><span style='background: #F0ADAD'>      project.findFile(MavenConstants.PomPath).exists(pom =&gt; pom.content.contains(SpringBootStarterParent))</span><span style=''>
+</span>27 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          2224
+        </td>
+        <td>
+          226
+          -
+          286
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #AEF1AE">
+          project.allFiles.exists(((x$1: com.atomist.source.FileArtifact) =&gt; com.atomist.util.lang.JavaHelpers.isJavaSourceArtifact.apply(x$1)))
+        </td>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          2223
+        </td>
+        <td>
+          250
+          -
+          285
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.lang.JavaHelpers.isJavaSourceArtifact.apply(x$1)
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          2226
+        </td>
+        <td>
+          346
+          -
+          396
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #F0ADAD">
+          project.findFile(com.atomist.util.lang.MavenConstants.PomPath).isDefined
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          2225
+        </td>
+        <td>
+          363
+          -
+          385
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.lang.MavenConstants.PomPath
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.util.lang.MavenConstants.PomPath
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          2227
+        </td>
+        <td>
+          474
+          -
+          496
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.lang.MavenConstants.PomPath
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.lang.MavenConstants.PomPath
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          2229
+        </td>
+        <td>
+          457
+          -
+          552
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.exists
+        </td>
+        <td style="background: #AEF1AE">
+          project.findFile(com.atomist.util.lang.MavenConstants.PomPath).exists(((f: com.atomist.source.FileArtifact) =&gt; f.content.contains(&quot;org.springframework&quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          2228
+        </td>
+        <td>
+          510
+          -
+          551
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.contains
+        </td>
+        <td style="background: #F0ADAD">
+          f.content.contains(&quot;org.springframework&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2230
+        </td>
+        <td>
+          594
+          -
+          622
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;spring-boot-starter-parent&quot;
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          2231
+        </td>
+        <td>
+          662
+          -
+          705
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;src/main/resources/application.properties&quot;
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          2233
+        </td>
+        <td>
+          773
+          -
+          825
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #F0ADAD">
+          as.findFile(JavaAssertions.this.ApplicationPropertiesFilePath).isDefined
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          2232
+        </td>
+        <td>
+          785
+          -
+          814
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.support.JavaAssertions.ApplicationPropertiesFilePath
+        </td>
+        <td style="background: #F0ADAD">
+          JavaAssertions.this.ApplicationPropertiesFilePath
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          2238
+        </td>
+        <td>
+          890
+          -
+          1018
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #F0ADAD">
+          JavaAssertions.this.isSpring.apply(project).&amp;&amp;(project.findFile(com.atomist.util.lang.MavenConstants.PomPath).exists(((pom: com.atomist.source.FileArtifact) =&gt; pom.content.contains(JavaAssertions.this.SpringBootStarterParent))))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2236
+        </td>
+        <td>
+          972
+          -
+          1017
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.contains
+        </td>
+        <td style="background: #F0ADAD">
+          pom.content.contains(JavaAssertions.this.SpringBootStarterParent)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2235
+        </td>
+        <td>
+          993
+          -
+          1016
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.support.JavaAssertions.SpringBootStarterParent
+        </td>
+        <td style="background: #F0ADAD">
+          JavaAssertions.this.SpringBootStarterParent
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2234
+        </td>
+        <td>
+          934
+          -
+          956
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.lang.MavenConstants.PomPath
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.util.lang.MavenConstants.PomPath
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2237
+        </td>
+        <td>
+          917
+          -
+          1018
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.exists
+        </td>
+        <td style="background: #F0ADAD">
+          project.findFile(com.atomist.util.lang.MavenConstants.PomPath).exists(((pom: com.atomist.source.FileArtifact) =&gt; pom.content.contains(JavaAssertions.this.SpringBootStarterParent)))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

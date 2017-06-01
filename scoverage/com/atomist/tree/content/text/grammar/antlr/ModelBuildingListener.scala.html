@@ -1,0 +1,3200 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/content/text/grammar/antlr/ModelBuildingListener.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.content.text.grammar.antlr
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.tree.TreeNode
+</span>4 <span style=''>import com.atomist.tree.TreeNode.Significance
+</span>5 <span style=''>import com.atomist.tree.content.text._
+</span>6 <span style=''>import com.typesafe.scalalogging.LazyLogging
+</span>7 <span style=''>import org.antlr.v4.runtime.tree.{ErrorNode, TerminalNode}
+</span>8 <span style=''>import org.antlr.v4.runtime.{ParserRuleContext, Token}
+</span>9 <span style=''>import org.snt.inmemantlr.listener.DefaultListener
+</span>10 <span style=''>
+</span>11 <span style=''>import scala.collection.JavaConverters._
+</span>12 <span style=''>import scala.collection.mutable.ListBuffer
+</span>13 <span style=''>
+</span>14 <span style=''>object Excludes {
+</span>15 <span style=''>
+</span>16 <span style=''>  /** Antlr generated-class method names to exclude. */
+</span>17 <span style=''>  val ExcludedMethods = </span><span style='background: #AEF1AE'>Set(&quot;getRuleIndex&quot;)</span><span style=''>
+</span>18 <span style=''>}
+</span>19 <span style=''>
+</span>20 <span style=''>/**
+</span>21 <span style=''>  * Builds our TreeNode model from Antlr callbacks.
+</span>22 <span style=''>  *
+</span>23 <span style=''>  * @param matchRule name of the rule (production) we want to match
+</span>24 <span style=''>  */
+</span>25 <span style=''>class ModelBuildingListener(
+</span>26 <span style=''>                             matchRule: String,
+</span>27 <span style=''>                             namingStrategy: AstNodeCreationStrategy)
+</span>28 <span style=''>  extends DefaultListener with LazyLogging {
+</span>29 <span style=''>
+</span>30 <span style=''>  private val results = </span><span style='background: #AEF1AE'>new ListBuffer[PositionedTreeNode]()</span><span style=''>
+</span>31 <span style=''>
+</span>32 <span style=''>  /**
+</span>33 <span style=''>    * @return the nodes corresponding to these rules
+</span>34 <span style=''>    */
+</span>35 <span style=''>  def ruleNodes: Seq[PositionedTreeNode] = </span><span style='background: #AEF1AE'>results</span><span style=''>
+</span>36 <span style=''>
+</span>37 <span style=''>  override def enterEveryRule(ctx: ParserRuleContext): Unit = {
+</span>38 <span style=''>    val rule = </span><span style='background: #AEF1AE'>this.getRuleByKey(ctx.getRuleIndex)</span><span style=''>
+</span>39 <span style=''>    rule match {
+</span>40 <span style=''>      case `matchRule` =&gt;
+</span>41 <span style=''>        logger.debug(s&quot;enterEveryRule $rule: ${ctx.getClass} ${ctx.getText}&quot;)
+</span>42 <span style=''>        if (</span><span style='background: #AEF1AE'>ctx.exception != null</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>43 <span style=''></span><span style='background: #AEF1AE'>          // Failed to get a whole match
+</span>44 <span style=''></span><span style='background: #AEF1AE'>          // ctx.exception.printStackTrace()
+</span>45 <span style=''></span><span style='background: #AEF1AE'>        }</span><span style=''>
+</span>46 <span style=''>        else </span><span style='background: #AEF1AE'>{
+</span>47 <span style=''></span><span style='background: #AEF1AE'>          val mctn = treeToContainerField(ctx)
+</span>48 <span style=''></span><span style='background: #AEF1AE'>          results.append(mctn)
+</span>49 <span style=''></span><span style='background: #AEF1AE'>          logger.debug(&quot;\t&quot; + ctx)
+</span>50 <span style=''></span><span style='background: #AEF1AE'>        }</span><span style=''>
+</span>51 <span style=''>      case _ </span><span style='background: #AEF1AE'>=&gt;</span><span style=''>
+</span>52 <span style=''>      // Ignore this production
+</span>53 <span style=''>    }
+</span>54 <span style=''>  }
+</span>55 <span style=''>
+</span>56 <span style=''>  // Use reflection to extract information from the generated methods and fields in this class
+</span>57 <span style=''>  private def treeToContainerField(rc: ParserRuleContext): AntlrPositionedTreeNode = {
+</span>58 <span style=''>    val rule = </span><span style='background: #AEF1AE'>this.getRuleByKey(rc.getRuleIndex)</span><span style=''>
+</span>59 <span style=''>
+</span>60 <span style=''>    if (</span><span style='background: #AEF1AE'>rc.exception != null</span><span style=''>) </span><span style='background: #F0ADAD'>throw rc.exception</span><span style=''>
+</span>61 <span style=''>
+</span>62 <span style=''>    val startPos = // position(rc.getStart)
+</span>63 <span style=''>      </span><span style='background: #AEF1AE'>OffsetInputPosition(rc.getStart.getStartIndex)</span><span style=''>
+</span>64 <span style=''>    val endPos = // position(rc.stop) + rc.getStop.getText.size
+</span>65 <span style=''>      </span><span style='background: #AEF1AE'>OffsetInputPosition(rc.getStop.getStopIndex + 1)</span><span style=''>
+</span>66 <span style=''>
+</span>67 <span style=''>    // We only want methods on the generated class itself
+</span>68 <span style=''>    val valueMethods = </span><span style='background: #AEF1AE'>rc.getClass
+</span>69 <span style=''></span><span style='background: #AEF1AE'>      .getDeclaredMethods
+</span>70 <span style=''></span><span style='background: #AEF1AE'>      .filter(m =&gt; !Excludes.ExcludedMethods.contains(m.getName))</span><span style=''>
+</span>71 <span style=''>
+</span>72 <span style=''>    val fieldsToAdd = </span><span style='background: #AEF1AE'>ListBuffer.empty[AntlrPositionedTreeNode]</span><span style=''>
+</span>73 <span style=''>
+</span>74 <span style=''>    def addField(f: AntlrPositionedTreeNode): Unit = f match {
+</span>75 <span style=''>      case ptn: PositionedTreeNode =&gt;
+</span>76 <span style=''>        if (</span><span style='background: #AEF1AE'>!fieldsToAdd.exists {
+</span>77 <span style=''></span><span style='background: #AEF1AE'>          case p: PositionedTreeNode if ptn.hasSamePositionAs(p) =&gt; true
+</span>78 <span style=''></span><span style='background: #AEF1AE'>          case _ =&gt; false
+</span>79 <span style=''></span><span style='background: #AEF1AE'>        }</span><span style=''>)
+</span>80 <span style=''>          </span><span style='background: #AEF1AE'>fieldsToAdd.append(f)</span><span style=''>
+</span>81 <span style=''>      case tn =&gt;
+</span>82 <span style=''>        </span><span style='background: #F0ADAD'>fieldsToAdd.append(tn)</span><span style=''>
+</span>83 <span style=''>    }
+</span>84 <span style=''>
+</span>85 <span style=''>    </span><span style='background: #AEF1AE'>for {
+</span>86 <span style=''></span><span style='background: #AEF1AE'>      m &lt;- valueMethods
+</span>87 <span style=''></span><span style='background: #AEF1AE'>      if m.getParameterCount == 0
+</span>88 <span style=''></span><span style='background: #AEF1AE'>    } {
+</span>89 <span style=''></span><span style='background: #AEF1AE'>      val value = m.invoke(rc)
+</span>90 <span style=''></span><span style='background: #AEF1AE'>      for (f &lt;- makeField(m.getName, value))
+</span>91 <span style=''></span><span style='background: #AEF1AE'>        addField(f)
+</span>92 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>93 <span style=''>
+</span>94 <span style=''>    </span><span style='background: #AEF1AE'>for (f &lt;- rc.getClass.getDeclaredFields) {
+</span>95 <span style=''></span><span style='background: #AEF1AE'>      val value = f.get(rc)
+</span>96 <span style=''></span><span style='background: #AEF1AE'>      for (mf &lt;- makeField(f.getName, value))
+</span>97 <span style=''></span><span style='background: #AEF1AE'>        addField(mf)
+</span>98 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>99 <span style=''>
+</span>100 <span style=''>    val deduped = </span><span style='background: #AEF1AE'>deduplicate(fieldsToAdd)</span><span style=''>
+</span>101 <span style=''>    val namey = </span><span style='background: #AEF1AE'>namingStrategy.nameForContainer(rule, deduped)</span><span style=''>
+</span>102 <span style=''>    </span><span style='background: #AEF1AE'>AntlrPositionedTreeNode.parent(
+</span>103 <span style=''></span><span style='background: #AEF1AE'>      namey,
+</span>104 <span style=''></span><span style='background: #AEF1AE'>      startPos,
+</span>105 <span style=''></span><span style='background: #AEF1AE'>      endPos,
+</span>106 <span style=''></span><span style='background: #AEF1AE'>      deduped,
+</span>107 <span style=''></span><span style='background: #AEF1AE'>      namingStrategy.tagsForContainer(rule, deduped) ++ Set(TreeNode.Dynamic),
+</span>108 <span style=''></span><span style='background: #AEF1AE'>      namingStrategy.significance(rule, deduped))</span><span style=''>
+</span>109 <span style=''>  }
+</span>110 <span style=''>
+</span>111 <span style=''>  // Remove duplicate fields. The ones with lower case can replace the ones with upper case
+</span>112 <span style=''>  // For example, handle case method_name=IDENTIFIER
+</span>113 <span style=''>  private def deduplicate(fields: Seq[AntlrPositionedTreeNode]): Seq[AntlrPositionedTreeNode] = {
+</span>114 <span style=''>    val lexerPred: TreeNode =&gt; Boolean = f =&gt; </span><span style='background: #AEF1AE'>f.nodeName.charAt(0).isUpper</span><span style=''>
+</span>115 <span style=''>    val lexerFields = </span><span style='background: #AEF1AE'>fields.filter(lexerPred)</span><span style=''>
+</span>116 <span style=''>
+</span>117 <span style=''>    val positionedParserFields = </span><span style='background: #AEF1AE'>fields
+</span>118 <span style=''></span><span style='background: #AEF1AE'>      .filter(!lexerPred(_)) collect {
+</span>119 <span style=''></span><span style='background: #AEF1AE'>      case pv: PositionedTreeNode =&gt; pv
+</span>120 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>121 <span style=''>
+</span>122 <span style=''>    // There should be no overlap between these collections
+</span>123 <span style=''>    </span><span style='background: #AEF1AE'>require(!lexerFields.exists(positionedParserFields.contains(_)))</span><span style=''>
+</span>124 <span style=''>
+</span>125 <span style=''>    def theresAnAliasFieldWithProbablySamePosition(what: TreeNode) = what match {
+</span>126 <span style=''>      case pf: PositionedTreeNode =&gt;
+</span>127 <span style=''>        </span><span style='background: #AEF1AE'>positionedParserFields.exists(ppf =&gt; pf.hasSamePositionAs(ppf))</span><span style=''>
+</span>128 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>false</span><span style=''>
+</span>129 <span style=''>    }
+</span>130 <span style=''>
+</span>131 <span style=''>    // We don't want lexer fields that have an alias field with the same position
+</span>132 <span style=''>    val deduped = </span><span style='background: #AEF1AE'>fields.filter(f =&gt; !(lexerFields.contains(f) &amp;&amp;
+</span>133 <span style=''></span><span style='background: #AEF1AE'>      theresAnAliasFieldWithProbablySamePosition(f))
+</span>134 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>135 <span style=''>
+</span>136 <span style=''>    def unwantedDuplicates(fields: Seq[AntlrPositionedTreeNode]): Seq[AntlrPositionedTreeNode] =
+</span>137 <span style=''>      if (</span><span style='background: #AEF1AE'>fields.size &lt;= 1</span><span style=''>) </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>138 <span style=''>      else </span><span style='background: #AEF1AE'>fields.head match {
+</span>139 <span style=''></span><span style='background: #AEF1AE'>        case pm: PositionedTreeNode =&gt;
+</span>140 <span style=''></span><span style='background: #AEF1AE'>          fields.tail.collect {
+</span>141 <span style=''></span><span style='background: #AEF1AE'>            case pm2: PositionedTreeNode if pm.hasSamePositionAs(pm2) =&gt;
+</span>142 <span style=''></span><span style='background: #AEF1AE'>              pm2
+</span>143 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>144 <span style=''></span><span style='background: #AEF1AE'>        case _ =&gt; </span><span style='background: #F0ADAD'>unwantedDuplicates(fields.tail)</span><span style='background: #AEF1AE'>
+</span>145 <span style=''></span><span style='background: #AEF1AE'>      }</span><span style=''>
+</span>146 <span style=''>
+</span>147 <span style=''>    val unwanted = </span><span style='background: #AEF1AE'>unwantedDuplicates(deduped)</span><span style=''>
+</span>148 <span style=''>    val filtered = </span><span style='background: #AEF1AE'>deduped.filterNot(unwanted.contains(_))</span><span style=''>
+</span>149 <span style=''>    </span><span style='background: #AEF1AE'>require(unwantedDuplicates(filtered).isEmpty)</span><span style=''>
+</span>150 <span style=''>    filtered
+</span>151 <span style=''>  }
+</span>152 <span style=''>
+</span>153 <span style=''>  private def position(tok: Token): InputPosition = {
+</span>154 <span style=''>    val input = </span><span style='background: #AEF1AE'>tok.getInputStream.toString</span><span style=''>
+</span>155 <span style=''>    // Antlr indexes lines from 0 and columns from 1.
+</span>156 <span style=''>    val pos = </span><span style='background: #AEF1AE'>tok.getStartIndex</span><span style=''> match {
+</span>157 <span style=''>      case -1 =&gt; </span><span style='background: #F0ADAD'>LineInputPositionImpl(input, tok.getLine, tok.getCharPositionInLine + 1)</span><span style=''>
+</span>158 <span style=''>      case n =&gt; </span><span style='background: #AEF1AE'>OffsetInputPosition(n)</span><span style=''>
+</span>159 <span style=''>    }
+</span>160 <span style=''>    pos
+</span>161 <span style=''>  }
+</span>162 <span style=''>
+</span>163 <span style=''>  private def makeField(name: String, value: Object): Seq[AntlrPositionedTreeNode] = {
+</span>164 <span style=''>    val r = value match {
+</span>165 <span style=''>      case en: ErrorNode =&gt;
+</span>166 <span style=''>        logger.info(s&quot;ErrorNode: $name=$en&quot;)
+</span>167 <span style=''>        </span><span style='background: #F0ADAD'>Seq()</span><span style=''> // does this have position information?
+</span>168 <span style=''>      case ct: Token if </span><span style='background: #AEF1AE'>ct.getText.startsWith(s&quot;&lt;missing &quot;)</span><span style=''> =&gt;
+</span>169 <span style=''>        // Handle Antlr empty values
+</span>170 <span style=''>        val sf = </span><span style='background: #F0ADAD'>AntlrPositionedTreeNode.leaf(name, position(ct), &quot;&quot;, Set(name), TreeNode.Signal)</span><span style=''>
+</span>171 <span style=''>        </span><span style='background: #F0ADAD'>Seq(sf)</span><span style=''>
+</span>172 <span style=''>      case ct: Token if </span><span style='background: #AEF1AE'>ct.getText == &quot;&lt;EOF&gt;&quot;</span><span style=''> =&gt;
+</span>173 <span style=''>        // For some reason, some grammars put the EOF on the token input stream
+</span>174 <span style=''>        </span><span style='background: #AEF1AE'>Seq()</span><span style=''>
+</span>175 <span style=''>      case ct: Token =&gt;
+</span>176 <span style=''>        val pos = </span><span style='background: #AEF1AE'>position(ct)</span><span style=''>
+</span>177 <span style=''>        val text = </span><span style='background: #AEF1AE'>ct.getText</span><span style=''>
+</span>178 <span style=''>        val namey = </span><span style='background: #AEF1AE'>namingStrategy.nameForTerminal(name, text)</span><span style=''>
+</span>179 <span style=''>        val sf = </span><span style='background: #AEF1AE'>AntlrPositionedTreeNode.leaf(
+</span>180 <span style=''></span><span style='background: #AEF1AE'>          namey,
+</span>181 <span style=''></span><span style='background: #AEF1AE'>          pos,
+</span>182 <span style=''></span><span style='background: #AEF1AE'>          text,
+</span>183 <span style=''></span><span style='background: #AEF1AE'>          Set(name), TreeNode.Signal)</span><span style=''>
+</span>184 <span style=''>        </span><span style='background: #AEF1AE'>Seq(sf)</span><span style=''>
+</span>185 <span style=''>      case tn: TerminalNode =&gt;
+</span>186 <span style=''>        </span><span style='background: #AEF1AE'>makeField(name, tn.getSymbol)</span><span style=''>
+</span>187 <span style=''>      case l: java.util.List[Object@unchecked] =&gt;
+</span>188 <span style=''>        </span><span style='background: #AEF1AE'>l.asScala.flatMap(e =&gt; makeField(name, e))</span><span style=''>
+</span>189 <span style=''>      case prc: ParserRuleContext =&gt;
+</span>190 <span style=''>        </span><span style='background: #AEF1AE'>Seq(treeToContainerField(prc))</span><span style=''>
+</span>191 <span style=''>      case null =&gt;
+</span>192 <span style=''>        </span><span style='background: #AEF1AE'>Seq()</span><span style=''>
+</span>193 <span style=''>    }
+</span>194 <span style=''>    r
+</span>195 <span style=''>  }
+</span>196 <span style=''>}
+</span>197 <span style=''>
+</span>198 <span style=''>/**
+</span>199 <span style=''>  * Enables us to rename, tag and determine significance of nodes from an Antlr grammar.
+</span>200 <span style=''>  * Contains default implementation. Subclasses can simply override the
+</span>201 <span style=''>  * methods they care about
+</span>202 <span style=''>  */
+</span>203 <span style=''>trait AstNodeCreationStrategy {
+</span>204 <span style=''>
+</span>205 <span style=''>  def nameForTerminal(rawName: String, content: String): String = rawName
+</span>206 <span style=''>
+</span>207 <span style=''>  def nameForContainer(rule: String, fields: Seq[AntlrPositionedTreeNode]): String = rule
+</span>208 <span style=''>
+</span>209 <span style=''>  def tagsForContainer(rule: String, fields: Seq[AntlrPositionedTreeNode]): Set[String] = </span><span style='background: #AEF1AE'>Set(rule)</span><span style=''>
+</span>210 <span style=''>
+</span>211 <span style=''>  def significance(rule: String, fields: Seq[AntlrPositionedTreeNode]): TreeNode.Significance =
+</span>212 <span style=''>    </span><span style='background: #AEF1AE'>TreeNode.Signal</span><span style=''>
+</span>213 <span style=''>
+</span>214 <span style=''>}
+</span>215 <span style=''>
+</span>216 <span style=''>/**
+</span>217 <span style=''>  * Default implementation of AstNodeNamingStrategy that takes node names from
+</span>218 <span style=''>  * underlying Antlr grammar.
+</span>219 <span style=''>  */
+</span>220 <span style=''>object FromGrammarAstNodeCreationStrategy extends AstNodeCreationStrategy
+</span>221 <span style=''>
+</span>222 <span style=''>
+</span>223 <span style=''>/*
+</span>224 <span style=''> * This has position, name, tags, value, significance
+</span>225 <span style=''> * PositionedTreeNode doesn't really need value, but it's helpful in NodeCreationStrategy methods.
+</span>226 <span style=''> */
+</span>227 <span style=''>case class AntlrPositionedTreeNode(override val nodeName: String,
+</span>228 <span style=''>                                   override val startPosition: InputPosition,
+</span>229 <span style=''>                                   override val endPosition: InputPosition,
+</span>230 <span style=''>                                   override val childNodes: Seq[AntlrPositionedTreeNode],
+</span>231 <span style=''>                                   override val nodeTags: Set[String],
+</span>232 <span style=''>                                   override val significance: Significance,
+</span>233 <span style=''>                                   valueOption: Option[String])
+</span>234 <span style=''>  extends PositionedTreeNode {
+</span>235 <span style=''>
+</span>236 <span style=''>  override def value: String = </span><span style='background: #AEF1AE'>valueOption.getOrElse(&quot;&quot;)</span><span style=''>
+</span>237 <span style=''>
+</span>238 <span style=''>  override def childNodeNames: Set[String] = </span><span style='background: #F0ADAD'>???</span><span style=''>
+</span>239 <span style=''>
+</span>240 <span style=''>  override def childNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>???</span><span style=''>
+</span>241 <span style=''>
+</span>242 <span style=''>  override def childrenNamed(key: String): Seq[TreeNode] = </span><span style='background: #F0ADAD'>childNodes.filter(_.nodeName == key)</span><span style=''>
+</span>243 <span style=''>}
+</span>244 <span style=''>
+</span>245 <span style=''>object AntlrPositionedTreeNode {
+</span>246 <span style=''>
+</span>247 <span style=''>  def leaf(nodeName: String,
+</span>248 <span style=''>           startPosition: InputPosition,
+</span>249 <span style=''>           value: String,
+</span>250 <span style=''>           nodeTags: Set[String],
+</span>251 <span style=''>           significance: Significance): AntlrPositionedTreeNode =
+</span>252 <span style=''>    </span><span style='background: #AEF1AE'>AntlrPositionedTreeNode(
+</span>253 <span style=''></span><span style='background: #AEF1AE'>      nodeName,
+</span>254 <span style=''></span><span style='background: #AEF1AE'>      startPosition,
+</span>255 <span style=''></span><span style='background: #AEF1AE'>      startPosition + value.length,
+</span>256 <span style=''></span><span style='background: #AEF1AE'>      Seq(),
+</span>257 <span style=''></span><span style='background: #AEF1AE'>      nodeTags,
+</span>258 <span style=''></span><span style='background: #AEF1AE'>      significance,
+</span>259 <span style=''></span><span style='background: #AEF1AE'>      Some(value)
+</span>260 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>261 <span style=''>
+</span>262 <span style=''>  def parent(nodeName: String,
+</span>263 <span style=''>             startPosition: InputPosition,
+</span>264 <span style=''>             endPosition: InputPosition,
+</span>265 <span style=''>             childNodes: Seq[AntlrPositionedTreeNode],
+</span>266 <span style=''>             nodeTags: Set[String],
+</span>267 <span style=''>             significance: Significance): AntlrPositionedTreeNode =
+</span>268 <span style=''>    </span><span style='background: #AEF1AE'>AntlrPositionedTreeNode(
+</span>269 <span style=''></span><span style='background: #AEF1AE'>      nodeName,
+</span>270 <span style=''></span><span style='background: #AEF1AE'>      startPosition,
+</span>271 <span style=''></span><span style='background: #AEF1AE'>      endPosition,
+</span>272 <span style=''></span><span style='background: #AEF1AE'>      childNodes,
+</span>273 <span style=''></span><span style='background: #AEF1AE'>      nodeTags,
+</span>274 <span style=''></span><span style='background: #AEF1AE'>      significance,
+</span>275 <span style=''></span><span style='background: #AEF1AE'>      None
+</span>276 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>277 <span style=''>
+</span>278 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          7748
+        </td>
+        <td>
+          566
+          -
+          585
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](&quot;getRuleIndex&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          7749
+        </td>
+        <td>
+          939
+          -
+          975
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.collection.mutable.ListBuffer[com.atomist.tree.content.text.PositionedTreeNode]()
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          7750
+        </td>
+        <td>
+          1086
+          -
+          1093
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ModelBuildingListener.results
+        </td>
+        <td style="background: #AEF1AE">
+          ModelBuildingListener.this.results
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          7751
+        </td>
+        <td>
+          1192
+          -
+          1208
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.antlr.v4.runtime.RuleContext.getRuleIndex
+        </td>
+        <td style="background: #AEF1AE">
+          ctx.getRuleIndex()
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          7752
+        </td>
+        <td>
+          1174
+          -
+          1209
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.snt.inmemantlr.listener.DefaultListener.getRuleByKey
+        </td>
+        <td style="background: #AEF1AE">
+          this.getRuleByKey(ctx.getRuleIndex())
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          7754
+        </td>
+        <td>
+          1366
+          -
+          1463
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          7753
+        </td>
+        <td>
+          1343
+          -
+          1364
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          ctx.exception.!=(null)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          7755
+        </td>
+        <td>
+          1366
+          -
+          1463
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          7758
+        </td>
+        <td>
+          1477
+          -
+          1601
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val mctn: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode = ModelBuildingListener.this.treeToContainerField(ctx);
+  ModelBuildingListener.this.results.append(mctn);
+  (if (ModelBuildingListener.this.logger.underlying.isDebugEnabled())
+    ModelBuildingListener.this.logger.underlying.debug(&quot;\t&quot;.+(ctx))
+  else
+    (): Unit)
+}
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          7756
+        </td>
+        <td>
+          1500
+          -
+          1525
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ModelBuildingListener.treeToContainerField
+        </td>
+        <td style="background: #AEF1AE">
+          ModelBuildingListener.this.treeToContainerField(ctx)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          7757
+        </td>
+        <td>
+          1536
+          -
+          1556
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.BufferLike.append
+        </td>
+        <td style="background: #AEF1AE">
+          ModelBuildingListener.this.results.append(mctn)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          7759
+        </td>
+        <td>
+          1615
+          -
+          1617
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          7760
+        </td>
+        <td>
+          1876
+          -
+          1891
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.antlr.v4.runtime.RuleContext.getRuleIndex
+        </td>
+        <td style="background: #AEF1AE">
+          rc.getRuleIndex()
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          7761
+        </td>
+        <td>
+          1858
+          -
+          1892
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.snt.inmemantlr.listener.DefaultListener.getRuleByKey
+        </td>
+        <td style="background: #AEF1AE">
+          this.getRuleByKey(rc.getRuleIndex())
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          7763
+        </td>
+        <td>
+          1924
+          -
+          1942
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw rc.exception
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          7766
+        </td>
+        <td>
+          1898
+          -
+          1898
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          7762
+        </td>
+        <td>
+          1902
+          -
+          1922
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          rc.exception.!=(null)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          7765
+        </td>
+        <td>
+          1898
+          -
+          1898
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          7764
+        </td>
+        <td>
+          1924
+          -
+          1942
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw rc.exception
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          7768
+        </td>
+        <td>
+          1994
+          -
+          2040
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OffsetInputPosition.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.content.text.OffsetInputPosition.apply(rc.getStart().getStartIndex())
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          7767
+        </td>
+        <td>
+          2014
+          -
+          2039
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.antlr.v4.runtime.Token.getStartIndex
+        </td>
+        <td style="background: #AEF1AE">
+          rc.getStart().getStartIndex()
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          7769
+        </td>
+        <td>
+          2131
+          -
+          2158
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          rc.getStop().getStopIndex().+(1)
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          7770
+        </td>
+        <td>
+          2111
+          -
+          2159
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OffsetInputPosition.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.content.text.OffsetInputPosition.apply(rc.getStop().getStopIndex().+(1))
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          7771
+        </td>
+        <td>
+          2242
+          -
+          2279
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getDeclaredMethods
+        </td>
+        <td style="background: #AEF1AE">
+          rc.getClass().getDeclaredMethods()
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          7772
+        </td>
+        <td>
+          2334
+          -
+          2343
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Method.getName
+        </td>
+        <td style="background: #AEF1AE">
+          m.getName()
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          7774
+        </td>
+        <td>
+          2242
+          -
+          2345
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[java.lang.reflect.Method](rc.getClass().getDeclaredMethods()).filter(((m: java.lang.reflect.Method) =&gt; Excludes.ExcludedMethods.contains(m.getName()).unary_!))
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          7773
+        </td>
+        <td>
+          2299
+          -
+          2344
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          Excludes.ExcludedMethods.contains(m.getName()).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          7775
+        </td>
+        <td>
+          2369
+          -
+          2410
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.empty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.mutable.ListBuffer.empty[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          7783
+        </td>
+        <td>
+          2521
+          -
+          2521
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          7782
+        </td>
+        <td>
+          2521
+          -
+          2521
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          7779
+        </td>
+        <td>
+          2525
+          -
+          2655
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          fieldsToAdd.exists(((x0$1: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode) =&gt; x0$1 match {
+  case (p @ (_: com.atomist.tree.content.text.PositionedTreeNode)) if ptn.hasSamePositionAs(p) =&gt; true
+  case _ =&gt; false
+})).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          7777
+        </td>
+        <td>
+          2615
+          -
+          2619
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          7776
+        </td>
+        <td>
+          2587
+          -
+          2611
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.PositionedTreeNode.hasSamePositionAs
+        </td>
+        <td style="background: #AEF1AE">
+          ptn.hasSamePositionAs(p)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          7778
+        </td>
+        <td>
+          2640
+          -
+          2645
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          7781
+        </td>
+        <td>
+          2667
+          -
+          2688
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.mutable.BufferLike.append
+        </td>
+        <td style="background: #AEF1AE">
+          fieldsToAdd.append(f)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          7780
+        </td>
+        <td>
+          2667
+          -
+          2688
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.BufferLike.append
+        </td>
+        <td style="background: #AEF1AE">
+          fieldsToAdd.append(f)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          7784
+        </td>
+        <td>
+          2714
+          -
+          2736
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.BufferLike.append
+        </td>
+        <td style="background: #F0ADAD">
+          fieldsToAdd.append(tn)
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          7790
+        </td>
+        <td>
+          2748
+          -
+          2921
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.FilterMonadic.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[java.lang.reflect.Method](valueMethods).withFilter(((m: java.lang.reflect.Method) =&gt; m.getParameterCount().==(0))).foreach[Unit](((m: java.lang.reflect.Method) =&gt; {
+  val value: Object = m.invoke(rc);
+  ModelBuildingListener.this.makeField(m.getName(), value).foreach[Unit](((f: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode) =&gt; addField(f)))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          7785
+        </td>
+        <td>
+          2787
+          -
+          2811
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          m.getParameterCount().==(0)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          7786
+        </td>
+        <td>
+          2838
+          -
+          2850
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Method.invoke
+        </td>
+        <td style="background: #AEF1AE">
+          m.invoke(rc)
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          7789
+        </td>
+        <td>
+          2857
+          -
+          2915
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          ModelBuildingListener.this.makeField(m.getName(), value).foreach[Unit](((f: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode) =&gt; addField(f)))
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          7787
+        </td>
+        <td>
+          2877
+          -
+          2886
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Method.getName
+        </td>
+        <td style="background: #AEF1AE">
+          m.getName()
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          7788
+        </td>
+        <td>
+          2904
+          -
+          2915
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ModelBuildingListener.addField
+        </td>
+        <td style="background: #AEF1AE">
+          addField(f)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          7791
+        </td>
+        <td>
+          2937
+          -
+          2966
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getDeclaredFields
+        </td>
+        <td style="background: #AEF1AE">
+          rc.getClass().getDeclaredFields()
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          7796
+        </td>
+        <td>
+          2927
+          -
+          3070
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[java.lang.reflect.Field](rc.getClass().getDeclaredFields()).foreach[Unit](((f: java.lang.reflect.Field) =&gt; {
+  val value: Object = f.get(rc);
+  ModelBuildingListener.this.makeField(f.getName(), value).foreach[Unit](((mf: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode) =&gt; addField(mf)))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          7792
+        </td>
+        <td>
+          2988
+          -
+          2997
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Field.get
+        </td>
+        <td style="background: #AEF1AE">
+          f.get(rc)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          7793
+        </td>
+        <td>
+          3025
+          -
+          3034
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Field.getName
+        </td>
+        <td style="background: #AEF1AE">
+          f.getName()
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          7795
+        </td>
+        <td>
+          3004
+          -
+          3064
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          ModelBuildingListener.this.makeField(f.getName(), value).foreach[Unit](((mf: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode) =&gt; addField(mf)))
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          7794
+        </td>
+        <td>
+          3052
+          -
+          3064
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ModelBuildingListener.addField
+        </td>
+        <td style="background: #AEF1AE">
+          addField(mf)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          7797
+        </td>
+        <td>
+          3090
+          -
+          3114
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ModelBuildingListener.deduplicate
+        </td>
+        <td style="background: #AEF1AE">
+          ModelBuildingListener.this.deduplicate(fieldsToAdd)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          7798
+        </td>
+        <td>
+          3131
+          -
+          3177
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AstNodeCreationStrategy.nameForContainer
+        </td>
+        <td style="background: #AEF1AE">
+          ModelBuildingListener.this.namingStrategy.nameForContainer(rule, deduped)
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          7803
+        </td>
+        <td>
+          3182
+          -
+          3400
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode.parent
+        </td>
+        <td style="background: #AEF1AE">
+          AntlrPositionedTreeNode.parent(namey, startPos, endPos, deduped, ModelBuildingListener.this.namingStrategy.tagsForContainer(rule, deduped).++(scala.this.Predef.Set.apply[String](com.atomist.tree.TreeNode.Dynamic)), ModelBuildingListener.this.namingStrategy.significance(rule, deduped))
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          7799
+        </td>
+        <td>
+          3332
+          -
+          3348
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Dynamic
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Dynamic
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          7801
+        </td>
+        <td>
+          3278
+          -
+          3349
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          ModelBuildingListener.this.namingStrategy.tagsForContainer(rule, deduped).++(scala.this.Predef.Set.apply[String](com.atomist.tree.TreeNode.Dynamic))
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          7800
+        </td>
+        <td>
+          3328
+          -
+          3349
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](com.atomist.tree.TreeNode.Dynamic)
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          7802
+        </td>
+        <td>
+          3357
+          -
+          3399
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AstNodeCreationStrategy.significance
+        </td>
+        <td style="background: #AEF1AE">
+          ModelBuildingListener.this.namingStrategy.significance(rule, deduped)
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          7804
+        </td>
+        <td>
+          3695
+          -
+          3715
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.charAt
+        </td>
+        <td style="background: #AEF1AE">
+          f.nodeName.charAt(0)
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          7805
+        </td>
+        <td>
+          3695
+          -
+          3723
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.runtime.RichChar.isUpper
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.charWrapper(f.nodeName.charAt(0)).isUpper
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          7806
+        </td>
+        <td>
+          3746
+          -
+          3770
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          fields.filter(lexerPred)
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          7808
+        </td>
+        <td>
+          3849
+          -
+          3849
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ModelBuildingListener.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          7810
+        </td>
+        <td>
+          3805
+          -
+          3896
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          fields.filter(((x$1: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode) =&gt; lexerPred.apply(x$1).unary_!)).collect[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode, Seq[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode,com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode =&gt; com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode, B1 &gt;: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode]: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode): com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode @unchecked) match {
+      case (pv @ (_: com.atomist.tree.content.text.PositionedTreeNode)) =&gt; pv
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode): Boolean = ((x1.asInstanceOf[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode]: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode): com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode @unchecked) match {
+      case (pv @ (_: com.atomist.tree.content.text.PositionedTreeNode)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode,com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode]))(collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          7807
+        </td>
+        <td>
+          3826
+          -
+          3839
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          lexerPred.apply(x$1).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          7809
+        </td>
+        <td>
+          3841
+          -
+          3841
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          7811
+        </td>
+        <td>
+          3990
+          -
+          4024
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          positionedParserFields.contains[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode](x$2)
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          7813
+        </td>
+        <td>
+          3962
+          -
+          4026
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.require
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.require(lexerFields.exists(((x$2: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode) =&gt; positionedParserFields.contains[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode](x$2))).unary_!)
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          7812
+        </td>
+        <td>
+          3970
+          -
+          4025
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          lexerFields.exists(((x$2: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode) =&gt; positionedParserFields.contains[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode](x$2))).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          7815
+        </td>
+        <td>
+          4155
+          -
+          4218
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #AEF1AE">
+          positionedParserFields.exists(((ppf: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode) =&gt; pf.hasSamePositionAs(ppf)))
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          7814
+        </td>
+        <td>
+          4192
+          -
+          4217
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.PositionedTreeNode.hasSamePositionAs
+        </td>
+        <td style="background: #AEF1AE">
+          pf.hasSamePositionAs(ppf)
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          7816
+        </td>
+        <td>
+          4235
+          -
+          4240
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          7819
+        </td>
+        <td>
+          4348
+          -
+          4454
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          fields.filter(((f: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode) =&gt; lexerFields.contains[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode](f).&amp;&amp;(theresAnAliasFieldWithProbablySamePosition(f)).unary_!))
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          7818
+        </td>
+        <td>
+          4367
+          -
+          4448
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          lexerFields.contains[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode](f).&amp;&amp;(theresAnAliasFieldWithProbablySamePosition(f)).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          7817
+        </td>
+        <td>
+          4402
+          -
+          4447
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ModelBuildingListener.theresAnAliasFieldWithProbablySamePosition
+        </td>
+        <td style="background: #AEF1AE">
+          theresAnAliasFieldWithProbablySamePosition(f)
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          7820
+        </td>
+        <td>
+          4563
+          -
+          4579
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;=
+        </td>
+        <td style="background: #AEF1AE">
+          fields.size.&lt;=(1)
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          7822
+        </td>
+        <td>
+          4581
+          -
+          4584
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          7821
+        </td>
+        <td>
+          4581
+          -
+          4584
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          7830
+        </td>
+        <td>
+          4596
+          -
+          4847
+        </td>
+        <td>
+          Match
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          fields.head match {
+  case (pm @ (_: com.atomist.tree.content.text.PositionedTreeNode)) =&gt; fields.tail.collect[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode, Seq[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode]](({
+    @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode,com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode] with Serializable {
+      def &lt;init&gt;(): &lt;$anon: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode =&gt; com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode&gt; = {
+        $anonfun.super.&lt;init&gt;();
+        ()
+      };
+      final override def applyOrElse[A1 &lt;: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode, B1 &gt;: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode](x2: A1, default: A1 =&gt; B1): B1 = ((x2.asInstanceOf[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode]: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode): com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode @unchecked) match {
+        case (pm2 @ (_: com.atomist.tree.content.text.PositionedTreeNode)) if pm.hasSamePositionAs(pm2) =&gt; pm2
+        case (defaultCase$ @ _) =&gt; default.apply(x2)
+      };
+      final def isDefinedAt(x2: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode): Boolean = ((x2.asInstanceOf[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode]: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode): com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode @unchecked) match {
+        case (pm2 @ (_: com.atomist.tree.content.text.PositionedTreeNode)) if pm.hasSamePositionAs(pm2) =&gt; true
+        case (defaultCase$ @ _) =&gt; false
+      }
+    };
+    new $anonfun()
+  }: PartialFunction[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode,com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode]))(collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode])
+  case _ =&gt; unwantedDuplicates(fields.tail)
+}
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          7823
+        </td>
+        <td>
+          4596
+          -
+          4607
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          fields.head
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          7826
+        </td>
+        <td>
+          4685
+          -
+          4685
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          7825
+        </td>
+        <td>
+          4685
+          -
+          4685
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ModelBuildingListener.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          7827
+        </td>
+        <td>
+          4665
+          -
+          4789
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          fields.tail.collect[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode, Seq[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode,com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode =&gt; com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode, B1 &gt;: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode](x2: A1, default: A1 =&gt; B1): B1 = ((x2.asInstanceOf[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode]: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode): com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode @unchecked) match {
+      case (pm2 @ (_: com.atomist.tree.content.text.PositionedTreeNode)) if pm.hasSamePositionAs(pm2) =&gt; pm2
+      case (defaultCase$ @ _) =&gt; default.apply(x2)
+    };
+    final def isDefinedAt(x2: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode): Boolean = ((x2.asInstanceOf[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode]: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode): com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode @unchecked) match {
+      case (pm2 @ (_: com.atomist.tree.content.text.PositionedTreeNode)) if pm.hasSamePositionAs(pm2) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode,com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode]))(collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          7824
+        </td>
+        <td>
+          4731
+          -
+          4756
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.PositionedTreeNode.hasSamePositionAs
+        </td>
+        <td style="background: #AEF1AE">
+          pm.hasSamePositionAs(pm2)
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          7829
+        </td>
+        <td>
+          4808
+          -
+          4839
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ModelBuildingListener.unwantedDuplicates
+        </td>
+        <td style="background: #F0ADAD">
+          unwantedDuplicates(fields.tail)
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          7828
+        </td>
+        <td>
+          4827
+          -
+          4838
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.tail
+        </td>
+        <td style="background: #F0ADAD">
+          fields.tail
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          7831
+        </td>
+        <td>
+          4868
+          -
+          4895
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ModelBuildingListener.unwantedDuplicates
+        </td>
+        <td style="background: #AEF1AE">
+          unwantedDuplicates(deduped)
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          7833
+        </td>
+        <td>
+          4915
+          -
+          4954
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filterNot
+        </td>
+        <td style="background: #AEF1AE">
+          deduped.filterNot(((x$3: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode) =&gt; unwanted.contains[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode](x$3)))
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          7832
+        </td>
+        <td>
+          4933
+          -
+          4953
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          unwanted.contains[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode](x$3)
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          7835
+        </td>
+        <td>
+          4959
+          -
+          5004
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.require
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.require(unwantedDuplicates(filtered).isEmpty)
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          7834
+        </td>
+        <td>
+          4967
+          -
+          5003
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          unwantedDuplicates(filtered).isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          7836
+        </td>
+        <td>
+          5093
+          -
+          5120
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #AEF1AE">
+          tok.getInputStream().toString()
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          7837
+        </td>
+        <td>
+          5189
+          -
+          5206
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.antlr.v4.runtime.Token.getStartIndex
+        </td>
+        <td style="background: #AEF1AE">
+          tok.getStartIndex()
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          7838
+        </td>
+        <td>
+          5261
+          -
+          5272
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.antlr.v4.runtime.Token.getLine
+        </td>
+        <td style="background: #F0ADAD">
+          tok.getLine()
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          7840
+        </td>
+        <td>
+          5232
+          -
+          5304
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineInputPositionImpl.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.content.text.LineInputPositionImpl.apply(input, tok.getLine(), tok.getCharPositionInLine().+(1))
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          7839
+        </td>
+        <td>
+          5274
+          -
+          5303
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #F0ADAD">
+          tok.getCharPositionInLine().+(1)
+        </td>
+      </tr><tr>
+        <td>
+          158
+        </td>
+        <td>
+          7841
+        </td>
+        <td>
+          5321
+          -
+          5343
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OffsetInputPosition.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.content.text.OffsetInputPosition.apply(n)
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          7842
+        </td>
+        <td>
+          5557
+          -
+          5562
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          7844
+        </td>
+        <td>
+          5627
+          -
+          5662
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.startsWith
+        </td>
+        <td style="background: #AEF1AE">
+          ct.getText().startsWith(scala.StringContext.apply(&quot;&lt;missing &quot;).s())
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          7843
+        </td>
+        <td>
+          5649
+          -
+          5661
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&lt;missing &quot;).s()
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          7846
+        </td>
+        <td>
+          5769
+          -
+          5771
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          7849
+        </td>
+        <td>
+          5720
+          -
+          5800
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode.leaf
+        </td>
+        <td style="background: #F0ADAD">
+          AntlrPositionedTreeNode.leaf(name, ModelBuildingListener.this.position(ct), &quot;&quot;, scala.this.Predef.Set.apply[String](name), com.atomist.tree.TreeNode.Signal)
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          7845
+        </td>
+        <td>
+          5755
+          -
+          5767
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ModelBuildingListener.position
+        </td>
+        <td style="background: #F0ADAD">
+          ModelBuildingListener.this.position(ct)
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          7848
+        </td>
+        <td>
+          5784
+          -
+          5799
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Signal
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.TreeNode.Signal
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          7847
+        </td>
+        <td>
+          5773
+          -
+          5782
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.Set.apply[String](name)
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          7850
+        </td>
+        <td>
+          5809
+          -
+          5816
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode](sf)
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          7851
+        </td>
+        <td>
+          5841
+          -
+          5862
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          ct.getText().==(&quot;&lt;EOF&gt;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          7852
+        </td>
+        <td>
+          5954
+          -
+          5959
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          176
+        </td>
+        <td>
+          7853
+        </td>
+        <td>
+          6002
+          -
+          6014
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ModelBuildingListener.position
+        </td>
+        <td style="background: #AEF1AE">
+          ModelBuildingListener.this.position(ct)
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          7854
+        </td>
+        <td>
+          6034
+          -
+          6044
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.antlr.v4.runtime.Token.getText
+        </td>
+        <td style="background: #AEF1AE">
+          ct.getText()
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          7855
+        </td>
+        <td>
+          6065
+          -
+          6107
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AstNodeCreationStrategy.nameForTerminal
+        </td>
+        <td style="background: #AEF1AE">
+          ModelBuildingListener.this.namingStrategy.nameForTerminal(name, text)
+        </td>
+      </tr><tr>
+        <td>
+          179
+        </td>
+        <td>
+          7858
+        </td>
+        <td>
+          6125
+          -
+          6240
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode.leaf
+        </td>
+        <td style="background: #AEF1AE">
+          AntlrPositionedTreeNode.leaf(namey, pos, text, scala.this.Predef.Set.apply[String](name), com.atomist.tree.TreeNode.Signal)
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          7857
+        </td>
+        <td>
+          6224
+          -
+          6239
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Signal
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Signal
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          7856
+        </td>
+        <td>
+          6213
+          -
+          6222
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](name)
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          7859
+        </td>
+        <td>
+          6249
+          -
+          6256
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode](sf)
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          7861
+        </td>
+        <td>
+          6296
+          -
+          6325
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ModelBuildingListener.makeField
+        </td>
+        <td style="background: #AEF1AE">
+          ModelBuildingListener.this.makeField(name, tn.getSymbol())
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          7860
+        </td>
+        <td>
+          6312
+          -
+          6324
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.antlr.v4.runtime.tree.TerminalNode.getSymbol
+        </td>
+        <td style="background: #AEF1AE">
+          tn.getSymbol()
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          7862
+        </td>
+        <td>
+          6407
+          -
+          6425
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ModelBuildingListener.makeField
+        </td>
+        <td style="background: #AEF1AE">
+          ModelBuildingListener.this.makeField(name, e)
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          7864
+        </td>
+        <td>
+          6384
+          -
+          6426
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[Object](l).asScala.flatMap[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode, scala.collection.mutable.Buffer[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode]](((e: Object) =&gt; ModelBuildingListener.this.makeField(name, e)))(mutable.this.Buffer.canBuildFrom[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          7863
+        </td>
+        <td>
+          6401
+          -
+          6401
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Buffer.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Buffer.canBuildFrom[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          190
+        </td>
+        <td>
+          7866
+        </td>
+        <td>
+          6472
+          -
+          6502
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode](ModelBuildingListener.this.treeToContainerField(prc))
+        </td>
+      </tr><tr>
+        <td>
+          190
+        </td>
+        <td>
+          7865
+        </td>
+        <td>
+          6476
+          -
+          6501
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ModelBuildingListener.treeToContainerField
+        </td>
+        <td style="background: #AEF1AE">
+          ModelBuildingListener.this.treeToContainerField(prc)
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          7867
+        </td>
+        <td>
+          6530
+          -
+          6535
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          7868
+        </td>
+        <td>
+          7042
+          -
+          7051
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](rule)
+        </td>
+      </tr><tr>
+        <td>
+          212
+        </td>
+        <td>
+          7869
+        </td>
+        <td>
+          7153
+          -
+          7168
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Signal
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Signal
+        </td>
+      </tr><tr>
+        <td>
+          236
+        </td>
+        <td>
+          7870
+        </td>
+        <td>
+          8111
+          -
+          8136
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          AntlrPositionedTreeNode.this.valueOption.getOrElse[String](&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          238
+        </td>
+        <td>
+          7871
+        </td>
+        <td>
+          8183
+          -
+          8186
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          240
+        </td>
+        <td>
+          7872
+        </td>
+        <td>
+          8233
+          -
+          8236
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          242
+        </td>
+        <td>
+          7873
+        </td>
+        <td>
+          8315
+          -
+          8332
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          x$4.nodeName.==(key)
+        </td>
+      </tr><tr>
+        <td>
+          242
+        </td>
+        <td>
+          7874
+        </td>
+        <td>
+          8297
+          -
+          8333
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #F0ADAD">
+          AntlrPositionedTreeNode.this.childNodes.filter(((x$4: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode) =&gt; x$4.nodeName.==(key)))
+        </td>
+      </tr><tr>
+        <td>
+          252
+        </td>
+        <td>
+          7879
+        </td>
+        <td>
+          8571
+          -
+          8741
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          AntlrPositionedTreeNode.apply(nodeName, startPosition, startPosition.+(value.length()), collection.this.Seq.apply[Nothing](), nodeTags, significance, scala.Some.apply[String](value))
+        </td>
+      </tr><tr>
+        <td>
+          255
+        </td>
+        <td>
+          7876
+        </td>
+        <td>
+          8639
+          -
+          8667
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.+
+        </td>
+        <td style="background: #AEF1AE">
+          startPosition.+(value.length())
+        </td>
+      </tr><tr>
+        <td>
+          255
+        </td>
+        <td>
+          7875
+        </td>
+        <td>
+          8655
+          -
+          8667
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.length
+        </td>
+        <td style="background: #AEF1AE">
+          value.length()
+        </td>
+      </tr><tr>
+        <td>
+          256
+        </td>
+        <td>
+          7877
+        </td>
+        <td>
+          8675
+          -
+          8680
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          259
+        </td>
+        <td>
+          7878
+        </td>
+        <td>
+          8724
+          -
+          8735
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](value)
+        </td>
+      </tr><tr>
+        <td>
+          268
+        </td>
+        <td>
+          7881
+        </td>
+        <td>
+          9021
+          -
+          9172
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          AntlrPositionedTreeNode.apply(nodeName, startPosition, endPosition, childNodes, nodeTags, significance, scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          275
+        </td>
+        <td>
+          7880
+        </td>
+        <td>
+          9162
+          -
+          9166
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

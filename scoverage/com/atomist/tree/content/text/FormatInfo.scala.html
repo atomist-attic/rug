@@ -1,0 +1,1069 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/content/text/FormatInfo.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.content.text
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.util.lang.CodeGenerationHelper
+</span>4 <span style=''>
+</span>5 <span style=''>object FormatInfo {
+</span>6 <span style=''>
+</span>7 <span style=''>  /**
+</span>8 <span style=''>    * Given the left input, derive position information.
+</span>9 <span style=''>    */
+</span>10 <span style=''>  def contextInfo(leftInput: String): PointFormatInfo = {
+</span>11 <span style=''>
+</span>12 <span style=''>    def findLeadingWhitespace(s: String): String =
+</span>13 <span style=''>      </span><span style='background: #AEF1AE'>s.takeWhile(c =&gt; c.isWhitespace)</span><span style=''>
+</span>14 <span style=''>
+</span>15 <span style=''>    var lineNumberFrom1 = </span><span style='background: #AEF1AE'>1</span><span style=''>
+</span>16 <span style=''>    var currentLine = </span><span style='background: #AEF1AE'>&quot;&quot;</span><span style=''>
+</span>17 <span style=''>    var firstIndentedLine: Option[String] = </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>18 <span style=''>    var offs = </span><span style='background: #AEF1AE'>0</span><span style=''>
+</span>19 <span style=''>    while (</span><span style='background: #AEF1AE'>offs &lt; leftInput.length</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>20 <span style=''></span><span style='background: #AEF1AE'>      leftInput.charAt(offs) match {
+</span>21 <span style=''></span><span style='background: #AEF1AE'>        case '\n' =&gt;
+</span>22 <span style=''></span><span style='background: #AEF1AE'>          lineNumberFrom1 += 1
+</span>23 <span style=''></span><span style='background: #AEF1AE'>          if (firstIndentedLine.isEmpty &amp;&amp; findLeadingWhitespace(currentLine).nonEmpty) {
+</span>24 <span style=''></span><span style='background: #AEF1AE'>            firstIndentedLine = Some(currentLine)
+</span>25 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>26 <span style=''></span><span style='background: #AEF1AE'>          currentLine = &quot;&quot;
+</span>27 <span style=''></span><span style='background: #AEF1AE'>        case c =&gt;
+</span>28 <span style=''></span><span style='background: #AEF1AE'>          currentLine += c
+</span>29 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>30 <span style=''></span><span style='background: #AEF1AE'>      offs += 1
+</span>31 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>32 <span style=''>    val indent: String = </span><span style='background: #AEF1AE'>firstIndentedLine.map(l =&gt; findLeadingWhitespace(l)).getOrElse(&quot;&quot;)</span><span style=''>
+</span>33 <span style=''>    val indentDepth = </span><span style='background: #AEF1AE'>findLeadingWhitespace(currentLine).length /
+</span>34 <span style=''></span><span style='background: #AEF1AE'>      { if (indent.isEmpty) 1 else indent.length</span><span style=''> }
+</span>35 <span style=''>
+</span>36 <span style=''>    </span><span style='background: #AEF1AE'>PointFormatInfo(
+</span>37 <span style=''></span><span style='background: #AEF1AE'>      offs,
+</span>38 <span style=''></span><span style='background: #AEF1AE'>      lineNumberFrom1,
+</span>39 <span style=''></span><span style='background: #AEF1AE'>      currentLine.length + 1,
+</span>40 <span style=''></span><span style='background: #AEF1AE'>      indentDepth,
+</span>41 <span style=''></span><span style='background: #AEF1AE'>      indent)</span><span style=''>
+</span>42 <span style=''>  }
+</span>43 <span style=''>
+</span>44 <span style=''>}
+</span>45 <span style=''>
+</span>46 <span style=''>/**
+</span>47 <span style=''>  * Information about the format of a node within a file
+</span>48 <span style=''>  */
+</span>49 <span style=''>case class FormatInfo(
+</span>50 <span style=''>                     start: PointFormatInfo,
+</span>51 <span style=''>                     end: PointFormatInfo
+</span>52 <span style=''>                     )
+</span>53 <span style=''>
+</span>54 <span style=''>/**
+</span>55 <span style=''>  * Information about the format in the file at a particular point
+</span>56 <span style=''>  *
+</span>57 <span style=''>  * @param indentDepth indent depth at the beginning of this line. Number of times
+</span>58 <span style=''>  *                    the indent appears at the beginning of this line
+</span>59 <span style=''>  * @param indent      indent used in the file.
+</span>60 <span style=''>  */
+</span>61 <span style=''>case class PointFormatInfo(
+</span>62 <span style=''>                       offset: Int,
+</span>63 <span style=''>                       lineNumberFrom1: Int,
+</span>64 <span style=''>                       columnNumberFrom1: Int,
+</span>65 <span style=''>                       indentDepth: Int,
+</span>66 <span style=''>                       indent: String
+</span>67 <span style=''>                     )
+</span>68 <span style=''>  extends InputPosition {
+</span>69 <span style=''>
+</span>70 <span style=''>  private val codeGenerationHelper = </span><span style='background: #AEF1AE'>new CodeGenerationHelper(indent)</span><span style=''>
+</span>71 <span style=''>
+</span>72 <span style=''>  /**
+</span>73 <span style=''>    * Add content indented on next line. Tabs will be used as additional indents.
+</span>74 <span style=''>    * @param content content to add
+</span>75 <span style=''>    * @return indented content, including line break
+</span>76 <span style=''>    */
+</span>77 <span style=''>  def indented(content: String): String = {
+</span>78 <span style=''>    val expanded = </span><span style='background: #AEF1AE'>content.replaceAll(&quot;\\t&quot;, indent)</span><span style=''>
+</span>79 <span style=''>    </span><span style='background: #AEF1AE'>&quot;\n&quot; + codeGenerationHelper.indented(expanded, indentDepth)</span><span style=''>
+</span>80 <span style=''>  }
+</span>81 <span style=''>
+</span>82 <span style=''>  def usesTabs: Boolean = </span><span style='background: #AEF1AE'>indent.contains(&quot;\t&quot;)</span><span style=''>
+</span>83 <span style=''>
+</span>84 <span style=''>  override def show: String = </span><span style='background: #F0ADAD'>toString</span><span style=''>
+</span>85 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          7135
+        </td>
+        <td>
+          297
+          -
+          329
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.takeWhile
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(s).takeWhile(((c: Char) =&gt; scala.this.Predef.charWrapper(c).isWhitespace))
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          7134
+        </td>
+        <td>
+          314
+          -
+          328
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.runtime.RichChar.isWhitespace
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.charWrapper(c).isWhitespace
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          7136
+        </td>
+        <td>
+          357
+          -
+          358
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          7137
+        </td>
+        <td>
+          381
+          -
+          383
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          7138
+        </td>
+        <td>
+          428
+          -
+          432
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          7139
+        </td>
+        <td>
+          448
+          -
+          449
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          7156
+        </td>
+        <td>
+          454
+          -
+          454
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          7141
+        </td>
+        <td>
+          461
+          -
+          484
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          offs.&lt;(leftInput.length())
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          7140
+        </td>
+        <td>
+          468
+          -
+          484
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.length
+        </td>
+        <td style="background: #AEF1AE">
+          leftInput.length()
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          7155
+        </td>
+        <td>
+          486
+          -
+          830
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  {
+    leftInput.charAt(offs) match {
+      case '\n' =&gt; {
+        lineNumberFrom1 = lineNumberFrom1.+(1);
+        if (firstIndentedLine.isEmpty.&amp;&amp;(scala.this.Predef.augmentString(findLeadingWhitespace(currentLine)).nonEmpty))
+          firstIndentedLine = scala.Some.apply[String](currentLine)
+        else
+          ();
+        currentLine = &quot;&quot;
+      }
+      case (c @ _) =&gt; currentLine = currentLine.+(c)
+    };
+    offs = offs.+(1)
+  };
+  while$1()
+}
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          7154
+        </td>
+        <td>
+          486
+          -
+          486
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.FormatInfo.while$1
+        </td>
+        <td style="background: #AEF1AE">
+          while$1()
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          7157
+        </td>
+        <td>
+          454
+          -
+          454
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7142
+        </td>
+        <td>
+          494
+          -
+          516
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.charAt
+        </td>
+        <td style="background: #AEF1AE">
+          leftInput.charAt(offs)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          7143
+        </td>
+        <td>
+          556
+          -
+          576
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          lineNumberFrom1.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          7144
+        </td>
+        <td>
+          620
+          -
+          654
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.FormatInfo.findLeadingWhitespace
+        </td>
+        <td style="background: #AEF1AE">
+          findLeadingWhitespace(currentLine)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          7149
+        </td>
+        <td>
+          587
+          -
+          587
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          7146
+        </td>
+        <td>
+          591
+          -
+          663
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          firstIndentedLine.isEmpty.&amp;&amp;(scala.this.Predef.augmentString(findLeadingWhitespace(currentLine)).nonEmpty)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          7145
+        </td>
+        <td>
+          620
+          -
+          663
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(findLeadingWhitespace(currentLine)).nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          7150
+        </td>
+        <td>
+          587
+          -
+          587
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          7147
+        </td>
+        <td>
+          699
+          -
+          716
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](currentLine)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          7148
+        </td>
+        <td>
+          679
+          -
+          716
+        </td>
+        <td>
+          Assign
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          firstIndentedLine = scala.Some.apply[String](currentLine)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          7151
+        </td>
+        <td>
+          753
+          -
+          755
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7152
+        </td>
+        <td>
+          784
+          -
+          800
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          currentLine.+(c)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          7153
+        </td>
+        <td>
+          815
+          -
+          824
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          offs.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          7158
+        </td>
+        <td>
+          856
+          -
+          922
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          firstIndentedLine.map[String](((l: String) =&gt; findLeadingWhitespace(l))).getOrElse[String](&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          7164
+        </td>
+        <td>
+          945
+          -
+          1037
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int./
+        </td>
+        <td style="background: #AEF1AE">
+          findLeadingWhitespace(currentLine).length()./(if (indent.isEmpty())
+  1
+else
+  indent.length())
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          7162
+        </td>
+        <td>
+          1024
+          -
+          1037
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.length
+        </td>
+        <td style="background: #AEF1AE">
+          indent.length()
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          7161
+        </td>
+        <td>
+          1017
+          -
+          1018
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          7163
+        </td>
+        <td>
+          1024
+          -
+          1037
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          java.lang.String.length
+        </td>
+        <td style="background: #AEF1AE">
+          indent.length()
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          7160
+        </td>
+        <td>
+          1017
+          -
+          1018
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          7159
+        </td>
+        <td>
+          1001
+          -
+          1015
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          indent.isEmpty()
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          7166
+        </td>
+        <td>
+          1045
+          -
+          1159
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.PointFormatInfo.apply
+        </td>
+        <td style="background: #AEF1AE">
+          PointFormatInfo.apply(offs, lineNumberFrom1, currentLine.length().+(1), indentDepth, indent)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          7165
+        </td>
+        <td>
+          1103
+          -
+          1125
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          currentLine.length().+(1)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          7167
+        </td>
+        <td>
+          1998
+          -
+          2004
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.PointFormatInfo.indent
+        </td>
+        <td style="background: #AEF1AE">
+          PointFormatInfo.this.indent
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          7168
+        </td>
+        <td>
+          1973
+          -
+          2005
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.CodeGenerationHelper.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.CodeGenerationHelper(PointFormatInfo.this.indent)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          7171
+        </td>
+        <td>
+          2254
+          -
+          2287
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replaceAll
+        </td>
+        <td style="background: #AEF1AE">
+          content.replaceAll(&quot;\\t&quot;, PointFormatInfo.this.indent)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          7170
+        </td>
+        <td>
+          2280
+          -
+          2286
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.PointFormatInfo.indent
+        </td>
+        <td style="background: #AEF1AE">
+          PointFormatInfo.this.indent
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          7169
+        </td>
+        <td>
+          2273
+          -
+          2278
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\\t&quot;
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          7174
+        </td>
+        <td>
+          2299
+          -
+          2351
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.CodeGenerationHelper.indented
+        </td>
+        <td style="background: #AEF1AE">
+          PointFormatInfo.this.codeGenerationHelper.indented(expanded, PointFormatInfo.this.indentDepth)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          7173
+        </td>
+        <td>
+          2339
+          -
+          2350
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.PointFormatInfo.indentDepth
+        </td>
+        <td style="background: #AEF1AE">
+          PointFormatInfo.this.indentDepth
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          7172
+        </td>
+        <td>
+          2292
+          -
+          2296
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          7175
+        </td>
+        <td>
+          2292
+          -
+          2351
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\n&quot;.+(PointFormatInfo.this.codeGenerationHelper.indented(expanded, PointFormatInfo.this.indentDepth))
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          7176
+        </td>
+        <td>
+          2383
+          -
+          2404
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.contains
+        </td>
+        <td style="background: #AEF1AE">
+          PointFormatInfo.this.indent.contains(&quot;\t&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          7177
+        </td>
+        <td>
+          2436
+          -
+          2444
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #F0ADAD">
+          PointFormatInfo.this.toString()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

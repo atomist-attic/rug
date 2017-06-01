@@ -1,0 +1,1417 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/utils/TreeNodePrinter.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.utils
+</span>2 <span style=''>
+</span>3 <span style=''>object TreeNodePrinter {
+</span>4 <span style=''>
+</span>5 <span style=''>  case class BabyTree(print: String, children: Seq[BabyTree] = Seq())
+</span>6 <span style=''>
+</span>7 <span style=''>  def drawTree(baby: BabyTree) = </span><span style='background: #F0ADAD'>draw[BabyTree](_.children, _.print)(baby)</span><span style=''>
+</span>8 <span style=''>
+</span>9 <span style=''>  /**
+</span>10 <span style=''>   * TreeNodePrinter utility.
+</span>11 <span style=''>   * It draws a cute tree like
+</span>12 <span style=''>   *
+</span>13 <span style=''>
+</span>14 <span style=''>Grandma
+</span>15 <span style=''>├─┬ Dad
+</span>16 <span style=''>| ├── Sister
+</span>17 <span style=''>| └─┬ Me
+</span>18 <span style=''>|   ├── Daughter
+</span>19 <span style=''>|   └── Son
+</span>20 <span style=''>└── Aunt
+</span>21 <span style=''>
+</span>22 <span style=''>   *
+</span>23 <span style=''>   * To use it, pass two functions:
+</span>24 <span style=''>   * @param children how to access child nodes
+</span>25 <span style=''>   * @param info how to print a node
+</span>26 <span style=''>   *
+</span>27 <span style=''>   * @param topOfTree and then the top-level node!
+</span>28 <span style=''>   *
+</span>29 <span style=''>   * @return String. Print it yourself
+</span>30 <span style=''>   */
+</span>31 <span style=''>  def draw[T](children: T =&gt; Seq[T], info: T =&gt; String)(topOfTree: T): String = {
+</span>32 <span style=''>
+</span>33 <span style=''>    def drawInternal(tn: T): Seq[String] = {
+</span>34 <span style=''>      tn match {
+</span>35 <span style=''>        case leaf if </span><span style='background: #AEF1AE'>children(leaf).isEmpty</span><span style=''> =&gt; </span><span style='background: #AEF1AE'>Seq(info(leaf))</span><span style=''>
+</span>36 <span style=''>        case parent =&gt; info(parent) </span><span style='background: #AEF1AE'>+: printChildren(children(parent))</span><span style=''>
+</span>37 <span style=''>      }
+</span>38 <span style=''>    }
+</span>39 <span style=''>
+</span>40 <span style=''>    def printChildren(ch: Seq[T]): Seq[String] = {
+</span>41 <span style=''>      val last = </span><span style='background: #AEF1AE'>ch.last</span><span style=''>
+</span>42 <span style=''>      val notLast = </span><span style='background: #AEF1AE'>ch.slice(0, ch.length - 1)</span><span style=''>
+</span>43 <span style=''>
+</span>44 <span style=''>      val lastLine = </span><span style='background: #AEF1AE'>prefixChildLines(children(last).nonEmpty, last = true, drawInternal(last))</span><span style=''>
+</span>45 <span style=''>      val earlierLines = </span><span style='background: #AEF1AE'>notLast.flatMap(tn =&gt; prefixChildLines(children(tn).nonEmpty, last = false, drawInternal(tn)))</span><span style=''>
+</span>46 <span style=''>
+</span>47 <span style=''>      </span><span style='background: #AEF1AE'>earlierLines ++ lastLine</span><span style=''>
+</span>48 <span style=''>    }
+</span>49 <span style=''>
+</span>50 <span style=''>    </span><span style='background: #AEF1AE'>drawInternal(topOfTree).mkString(&quot;\n&quot;)</span><span style=''>
+</span>51 <span style=''>  }
+</span>52 <span style=''>
+</span>53 <span style=''>  private def prefixChildLines(hasChildren: Boolean, last: Boolean, childLines: Seq[String]): Seq[String] =
+</span>54 <span style=''>    </span><span style='background: #AEF1AE'>childLines.toList</span><span style=''> match {
+</span>55 <span style=''>      case head :: rest =&gt;
+</span>56 <span style=''>        val connector = if (last) </span><span style='background: #AEF1AE'>FILLER</span><span style=''> else </span><span style='background: #AEF1AE'>TREE_CONNECTOR</span><span style=''>
+</span>57 <span style=''>        val firstLine = </span><span style='background: #AEF1AE'>firstLineOfChildPrefix(hasChildren, last) + head</span><span style=''>
+</span>58 <span style=''>        val restLines = </span><span style='background: #AEF1AE'>rest.map(connector + _)</span><span style=''>
+</span>59 <span style=''>        firstLine </span><span style='background: #AEF1AE'>+: restLines</span><span style=''>
+</span>60 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>throw new RuntimeException(&quot;empty list&quot;)</span><span style=''>
+</span>61 <span style=''>    }
+</span>62 <span style=''>
+</span>63 <span style=''>  private def firstLineOfChildPrefix(hasChildren: Boolean, last: Boolean): String =
+</span>64 <span style=''>    if (</span><span style='background: #AEF1AE'>hasChildren &amp;&amp; last</span><span style=''>) </span><span style='background: #AEF1AE'>LAST_TREE_NODE_WITH_CHILDREN</span><span style=''>
+</span>65 <span style=''>    else </span><span style='background: #AEF1AE'>if (hasChildren &amp;&amp; !last) TREE_NODE_WITH_CHILDREN
+</span>66 <span style=''></span><span style='background: #AEF1AE'>    else if (!hasChildren &amp;&amp; last) LAST_TREE_NODE
+</span>67 <span style=''></span><span style='background: #AEF1AE'>    else if (!hasChildren &amp;&amp; !last) TREE_NODE
+</span>68 <span style=''></span><span style='background: #AEF1AE'>    else </span><span style='background: #F0ADAD'>&quot;the impossible has happened&quot;</span><span style=''>
+</span>69 <span style=''>
+</span>70 <span style=''>  // this won't be pretty on Windows
+</span>71 <span style=''>  val LAST_TREE_NODE: String = </span><span style='background: #AEF1AE'>&quot;└── &quot;</span><span style=''>
+</span>72 <span style=''>  val LAST_TREE_NODE_WITH_CHILDREN = </span><span style='background: #AEF1AE'>&quot;└─┬ &quot;</span><span style=''>
+</span>73 <span style=''>  val TREE_NODE: String = </span><span style='background: #AEF1AE'>&quot;├── &quot;</span><span style=''>
+</span>74 <span style=''>  val TREE_NODE_WITH_CHILDREN: String = </span><span style='background: #AEF1AE'>&quot;├─┬ &quot;</span><span style=''>
+</span>75 <span style=''>  val TREE_CONNECTOR: String = </span><span style='background: #AEF1AE'>&quot;| &quot;</span><span style=''>
+</span>76 <span style=''>  val FILLER: String = </span><span style='background: #AEF1AE'>&quot;  &quot;</span><span style=''>
+</span>77 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          7
+        </td>
+        <td>
+          8697
+        </td>
+        <td>
+          162
+          -
+          203
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.draw
+        </td>
+        <td style="background: #F0ADAD">
+          TreeNodePrinter.this.draw[com.atomist.tree.utils.TreeNodePrinter.BabyTree](((x$1: com.atomist.tree.utils.TreeNodePrinter.BabyTree) =&gt; x$1.children), ((x$2: com.atomist.tree.utils.TreeNodePrinter.BabyTree) =&gt; x$2.print))(baby)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          8699
+        </td>
+        <td>
+          782
+          -
+          792
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #AEF1AE">
+          info.apply(leaf)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          8698
+        </td>
+        <td>
+          752
+          -
+          774
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          children.apply(leaf).isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          8700
+        </td>
+        <td>
+          778
+          -
+          793
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[String](info.apply(leaf))
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          8702
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          8701
+        </td>
+        <td>
+          847
+          -
+          863
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #AEF1AE">
+          children.apply(parent)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          8703
+        </td>
+        <td>
+          830
+          -
+          864
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.+:
+        </td>
+        <td style="background: #AEF1AE">
+          printChildren(children.apply(parent)).+:[String, Seq[String]](x$3)(collection.this.Seq.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          8704
+        </td>
+        <td>
+          948
+          -
+          955
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.last
+        </td>
+        <td style="background: #AEF1AE">
+          ch.last
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          8705
+        </td>
+        <td>
+          985
+          -
+          986
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          8707
+        </td>
+        <td>
+          976
+          -
+          1002
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.slice
+        </td>
+        <td style="background: #AEF1AE">
+          ch.slice(0, ch.length.-(1))
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          8706
+        </td>
+        <td>
+          988
+          -
+          1001
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          ch.length.-(1)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          8708
+        </td>
+        <td>
+          1042
+          -
+          1065
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          children.apply(last).nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          8711
+        </td>
+        <td>
+          1025
+          -
+          1099
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.prefixChildLines
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNodePrinter.this.prefixChildLines(children.apply(last).nonEmpty, true, drawInternal(last))
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          8710
+        </td>
+        <td>
+          1080
+          -
+          1098
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.drawInternal
+        </td>
+        <td style="background: #AEF1AE">
+          drawInternal(last)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          8709
+        </td>
+        <td>
+          1074
+          -
+          1078
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          8714
+        </td>
+        <td>
+          1201
+          -
+          1217
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.drawInternal
+        </td>
+        <td style="background: #AEF1AE">
+          drawInternal(tn)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          8717
+        </td>
+        <td>
+          1125
+          -
+          1219
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          notLast.flatMap[String, Seq[String]](((tn: T) =&gt; TreeNodePrinter.this.prefixChildLines(children.apply(tn).nonEmpty, false, drawInternal(tn))))(collection.this.Seq.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          8713
+        </td>
+        <td>
+          1194
+          -
+          1199
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          8716
+        </td>
+        <td>
+          1140
+          -
+          1140
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          8712
+        </td>
+        <td>
+          1164
+          -
+          1185
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          children.apply(tn).nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          8715
+        </td>
+        <td>
+          1147
+          -
+          1218
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.prefixChildLines
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNodePrinter.this.prefixChildLines(children.apply(tn).nonEmpty, false, drawInternal(tn))
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          8719
+        </td>
+        <td>
+          1227
+          -
+          1251
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          earlierLines.++[String, Seq[String]](lastLine)(collection.this.Seq.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          8718
+        </td>
+        <td>
+          1240
+          -
+          1240
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          8720
+        </td>
+        <td>
+          1263
+          -
+          1301
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          drawInternal(topOfTree).mkString(&quot;\n&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          8721
+        </td>
+        <td>
+          1419
+          -
+          1436
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toList
+        </td>
+        <td style="background: #AEF1AE">
+          childLines.toList
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          8723
+        </td>
+        <td>
+          1506
+          -
+          1512
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.FILLER
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNodePrinter.this.FILLER
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          8722
+        </td>
+        <td>
+          1506
+          -
+          1512
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.FILLER
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNodePrinter.this.FILLER
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          8725
+        </td>
+        <td>
+          1518
+          -
+          1532
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.TREE_CONNECTOR
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNodePrinter.this.TREE_CONNECTOR
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          8724
+        </td>
+        <td>
+          1518
+          -
+          1532
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.TREE_CONNECTOR
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNodePrinter.this.TREE_CONNECTOR
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          8726
+        </td>
+        <td>
+          1557
+          -
+          1605
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNodePrinter.this.firstLineOfChildPrefix(hasChildren, last).+(head)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          8729
+        </td>
+        <td>
+          1630
+          -
+          1653
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.immutable.List.map
+        </td>
+        <td style="background: #AEF1AE">
+          rest.map[String, List[String]](((x$4: String) =&gt; connector.+(x$4)))(immutable.this.List.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          8728
+        </td>
+        <td>
+          1638
+          -
+          1638
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          8727
+        </td>
+        <td>
+          1639
+          -
+          1652
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          connector.+(x$4)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          8731
+        </td>
+        <td>
+          1672
+          -
+          1684
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.immutable.List.+:
+        </td>
+        <td style="background: #AEF1AE">
+          restLines.+:[String, Seq[String]](x$5)(immutable.this.List.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          8730
+        </td>
+        <td>
+          1672
+          -
+          1672
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          8732
+        </td>
+        <td>
+          1701
+          -
+          1741
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.RuntimeException(&quot;empty list&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          8735
+        </td>
+        <td>
+          1862
+          -
+          1890
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.LAST_TREE_NODE_WITH_CHILDREN
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNodePrinter.this.LAST_TREE_NODE_WITH_CHILDREN
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          8734
+        </td>
+        <td>
+          1862
+          -
+          1890
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.LAST_TREE_NODE_WITH_CHILDREN
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNodePrinter.this.LAST_TREE_NODE_WITH_CHILDREN
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          8733
+        </td>
+        <td>
+          1841
+          -
+          1860
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          hasChildren.&amp;&amp;(last)
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          8738
+        </td>
+        <td>
+          1926
+          -
+          1949
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.TREE_NODE_WITH_CHILDREN
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNodePrinter.this.TREE_NODE_WITH_CHILDREN
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          8737
+        </td>
+        <td>
+          1904
+          -
+          1924
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          hasChildren.&amp;&amp;(last.unary_!)
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          8751
+        </td>
+        <td>
+          1900
+          -
+          2084
+        </td>
+        <td>
+          If
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          if (hasChildren.&amp;&amp;(last.unary_!))
+  TreeNodePrinter.this.TREE_NODE_WITH_CHILDREN
+else
+  if (hasChildren.unary_!.&amp;&amp;(last))
+    TreeNodePrinter.this.LAST_TREE_NODE
+  else
+    if (hasChildren.unary_!.&amp;&amp;(last.unary_!))
+      TreeNodePrinter.this.TREE_NODE
+    else
+      &quot;the impossible has happened&quot;
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          8736
+        </td>
+        <td>
+          1919
+          -
+          1924
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          last.unary_!
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          8739
+        </td>
+        <td>
+          1926
+          -
+          1949
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.TREE_NODE_WITH_CHILDREN
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNodePrinter.this.TREE_NODE_WITH_CHILDREN
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          8750
+        </td>
+        <td>
+          1959
+          -
+          2084
+        </td>
+        <td>
+          If
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          if (hasChildren.unary_!.&amp;&amp;(last))
+  TreeNodePrinter.this.LAST_TREE_NODE
+else
+  if (hasChildren.unary_!.&amp;&amp;(last.unary_!))
+    TreeNodePrinter.this.TREE_NODE
+  else
+    &quot;the impossible has happened&quot;
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          8741
+        </td>
+        <td>
+          1985
+          -
+          1999
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.LAST_TREE_NODE
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNodePrinter.this.LAST_TREE_NODE
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          8740
+        </td>
+        <td>
+          1963
+          -
+          1983
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          hasChildren.unary_!.&amp;&amp;(last)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          8742
+        </td>
+        <td>
+          1985
+          -
+          1999
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.LAST_TREE_NODE
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNodePrinter.this.LAST_TREE_NODE
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          8744
+        </td>
+        <td>
+          2013
+          -
+          2034
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          hasChildren.unary_!.&amp;&amp;(last.unary_!)
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          8746
+        </td>
+        <td>
+          2036
+          -
+          2045
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.TREE_NODE
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNodePrinter.this.TREE_NODE
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          8749
+        </td>
+        <td>
+          2009
+          -
+          2084
+        </td>
+        <td>
+          If
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          if (hasChildren.unary_!.&amp;&amp;(last.unary_!))
+  TreeNodePrinter.this.TREE_NODE
+else
+  &quot;the impossible has happened&quot;
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          8743
+        </td>
+        <td>
+          2029
+          -
+          2034
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          last.unary_!
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          8745
+        </td>
+        <td>
+          2036
+          -
+          2045
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodePrinter.TREE_NODE
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNodePrinter.this.TREE_NODE
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          8748
+        </td>
+        <td>
+          2055
+          -
+          2084
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;the impossible has happened&quot;
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          8747
+        </td>
+        <td>
+          2055
+          -
+          2084
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;the impossible has happened&quot;
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          8752
+        </td>
+        <td>
+          2154
+          -
+          2160
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;└── &quot;
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          8753
+        </td>
+        <td>
+          2198
+          -
+          2204
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;└─┬ &quot;
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          8754
+        </td>
+        <td>
+          2231
+          -
+          2237
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;├── &quot;
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          8755
+        </td>
+        <td>
+          2278
+          -
+          2284
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;├─┬ &quot;
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          8756
+        </td>
+        <td>
+          2316
+          -
+          2320
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;| &quot;
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          8757
+        </td>
+        <td>
+          2344
+          -
+          2348
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;  &quot;
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

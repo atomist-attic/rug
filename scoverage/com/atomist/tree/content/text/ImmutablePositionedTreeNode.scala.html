@@ -1,0 +1,2596 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/content/text/ImmutablePositionedTreeNode.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.content.text
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.tree.TreeNode.{Noise, Significance}
+</span>4 <span style=''>import com.atomist.tree.{PaddingTreeNode, TreeNode}
+</span>5 <span style=''>
+</span>6 <span style=''>import scala.collection.mutable.ListBuffer
+</span>7 <span style=''>
+</span>8 <span style=''>case class ImmutablePositionedTreeNode(override val nodeName: String,
+</span>9 <span style=''>                                       override val startPosition: InputPosition,
+</span>10 <span style=''>                                       override val endPosition: InputPosition,
+</span>11 <span style=''>                                       override val childNodes: Seq[PositionedTreeNode],
+</span>12 <span style=''>                                       override val nodeTags: Set[String],
+</span>13 <span style=''>                                       override val significance: Significance)
+</span>14 <span style=''>  extends PositionedTreeNode {
+</span>15 <span style=''>
+</span>16 <span style=''>  // These are really only needed on the Updatable tree nodes, not on Positioned at all
+</span>17 <span style=''>
+</span>18 <span style=''>  override def value: String = </span><span style='background: #F0ADAD'>&quot;&quot;</span><span style=''>
+</span>19 <span style=''>
+</span>20 <span style=''>  override def childNodeNames: Set[String] = </span><span style='background: #F0ADAD'>???</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>  override def childNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>???</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>  override def childrenNamed(key: String): Seq[TreeNode] = </span><span style='background: #F0ADAD'>childNodes.filter(_.nodeName == key)</span><span style=''>
+</span>25 <span style=''>}
+</span>26 <span style=''>
+</span>27 <span style=''>object ImmutablePositionedTreeNode {
+</span>28 <span style=''>
+</span>29 <span style=''>  def apply(from: PositionedTreeNode): ImmutablePositionedTreeNode = {
+</span>30 <span style=''>    </span><span style='background: #AEF1AE'>ImmutablePositionedTreeNode(
+</span>31 <span style=''></span><span style='background: #AEF1AE'>      from.nodeName,
+</span>32 <span style=''></span><span style='background: #AEF1AE'>      from.startPosition,
+</span>33 <span style=''></span><span style='background: #AEF1AE'>      from.endPosition,
+</span>34 <span style=''></span><span style='background: #AEF1AE'>      from.childNodes.collect { case ptn: PositionedTreeNode =&gt; ptn },
+</span>35 <span style=''></span><span style='background: #AEF1AE'>      from.nodeTags,
+</span>36 <span style=''></span><span style='background: #AEF1AE'>      from.significance)</span><span style=''>
+</span>37 <span style=''>  }
+</span>38 <span style=''>
+</span>39 <span style=''>  def pad(typeName: String, pupae: Seq[PositionedTreeNode], initialSource: String): OverwritableTextTreeNode = {
+</span>40 <span style=''>    val wrapper = </span><span style='background: #AEF1AE'>ImmutablePositionedTreeNode(&quot;wrapper&quot;,
+</span>41 <span style=''></span><span style='background: #AEF1AE'>      OffsetInputPosition(0),
+</span>42 <span style=''></span><span style='background: #AEF1AE'>      OffsetInputPosition(initialSource.length),
+</span>43 <span style=''></span><span style='background: #AEF1AE'>      pupae,
+</span>44 <span style=''></span><span style='background: #AEF1AE'>      Set(),
+</span>45 <span style=''></span><span style='background: #AEF1AE'>      TreeNode.Signal)</span><span style=''>
+</span>46 <span style=''>    val collapsed = </span><span style='background: #AEF1AE'>collapseNoise(wrapper)</span><span style=''>
+</span>47 <span style=''>    val resolved = </span><span style='background: #AEF1AE'>fightWithSiblings(collapsed)</span><span style=''>
+</span>48 <span style=''>    </span><span style='background: #AEF1AE'>padInternal(resolved, initialSource)</span><span style=''>
+</span>49 <span style=''>  }
+</span>50 <span style=''>
+</span>51 <span style=''>  private def collapseNoise(n: PositionedTreeNode): ImmutablePositionedTreeNode = {
+</span>52 <span style=''>    def collapseNoiseInternal(n: PositionedTreeNode): Seq[ImmutablePositionedTreeNode] = {
+</span>53 <span style=''>      val childrenWorthKeeping = </span><span style='background: #AEF1AE'>n.childNodes.collect { case ptn: PositionedTreeNode =&gt; ptn }
+</span>54 <span style=''></span><span style='background: #AEF1AE'>        .flatMap(collapseNoiseInternal)
+</span>55 <span style=''></span><span style='background: #AEF1AE'>        .sortBy { tn =&gt; (tn.startPosition.offset, tn.endPosition.offset) }</span><span style=''>
+</span>56 <span style=''>      if (</span><span style='background: #AEF1AE'>n.significance == Noise</span><span style=''>)
+</span>57 <span style=''>        </span><span style='background: #AEF1AE'>childrenWorthKeeping</span><span style=''>
+</span>58 <span style=''>      else
+</span>59 <span style=''>        </span><span style='background: #AEF1AE'>Seq(ImmutablePositionedTreeNode(n).copy(childNodes = childrenWorthKeeping))</span><span style=''>
+</span>60 <span style=''>    }
+</span>61 <span style=''>
+</span>62 <span style=''>    val result = </span><span style='background: #AEF1AE'>collapseNoiseInternal(n)</span><span style=''>
+</span>63 <span style=''>    if (</span><span style='background: #AEF1AE'>result.size != 1</span><span style=''>)
+</span>64 <span style=''>      </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(&quot;Look, the top-level node must be Signal, not Noise&quot;)</span><span style=''>
+</span>65 <span style=''>    </span><span style='background: #AEF1AE'>result.head</span><span style=''>
+</span>66 <span style=''>  }
+</span>67 <span style=''>
+</span>68 <span style=''>  /*
+</span>69 <span style=''>   * It has been observed that sometimes nodes -- at least whitespace in Python -- have siblings
+</span>70 <span style=''>   * that are inside them.
+</span>71 <span style=''>   *
+</span>72 <span style=''>   * precondition: children are sorted by (startPosition, endPosition)
+</span>73 <span style=''>   * postcondition: siblings never overlap
+</span>74 <span style=''>   */
+</span>75 <span style=''>  private def fightWithSiblings(parent: ImmutablePositionedTreeNode): PositionedTreeNode = {
+</span>76 <span style=''>
+</span>77 <span style=''>    if (</span><span style='background: #AEF1AE'>parent.childNodes.isEmpty</span><span style=''>) </span><span style='background: #AEF1AE'>parent</span><span style=''> else </span><span style='background: #AEF1AE'>{
+</span>78 <span style=''></span><span style='background: #AEF1AE'>      val newChildren = parent.childNodes.sliding(2, 1).collect {
+</span>79 <span style=''></span><span style='background: #AEF1AE'>        case Seq(child1: ImmutablePositionedTreeNode, child2: PositionedTreeNode) =&gt;
+</span>80 <span style=''></span><span style='background: #AEF1AE'>          val nextSiblingBegins = child2.startPosition
+</span>81 <span style=''></span><span style='background: #AEF1AE'>          if (nextSiblingBegins.offset &lt; child1.endPosition.offset)
+</span>82 <span style=''></span><span style='background: #AEF1AE'>            fightWithSiblings(child1.copy(endPosition = nextSiblingBegins))
+</span>83 <span style=''></span><span style='background: #AEF1AE'>          else
+</span>84 <span style=''></span><span style='background: #AEF1AE'>            fightWithSiblings(child1)
+</span>85 <span style=''></span><span style='background: #AEF1AE'>      }.toSeq :+ fightWithSiblings(parent.childNodes.last.asInstanceOf[ImmutablePositionedTreeNode])
+</span>86 <span style=''></span><span style='background: #AEF1AE'>      parent.copy(childNodes = newChildren)
+</span>87 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>88 <span style=''>  }
+</span>89 <span style=''>
+</span>90 <span style=''>  private def padInternal(pupae: PositionedTreeNode, initialSource: String): OverwritableTextTreeNode = {
+</span>91 <span style=''>
+</span>92 <span style=''>    def padding(from: Int, to: Int): TreeNode = {
+</span>93 <span style=''>      val name = </span><span style='background: #AEF1AE'>s&quot;padding[$from-$to]&quot;</span><span style=''>
+</span>94 <span style=''>      val content = </span><span style='background: #AEF1AE'>initialSource.substring(from, to)</span><span style=''>
+</span>95 <span style=''>      </span><span style='background: #AEF1AE'>PaddingTreeNode(name, content)</span><span style=''>
+</span>96 <span style=''>    }
+</span>97 <span style=''>
+</span>98 <span style=''>    val fieldResults = </span><span style='background: #AEF1AE'>ListBuffer.empty[TreeNode]</span><span style=''>
+</span>99 <span style=''>    var lastEndOffset = </span><span style='background: #AEF1AE'>pupae.startPosition.offset</span><span style=''>
+</span>100 <span style=''>    </span><span style='background: #AEF1AE'>for {
+</span>101 <span style=''></span><span style='background: #AEF1AE'>      fv &lt;- pupae.childNodes
+</span>102 <span style=''></span><span style='background: #AEF1AE'>    } {
+</span>103 <span style=''></span><span style='background: #AEF1AE'>      fv match {
+</span>104 <span style=''></span><span style='background: #AEF1AE'>        case sm: PositionedTreeNode =&gt;
+</span>105 <span style=''></span><span style='background: #AEF1AE'>          if (sm.startPosition.offset &gt; lastEndOffset) {
+</span>106 <span style=''></span><span style='background: #AEF1AE'>            fieldResults.append(padding(lastEndOffset, sm.startPosition.offset))
+</span>107 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>108 <span style=''></span><span style='background: #AEF1AE'>          fieldResults.append(padInternal(sm, initialSource))
+</span>109 <span style=''></span><span style='background: #AEF1AE'>          lastEndOffset = sm.endPosition.offset
+</span>110 <span style=''></span><span style='background: #AEF1AE'>        case other </span><span style='background: #F0ADAD'>=&gt;</span><span style='background: #AEF1AE'>
+</span>111 <span style=''></span><span style='background: #AEF1AE'>        // Ignore it. Let padding do its work
+</span>112 <span style=''></span><span style='background: #AEF1AE'>      }</span><span style=''>
+</span>113 <span style=''>    }
+</span>114 <span style=''>    // Put in trailing padding if necessary
+</span>115 <span style=''>    if (</span><span style='background: #AEF1AE'>pupae.endPosition.offset &gt; lastEndOffset</span><span style=''>) {
+</span>116 <span style=''>      </span><span style='background: #AEF1AE'>fieldResults.append(padding(lastEndOffset, pupae.endPosition.offset))</span><span style=''>
+</span>117 <span style=''>    }
+</span>118 <span style=''>
+</span>119 <span style=''>    </span><span style='background: #AEF1AE'>OverwritableTextTreeNode(pupae, fieldResults)</span><span style=''>
+</span>120 <span style=''>  }
+</span>121 <span style=''>
+</span>122 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          7178
+        </td>
+        <td>
+          819
+          -
+          821
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7179
+        </td>
+        <td>
+          868
+          -
+          871
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          7180
+        </td>
+        <td>
+          918
+          -
+          921
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          7182
+        </td>
+        <td>
+          982
+          -
+          1018
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #F0ADAD">
+          ImmutablePositionedTreeNode.this.childNodes.filter(((x$1: com.atomist.tree.content.text.PositionedTreeNode) =&gt; x$1.nodeName.==(key)))
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          7181
+        </td>
+        <td>
+          1000
+          -
+          1017
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          x$1.nodeName.==(key)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          7191
+        </td>
+        <td>
+          1135
+          -
+          1351
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ImmutablePositionedTreeNode.apply(from.nodeName, from.startPosition, from.endPosition, from.childNodes.collect[com.atomist.tree.content.text.PositionedTreeNode, Seq[com.atomist.tree.content.text.PositionedTreeNode]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.tree.TreeNode,com.atomist.tree.content.text.PositionedTreeNode] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.tree.TreeNode =&gt; com.atomist.tree.content.text.PositionedTreeNode&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.tree.TreeNode, B1 &gt;: com.atomist.tree.content.text.PositionedTreeNode](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[com.atomist.tree.TreeNode]: com.atomist.tree.TreeNode): com.atomist.tree.TreeNode @unchecked) match {
+      case (ptn @ (_: com.atomist.tree.content.text.PositionedTreeNode)) =&gt; ptn
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: com.atomist.tree.TreeNode): Boolean = ((x1.asInstanceOf[com.atomist.tree.TreeNode]: com.atomist.tree.TreeNode): com.atomist.tree.TreeNode @unchecked) match {
+      case (ptn @ (_: com.atomist.tree.content.text.PositionedTreeNode)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.tree.TreeNode,com.atomist.tree.content.text.PositionedTreeNode]))(collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.PositionedTreeNode]), from.nodeTags, from.significance)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          7183
+        </td>
+        <td>
+          1170
+          -
+          1183
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.ParsedNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          from.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          7184
+        </td>
+        <td>
+          1191
+          -
+          1209
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.Positioned.startPosition
+        </td>
+        <td style="background: #AEF1AE">
+          from.startPosition
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          7185
+        </td>
+        <td>
+          1217
+          -
+          1233
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.Positioned.endPosition
+        </td>
+        <td style="background: #AEF1AE">
+          from.endPosition
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          7188
+        </td>
+        <td>
+          1241
+          -
+          1304
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          from.childNodes.collect[com.atomist.tree.content.text.PositionedTreeNode, Seq[com.atomist.tree.content.text.PositionedTreeNode]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.tree.TreeNode,com.atomist.tree.content.text.PositionedTreeNode] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.tree.TreeNode =&gt; com.atomist.tree.content.text.PositionedTreeNode&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.tree.TreeNode, B1 &gt;: com.atomist.tree.content.text.PositionedTreeNode](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[com.atomist.tree.TreeNode]: com.atomist.tree.TreeNode): com.atomist.tree.TreeNode @unchecked) match {
+      case (ptn @ (_: com.atomist.tree.content.text.PositionedTreeNode)) =&gt; ptn
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: com.atomist.tree.TreeNode): Boolean = ((x1.asInstanceOf[com.atomist.tree.TreeNode]: com.atomist.tree.TreeNode): com.atomist.tree.TreeNode @unchecked) match {
+      case (ptn @ (_: com.atomist.tree.content.text.PositionedTreeNode)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.tree.TreeNode,com.atomist.tree.content.text.PositionedTreeNode]))(collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.PositionedTreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          7187
+        </td>
+        <td>
+          1265
+          -
+          1265
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.PositionedTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          7186
+        </td>
+        <td>
+          1265
+          -
+          1265
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          7189
+        </td>
+        <td>
+          1312
+          -
+          1325
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeTags
+        </td>
+        <td style="background: #AEF1AE">
+          from.nodeTags
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          7190
+        </td>
+        <td>
+          1333
+          -
+          1350
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.significance
+        </td>
+        <td style="background: #AEF1AE">
+          from.significance
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          7198
+        </td>
+        <td>
+          1488
+          -
+          1654
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ImmutablePositionedTreeNode.apply(&quot;wrapper&quot;, OffsetInputPosition.apply(0), OffsetInputPosition.apply(initialSource.length()), pupae, scala.this.Predef.Set.apply[String](), com.atomist.tree.TreeNode.Signal)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          7192
+        </td>
+        <td>
+          1516
+          -
+          1525
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;wrapper&quot;
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          7193
+        </td>
+        <td>
+          1533
+          -
+          1555
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OffsetInputPosition.apply
+        </td>
+        <td style="background: #AEF1AE">
+          OffsetInputPosition.apply(0)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          7194
+        </td>
+        <td>
+          1583
+          -
+          1603
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.length
+        </td>
+        <td style="background: #AEF1AE">
+          initialSource.length()
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          7195
+        </td>
+        <td>
+          1563
+          -
+          1604
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OffsetInputPosition.apply
+        </td>
+        <td style="background: #AEF1AE">
+          OffsetInputPosition.apply(initialSource.length())
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          7196
+        </td>
+        <td>
+          1625
+          -
+          1630
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String]()
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          7197
+        </td>
+        <td>
+          1638
+          -
+          1653
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Signal
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Signal
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          7199
+        </td>
+        <td>
+          1675
+          -
+          1697
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.collapseNoise
+        </td>
+        <td style="background: #AEF1AE">
+          ImmutablePositionedTreeNode.this.collapseNoise(wrapper)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          7200
+        </td>
+        <td>
+          1717
+          -
+          1745
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.fightWithSiblings
+        </td>
+        <td style="background: #AEF1AE">
+          ImmutablePositionedTreeNode.this.fightWithSiblings(collapsed)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          7201
+        </td>
+        <td>
+          1750
+          -
+          1786
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.padInternal
+        </td>
+        <td style="background: #AEF1AE">
+          ImmutablePositionedTreeNode.this.padInternal(resolved, initialSource)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          7203
+        </td>
+        <td>
+          2021
+          -
+          2021
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.PositionedTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          7202
+        </td>
+        <td>
+          2021
+          -
+          2021
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          7205
+        </td>
+        <td>
+          2077
+          -
+          2077
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.ImmutablePositionedTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          7204
+        </td>
+        <td>
+          2078
+          -
+          2099
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.collapseNoiseInternal
+        </td>
+        <td style="background: #AEF1AE">
+          collapseNoiseInternal(n)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          7207
+        </td>
+        <td>
+          2151
+          -
+          2172
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #AEF1AE">
+          tn.endPosition.offset
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          7209
+        </td>
+        <td>
+          2117
+          -
+          2117
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.math.Ordering.Int
+        </td>
+        <td style="background: #AEF1AE">
+          math.this.Ordering.Int
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          7212
+        </td>
+        <td>
+          2000
+          -
+          2175
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.sortBy
+        </td>
+        <td style="background: #AEF1AE">
+          n.childNodes.collect[com.atomist.tree.content.text.PositionedTreeNode, Seq[com.atomist.tree.content.text.PositionedTreeNode]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.tree.TreeNode,com.atomist.tree.content.text.PositionedTreeNode] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.tree.TreeNode =&gt; com.atomist.tree.content.text.PositionedTreeNode&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.tree.TreeNode, B1 &gt;: com.atomist.tree.content.text.PositionedTreeNode](x2: A1, default: A1 =&gt; B1): B1 = ((x2.asInstanceOf[com.atomist.tree.TreeNode]: com.atomist.tree.TreeNode): com.atomist.tree.TreeNode @unchecked) match {
+      case (ptn @ (_: com.atomist.tree.content.text.PositionedTreeNode)) =&gt; ptn
+      case (defaultCase$ @ _) =&gt; default.apply(x2)
+    };
+    final def isDefinedAt(x2: com.atomist.tree.TreeNode): Boolean = ((x2.asInstanceOf[com.atomist.tree.TreeNode]: com.atomist.tree.TreeNode): com.atomist.tree.TreeNode @unchecked) match {
+      case (ptn @ (_: com.atomist.tree.content.text.PositionedTreeNode)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.tree.TreeNode,com.atomist.tree.content.text.PositionedTreeNode]))(collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.PositionedTreeNode]).flatMap[com.atomist.tree.content.text.ImmutablePositionedTreeNode, Seq[com.atomist.tree.content.text.ImmutablePositionedTreeNode]]({
+  ((n: com.atomist.tree.content.text.PositionedTreeNode) =&gt; collapseNoiseInternal(n))
+})(collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.ImmutablePositionedTreeNode]).sortBy[(Int, Int)](((tn: com.atomist.tree.content.text.ImmutablePositionedTreeNode) =&gt; scala.Tuple2.apply[Int, Int](tn.startPosition.offset, tn.endPosition.offset)))(math.this.Ordering.Tuple2[Int, Int](math.this.Ordering.Int, math.this.Ordering.Int))
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          7206
+        </td>
+        <td>
+          2126
+          -
+          2149
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #AEF1AE">
+          tn.startPosition.offset
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          7208
+        </td>
+        <td>
+          2125
+          -
+          2173
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple2.apply[Int, Int](tn.startPosition.offset, tn.endPosition.offset)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          7211
+        </td>
+        <td>
+          2117
+          -
+          2117
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.math.Ordering.Tuple2
+        </td>
+        <td style="background: #AEF1AE">
+          math.this.Ordering.Tuple2[Int, Int](math.this.Ordering.Int, math.this.Ordering.Int)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          7210
+        </td>
+        <td>
+          2117
+          -
+          2117
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.math.Ordering.Int
+        </td>
+        <td style="background: #AEF1AE">
+          math.this.Ordering.Int
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          7214
+        </td>
+        <td>
+          2186
+          -
+          2209
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          n.significance.==(com.atomist.tree.TreeNode.Noise)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          7213
+        </td>
+        <td>
+          2204
+          -
+          2209
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Noise
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Noise
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          7215
+        </td>
+        <td>
+          2219
+          -
+          2239
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.childrenWorthKeeping
+        </td>
+        <td style="background: #AEF1AE">
+          childrenWorthKeeping
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          7216
+        </td>
+        <td>
+          2263
+          -
+          2293
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ImmutablePositionedTreeNode.apply(n)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          7218
+        </td>
+        <td>
+          2294
+          -
+          2294
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.copy$default$2
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          7221
+        </td>
+        <td>
+          2294
+          -
+          2294
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$6
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.copy$default$6
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          7224
+        </td>
+        <td>
+          2259
+          -
+          2334
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.tree.content.text.ImmutablePositionedTreeNode]({
+  &lt;artifact&gt; val qual$1: com.atomist.tree.content.text.ImmutablePositionedTreeNode = ImmutablePositionedTreeNode.apply(n);
+  &lt;artifact&gt; val x$2: Seq[com.atomist.tree.content.text.ImmutablePositionedTreeNode] @scala.reflect.internal.annotations.uncheckedBounds = childrenWorthKeeping;
+  &lt;artifact&gt; val x$3: String = qual$1.copy$default$1;
+  &lt;artifact&gt; val x$4: com.atomist.tree.content.text.InputPosition = qual$1.copy$default$2;
+  &lt;artifact&gt; val x$5: com.atomist.tree.content.text.InputPosition = qual$1.copy$default$3;
+  &lt;artifact&gt; val x$6: Set[String] @scala.reflect.internal.annotations.uncheckedBounds = qual$1.copy$default$5;
+  &lt;artifact&gt; val x$7: com.atomist.tree.TreeNode.Significance = qual$1.copy$default$6;
+  qual$1.copy(x$3, x$4, x$5, x$2, x$6, x$7)
+})
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          7223
+        </td>
+        <td>
+          2259
+          -
+          2334
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.tree.content.text.ImmutablePositionedTreeNode]({
+  &lt;artifact&gt; val qual$1: com.atomist.tree.content.text.ImmutablePositionedTreeNode = ImmutablePositionedTreeNode.apply(n);
+  &lt;artifact&gt; val x$2: Seq[com.atomist.tree.content.text.ImmutablePositionedTreeNode] @scala.reflect.internal.annotations.uncheckedBounds = childrenWorthKeeping;
+  &lt;artifact&gt; val x$3: String = qual$1.copy$default$1;
+  &lt;artifact&gt; val x$4: com.atomist.tree.content.text.InputPosition = qual$1.copy$default$2;
+  &lt;artifact&gt; val x$5: com.atomist.tree.content.text.InputPosition = qual$1.copy$default$3;
+  &lt;artifact&gt; val x$6: Set[String] @scala.reflect.internal.annotations.uncheckedBounds = qual$1.copy$default$5;
+  &lt;artifact&gt; val x$7: com.atomist.tree.TreeNode.Significance = qual$1.copy$default$6;
+  qual$1.copy(x$3, x$4, x$5, x$2, x$6, x$7)
+})
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          7217
+        </td>
+        <td>
+          2294
+          -
+          2294
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.copy$default$1
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          7220
+        </td>
+        <td>
+          2294
+          -
+          2294
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$5
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.copy$default$5
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          7219
+        </td>
+        <td>
+          2294
+          -
+          2294
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.copy$default$3
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          7222
+        </td>
+        <td>
+          2263
+          -
+          2333
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.copy(x$3, x$4, x$5, x$2, x$6, x$7)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          7225
+        </td>
+        <td>
+          2359
+          -
+          2383
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.collapseNoiseInternal
+        </td>
+        <td style="background: #AEF1AE">
+          collapseNoiseInternal(n)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          7230
+        </td>
+        <td>
+          2388
+          -
+          2388
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          7226
+        </td>
+        <td>
+          2392
+          -
+          2408
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.!=
+        </td>
+        <td style="background: #AEF1AE">
+          result.size.!=(1)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          7229
+        </td>
+        <td>
+          2388
+          -
+          2388
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          7227
+        </td>
+        <td>
+          2416
+          -
+          2504
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(&quot;Look, the top-level node must be Signal, not Noise&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          7228
+        </td>
+        <td>
+          2416
+          -
+          2504
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(&quot;Look, the top-level node must be Signal, not Noise&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          7231
+        </td>
+        <td>
+          2509
+          -
+          2520
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          result.head
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          7260
+        </td>
+        <td>
+          2921
+          -
+          3476
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val newChildren: Seq[com.atomist.tree.content.text.PositionedTreeNode] = parent.childNodes.sliding(2, 1).collect[com.atomist.tree.content.text.PositionedTreeNode](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[Seq[com.atomist.tree.content.text.PositionedTreeNode],com.atomist.tree.content.text.PositionedTreeNode] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: Seq[com.atomist.tree.content.text.PositionedTreeNode] =&gt; com.atomist.tree.content.text.PositionedTreeNode&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: Seq[com.atomist.tree.content.text.PositionedTreeNode], B1 &gt;: com.atomist.tree.content.text.PositionedTreeNode](x3: A1, default: A1 =&gt; B1): B1 = ((x3.asInstanceOf[Seq[com.atomist.tree.content.text.PositionedTreeNode]]: Seq[com.atomist.tree.content.text.PositionedTreeNode]): Seq[com.atomist.tree.content.text.PositionedTreeNode] @unchecked) match {
+      case collection.this.Seq.unapplySeq[com.atomist.tree.content.text.PositionedTreeNode](&lt;unapply-selector&gt;) &lt;unapply&gt; ((child1 @ (_: com.atomist.tree.content.text.ImmutablePositionedTreeNode)), (child2 @ (_: com.atomist.tree.content.text.PositionedTreeNode))) =&gt; {
+        val nextSiblingBegins: com.atomist.tree.content.text.InputPosition = child2.startPosition;
+        if (nextSiblingBegins.offset.&lt;(child1.endPosition.offset))
+          ImmutablePositionedTreeNode.this.fightWithSiblings({
+            &lt;artifact&gt; val x$8: com.atomist.tree.content.text.InputPosition = nextSiblingBegins;
+            &lt;artifact&gt; val x$9: String = child1.copy$default$1;
+            &lt;artifact&gt; val x$10: com.atomist.tree.content.text.InputPosition = child1.copy$default$2;
+            &lt;artifact&gt; val x$11: Seq[com.atomist.tree.content.text.PositionedTreeNode] @scala.reflect.internal.annotations.uncheckedBounds = child1.copy$default$4;
+            &lt;artifact&gt; val x$12: Set[String] @scala.reflect.internal.annotations.uncheckedBounds = child1.copy$default$5;
+            &lt;artifact&gt; val x$13: com.atomist.tree.TreeNode.Significance = child1.copy$default$6;
+            child1.copy(x$9, x$10, x$8, x$11, x$12, x$13)
+          })
+        else
+          ImmutablePositionedTreeNode.this.fightWithSiblings(child1)
+      }
+      case (defaultCase$ @ _) =&gt; default.apply(x3)
+    };
+    final def isDefinedAt(x3: Seq[com.atomist.tree.content.text.PositionedTreeNode]): Boolean = ((x3.asInstanceOf[Seq[com.atomist.tree.content.text.PositionedTreeNode]]: Seq[com.atomist.tree.content.text.PositionedTreeNode]): Seq[com.atomist.tree.content.text.PositionedTreeNode] @unchecked) match {
+      case collection.this.Seq.unapplySeq[com.atomist.tree.content.text.PositionedTreeNode](&lt;unapply-selector&gt;) &lt;unapply&gt; ((child1 @ (_: com.atomist.tree.content.text.ImmutablePositionedTreeNode)), (child2 @ (_: com.atomist.tree.content.text.PositionedTreeNode))) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[Seq[com.atomist.tree.content.text.PositionedTreeNode],com.atomist.tree.content.text.PositionedTreeNode])).toSeq.:+[com.atomist.tree.content.text.PositionedTreeNode, Seq[com.atomist.tree.content.text.PositionedTreeNode]](ImmutablePositionedTreeNode.this.fightWithSiblings(parent.childNodes.last.asInstanceOf[com.atomist.tree.content.text.ImmutablePositionedTreeNode]))(collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.PositionedTreeNode]);
+  {
+    &lt;artifact&gt; val x$14: Seq[com.atomist.tree.content.text.PositionedTreeNode] @scala.reflect.internal.annotations.uncheckedBounds = newChildren;
+    &lt;artifact&gt; val x$15: String = parent.copy$default$1;
+    &lt;artifact&gt; val x$16: com.atomist.tree.content.text.InputPosition = parent.copy$default$2;
+    &lt;artifact&gt; val x$17: com.atomist.tree.content.text.InputPosition = parent.copy$default$3;
+    &lt;artifact&gt; val x$18: Set[String] @scala.reflect.internal.annotations.uncheckedBounds = parent.copy$default$5;
+    &lt;artifact&gt; val x$19: com.atomist.tree.TreeNode.Significance = parent.copy$default$6;
+    parent.copy(x$15, x$16, x$17, x$14, x$18, x$19)
+  }
+}
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          7233
+        </td>
+        <td>
+          2909
+          -
+          2915
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.parent
+        </td>
+        <td style="background: #AEF1AE">
+          parent
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          7232
+        </td>
+        <td>
+          2882
+          -
+          2907
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          parent.childNodes.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          7234
+        </td>
+        <td>
+          2973
+          -
+          2974
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          2
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          7235
+        </td>
+        <td>
+          2976
+          -
+          2977
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          7249
+        </td>
+        <td>
+          2987
+          -
+          2987
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          7236
+        </td>
+        <td>
+          3108
+          -
+          3128
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.Positioned.startPosition
+        </td>
+        <td style="background: #AEF1AE">
+          child2.startPosition
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          7238
+        </td>
+        <td>
+          3143
+          -
+          3195
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          nextSiblingBegins.offset.&lt;(child1.endPosition.offset)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          7237
+        </td>
+        <td>
+          3170
+          -
+          3195
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #AEF1AE">
+          child1.endPosition.offset
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          7243
+        </td>
+        <td>
+          3234
+          -
+          3234
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$6
+        </td>
+        <td style="background: #AEF1AE">
+          child1.copy$default$6
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          7242
+        </td>
+        <td>
+          3234
+          -
+          3234
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$5
+        </td>
+        <td style="background: #AEF1AE">
+          child1.copy$default$5
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          7245
+        </td>
+        <td>
+          3209
+          -
+          3272
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.fightWithSiblings
+        </td>
+        <td style="background: #AEF1AE">
+          ImmutablePositionedTreeNode.this.fightWithSiblings({
+  &lt;artifact&gt; val x$8: com.atomist.tree.content.text.InputPosition = nextSiblingBegins;
+  &lt;artifact&gt; val x$9: String = child1.copy$default$1;
+  &lt;artifact&gt; val x$10: com.atomist.tree.content.text.InputPosition = child1.copy$default$2;
+  &lt;artifact&gt; val x$11: Seq[com.atomist.tree.content.text.PositionedTreeNode] @scala.reflect.internal.annotations.uncheckedBounds = child1.copy$default$4;
+  &lt;artifact&gt; val x$12: Set[String] @scala.reflect.internal.annotations.uncheckedBounds = child1.copy$default$5;
+  &lt;artifact&gt; val x$13: com.atomist.tree.TreeNode.Significance = child1.copy$default$6;
+  child1.copy(x$9, x$10, x$8, x$11, x$12, x$13)
+})
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          7239
+        </td>
+        <td>
+          3234
+          -
+          3234
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          child1.copy$default$1
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          7241
+        </td>
+        <td>
+          3234
+          -
+          3234
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          child1.copy$default$4
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          7244
+        </td>
+        <td>
+          3227
+          -
+          3271
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy
+        </td>
+        <td style="background: #AEF1AE">
+          child1.copy(x$9, x$10, x$8, x$11, x$12, x$13)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          7246
+        </td>
+        <td>
+          3209
+          -
+          3272
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.fightWithSiblings
+        </td>
+        <td style="background: #AEF1AE">
+          ImmutablePositionedTreeNode.this.fightWithSiblings({
+  &lt;artifact&gt; val x$8: com.atomist.tree.content.text.InputPosition = nextSiblingBegins;
+  &lt;artifact&gt; val x$9: String = child1.copy$default$1;
+  &lt;artifact&gt; val x$10: com.atomist.tree.content.text.InputPosition = child1.copy$default$2;
+  &lt;artifact&gt; val x$11: Seq[com.atomist.tree.content.text.PositionedTreeNode] @scala.reflect.internal.annotations.uncheckedBounds = child1.copy$default$4;
+  &lt;artifact&gt; val x$12: Set[String] @scala.reflect.internal.annotations.uncheckedBounds = child1.copy$default$5;
+  &lt;artifact&gt; val x$13: com.atomist.tree.TreeNode.Significance = child1.copy$default$6;
+  child1.copy(x$9, x$10, x$8, x$11, x$12, x$13)
+})
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          7240
+        </td>
+        <td>
+          3234
+          -
+          3234
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          child1.copy$default$2
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          7248
+        </td>
+        <td>
+          3300
+          -
+          3325
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.fightWithSiblings
+        </td>
+        <td style="background: #AEF1AE">
+          ImmutablePositionedTreeNode.this.fightWithSiblings(child1)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          7247
+        </td>
+        <td>
+          3300
+          -
+          3325
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.fightWithSiblings
+        </td>
+        <td style="background: #AEF1AE">
+          ImmutablePositionedTreeNode.this.fightWithSiblings(child1)
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          7252
+        </td>
+        <td>
+          3340
+          -
+          3340
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.PositionedTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          7251
+        </td>
+        <td>
+          3343
+          -
+          3426
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.fightWithSiblings
+        </td>
+        <td style="background: #AEF1AE">
+          ImmutablePositionedTreeNode.this.fightWithSiblings(parent.childNodes.last.asInstanceOf[com.atomist.tree.content.text.ImmutablePositionedTreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          7250
+        </td>
+        <td>
+          3361
+          -
+          3425
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          parent.childNodes.last.asInstanceOf[com.atomist.tree.content.text.ImmutablePositionedTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          7253
+        </td>
+        <td>
+          2947
+          -
+          3426
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          parent.childNodes.sliding(2, 1).collect[com.atomist.tree.content.text.PositionedTreeNode](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[Seq[com.atomist.tree.content.text.PositionedTreeNode],com.atomist.tree.content.text.PositionedTreeNode] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: Seq[com.atomist.tree.content.text.PositionedTreeNode] =&gt; com.atomist.tree.content.text.PositionedTreeNode&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: Seq[com.atomist.tree.content.text.PositionedTreeNode], B1 &gt;: com.atomist.tree.content.text.PositionedTreeNode](x3: A1, default: A1 =&gt; B1): B1 = ((x3.asInstanceOf[Seq[com.atomist.tree.content.text.PositionedTreeNode]]: Seq[com.atomist.tree.content.text.PositionedTreeNode]): Seq[com.atomist.tree.content.text.PositionedTreeNode] @unchecked) match {
+      case collection.this.Seq.unapplySeq[com.atomist.tree.content.text.PositionedTreeNode](&lt;unapply-selector&gt;) &lt;unapply&gt; ((child1 @ (_: com.atomist.tree.content.text.ImmutablePositionedTreeNode)), (child2 @ (_: com.atomist.tree.content.text.PositionedTreeNode))) =&gt; {
+        val nextSiblingBegins: com.atomist.tree.content.text.InputPosition = child2.startPosition;
+        if (nextSiblingBegins.offset.&lt;(child1.endPosition.offset))
+          ImmutablePositionedTreeNode.this.fightWithSiblings({
+            &lt;artifact&gt; val x$8: com.atomist.tree.content.text.InputPosition = nextSiblingBegins;
+            &lt;artifact&gt; val x$9: String = child1.copy$default$1;
+            &lt;artifact&gt; val x$10: com.atomist.tree.content.text.InputPosition = child1.copy$default$2;
+            &lt;artifact&gt; val x$11: Seq[com.atomist.tree.content.text.PositionedTreeNode] @scala.reflect.internal.annotations.uncheckedBounds = child1.copy$default$4;
+            &lt;artifact&gt; val x$12: Set[String] @scala.reflect.internal.annotations.uncheckedBounds = child1.copy$default$5;
+            &lt;artifact&gt; val x$13: com.atomist.tree.TreeNode.Significance = child1.copy$default$6;
+            child1.copy(x$9, x$10, x$8, x$11, x$12, x$13)
+          })
+        else
+          ImmutablePositionedTreeNode.this.fightWithSiblings(child1)
+      }
+      case (defaultCase$ @ _) =&gt; default.apply(x3)
+    };
+    final def isDefinedAt(x3: Seq[com.atomist.tree.content.text.PositionedTreeNode]): Boolean = ((x3.asInstanceOf[Seq[com.atomist.tree.content.text.PositionedTreeNode]]: Seq[com.atomist.tree.content.text.PositionedTreeNode]): Seq[com.atomist.tree.content.text.PositionedTreeNode] @unchecked) match {
+      case collection.this.Seq.unapplySeq[com.atomist.tree.content.text.PositionedTreeNode](&lt;unapply-selector&gt;) &lt;unapply&gt; ((child1 @ (_: com.atomist.tree.content.text.ImmutablePositionedTreeNode)), (child2 @ (_: com.atomist.tree.content.text.PositionedTreeNode))) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[Seq[com.atomist.tree.content.text.PositionedTreeNode],com.atomist.tree.content.text.PositionedTreeNode])).toSeq.:+[com.atomist.tree.content.text.PositionedTreeNode, Seq[com.atomist.tree.content.text.PositionedTreeNode]](ImmutablePositionedTreeNode.this.fightWithSiblings(parent.childNodes.last.asInstanceOf[com.atomist.tree.content.text.ImmutablePositionedTreeNode]))(collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.PositionedTreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          7254
+        </td>
+        <td>
+          3440
+          -
+          3440
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          parent.copy$default$1
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          7257
+        </td>
+        <td>
+          3440
+          -
+          3440
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$5
+        </td>
+        <td style="background: #AEF1AE">
+          parent.copy$default$5
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          7256
+        </td>
+        <td>
+          3440
+          -
+          3440
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          parent.copy$default$3
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          7259
+        </td>
+        <td>
+          3433
+          -
+          3470
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy
+        </td>
+        <td style="background: #AEF1AE">
+          parent.copy(x$15, x$16, x$17, x$14, x$18, x$19)
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          7255
+        </td>
+        <td>
+          3440
+          -
+          3440
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          parent.copy$default$2
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          7258
+        </td>
+        <td>
+          3440
+          -
+          3440
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$6
+        </td>
+        <td style="background: #AEF1AE">
+          parent.copy$default$6
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          7261
+        </td>
+        <td>
+          3656
+          -
+          3677
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;padding[&quot;, &quot;-&quot;, &quot;]&quot;).s(from, to)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          7262
+        </td>
+        <td>
+          3698
+          -
+          3731
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.substring
+        </td>
+        <td style="background: #AEF1AE">
+          initialSource.substring(from, to)
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          7263
+        </td>
+        <td>
+          3738
+          -
+          3768
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.PaddingTreeNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.PaddingTreeNode.apply(name, content)
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          7264
+        </td>
+        <td>
+          3799
+          -
+          3825
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.empty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.mutable.ListBuffer.empty[com.atomist.tree.TreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          7265
+        </td>
+        <td>
+          3850
+          -
+          3876
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #AEF1AE">
+          pupae.startPosition.offset
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          7277
+        </td>
+        <td>
+          3881
+          -
+          4315
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          pupae.childNodes.foreach[Unit](((fv: com.atomist.tree.TreeNode) =&gt; fv match {
+  case (sm @ (_: com.atomist.tree.content.text.PositionedTreeNode)) =&gt; {
+    if (sm.startPosition.offset.&gt;(lastEndOffset))
+      fieldResults.append(padding(lastEndOffset, sm.startPosition.offset))
+    else
+      ();
+    fieldResults.append(ImmutablePositionedTreeNode.this.padInternal(sm, initialSource));
+    lastEndOffset = sm.endPosition.offset
+  }
+  case (other @ _) =&gt; ()
+}))
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          7272
+        </td>
+        <td>
+          3990
+          -
+          3990
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          7266
+        </td>
+        <td>
+          3994
+          -
+          4033
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          sm.startPosition.offset.&gt;(lastEndOffset)
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          7271
+        </td>
+        <td>
+          3990
+          -
+          3990
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          7269
+        </td>
+        <td>
+          4049
+          -
+          4117
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.BufferLike.append
+        </td>
+        <td style="background: #AEF1AE">
+          fieldResults.append(padding(lastEndOffset, sm.startPosition.offset))
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          7268
+        </td>
+        <td>
+          4069
+          -
+          4116
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.padding
+        </td>
+        <td style="background: #AEF1AE">
+          padding(lastEndOffset, sm.startPosition.offset)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          7270
+        </td>
+        <td>
+          4049
+          -
+          4117
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.mutable.BufferLike.append
+        </td>
+        <td style="background: #AEF1AE">
+          fieldResults.append(padding(lastEndOffset, sm.startPosition.offset))
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          7267
+        </td>
+        <td>
+          4092
+          -
+          4115
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #AEF1AE">
+          sm.startPosition.offset
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          7274
+        </td>
+        <td>
+          4140
+          -
+          4191
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.BufferLike.append
+        </td>
+        <td style="background: #AEF1AE">
+          fieldResults.append(ImmutablePositionedTreeNode.this.padInternal(sm, initialSource))
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          7273
+        </td>
+        <td>
+          4160
+          -
+          4190
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.padInternal
+        </td>
+        <td style="background: #AEF1AE">
+          ImmutablePositionedTreeNode.this.padInternal(sm, initialSource)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          7275
+        </td>
+        <td>
+          4218
+          -
+          4239
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #AEF1AE">
+          sm.endPosition.offset
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          7276
+        </td>
+        <td>
+          4259
+          -
+          4261
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          7278
+        </td>
+        <td>
+          4374
+          -
+          4414
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          pupae.endPosition.offset.&gt;(lastEndOffset)
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          7284
+        </td>
+        <td>
+          4370
+          -
+          4370
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          7283
+        </td>
+        <td>
+          4370
+          -
+          4370
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          7281
+        </td>
+        <td>
+          4424
+          -
+          4493
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.BufferLike.append
+        </td>
+        <td style="background: #AEF1AE">
+          fieldResults.append(padding(lastEndOffset, pupae.endPosition.offset))
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          7280
+        </td>
+        <td>
+          4444
+          -
+          4492
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.padding
+        </td>
+        <td style="background: #AEF1AE">
+          padding(lastEndOffset, pupae.endPosition.offset)
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          7279
+        </td>
+        <td>
+          4467
+          -
+          4491
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #AEF1AE">
+          pupae.endPosition.offset
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          7282
+        </td>
+        <td>
+          4424
+          -
+          4493
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.mutable.BufferLike.append
+        </td>
+        <td style="background: #AEF1AE">
+          fieldResults.append(padding(lastEndOffset, pupae.endPosition.offset))
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          7285
+        </td>
+        <td>
+          4505
+          -
+          4550
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.apply(pupae, fieldResults)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

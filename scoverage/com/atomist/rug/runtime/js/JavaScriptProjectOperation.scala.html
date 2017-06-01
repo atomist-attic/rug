@@ -1,0 +1,344 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/js/JavaScriptProjectOperation.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.js
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.param.{Parameter, Tag}
+</span>4 <span style=''>import com.atomist.project.ProjectOperation
+</span>5 <span style=''>import com.atomist.rug.kind.DefaultTypeRegistry
+</span>6 <span style=''>import com.atomist.rug.kind.core.ProjectMutableView
+</span>7 <span style=''>import com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy
+</span>8 <span style=''>import com.atomist.source.ArtifactSource
+</span>9 <span style=''>import com.typesafe.scalalogging.LazyLogging
+</span>10 <span style=''>import jdk.nashorn.api.scripting.ScriptObjectMirror
+</span>11 <span style=''>
+</span>12 <span style=''>/**
+</span>13 <span style=''>  * Superclass for all operations that delegate to JavaScript.
+</span>14 <span style=''>  *
+</span>15 <span style=''>  * @param _jsc   JavaScript context
+</span>16 <span style=''>  * @param _jsVar var reference in Nashorn
+</span>17 <span style=''>  * @param rugAs  backing artifact source for the Rug archive
+</span>18 <span style=''>  */
+</span>19 <span style=''>abstract class JavaScriptProjectOperation(
+</span>20 <span style=''>                                           _jsc: JavaScriptContext,
+</span>21 <span style=''>                                           _jsVar: ScriptObjectMirror,
+</span>22 <span style=''>                                           rugAs: ArtifactSource
+</span>23 <span style=''>                                         )
+</span>24 <span style=''>  extends ProjectOperation
+</span>25 <span style=''>    with LazyLogging
+</span>26 <span style=''>    with JavaScriptUtils {
+</span>27 <span style=''>
+</span>28 <span style=''>  /** Needed by BDD testing support */
+</span>29 <span style=''>  val jsVar: ScriptObjectMirror = </span><span style='background: #AEF1AE'>_jsVar</span><span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>  // Visible for test
+</span>32 <span style=''>  private[js] val jsc = </span><span style='background: #AEF1AE'>_jsc</span><span style=''>
+</span>33 <span style=''>
+</span>34 <span style=''>  override def tags: Seq[Tag] = </span><span style='background: #AEF1AE'>tags(jsVar)</span><span style=''>
+</span>35 <span style=''>
+</span>36 <span style=''>  override def parameters: Seq[Parameter] = </span><span style='background: #AEF1AE'>parameters(jsVar)</span><span style=''>
+</span>37 <span style=''>
+</span>38 <span style=''>  override def name: String = </span><span style='background: #AEF1AE'>name(jsVar)</span><span style=''>
+</span>39 <span style=''>
+</span>40 <span style=''>  override def description: String = </span><span style='background: #AEF1AE'>description(jsVar)</span><span style=''>
+</span>41 <span style=''>
+</span>42 <span style=''>  /**
+</span>43 <span style=''>    * Convenient class allowing subclasses to wrap projects in a safe, updating proxy
+</span>44 <span style=''>    *
+</span>45 <span style=''>    * @param pmv project to wrap
+</span>46 <span style=''>    * @return proxy TypeScript callers can use
+</span>47 <span style=''>    */
+</span>48 <span style=''>  protected def wrapProject(pmv: ProjectMutableView): jsSafeCommittingProxy = {
+</span>49 <span style=''>    </span><span style='background: #AEF1AE'>new jsSafeCommittingProxy(pmv, DefaultTypeRegistry)</span><span style=''>
+</span>50 <span style=''>  }
+</span>51 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3568
+        </td>
+        <td>
+          1082
+          -
+          1088
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptProjectOperation._jsVar
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectOperation.this._jsVar
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3569
+        </td>
+        <td>
+          1136
+          -
+          1140
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptProjectOperation._jsc
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectOperation.this._jsc
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          3570
+        </td>
+        <td>
+          1179
+          -
+          1184
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptProjectOperation.jsVar
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectOperation.this.jsVar
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          3571
+        </td>
+        <td>
+          1174
+          -
+          1185
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.tags
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectOperation.this.tags(JavaScriptProjectOperation.this.jsVar)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3573
+        </td>
+        <td>
+          1231
+          -
+          1248
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.parameters
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectOperation.this.parameters(JavaScriptProjectOperation.this.jsVar)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3572
+        </td>
+        <td>
+          1242
+          -
+          1247
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptProjectOperation.jsVar
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectOperation.this.jsVar
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3575
+        </td>
+        <td>
+          1280
+          -
+          1291
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.name
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectOperation.this.name(JavaScriptProjectOperation.this.jsVar)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3574
+        </td>
+        <td>
+          1285
+          -
+          1290
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptProjectOperation.jsVar
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectOperation.this.jsVar
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          3576
+        </td>
+        <td>
+          1342
+          -
+          1347
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptProjectOperation.jsVar
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectOperation.this.jsVar
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          3577
+        </td>
+        <td>
+          1330
+          -
+          1348
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.description
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectOperation.this.description(JavaScriptProjectOperation.this.jsVar)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          3579
+        </td>
+        <td>
+          1619
+          -
+          1670
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy(pmv, com.atomist.rug.kind.DefaultTypeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          3578
+        </td>
+        <td>
+          1650
+          -
+          1669
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.DefaultTypeRegistry
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.DefaultTypeRegistry
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

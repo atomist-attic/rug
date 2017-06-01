@@ -1,0 +1,299 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/xml/XmlFileType.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.xml
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.kind.grammar.AntlrRawFileType
+</span>4 <span style=''>import com.atomist.source.FileArtifact
+</span>5 <span style=''>import com.atomist.tree.TreeNode
+</span>6 <span style=''>import com.atomist.tree.TreeNode.Significance
+</span>7 <span style=''>import com.atomist.tree.content.text.grammar.antlr.{AntlrPositionedTreeNode, AstNodeCreationStrategy}
+</span>8 <span style=''>
+</span>9 <span style=''>object XmlFileType {
+</span>10 <span style=''>
+</span>11 <span style=''>  val XmlExtension = </span><span style='background: #AEF1AE'>&quot;.xml&quot;</span><span style=''>
+</span>12 <span style=''>}
+</span>13 <span style=''>
+</span>14 <span style=''>class XmlFileType
+</span>15 <span style=''>  extends AntlrRawFileType(&quot;document&quot;,
+</span>16 <span style=''>    XmlAstNodeCreationStrategy,
+</span>17 <span style=''>    &quot;classpath:grammars/antlr/XMLParser.g4&quot;,
+</span>18 <span style=''>    &quot;classpath:grammars/antlr/XMLLexer.g4&quot;
+</span>19 <span style=''>  ) {
+</span>20 <span style=''>
+</span>21 <span style=''>  import XmlFileType._
+</span>22 <span style=''>
+</span>23 <span style=''>  override def description = </span><span style='background: #AEF1AE'>&quot;XML file&quot;</span><span style=''>
+</span>24 <span style=''>
+</span>25 <span style=''>  override def isOfType(f: FileArtifact): Boolean =
+</span>26 <span style=''>    </span><span style='background: #AEF1AE'>f.name.endsWith(XmlExtension)</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>}
+</span>29 <span style=''>
+</span>30 <span style=''>private object XmlAstNodeCreationStrategy extends AstNodeCreationStrategy {
+</span>31 <span style=''>
+</span>32 <span style=''>  override def nameForContainer(rule: String, fields: Seq[AntlrPositionedTreeNode]): String = rule match {
+</span>33 <span style=''>    case &quot;element&quot; =&gt;
+</span>34 <span style=''>      </span><span style='background: #AEF1AE'>fields.find(f =&gt; f.nodeName == &quot;Name&quot;)</span><span style=''> match {
+</span>35 <span style=''>        case Some(nameField) =&gt; </span><span style='background: #AEF1AE'>nameField.value</span><span style=''>
+</span>36 <span style=''>        case None =&gt; </span><span style='background: #F0ADAD'>&quot;element&quot;</span><span style=''>
+</span>37 <span style=''>      }
+</span>38 <span style=''>    case x =&gt; x
+</span>39 <span style=''>  }
+</span>40 <span style=''>
+</span>41 <span style=''>  override def significance(rule: String, fields: Seq[AntlrPositionedTreeNode]): Significance = rule match {
+</span>42 <span style=''>    case &quot;content&quot; =&gt;
+</span>43 <span style=''>      // We want to flatten this layer
+</span>44 <span style=''>      </span><span style='background: #AEF1AE'>TreeNode.Noise</span><span style=''>
+</span>45 <span style=''>    case _ =&gt;
+</span>46 <span style=''>      </span><span style='background: #AEF1AE'>TreeNode.Signal</span><span style=''>
+</span>47 <span style=''>  }
+</span>48 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          2928
+        </td>
+        <td>
+          351
+          -
+          357
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;.xml&quot;
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2929
+        </td>
+        <td>
+          598
+          -
+          608
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;XML file&quot;
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2930
+        </td>
+        <td>
+          682
+          -
+          694
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlFileType.XmlExtension
+        </td>
+        <td style="background: #AEF1AE">
+          XmlFileType.XmlExtension
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2931
+        </td>
+        <td>
+          666
+          -
+          695
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          f.name.endsWith(XmlFileType.XmlExtension)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          2933
+        </td>
+        <td>
+          912
+          -
+          950
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #AEF1AE">
+          fields.find(((f: com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode) =&gt; f.nodeName.==(&quot;Name&quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          2932
+        </td>
+        <td>
+          929
+          -
+          949
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          f.nodeName.==(&quot;Name&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          2934
+        </td>
+        <td>
+          991
+          -
+          1006
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AntlrPositionedTreeNode.value
+        </td>
+        <td style="background: #AEF1AE">
+          nameField.value
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2935
+        </td>
+        <td>
+          1028
+          -
+          1037
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;element&quot;
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2936
+        </td>
+        <td>
+          1243
+          -
+          1257
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Noise
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Noise
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          2937
+        </td>
+        <td>
+          1278
+          -
+          1293
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Signal
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Signal
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

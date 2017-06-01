@@ -1,0 +1,415 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/grammar/AntlrRawFileType.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.grammar
+</span>2 <span style=''>
+</span>3 <span style=''>import java.nio.charset.StandardCharsets
+</span>4 <span style=''>
+</span>5 <span style=''>import com.atomist.source.FileArtifact
+</span>6 <span style=''>import com.atomist.tree.content.text.PositionedTreeNode
+</span>7 <span style=''>import com.atomist.tree.content.text.grammar.antlr.{AntlrGrammar, AstNodeCreationStrategy}
+</span>8 <span style=''>import com.atomist.util.Utils.withCloseable
+</span>9 <span style=''>import org.apache.commons.io.IOUtils
+</span>10 <span style=''>import org.springframework.core.io.DefaultResourceLoader
+</span>11 <span style=''>
+</span>12 <span style=''>/**
+</span>13 <span style=''>  * Convenient superclass for Antlr grammars.
+</span>14 <span style=''>  *
+</span>15 <span style=''>  * @param grammars           g4 files
+</span>16 <span style=''>  * @param topLevelProduction name of the top level production
+</span>17 <span style=''>  */
+</span>18 <span style=''>abstract class AntlrRawFileType(
+</span>19 <span style=''>                                 topLevelProduction: String,
+</span>20 <span style=''>                                 nodeCreationStrategy: AstNodeCreationStrategy,
+</span>21 <span style=''>                                 grammars: String*
+</span>22 <span style=''>                               )
+</span>23 <span style=''>  extends TypeUnderFile {
+</span>24 <span style=''>
+</span>25 <span style=''>  private val g4s: Seq[String] = {
+</span>26 <span style=''>    val cp = </span><span style='background: #AEF1AE'>new DefaultResourceLoader()</span><span style=''>
+</span>27 <span style=''>    val resources = </span><span style='background: #AEF1AE'>grammars.map(grammar =&gt; cp.getResource(grammar))</span><span style=''>
+</span>28 <span style=''>    </span><span style='background: #AEF1AE'>resources.map(r =&gt; withCloseable(r.getInputStream)(is =&gt; IOUtils.toString(is, StandardCharsets.UTF_8)))</span><span style=''>
+</span>29 <span style=''>  }
+</span>30 <span style=''>
+</span>31 <span style=''>  private[kind] def parser = antlrGrammar
+</span>32 <span style=''>
+</span>33 <span style=''>  private lazy val antlrGrammar = </span><span style='background: #AEF1AE'>new AntlrGrammar(topLevelProduction, nodeCreationStrategy, g4s: _*)</span><span style=''>
+</span>34 <span style=''>
+</span>35 <span style=''>  override def fileToRawNode(f: FileArtifact): Option[PositionedTreeNode] = {
+</span>36 <span style=''>    </span><span style='background: #AEF1AE'>antlrGrammar.parse(f.content)</span><span style=''>
+</span>37 <span style=''>  }
+</span>38 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1532
+        </td>
+        <td>
+          899
+          -
+          926
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.springframework.core.io.DefaultResourceLoader.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new org.springframework.core.io.DefaultResourceLoader()
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1533
+        </td>
+        <td>
+          971
+          -
+          994
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.springframework.core.io.DefaultResourceLoader.getResource
+        </td>
+        <td style="background: #AEF1AE">
+          cp.getResource(grammar)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1535
+        </td>
+        <td>
+          947
+          -
+          995
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          AntlrRawFileType.this.grammars.map[org.springframework.core.io.Resource, Seq[org.springframework.core.io.Resource]](((grammar: String) =&gt; cp.getResource(grammar)))(collection.this.Seq.canBuildFrom[org.springframework.core.io.Resource])
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1534
+        </td>
+        <td>
+          959
+          -
+          959
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[org.springframework.core.io.Resource]
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1536
+        </td>
+        <td>
+          1033
+          -
+          1049
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.springframework.core.io.InputStreamSource.getInputStream
+        </td>
+        <td style="background: #AEF1AE">
+          r.getInputStream()
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1539
+        </td>
+        <td>
+          1019
+          -
+          1102
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.Utils.withCloseable
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.Utils.withCloseable[java.io.InputStream, String](r.getInputStream())(((is: java.io.InputStream) =&gt; org.apache.commons.io.IOUtils.toString(is, java.nio.charset.StandardCharsets.UTF_8)))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1541
+        </td>
+        <td>
+          1000
+          -
+          1103
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          resources.map[String, Seq[String]](((r: org.springframework.core.io.Resource) =&gt; com.atomist.util.Utils.withCloseable[java.io.InputStream, String](r.getInputStream())(((is: java.io.InputStream) =&gt; org.apache.commons.io.IOUtils.toString(is, java.nio.charset.StandardCharsets.UTF_8)))))(collection.this.Seq.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1538
+        </td>
+        <td>
+          1057
+          -
+          1101
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.apache.commons.io.IOUtils.toString
+        </td>
+        <td style="background: #AEF1AE">
+          org.apache.commons.io.IOUtils.toString(is, java.nio.charset.StandardCharsets.UTF_8)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1537
+        </td>
+        <td>
+          1078
+          -
+          1100
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          java.nio.charset.StandardCharsets.UTF_8
+        </td>
+        <td style="background: #AEF1AE">
+          java.nio.charset.StandardCharsets.UTF_8
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1540
+        </td>
+        <td>
+          1013
+          -
+          1013
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1545
+        </td>
+        <td>
+          1186
+          -
+          1253
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AntlrGrammar.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.tree.content.text.grammar.antlr.AntlrGrammar(AntlrRawFileType.this.topLevelProduction, AntlrRawFileType.this.nodeCreationStrategy, (AntlrRawFileType.this.g4s: _*))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1542
+        </td>
+        <td>
+          1203
+          -
+          1221
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.AntlrRawFileType.topLevelProduction
+        </td>
+        <td style="background: #AEF1AE">
+          AntlrRawFileType.this.topLevelProduction
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1544
+        </td>
+        <td>
+          1245
+          -
+          1248
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.AntlrRawFileType.g4s
+        </td>
+        <td style="background: #AEF1AE">
+          AntlrRawFileType.this.g4s
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1543
+        </td>
+        <td>
+          1223
+          -
+          1243
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.AntlrRawFileType.nodeCreationStrategy
+        </td>
+        <td style="background: #AEF1AE">
+          AntlrRawFileType.this.nodeCreationStrategy
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1547
+        </td>
+        <td>
+          1337
+          -
+          1366
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AntlrGrammar.parse
+        </td>
+        <td style="background: #AEF1AE">
+          AntlrRawFileType.this.antlrGrammar.parse(f.content)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1546
+        </td>
+        <td>
+          1356
+          -
+          1365
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          f.content
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

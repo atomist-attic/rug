@@ -1,0 +1,2087 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/test/gherkin/handler/AbstractHandlerScenarioWorld.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.test.gherkin.handler
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.project.archive.Rugs
+</span>5 <span style=''>import com.atomist.rug.RugNotFoundException
+</span>6 <span style=''>import com.atomist.rug.kind.core.{ProjectMutableView, RepoResolver}
+</span>7 <span style=''>import com.atomist.rug.runtime.CommandHandler
+</span>8 <span style=''>import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsPathExpressionEngine, jsScalaHidingProxy}
+</span>9 <span style=''>import com.atomist.rug.runtime.js.{RugContext, SimpleContainerGraphNode}
+</span>10 <span style=''>import com.atomist.rug.spi.Handlers.Instruction.{Command, Edit, Generate}
+</span>11 <span style=''>import com.atomist.rug.spi.Handlers.Plan
+</span>12 <span style=''>import com.atomist.rug.spi.TypeRegistry
+</span>13 <span style=''>import com.atomist.rug.test.gherkin.{Definitions, GherkinExecutionListener, GherkinRunnerConfig, ScenarioWorld}
+</span>14 <span style=''>import com.atomist.source.EmptyArtifactSource
+</span>15 <span style=''>import com.atomist.tree.{TreeMaterializer, TreeNode}
+</span>16 <span style=''>import jdk.nashorn.api.scripting.ScriptObjectMirror
+</span>17 <span style=''>
+</span>18 <span style=''>/**
+</span>19 <span style=''>  * Superclass for Handler worlds. Handles plan capture and exposing to JavaScript
+</span>20 <span style=''>  */
+</span>21 <span style=''>abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs], listeners: Seq[GherkinExecutionListener], config: GherkinRunnerConfig)
+</span>22 <span style=''>  extends ScenarioWorld(definitions, rugs, config) {
+</span>23 <span style=''>
+</span>24 <span style=''>  // Handler name to plan
+</span>25 <span style=''>  private var recordedPlans = </span><span style='background: #AEF1AE'>Map[String, Plan]()</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>  private val repoResolver = </span><span style='background: #AEF1AE'>new MutableRepoResolver</span><span style=''>
+</span>28 <span style=''>
+</span>29 <span style=''>  protected def createRugContext(tm: TreeMaterializer): RugContext =
+</span>30 <span style=''>    </span><span style='background: #AEF1AE'>new FakeRugContext(&quot;team_id&quot;, tm, Some(repoResolver))</span><span style=''>
+</span>31 <span style=''>
+</span>32 <span style=''>  private var rootContext: AnyRef =
+</span>33 <span style=''>    </span><span style='background: #AEF1AE'>SimpleContainerGraphNode.empty(&quot;root&quot;, TreeNode.Dynamic)</span><span style=''>
+</span>34 <span style=''>
+</span>35 <span style=''>  private case class ProjectId(owner: String, repoName: String, sha: String)
+</span>36 <span style=''>
+</span>37 <span style=''>  def emptyProject(name: String): ProjectMutableView = {
+</span>38 <span style=''>    </span><span style='background: #AEF1AE'>new ProjectMutableView(originalBackingObject = EmptyArtifactSource(name = name))</span><span style=''>
+</span>39 <span style=''>  }
+</span>40 <span style=''>
+</span>41 <span style=''>  def projectStartingWith(project: ProjectMutableView): ProjectMutableView = {
+</span>42 <span style=''>    </span><span style='background: #AEF1AE'>new ProjectMutableView(originalBackingObject = project.currentBackingObject)</span><span style=''>
+</span>43 <span style=''>  }
+</span>44 <span style=''>
+</span>45 <span style=''>  def defineRepo(owner: String, name: String, branchOrSha: String, p: ProjectMutableView): Unit =
+</span>46 <span style=''>    </span><span style='background: #AEF1AE'>repoResolver.defineRepo(owner, name, branchOrSha, p.currentBackingObject)</span><span style=''>
+</span>47 <span style=''>
+</span>48 <span style=''>  def defineRepo(repoIdentification: AnyRef, p: ProjectMutableView): Unit = {
+</span>49 <span style=''>    val ri = </span><span style='background: #AEF1AE'>extractRepoId(repoIdentification)</span><span style=''>
+</span>50 <span style=''>    </span><span style='background: #AEF1AE'>repoResolver.defineRepo(ri.owner, ri.name, ri.branch.orElse(</span><span style='background: #F0ADAD'>ri.sha</span><span style='background: #AEF1AE'>).getOrElse(
+</span>51 <span style=''></span><span style='background: #AEF1AE'>      </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(&quot;Repo branch or sha must be supplied&quot;)</span><span style='background: #AEF1AE'>
+</span>52 <span style=''></span><span style='background: #AEF1AE'>    ), p.currentBackingObject)</span><span style=''>
+</span>53 <span style=''>  }
+</span>54 <span style=''>
+</span>55 <span style=''>  /**
+</span>56 <span style=''>    * Return the editor with the given name or throw an exception
+</span>57 <span style=''>    */
+</span>58 <span style=''>  def commandHandler(name: String): CommandHandler = {
+</span>59 <span style=''>    </span><span style='background: #AEF1AE'>rugs</span><span style=''> match {
+</span>60 <span style=''>      case Some(r) =&gt;
+</span>61 <span style=''>        </span><span style='background: #AEF1AE'>r.commandHandlers.find(e =&gt; e.name == name)</span><span style=''> match {
+</span>62 <span style=''>          case Some(e) =&gt; e
+</span>63 <span style=''>          case _ =&gt; </span><span style='background: #F0ADAD'>throw new RugNotFoundException(
+</span>64 <span style=''></span><span style='background: #F0ADAD'>            s&quot;CommandHandler with name '$name' can not be found in current context. Known CommandHandlers are [${r.commandHandlerNames.mkString(&quot;, &quot;)}]&quot;)</span><span style=''>
+</span>65 <span style=''>        }
+</span>66 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>throw new RugNotFoundException(&quot;No context provided&quot;)</span><span style=''>
+</span>67 <span style=''>    }
+</span>68 <span style=''>  }
+</span>69 <span style=''>
+</span>70 <span style=''>  /**
+</span>71 <span style=''>    * Add a node to the root context
+</span>72 <span style=''>    */
+</span>73 <span style=''>  def addToRootContext(n: AnyRef): Unit = {
+</span>74 <span style=''>    val gn = </span><span style='background: #AEF1AE'>NashornMapBackedGraphNode.toGraphNode(n).getOrElse(
+</span>75 <span style=''></span><span style='background: #AEF1AE'>      </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;$n is not a valid GraphNode&quot;)</span><span style='background: #AEF1AE'>
+</span>76 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>77 <span style=''>    </span><span style='background: #AEF1AE'>rootContext = rootContext match {
+</span>78 <span style=''></span><span style='background: #AEF1AE'>      case src: SimpleContainerGraphNode =&gt; src.addRelatedNode(gn)
+</span>79 <span style=''></span><span style='background: #AEF1AE'>      case x =&gt; </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Cannot add to context $x&quot;)</span><span style='background: #AEF1AE'>
+</span>80 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>81 <span style=''>  }
+</span>82 <span style=''>
+</span>83 <span style=''>  def setRootContext(n: AnyRef): Unit = {
+</span>84 <span style=''>    </span><span style='background: #AEF1AE'>rootContext = n</span><span style=''>
+</span>85 <span style=''>  }
+</span>86 <span style=''>
+</span>87 <span style=''>  def getRootContext: AnyRef = </span><span style='background: #F0ADAD'>rootContext</span><span style=''>
+</span>88 <span style=''>
+</span>89 <span style=''>  protected def recordPlan(handlerName: String, plan: Plan): Unit = plan match {
+</span>90 <span style=''>    // TODO publish event indicating plan was recorded
+</span>91 <span style=''>    case _ =&gt;
+</span>92 <span style=''>      </span><span style='background: #AEF1AE'>recordedPlans = recordedPlans + (handlerName -&gt; plan)</span><span style=''>
+</span>93 <span style=''>  }
+</span>94 <span style=''>
+</span>95 <span style=''>  private def exposeToJavaScript(plan: Plan): AnyRef = </span><span style='background: #AEF1AE'>plan.nativeObject</span><span style=''> match {
+</span>96 <span style=''>    case Some(som: ScriptObjectMirror) =&gt; som
+</span>97 <span style=''>    case _ =&gt; </span><span style='background: #F0ADAD'>jsScalaHidingProxy(plan)</span><span style=''>
+</span>98 <span style=''>  }
+</span>99 <span style=''>
+</span>100 <span style=''>  /**
+</span>101 <span style=''>    * Return a single plan or throw an exception if none was recorded.
+</span>102 <span style=''>    */
+</span>103 <span style=''>  def requiredPlan: AnyRef = </span><span style='background: #AEF1AE'>recordedPlans.values.toList</span><span style=''> match {
+</span>104 <span style=''>    case Nil =&gt;
+</span>105 <span style=''>      </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(&quot;No plan was recorded&quot;)</span><span style=''>
+</span>106 <span style=''>    case plan :: Nil =&gt;
+</span>107 <span style=''>      </span><span style='background: #AEF1AE'>exposeToJavaScript(plan)</span><span style=''>
+</span>108 <span style=''>    case _ =&gt;
+</span>109 <span style=''>      </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Expected exactly one plan but found ${recordedPlans.size}&quot;)</span><span style=''>
+</span>110 <span style=''>  }
+</span>111 <span style=''>
+</span>112 <span style=''>  /**
+</span>113 <span style=''>    * Return the plan or null if none was recorded
+</span>114 <span style=''>    */
+</span>115 <span style=''>  def plan: Any =
+</span>116 <span style=''>    </span><span style='background: #AEF1AE'>recordedPlans.values.headOption.map(exposeToJavaScript).orNull</span><span style=''>
+</span>117 <span style=''>
+</span>118 <span style=''>  /**
+</span>119 <span style=''>    * Return the plan recorded for this named handler, or null if not found
+</span>120 <span style=''>    */
+</span>121 <span style=''>  def planFor(handlerName: String): jsScalaHidingProxy =
+</span>122 <span style=''>    </span><span style='background: #AEF1AE'>recordedPlans.get(handlerName)
+</span>123 <span style=''></span><span style='background: #AEF1AE'>      .map(jsScalaHidingProxy.apply(_))
+</span>124 <span style=''></span><span style='background: #AEF1AE'>      .orNull</span><span style=''>
+</span>125 <span style=''>
+</span>126 <span style=''>  def planCount: Int = </span><span style='background: #AEF1AE'>recordedPlans.size</span><span style=''>
+</span>127 <span style=''>
+</span>128 <span style=''>  /**
+</span>129 <span style=''>    * Is the plan internally valid? Do the referenced handlers and other operations exist?
+</span>130 <span style=''>    */
+</span>131 <span style=''>  def planIsInternallyValid(): Boolean = {
+</span>132 <span style=''>    if (</span><span style='background: #AEF1AE'>recordedPlans.isEmpty</span><span style=''>)
+</span>133 <span style=''>      </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(&quot;No plan was recorded&quot;)</span><span style=''>
+</span>134 <span style=''>    </span><span style='background: #AEF1AE'>recordedPlans.values.forall(p =&gt; {
+</span>135 <span style=''></span><span style='background: #AEF1AE'>      !p.instructions.map(</span><span style='background: #F0ADAD'>_.instruction</span><span style='background: #AEF1AE'>).exists {
+</span>136 <span style=''></span><span style='background: #AEF1AE'>        case Edit(detail) =&gt;
+</span>137 <span style=''></span><span style='background: #AEF1AE'>          val knownEditors: Seq[String] = </span><span style='background: #F0ADAD'>rugs.map(_.editorNames).getOrElse(Nil)</span><span style='background: #AEF1AE'>
+</span>138 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>!knownEditors.contains(detail.name)</span><span style='background: #AEF1AE'>
+</span>139 <span style=''></span><span style='background: #AEF1AE'>        case Generate(detail) =&gt;
+</span>140 <span style=''></span><span style='background: #AEF1AE'>          val knownGenerators: Seq[String] = </span><span style='background: #F0ADAD'>rugs.map(_.generatorNames).getOrElse(Nil)</span><span style='background: #AEF1AE'>
+</span>141 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>!knownGenerators.contains(detail.name)</span><span style='background: #AEF1AE'>
+</span>142 <span style=''></span><span style='background: #AEF1AE'>        case Command(detail) =&gt;
+</span>143 <span style=''></span><span style='background: #AEF1AE'>          val knownCommandHandlers: Seq[String] = </span><span style='background: #F0ADAD'>rugs.map(_.commandHandlerNames).getOrElse(Nil)</span><span style='background: #AEF1AE'>
+</span>144 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>!knownCommandHandlers.contains(detail.name)</span><span style='background: #AEF1AE'>
+</span>145 <span style=''></span><span style='background: #AEF1AE'>        // TODO there are probably more cases here
+</span>146 <span style=''></span><span style='background: #AEF1AE'>        case _ =&gt; </span><span style='background: #F0ADAD'>false</span><span style='background: #AEF1AE'>
+</span>147 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>148 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
+</span>149 <span style=''>  }
+</span>150 <span style=''>
+</span>151 <span style=''>  private class FakeRugContext(val teamId: String, _treeMaterializer: TreeMaterializer,
+</span>152 <span style=''>                               override val repoResolver: Option[RepoResolver])
+</span>153 <span style=''>    extends RugContext {
+</span>154 <span style=''>
+</span>155 <span style=''>    override def typeRegistry: TypeRegistry = </span><span style='background: #AEF1AE'>AbstractHandlerScenarioWorld.this.typeRegistry</span><span style=''>
+</span>156 <span style=''>
+</span>157 <span style=''>    override val pathExpressionEngine = </span><span style='background: #AEF1AE'>new jsPathExpressionEngine(this)</span><span style=''>
+</span>158 <span style=''>
+</span>159 <span style=''>    override def treeMaterializer: TreeMaterializer = </span><span style='background: #AEF1AE'>_treeMaterializer</span><span style=''>
+</span>160 <span style=''>
+</span>161 <span style=''>    override def contextRoot(): AnyRef = </span><span style='background: #AEF1AE'>rootContext</span><span style=''>
+</span>162 <span style=''>
+</span>163 <span style=''>  }
+</span>164 <span style=''>
+</span>165 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          5911
+        </td>
+        <td>
+          1248
+          -
+          1267
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenMapFactory.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Map.apply[String, com.atomist.rug.spi.Handlers.Plan]()
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          5912
+        </td>
+        <td>
+          1298
+          -
+          1321
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.MutableRepoResolver.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new MutableRepoResolver()
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          5915
+        </td>
+        <td>
+          1430
+          -
+          1448
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.test.gherkin.handler.MutableRepoResolver](AbstractHandlerScenarioWorld.this.repoResolver)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          5914
+        </td>
+        <td>
+          1435
+          -
+          1447
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld.repoResolver
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.repoResolver
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          5913
+        </td>
+        <td>
+          1415
+          -
+          1424
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;team_id&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          5916
+        </td>
+        <td>
+          1396
+          -
+          1449
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld.FakeRugContext.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new AbstractHandlerScenarioWorld.this.FakeRugContext(&quot;team_id&quot;, tm, scala.Some.apply[com.atomist.rug.test.gherkin.handler.MutableRepoResolver](AbstractHandlerScenarioWorld.this.repoResolver))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          5918
+        </td>
+        <td>
+          1530
+          -
+          1546
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Dynamic
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Dynamic
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          5917
+        </td>
+        <td>
+          1522
+          -
+          1528
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;root&quot;
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          5919
+        </td>
+        <td>
+          1491
+          -
+          1547
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.empty
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.empty(&quot;root&quot;, com.atomist.tree.TreeNode.Dynamic)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          5920
+        </td>
+        <td>
+          1735
+          -
+          1767
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.EmptyArtifactSource.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.EmptyArtifactSource.apply(name)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          5921
+        </td>
+        <td>
+          1688
+          -
+          1768
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.kind.core.ProjectMutableView(com.atomist.source.EmptyArtifactSource.apply(name))
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          5923
+        </td>
+        <td>
+          1857
+          -
+          1933
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.kind.core.ProjectMutableView(project.currentBackingObject)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          5922
+        </td>
+        <td>
+          1904
+          -
+          1932
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          project.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          5924
+        </td>
+        <td>
+          2091
+          -
+          2113
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          p.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          5925
+        </td>
+        <td>
+          2041
+          -
+          2114
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.MutableRepoResolver.defineRepo
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.repoResolver.defineRepo(owner, name, branchOrSha, p.currentBackingObject)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5926
+        </td>
+        <td>
+          2207
+          -
+          2240
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.extractRepoId
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.extractRepoId(repoIdentification)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          5933
+        </td>
+        <td>
+          2245
+          -
+          2434
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.MutableRepoResolver.defineRepo
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.repoResolver.defineRepo(ri.owner, ri.name, ri.branch.orElse[String](ri.sha).getOrElse[String](throw new scala.`package`.IllegalArgumentException(&quot;Repo branch or sha must be supplied&quot;)), p.currentBackingObject)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          5927
+        </td>
+        <td>
+          2269
+          -
+          2277
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.RepoIdentification.owner
+        </td>
+        <td style="background: #AEF1AE">
+          ri.owner
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          5929
+        </td>
+        <td>
+          2305
+          -
+          2311
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.RepoIdentification.sha
+        </td>
+        <td style="background: #F0ADAD">
+          ri.sha
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          5931
+        </td>
+        <td>
+          2288
+          -
+          2409
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          ri.branch.orElse[String](ri.sha).getOrElse[String](throw new scala.`package`.IllegalArgumentException(&quot;Repo branch or sha must be supplied&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          5928
+        </td>
+        <td>
+          2279
+          -
+          2286
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.RepoIdentification.name
+        </td>
+        <td style="background: #AEF1AE">
+          ri.name
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          5930
+        </td>
+        <td>
+          2330
+          -
+          2403
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(&quot;Repo branch or sha must be supplied&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          5932
+        </td>
+        <td>
+          2411
+          -
+          2433
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          p.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          5934
+        </td>
+        <td>
+          2578
+          -
+          2582
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld.rugs
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.rugs
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          5935
+        </td>
+        <td>
+          2649
+          -
+          2663
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          e.name.==(name)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          5936
+        </td>
+        <td>
+          2621
+          -
+          2664
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #AEF1AE">
+          r.commandHandlers.find(((e: com.atomist.rug.runtime.CommandHandler) =&gt; e.name.==(name)))
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          5937
+        </td>
+        <td>
+          2721
+          -
+          2906
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugNotFoundException(scala.StringContext.apply(&quot;CommandHandler with name \'&quot;, &quot;\' can not be found in current context. Known CommandHandlers are [&quot;, &quot;]&quot;).s(name, r.commandHandlerNames.mkString(&quot;, &quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          5938
+        </td>
+        <td>
+          2933
+          -
+          2986
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugNotFoundException(&quot;No context provided&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          5941
+        </td>
+        <td>
+          3105
+          -
+          3235
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.toGraphNode(n, com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.toGraphNode$default$2).getOrElse[com.atomist.graph.GraphNode](throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;&quot;, &quot; is not a valid GraphNode&quot;).s(n)))
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          5939
+        </td>
+        <td>
+          3131
+          -
+          3131
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.toGraphNode$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.toGraphNode$default$2
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          5940
+        </td>
+        <td>
+          3163
+          -
+          3229
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;&quot;, &quot; is not a valid GraphNode&quot;).s(n))
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          5942
+        </td>
+        <td>
+          3254
+          -
+          3265
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld.rootContext
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.rootContext
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          5945
+        </td>
+        <td>
+          3240
+          -
+          3426
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld.rootContext_=
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.rootContext_=(AbstractHandlerScenarioWorld.this.rootContext match {
+  case (src @ (_: com.atomist.rug.runtime.js.SimpleContainerGraphNode)) =&gt; src.addRelatedNode(gn)
+  case (x @ _) =&gt; throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Cannot add to context &quot;, &quot;&quot;).s(x))
+})
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          5943
+        </td>
+        <td>
+          3318
+          -
+          3340
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.addRelatedNode
+        </td>
+        <td style="background: #AEF1AE">
+          src.addRelatedNode(gn)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          5944
+        </td>
+        <td>
+          3357
+          -
+          3420
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Cannot add to context &quot;, &quot;&quot;).s(x))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          5946
+        </td>
+        <td>
+          3478
+          -
+          3493
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld.rootContext_=
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.rootContext_=(n)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          5947
+        </td>
+        <td>
+          3530
+          -
+          3541
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld.rootContext
+        </td>
+        <td style="background: #F0ADAD">
+          AbstractHandlerScenarioWorld.this.rootContext
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          5950
+        </td>
+        <td>
+          3699
+          -
+          3752
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld.recordedPlans_=
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.recordedPlans_=(AbstractHandlerScenarioWorld.this.recordedPlans.+[com.atomist.rug.spi.Handlers.Plan](scala.this.Predef.ArrowAssoc[String](handlerName).-&gt;[com.atomist.rug.spi.Handlers.Plan](plan)))
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          5949
+        </td>
+        <td>
+          3715
+          -
+          3752
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Map.+
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.recordedPlans.+[com.atomist.rug.spi.Handlers.Plan](scala.this.Predef.ArrowAssoc[String](handlerName).-&gt;[com.atomist.rug.spi.Handlers.Plan](plan))
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          5948
+        </td>
+        <td>
+          3732
+          -
+          3751
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.ArrowAssoc[String](handlerName).-&gt;[com.atomist.rug.spi.Handlers.Plan](plan)
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          5951
+        </td>
+        <td>
+          3813
+          -
+          3830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Plan.nativeObject
+        </td>
+        <td style="background: #AEF1AE">
+          plan.nativeObject
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          5953
+        </td>
+        <td>
+          3899
+          -
+          3899
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$3
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          5952
+        </td>
+        <td>
+          3899
+          -
+          3899
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          5955
+        </td>
+        <td>
+          3899
+          -
+          3923
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply(plan, com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$2, com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$3, com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          5954
+        </td>
+        <td>
+          3899
+          -
+          3899
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$4
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$4
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          5956
+        </td>
+        <td>
+          4042
+          -
+          4069
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toList
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.recordedPlans.values.toList
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          5957
+        </td>
+        <td>
+          4100
+          -
+          4158
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(&quot;No plan was recorded&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          5958
+        </td>
+        <td>
+          4189
+          -
+          4213
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld.exposeToJavaScript
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.exposeToJavaScript(plan)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          5959
+        </td>
+        <td>
+          4234
+          -
+          4330
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Expected exactly one plan but found &quot;, &quot;&quot;).s(AbstractHandlerScenarioWorld.this.recordedPlans.size))
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          5960
+        </td>
+        <td>
+          4458
+          -
+          4476
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld.exposeToJavaScript
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.exposeToJavaScript(plan)
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          5962
+        </td>
+        <td>
+          4422
+          -
+          4484
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.Option.orNull
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.recordedPlans.values.headOption.map[AnyRef]({
+  ((plan: com.atomist.rug.spi.Handlers.Plan) =&gt; AbstractHandlerScenarioWorld.this.exposeToJavaScript(plan))
+}).orNull[Any](scala.this.Predef.$conforms[Null])
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          5961
+        </td>
+        <td>
+          4478
+          -
+          4478
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.$conforms[Null]
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          5965
+        </td>
+        <td>
+          4697
+          -
+          4697
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$4
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          5964
+        </td>
+        <td>
+          4697
+          -
+          4697
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          5963
+        </td>
+        <td>
+          4697
+          -
+          4697
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          5966
+        </td>
+        <td>
+          4678
+          -
+          4705
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply(x$1, com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$2, com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$3, com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          5968
+        </td>
+        <td>
+          4636
+          -
+          4720
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.Option.orNull
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.recordedPlans.get(handlerName).map[com.atomist.rug.runtime.js.interop.jsScalaHidingProxy](((x$1: com.atomist.rug.spi.Handlers.Plan) =&gt; com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply(x$1, com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$2, com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$3, com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$4))).orNull[com.atomist.rug.runtime.js.interop.jsScalaHidingProxy](scala.this.Predef.$conforms[Null])
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          5967
+        </td>
+        <td>
+          4714
+          -
+          4714
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.$conforms[Null]
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          5969
+        </td>
+        <td>
+          4745
+          -
+          4763
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.size
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.recordedPlans.size
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          5974
+        </td>
+        <td>
+          4916
+          -
+          4916
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          5973
+        </td>
+        <td>
+          4916
+          -
+          4916
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          5970
+        </td>
+        <td>
+          4920
+          -
+          4941
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.MapLike.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.recordedPlans.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          5971
+        </td>
+        <td>
+          4949
+          -
+          5007
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(&quot;No plan was recorded&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          5972
+        </td>
+        <td>
+          4949
+          -
+          5007
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(&quot;No plan was recorded&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          5994
+        </td>
+        <td>
+          5012
+          -
+          5694
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.forall
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.recordedPlans.values.forall(((p: com.atomist.rug.spi.Handlers.Plan) =&gt; p.instructions.map[com.atomist.rug.spi.Handlers.Instruction, Seq[com.atomist.rug.spi.Handlers.Instruction]](((x$2: com.atomist.rug.spi.Handlers.Plannable) =&gt; x$2.instruction))(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.Instruction]).exists(((x0$1: com.atomist.rug.spi.Handlers.Instruction) =&gt; x0$1 match {
+  case (detail: com.atomist.rug.spi.Handlers.Instruction.Detail)com.atomist.rug.spi.Handlers.Instruction.Edit((detail @ _)) =&gt; {
+    val knownEditors: Seq[String] = AbstractHandlerScenarioWorld.this.rugs.map[Seq[String]](((x$3: com.atomist.project.archive.Rugs) =&gt; x$3.editorNames)).getOrElse[Seq[String]](immutable.this.Nil);
+    knownEditors.contains[String](detail.name).unary_!
+  }
+  case (detail: com.atomist.rug.spi.Handlers.Instruction.Detail)com.atomist.rug.spi.Handlers.Instruction.Generate((detail @ _)) =&gt; {
+    val knownGenerators: Seq[String] = AbstractHandlerScenarioWorld.this.rugs.map[Seq[String]](((x$4: com.atomist.project.archive.Rugs) =&gt; x$4.generatorNames)).getOrElse[Seq[String]](immutable.this.Nil);
+    knownGenerators.contains[String](detail.name).unary_!
+  }
+  case (detail: com.atomist.rug.spi.Handlers.Instruction.Detail)com.atomist.rug.spi.Handlers.Instruction.Command((detail @ _)) =&gt; {
+    val knownCommandHandlers: Seq[String] = AbstractHandlerScenarioWorld.this.rugs.map[Seq[String]](((x$5: com.atomist.project.archive.Rugs) =&gt; x$5.commandHandlerNames)).getOrElse[Seq[String]](immutable.this.Nil);
+    knownCommandHandlers.contains[String](detail.name).unary_!
+  }
+  case _ =&gt; false
+})).unary_!))
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          5976
+        </td>
+        <td>
+          5072
+          -
+          5072
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.Instruction]
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          5993
+        </td>
+        <td>
+          5053
+          -
+          5687
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          p.instructions.map[com.atomist.rug.spi.Handlers.Instruction, Seq[com.atomist.rug.spi.Handlers.Instruction]](((x$2: com.atomist.rug.spi.Handlers.Plannable) =&gt; x$2.instruction))(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.Instruction]).exists(((x0$1: com.atomist.rug.spi.Handlers.Instruction) =&gt; x0$1 match {
+  case (detail: com.atomist.rug.spi.Handlers.Instruction.Detail)com.atomist.rug.spi.Handlers.Instruction.Edit((detail @ _)) =&gt; {
+    val knownEditors: Seq[String] = AbstractHandlerScenarioWorld.this.rugs.map[Seq[String]](((x$3: com.atomist.project.archive.Rugs) =&gt; x$3.editorNames)).getOrElse[Seq[String]](immutable.this.Nil);
+    knownEditors.contains[String](detail.name).unary_!
+  }
+  case (detail: com.atomist.rug.spi.Handlers.Instruction.Detail)com.atomist.rug.spi.Handlers.Instruction.Generate((detail @ _)) =&gt; {
+    val knownGenerators: Seq[String] = AbstractHandlerScenarioWorld.this.rugs.map[Seq[String]](((x$4: com.atomist.project.archive.Rugs) =&gt; x$4.generatorNames)).getOrElse[Seq[String]](immutable.this.Nil);
+    knownGenerators.contains[String](detail.name).unary_!
+  }
+  case (detail: com.atomist.rug.spi.Handlers.Instruction.Detail)com.atomist.rug.spi.Handlers.Instruction.Command((detail @ _)) =&gt; {
+    val knownCommandHandlers: Seq[String] = AbstractHandlerScenarioWorld.this.rugs.map[Seq[String]](((x$5: com.atomist.project.archive.Rugs) =&gt; x$5.commandHandlerNames)).getOrElse[Seq[String]](immutable.this.Nil);
+    knownCommandHandlers.contains[String](detail.name).unary_!
+  }
+  case _ =&gt; false
+})).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          5975
+        </td>
+        <td>
+          5073
+          -
+          5086
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Plannable.instruction
+        </td>
+        <td style="background: #F0ADAD">
+          x$2.instruction
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          5978
+        </td>
+        <td>
+          5202
+          -
+          5205
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          5977
+        </td>
+        <td>
+          5177
+          -
+          5190
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.Rugs.editorNames
+        </td>
+        <td style="background: #F0ADAD">
+          x$3.editorNames
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          5979
+        </td>
+        <td>
+          5168
+          -
+          5206
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          AbstractHandlerScenarioWorld.this.rugs.map[Seq[String]](((x$3: com.atomist.project.archive.Rugs) =&gt; x$3.editorNames)).getOrElse[Seq[String]](immutable.this.Nil)
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          5980
+        </td>
+        <td>
+          5240
+          -
+          5251
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.name
+        </td>
+        <td style="background: #F0ADAD">
+          detail.name
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          5981
+        </td>
+        <td>
+          5217
+          -
+          5252
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #F0ADAD">
+          knownEditors.contains[String](detail.name).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          5983
+        </td>
+        <td>
+          5368
+          -
+          5371
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          5982
+        </td>
+        <td>
+          5340
+          -
+          5356
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.Rugs.generatorNames
+        </td>
+        <td style="background: #F0ADAD">
+          x$4.generatorNames
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          5984
+        </td>
+        <td>
+          5331
+          -
+          5372
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          AbstractHandlerScenarioWorld.this.rugs.map[Seq[String]](((x$4: com.atomist.project.archive.Rugs) =&gt; x$4.generatorNames)).getOrElse[Seq[String]](immutable.this.Nil)
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          5986
+        </td>
+        <td>
+          5383
+          -
+          5421
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #F0ADAD">
+          knownGenerators.contains[String](detail.name).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          5985
+        </td>
+        <td>
+          5409
+          -
+          5420
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.name
+        </td>
+        <td style="background: #F0ADAD">
+          detail.name
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          5987
+        </td>
+        <td>
+          5513
+          -
+          5534
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.Rugs.commandHandlerNames
+        </td>
+        <td style="background: #F0ADAD">
+          x$5.commandHandlerNames
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          5989
+        </td>
+        <td>
+          5504
+          -
+          5550
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          AbstractHandlerScenarioWorld.this.rugs.map[Seq[String]](((x$5: com.atomist.project.archive.Rugs) =&gt; x$5.commandHandlerNames)).getOrElse[Seq[String]](immutable.this.Nil)
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          5988
+        </td>
+        <td>
+          5546
+          -
+          5549
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          5991
+        </td>
+        <td>
+          5561
+          -
+          5604
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #F0ADAD">
+          knownCommandHandlers.contains[String](detail.name).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          5990
+        </td>
+        <td>
+          5592
+          -
+          5603
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.name
+        </td>
+        <td style="background: #F0ADAD">
+          detail.name
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          5992
+        </td>
+        <td>
+          5674
+          -
+          5679
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          5995
+        </td>
+        <td>
+          5940
+          -
+          5986
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.typeRegistry
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.typeRegistry
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          5996
+        </td>
+        <td>
+          6028
+          -
+          6060
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsPathExpressionEngine.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.runtime.js.interop.jsPathExpressionEngine(this)
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          5997
+        </td>
+        <td>
+          6116
+          -
+          6133
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld.FakeRugContext._treeMaterializer
+        </td>
+        <td style="background: #AEF1AE">
+          FakeRugContext.this._treeMaterializer
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          5998
+        </td>
+        <td>
+          6176
+          -
+          6187
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld.rootContext
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractHandlerScenarioWorld.this.rootContext
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

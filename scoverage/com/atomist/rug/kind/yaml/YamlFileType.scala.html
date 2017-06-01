@@ -1,0 +1,2929 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/yaml/YamlFileType.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.yaml
+</span>2 <span style=''>
+</span>3 <span style=''>import java.io.InputStreamReader
+</span>4 <span style=''>
+</span>5 <span style=''>import com.atomist.rug.kind.grammar.TypeUnderFile
+</span>6 <span style=''>import com.atomist.rug.kind.yaml.YamlFileType._
+</span>7 <span style=''>import com.atomist.source.FileArtifact
+</span>8 <span style=''>import com.atomist.tree.TreeNode
+</span>9 <span style=''>import com.atomist.tree.TreeNode.Significance
+</span>10 <span style=''>import com.atomist.tree.content.text._
+</span>11 <span style=''>import com.typesafe.scalalogging.LazyLogging
+</span>12 <span style=''>import org.apache.commons.io.IOUtils
+</span>13 <span style=''>import org.yaml.snakeyaml.Yaml
+</span>14 <span style=''>import org.yaml.snakeyaml.error.Mark
+</span>15 <span style=''>import org.yaml.snakeyaml.events._
+</span>16 <span style=''>
+</span>17 <span style=''>import scala.collection.JavaConverters._
+</span>18 <span style=''>import scala.collection.mutable
+</span>19 <span style=''>
+</span>20 <span style=''>/**
+</span>21 <span style=''>  * Uses SnakeYaml.
+</span>22 <span style=''>  */
+</span>23 <span style=''>class YamlFileType extends TypeUnderFile with LazyLogging {
+</span>24 <span style=''>
+</span>25 <span style=''>  private case class Input(content: String, event: Event, nodeStack: mutable.Stack[YamlPositionedTreeNode])
+</span>26 <span style=''>
+</span>27 <span style=''>  private abstract sealed class State {
+</span>28 <span style=''>
+</span>29 <span style=''>    final def transition(in: Input): State = {
+</span>30 <span style=''>      val noTransitionOnIgnorableInput: PartialFunction[Input, State] = {
+</span>31 <span style=''>        case _ =&gt;
+</span>32 <span style=''>          logger.debug(s&quot;${this} ignored input: ${in.event}&quot;)
+</span>33 <span style=''>          this
+</span>34 <span style=''>      }
+</span>35 <span style=''>      </span><span style='background: #AEF1AE'>on.orElse(noTransitionOnIgnorableInput)(in)</span><span style=''>
+</span>36 <span style=''>    }
+</span>37 <span style=''>
+</span>38 <span style=''>    /**
+</span>39 <span style=''>      * Throw an exception on an illegal input. Otherwise handle only legal transitions,
+</span>40 <span style=''>      * as this class's transition method will return the current state without error
+</span>41 <span style=''>      */
+</span>42 <span style=''>    protected def on: PartialFunction[Input, State]
+</span>43 <span style=''>  }
+</span>44 <span style=''>
+</span>45 <span style=''>  // SnakeYAML parser
+</span>46 <span style=''>  private val yaml = </span><span style='background: #AEF1AE'>new Yaml()</span><span style=''>
+</span>47 <span style=''>
+</span>48 <span style=''>  override def description: String = </span><span style='background: #AEF1AE'>&quot;YAML file&quot;</span><span style=''>
+</span>49 <span style=''>
+</span>50 <span style=''>  override def isOfType(f: FileArtifact): Boolean =
+</span>51 <span style=''>    </span><span style='background: #AEF1AE'>f.name.endsWith(&quot;.yml&quot;) | f.name.endsWith(&quot;.yaml&quot;)</span><span style=''>
+</span>52 <span style=''>
+</span>53 <span style=''>  /**
+</span>54 <span style=''>    * Uses a state machine to handle SnakeYAML events, which include node positions.
+</span>55 <span style=''>    */
+</span>56 <span style=''>  override def fileToRawNode(f: FileArtifact): Option[PositionedTreeNode] = {
+</span>57 <span style=''>    // We're currently adding to the node on top of the stack
+</span>58 <span style=''>    val nodeStack: mutable.Stack[YamlPositionedTreeNode] = </span><span style='background: #AEF1AE'>new mutable.Stack()</span><span style=''>
+</span>59 <span style=''>    var state: State = </span><span style='background: #AEF1AE'>InDocument</span><span style=''>
+</span>60 <span style=''>
+</span>61 <span style=''>    // TODO do this for each doc
+</span>62 <span style=''>    val root = </span><span style='background: #AEF1AE'>YamlPositionedTreeNode.startAContainer(f.name, OffsetInputPosition(0), Set())</span><span style=''>
+</span>63 <span style=''>    </span><span style='background: #AEF1AE'>root.setEndPosition(OffsetInputPosition(f.contentLength.toInt))</span><span style=''>
+</span>64 <span style=''>    </span><span style='background: #AEF1AE'>nodeStack.push(root)</span><span style=''>
+</span>65 <span style=''>
+</span>66 <span style=''>    val reader = </span><span style='background: #AEF1AE'>new InputStreamReader(f.inputStream())</span><span style=''>
+</span>67 <span style=''>    val events = </span><span style='background: #AEF1AE'>yaml.parse(reader).asScala</span><span style=''>
+</span>68 <span style=''>    </span><span style='background: #AEF1AE'>for (e &lt;- events) {
+</span>69 <span style=''></span><span style='background: #AEF1AE'>      val oldState = state
+</span>70 <span style=''></span><span style='background: #AEF1AE'>      state = state.transition(Input(f.content, e, nodeStack))
+</span>71 <span style=''></span><span style='background: #AEF1AE'>      // println(s&quot;$e from $oldState to $state&quot;)
+</span>72 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>73 <span style=''>    </span><span style='background: #AEF1AE'>IOUtils.closeQuietly(reader)</span><span style=''>
+</span>74 <span style=''>
+</span>75 <span style=''>    </span><span style='background: #AEF1AE'>Some(root)</span><span style=''>
+</span>76 <span style=''>  }
+</span>77 <span style=''>
+</span>78 <span style=''>  private case object InDocument extends State {
+</span>79 <span style=''>
+</span>80 <span style=''>    protected override def on = {
+</span>81 <span style=''>      case Input(content, s: ScalarEvent, _) =&gt;
+</span>82 <span style=''>        </span><span style='background: #AEF1AE'>SeenKey(keyTerminal = scalarToValue(content, s), this)</span><span style=''>
+</span>83 <span style=''>    }
+</span>84 <span style=''>  }
+</span>85 <span style=''>
+</span>86 <span style=''>  private case class SeenKey(keyTerminal: String, previousState: State)
+</span>87 <span style=''>    extends State {
+</span>88 <span style=''>
+</span>89 <span style=''>    protected def on = {
+</span>90 <span style=''>      case Input(content, s: ScalarEvent, nodeStack) =&gt;
+</span>91 <span style=''>        // Scalar key with value. Add a container a child of present node and return to Open state
+</span>92 <span style=''>        val value = </span><span style='background: #AEF1AE'>scalarToTreeNode(content, s)</span><span style=''>
+</span>93 <span style=''>        val container = </span><span style='background: #AEF1AE'>new YamlPositionedTreeNode(
+</span>94 <span style=''></span><span style='background: #AEF1AE'>          keyTerminal,
+</span>95 <span style=''></span><span style='background: #AEF1AE'>          value.startPosition,
+</span>96 <span style=''></span><span style='background: #AEF1AE'>          value.endPosition,
+</span>97 <span style=''></span><span style='background: #AEF1AE'>          Seq(value),
+</span>98 <span style=''></span><span style='background: #AEF1AE'>          Set(ScalarType),
+</span>99 <span style=''></span><span style='background: #AEF1AE'>          significance = TreeNode.Signal)</span><span style=''>
+</span>100 <span style=''>        </span><span style='background: #AEF1AE'>nodeStack.top.addChild(container)</span><span style=''>
+</span>101 <span style=''>        </span><span style='background: #AEF1AE'>previousState</span><span style=''>
+</span>102 <span style=''>      case Input(content, sse: SequenceStartEvent, nodeStack) =&gt;
+</span>103 <span style=''>        val newContainer = </span><span style='background: #AEF1AE'>YamlPositionedTreeNode.startAContainer(keyTerminal, markToPosition(content, sse.getStartMark), Set(SequenceType))</span><span style=''>
+</span>104 <span style=''>        </span><span style='background: #AEF1AE'>nodeStack.top.addChild(newContainer)</span><span style=''>
+</span>105 <span style=''>        </span><span style='background: #AEF1AE'>nodeStack.push(newContainer)</span><span style=''>
+</span>106 <span style=''>        </span><span style='background: #AEF1AE'>InSequence(previousState)</span><span style=''>
+</span>107 <span style=''>      case Input(content, mse: MappingStartEvent, nodeStack) =&gt;
+</span>108 <span style=''>        val newContainer = </span><span style='background: #AEF1AE'>YamlPositionedTreeNode.startAContainer(
+</span>109 <span style=''></span><span style='background: #AEF1AE'>          keyTerminal, markToPosition(content, mse.getStartMark), Set(MappingType))</span><span style=''>
+</span>110 <span style=''>        </span><span style='background: #AEF1AE'>nodeStack.top.addChild(newContainer)</span><span style=''>
+</span>111 <span style=''>        </span><span style='background: #AEF1AE'>nodeStack.push(newContainer)</span><span style=''>
+</span>112 <span style=''>        </span><span style='background: #AEF1AE'>InMapping(previousState)</span><span style=''>
+</span>113 <span style=''>    }
+</span>114 <span style=''>  }
+</span>115 <span style=''>
+</span>116 <span style=''>  private case class InMapping(previousState: State) extends State {
+</span>117 <span style=''>    protected override def on = {
+</span>118 <span style=''>      case Input(content, see: MappingEndEvent, nodeStack) =&gt;
+</span>119 <span style=''>        </span><span style='background: #AEF1AE'>nodeStack.top.setEndPosition(markToPosition(content, see.getStartMark))</span><span style=''>
+</span>120 <span style=''>        </span><span style='background: #AEF1AE'>nodeStack.pop()</span><span style=''>
+</span>121 <span style=''>        </span><span style='background: #AEF1AE'>previousState</span><span style=''>
+</span>122 <span style=''>      case Input(content, s: ScalarEvent, _) =&gt;
+</span>123 <span style=''>        </span><span style='background: #AEF1AE'>SeenKey(keyTerminal = scalarToValue(content, s), this)</span><span style=''>
+</span>124 <span style=''>    }
+</span>125 <span style=''>  }
+</span>126 <span style=''>
+</span>127 <span style=''>  private case class InNewKey(previousState: State) extends State {
+</span>128 <span style=''>    protected override def on = {
+</span>129 <span style=''>      case Input(content, s: ScalarEvent, _) =&gt;
+</span>130 <span style=''>        </span><span style='background: #AEF1AE'>SeenKey(keyTerminal = scalarToValue(content, s), previousState)</span><span style=''>
+</span>131 <span style=''>    }
+</span>132 <span style=''>  }
+</span>133 <span style=''>
+</span>134 <span style=''>  private case class InSequence(previousState: State) extends State {
+</span>135 <span style=''>    protected override def on = {
+</span>136 <span style=''>      case Input(content, see: SequenceEndEvent, nodeStack) =&gt;
+</span>137 <span style=''>        </span><span style='background: #AEF1AE'>nodeStack.top.setEndPosition(markToPosition(content, see.getStartMark))</span><span style=''>
+</span>138 <span style=''>        </span><span style='background: #AEF1AE'>nodeStack.pop()</span><span style=''>
+</span>139 <span style=''>        </span><span style='background: #AEF1AE'>previousState</span><span style=''>
+</span>140 <span style=''>      case Input(content, s: ScalarEvent, nodeStack) =&gt;
+</span>141 <span style=''>        val sf = </span><span style='background: #AEF1AE'>scalarToTreeNode(content, s)</span><span style=''>
+</span>142 <span style=''>        </span><span style='background: #AEF1AE'>nodeStack.top.addChild(sf)</span><span style=''>
+</span>143 <span style=''>        this
+</span>144 <span style=''>      case Input(content, mse: MappingStartEvent, nodeStack) =&gt;
+</span>145 <span style=''>        </span><span style='background: #AEF1AE'>InNewKey(this)</span><span style=''>
+</span>146 <span style=''>    }
+</span>147 <span style=''>  }
+</span>148 <span style=''>
+</span>149 <span style=''>  /**
+</span>150 <span style=''>    * Value will be the full structure.
+</span>151 <span style=''>    */
+</span>152 <span style=''>  private def scalarToTreeNode(in: String, se: ScalarEvent): PositionedTreeNode = {
+</span>153 <span style=''>    val start = </span><span style='background: #AEF1AE'>markToPosition(in, se.getStartMark)</span><span style=''>
+</span>154 <span style=''>    val end = </span><span style='background: #AEF1AE'>markToPosition(in, se.getEndMark)</span><span style=''>
+</span>155 <span style=''>    val f = </span><span style='background: #AEF1AE'>new YamlPositionedTreeNode(ScalarName, start, end, Seq(), Set(ScalarType), TreeNode.Signal)</span><span style=''>
+</span>156 <span style=''>    f
+</span>157 <span style=''>  }
+</span>158 <span style=''>
+</span>159 <span style=''>  /**
+</span>160 <span style=''>    * Value will be the full structure.
+</span>161 <span style=''>    */
+</span>162 <span style=''>  private def scalarToValue(in: String, se: ScalarEvent): String = {
+</span>163 <span style=''>    val start = </span><span style='background: #AEF1AE'>markToPosition(in, se.getStartMark)</span><span style=''>
+</span>164 <span style=''>    val end = </span><span style='background: #AEF1AE'>markToPosition(in, se.getEndMark)</span><span style=''>
+</span>165 <span style=''>    </span><span style='background: #AEF1AE'>in.substring(start.offset, end.offset)</span><span style=''>
+</span>166 <span style=''>  }
+</span>167 <span style=''>
+</span>168 <span style=''>  private def markToPosition(in: String, m: Mark): InputPosition = {
+</span>169 <span style=''>    // Snake YAML shows positions in toStrings from 1 but returns them from 0
+</span>170 <span style=''>    </span><span style='background: #AEF1AE'>LineInputPositionImpl(in, m.getLine + 1, m.getColumn + 1)</span><span style=''>
+</span>171 <span style=''>  }
+</span>172 <span style=''>}
+</span>173 <span style=''>
+</span>174 <span style=''>class YamlPositionedTreeNode(override val nodeName: String,
+</span>175 <span style=''>                                  override val startPosition: InputPosition,
+</span>176 <span style=''>                                  var _endPosition: InputPosition, // can be null to start
+</span>177 <span style=''>                                  var _childNodes: Seq[PositionedTreeNode],
+</span>178 <span style=''>                                  override val nodeTags: Set[String],
+</span>179 <span style=''>                                  override val significance: Significance)
+</span>180 <span style=''>  extends PositionedTreeNode {
+</span>181 <span style=''>
+</span>182 <span style=''>  def addChild(baby: PositionedTreeNode) = </span><span style='background: #AEF1AE'>_childNodes = _childNodes :+ baby</span><span style=''>
+</span>183 <span style=''>
+</span>184 <span style=''>
+</span>185 <span style=''>  def setEndPosition(where: InputPosition) = </span><span style='background: #AEF1AE'>_endPosition = where</span><span style=''>
+</span>186 <span style=''>
+</span>187 <span style=''>  override def childNodes: Seq[TreeNode] = </span><span style='background: #AEF1AE'>_childNodes</span><span style=''>
+</span>188 <span style=''>
+</span>189 <span style=''>  override def endPosition: InputPosition = if (</span><span style='background: #AEF1AE'>_endPosition == null</span><span style=''>) </span><span style='background: #F0ADAD'>???</span><span style=''> else </span><span style='background: #AEF1AE'>_endPosition</span><span style=''>
+</span>190 <span style=''>
+</span>191 <span style=''>  // I want to be sure this isn't called, in this class
+</span>192 <span style=''>  // can probably replace with IPTN when I'm done here
+</span>193 <span style=''>  override def value: String = </span><span style='background: #F0ADAD'>???</span><span style=''>
+</span>194 <span style=''>
+</span>195 <span style=''>  override def childNodeNames: Set[String] = </span><span style='background: #F0ADAD'>???</span><span style=''>
+</span>196 <span style=''>
+</span>197 <span style=''>  override def childNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>???</span><span style=''>
+</span>198 <span style=''>
+</span>199 <span style=''>  override def childrenNamed(key: String): Seq[TreeNode] = </span><span style='background: #F0ADAD'>childNodes.filter(_.nodeName == key)</span><span style=''>
+</span>200 <span style=''>}
+</span>201 <span style=''>
+</span>202 <span style=''>object YamlPositionedTreeNode {
+</span>203 <span style=''>  def startAContainer(name: String, start: InputPosition, nodeTags: Set[String]): YamlPositionedTreeNode =
+</span>204 <span style=''>    </span><span style='background: #AEF1AE'>new YamlPositionedTreeNode(name, start, null, Seq(), nodeTags, significance = TreeNode.Signal)</span><span style=''>
+</span>205 <span style=''>}
+</span>206 <span style=''>
+</span>207 <span style=''>object YamlFileType {
+</span>208 <span style=''>
+</span>209 <span style=''>  val SequenceType = </span><span style='background: #AEF1AE'>&quot;Sequence&quot;</span><span style=''>
+</span>210 <span style=''>
+</span>211 <span style=''>  val MappingType = </span><span style='background: #AEF1AE'>&quot;Mapping&quot;</span><span style=''>
+</span>212 <span style=''>
+</span>213 <span style=''>  val KeyType = </span><span style='background: #AEF1AE'>&quot;Key&quot;</span><span style=''>
+</span>214 <span style=''>
+</span>215 <span style=''>  val ScalarType = </span><span style='background: #AEF1AE'>&quot;Scalar&quot;</span><span style=''>
+</span>216 <span style=''>
+</span>217 <span style=''>  val ScalarName = </span><span style='background: #AEF1AE'>&quot;value&quot;</span><span style=''>
+</span>218 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          3060
+        </td>
+        <td>
+          943
+          -
+          943
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.State.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3061
+        </td>
+        <td>
+          1054
+          -
+          1097
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #AEF1AE">
+          State.this.on.orElse[YamlFileType.this.Input, YamlFileType.this.State](noTransitionOnIgnorableInput).apply(in)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          3062
+        </td>
+        <td>
+          1397
+          -
+          1407
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.yaml.snakeyaml.Yaml.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new org.yaml.snakeyaml.Yaml()
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          3063
+        </td>
+        <td>
+          1446
+          -
+          1457
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;YAML file&quot;
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          3065
+        </td>
+        <td>
+          1541
+          -
+          1565
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          f.name.endsWith(&quot;.yaml&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          3064
+        </td>
+        <td>
+          1531
+          -
+          1537
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;.yml&quot;
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          3066
+        </td>
+        <td>
+          1515
+          -
+          1565
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.|
+        </td>
+        <td style="background: #AEF1AE">
+          f.name.endsWith(&quot;.yml&quot;).|(f.name.endsWith(&quot;.yaml&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          3067
+        </td>
+        <td>
+          1864
+          -
+          1883
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.Stack.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.collection.mutable.Stack[com.atomist.rug.kind.yaml.YamlPositionedTreeNode]()
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3068
+        </td>
+        <td>
+          1907
+          -
+          1917
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.InDocument
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.InDocument
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          3071
+        </td>
+        <td>
+          2038
+          -
+          2043
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String]()
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          3070
+        </td>
+        <td>
+          2014
+          -
+          2036
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OffsetInputPosition.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.content.text.OffsetInputPosition.apply(0)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          3069
+        </td>
+        <td>
+          2006
+          -
+          2012
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.Artifact.name
+        </td>
+        <td style="background: #AEF1AE">
+          f.name
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          3072
+        </td>
+        <td>
+          1967
+          -
+          2044
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode.startAContainer
+        </td>
+        <td style="background: #AEF1AE">
+          YamlPositionedTreeNode.startAContainer(f.name, com.atomist.tree.content.text.OffsetInputPosition.apply(0), scala.this.Predef.Set.apply[String]())
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          3073
+        </td>
+        <td>
+          2089
+          -
+          2110
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Long.toInt
+        </td>
+        <td style="background: #AEF1AE">
+          f.contentLength.toInt
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          3075
+        </td>
+        <td>
+          2049
+          -
+          2112
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode.setEndPosition
+        </td>
+        <td style="background: #AEF1AE">
+          root.setEndPosition(com.atomist.tree.content.text.OffsetInputPosition.apply(f.contentLength.toInt))
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          3074
+        </td>
+        <td>
+          2069
+          -
+          2111
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OffsetInputPosition.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.content.text.OffsetInputPosition.apply(f.contentLength.toInt)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          3076
+        </td>
+        <td>
+          2117
+          -
+          2137
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.Stack.push
+        </td>
+        <td style="background: #AEF1AE">
+          nodeStack.push(root)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          3078
+        </td>
+        <td>
+          2156
+          -
+          2194
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.InputStreamReader.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.io.InputStreamReader(f.inputStream())
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          3077
+        </td>
+        <td>
+          2178
+          -
+          2193
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.inputStream
+        </td>
+        <td style="background: #AEF1AE">
+          f.inputStream()
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          3080
+        </td>
+        <td>
+          2212
+          -
+          2238
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsScala.asScala
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.iterableAsScalaIterableConverter[org.yaml.snakeyaml.events.Event](YamlFileType.this.yaml.parse(reader)).asScala
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          3079
+        </td>
+        <td>
+          2212
+          -
+          2230
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.yaml.snakeyaml.Yaml.parse
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.yaml.parse(reader)
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          3084
+        </td>
+        <td>
+          2243
+          -
+          2407
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          events.foreach[Unit](((e: org.yaml.snakeyaml.events.Event) =&gt; {
+  val oldState: YamlFileType.this.State = state;
+  state = state.transition(YamlFileType.this.Input.apply(f.content, e, nodeStack))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          3082
+        </td>
+        <td>
+          2321
+          -
+          2351
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.Input.apply
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.Input.apply(f.content, e, nodeStack)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          3081
+        </td>
+        <td>
+          2327
+          -
+          2336
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          f.content
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          3083
+        </td>
+        <td>
+          2304
+          -
+          2352
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.State.transition
+        </td>
+        <td style="background: #AEF1AE">
+          state.transition(YamlFileType.this.Input.apply(f.content, e, nodeStack))
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          3085
+        </td>
+        <td>
+          2412
+          -
+          2440
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.apache.commons.io.IOUtils.closeQuietly
+        </td>
+        <td style="background: #AEF1AE">
+          org.apache.commons.io.IOUtils.closeQuietly(reader)
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          3086
+        </td>
+        <td>
+          2446
+          -
+          2456
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.kind.yaml.YamlPositionedTreeNode](root)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          3089
+        </td>
+        <td>
+          2544
+          -
+          2544
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.InDocument.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          3088
+        </td>
+        <td>
+          2602
+          -
+          2656
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.SeenKey.apply
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.SeenKey.apply(YamlFileType.this.scalarToValue(content, s), this)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          3087
+        </td>
+        <td>
+          2624
+          -
+          2649
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.scalarToValue
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.scalarToValue(content, s)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          3121
+        </td>
+        <td>
+          2784
+          -
+          2784
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.SeenKey.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          3090
+        </td>
+        <td>
+          2961
+          -
+          2989
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.scalarToTreeNode
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.scalarToTreeNode(content, s)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          3098
+        </td>
+        <td>
+          3014
+          -
+          3215
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new YamlPositionedTreeNode(SeenKey.this.keyTerminal, value.startPosition, value.endPosition, collection.this.Seq.apply[com.atomist.tree.content.text.PositionedTreeNode](value), scala.this.Predef.Set.apply[String](com.atomist.rug.kind.yaml.YamlFileType.ScalarType), com.atomist.tree.TreeNode.Signal)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          3091
+        </td>
+        <td>
+          3052
+          -
+          3063
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.SeenKey.keyTerminal
+        </td>
+        <td style="background: #AEF1AE">
+          SeenKey.this.keyTerminal
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          3092
+        </td>
+        <td>
+          3075
+          -
+          3094
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.Positioned.startPosition
+        </td>
+        <td style="background: #AEF1AE">
+          value.startPosition
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          3093
+        </td>
+        <td>
+          3106
+          -
+          3123
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.Positioned.endPosition
+        </td>
+        <td style="background: #AEF1AE">
+          value.endPosition
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          3094
+        </td>
+        <td>
+          3135
+          -
+          3145
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.tree.content.text.PositionedTreeNode](value)
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          3096
+        </td>
+        <td>
+          3157
+          -
+          3172
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](com.atomist.rug.kind.yaml.YamlFileType.ScalarType)
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          3095
+        </td>
+        <td>
+          3161
+          -
+          3171
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.ScalarType
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.yaml.YamlFileType.ScalarType
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          3097
+        </td>
+        <td>
+          3199
+          -
+          3214
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Signal
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Signal
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          3099
+        </td>
+        <td>
+          3224
+          -
+          3257
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode.addChild
+        </td>
+        <td style="background: #AEF1AE">
+          nodeStack.top.addChild(container)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          3100
+        </td>
+        <td>
+          3266
+          -
+          3279
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.SeenKey.previousState
+        </td>
+        <td style="background: #AEF1AE">
+          SeenKey.this.previousState
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          3106
+        </td>
+        <td>
+          3372
+          -
+          3485
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode.startAContainer
+        </td>
+        <td style="background: #AEF1AE">
+          YamlPositionedTreeNode.startAContainer(SeenKey.this.keyTerminal, YamlFileType.this.markToPosition(content, sse.getStartMark()), scala.this.Predef.Set.apply[String](com.atomist.rug.kind.yaml.YamlFileType.SequenceType))
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          3103
+        </td>
+        <td>
+          3424
+          -
+          3465
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.markToPosition
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.markToPosition(content, sse.getStartMark())
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          3105
+        </td>
+        <td>
+          3467
+          -
+          3484
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](com.atomist.rug.kind.yaml.YamlFileType.SequenceType)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          3102
+        </td>
+        <td>
+          3448
+          -
+          3464
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.yaml.snakeyaml.events.Event.getStartMark
+        </td>
+        <td style="background: #AEF1AE">
+          sse.getStartMark()
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          3101
+        </td>
+        <td>
+          3411
+          -
+          3422
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.SeenKey.keyTerminal
+        </td>
+        <td style="background: #AEF1AE">
+          SeenKey.this.keyTerminal
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          3104
+        </td>
+        <td>
+          3471
+          -
+          3483
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.SequenceType
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.yaml.YamlFileType.SequenceType
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          3107
+        </td>
+        <td>
+          3494
+          -
+          3530
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode.addChild
+        </td>
+        <td style="background: #AEF1AE">
+          nodeStack.top.addChild(newContainer)
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          3108
+        </td>
+        <td>
+          3539
+          -
+          3567
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.Stack.push
+        </td>
+        <td style="background: #AEF1AE">
+          nodeStack.push(newContainer)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          3109
+        </td>
+        <td>
+          3587
+          -
+          3600
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.SeenKey.previousState
+        </td>
+        <td style="background: #AEF1AE">
+          SeenKey.this.previousState
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          3110
+        </td>
+        <td>
+          3576
+          -
+          3601
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.InSequence.apply
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.InSequence.apply(SeenKey.this.previousState)
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          3116
+        </td>
+        <td>
+          3693
+          -
+          3816
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode.startAContainer
+        </td>
+        <td style="background: #AEF1AE">
+          YamlPositionedTreeNode.startAContainer(SeenKey.this.keyTerminal, YamlFileType.this.markToPosition(content, mse.getStartMark()), scala.this.Predef.Set.apply[String](com.atomist.rug.kind.yaml.YamlFileType.MappingType))
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          3115
+        </td>
+        <td>
+          3799
+          -
+          3815
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](com.atomist.rug.kind.yaml.YamlFileType.MappingType)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          3112
+        </td>
+        <td>
+          3780
+          -
+          3796
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.yaml.snakeyaml.events.Event.getStartMark
+        </td>
+        <td style="background: #AEF1AE">
+          mse.getStartMark()
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          3111
+        </td>
+        <td>
+          3743
+          -
+          3754
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.SeenKey.keyTerminal
+        </td>
+        <td style="background: #AEF1AE">
+          SeenKey.this.keyTerminal
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          3114
+        </td>
+        <td>
+          3803
+          -
+          3814
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.MappingType
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.yaml.YamlFileType.MappingType
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          3113
+        </td>
+        <td>
+          3756
+          -
+          3797
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.markToPosition
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.markToPosition(content, mse.getStartMark())
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          3117
+        </td>
+        <td>
+          3825
+          -
+          3861
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode.addChild
+        </td>
+        <td style="background: #AEF1AE">
+          nodeStack.top.addChild(newContainer)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          3118
+        </td>
+        <td>
+          3870
+          -
+          3898
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.Stack.push
+        </td>
+        <td style="background: #AEF1AE">
+          nodeStack.push(newContainer)
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          3120
+        </td>
+        <td>
+          3907
+          -
+          3931
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.InMapping.apply
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.InMapping.apply(SeenKey.this.previousState)
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          3119
+        </td>
+        <td>
+          3917
+          -
+          3930
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.SeenKey.previousState
+        </td>
+        <td style="background: #AEF1AE">
+          SeenKey.this.previousState
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          3129
+        </td>
+        <td>
+          4044
+          -
+          4044
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.InMapping.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          3124
+        </td>
+        <td>
+          4116
+          -
+          4187
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode.setEndPosition
+        </td>
+        <td style="background: #AEF1AE">
+          nodeStack.top.setEndPosition(YamlFileType.this.markToPosition(content, see.getStartMark()))
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          3123
+        </td>
+        <td>
+          4145
+          -
+          4186
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.markToPosition
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.markToPosition(content, see.getStartMark())
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          3122
+        </td>
+        <td>
+          4169
+          -
+          4185
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.yaml.snakeyaml.events.Event.getStartMark
+        </td>
+        <td style="background: #AEF1AE">
+          see.getStartMark()
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          3125
+        </td>
+        <td>
+          4196
+          -
+          4211
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.Stack.pop
+        </td>
+        <td style="background: #AEF1AE">
+          nodeStack.pop()
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          3126
+        </td>
+        <td>
+          4220
+          -
+          4233
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.InMapping.previousState
+        </td>
+        <td style="background: #AEF1AE">
+          InMapping.this.previousState
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          3127
+        </td>
+        <td>
+          4312
+          -
+          4337
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.scalarToValue
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.scalarToValue(content, s)
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          3128
+        </td>
+        <td>
+          4290
+          -
+          4344
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.SeenKey.apply
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.SeenKey.apply(YamlFileType.this.scalarToValue(content, s), this)
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          3133
+        </td>
+        <td>
+          4456
+          -
+          4456
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.InNewKey.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          3130
+        </td>
+        <td>
+          4536
+          -
+          4561
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.scalarToValue
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.scalarToValue(content, s)
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          3132
+        </td>
+        <td>
+          4514
+          -
+          4577
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.SeenKey.apply
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.SeenKey.apply(YamlFileType.this.scalarToValue(content, s), InNewKey.this.previousState)
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          3131
+        </td>
+        <td>
+          4563
+          -
+          4576
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.InNewKey.previousState
+        </td>
+        <td style="background: #AEF1AE">
+          InNewKey.this.previousState
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          3142
+        </td>
+        <td>
+          4691
+          -
+          4691
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.InSequence.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          3136
+        </td>
+        <td>
+          4764
+          -
+          4835
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode.setEndPosition
+        </td>
+        <td style="background: #AEF1AE">
+          nodeStack.top.setEndPosition(YamlFileType.this.markToPosition(content, see.getStartMark()))
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          3135
+        </td>
+        <td>
+          4793
+          -
+          4834
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.markToPosition
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.markToPosition(content, see.getStartMark())
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          3134
+        </td>
+        <td>
+          4817
+          -
+          4833
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.yaml.snakeyaml.events.Event.getStartMark
+        </td>
+        <td style="background: #AEF1AE">
+          see.getStartMark()
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          3137
+        </td>
+        <td>
+          4844
+          -
+          4859
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.Stack.pop
+        </td>
+        <td style="background: #AEF1AE">
+          nodeStack.pop()
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          3138
+        </td>
+        <td>
+          4868
+          -
+          4881
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.InSequence.previousState
+        </td>
+        <td style="background: #AEF1AE">
+          InSequence.this.previousState
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          3139
+        </td>
+        <td>
+          4955
+          -
+          4983
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.scalarToTreeNode
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.scalarToTreeNode(content, s)
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          3140
+        </td>
+        <td>
+          4992
+          -
+          5018
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode.addChild
+        </td>
+        <td style="background: #AEF1AE">
+          nodeStack.top.addChild(sf)
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          3141
+        </td>
+        <td>
+          5104
+          -
+          5118
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.InNewKey.apply
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.InNewKey.apply(this)
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          3144
+        </td>
+        <td>
+          5283
+          -
+          5318
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.markToPosition
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.markToPosition(in, se.getStartMark())
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          3143
+        </td>
+        <td>
+          5302
+          -
+          5317
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.yaml.snakeyaml.events.Event.getStartMark
+        </td>
+        <td style="background: #AEF1AE">
+          se.getStartMark()
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          3145
+        </td>
+        <td>
+          5352
+          -
+          5365
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.yaml.snakeyaml.events.Event.getEndMark
+        </td>
+        <td style="background: #AEF1AE">
+          se.getEndMark()
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          3146
+        </td>
+        <td>
+          5333
+          -
+          5366
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.markToPosition
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.markToPosition(in, se.getEndMark())
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          3148
+        </td>
+        <td>
+          5430
+          -
+          5435
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          3151
+        </td>
+        <td>
+          5454
+          -
+          5469
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Signal
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Signal
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          3147
+        </td>
+        <td>
+          5406
+          -
+          5416
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.ScalarName
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.yaml.YamlFileType.ScalarName
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          3150
+        </td>
+        <td>
+          5437
+          -
+          5452
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](com.atomist.rug.kind.yaml.YamlFileType.ScalarType)
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          3152
+        </td>
+        <td>
+          5379
+          -
+          5470
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new YamlPositionedTreeNode(com.atomist.rug.kind.yaml.YamlFileType.ScalarName, start, end, collection.this.Seq.apply[Nothing](), scala.this.Predef.Set.apply[String](com.atomist.rug.kind.yaml.YamlFileType.ScalarType), com.atomist.tree.TreeNode.Signal)
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          3149
+        </td>
+        <td>
+          5441
+          -
+          5451
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.ScalarType
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.yaml.YamlFileType.ScalarType
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          3154
+        </td>
+        <td>
+          5620
+          -
+          5655
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.markToPosition
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.markToPosition(in, se.getStartMark())
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          3153
+        </td>
+        <td>
+          5639
+          -
+          5654
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.yaml.snakeyaml.events.Event.getStartMark
+        </td>
+        <td style="background: #AEF1AE">
+          se.getStartMark()
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          3156
+        </td>
+        <td>
+          5670
+          -
+          5703
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlFileType.markToPosition
+        </td>
+        <td style="background: #AEF1AE">
+          YamlFileType.this.markToPosition(in, se.getEndMark())
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          3155
+        </td>
+        <td>
+          5689
+          -
+          5702
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.yaml.snakeyaml.events.Event.getEndMark
+        </td>
+        <td style="background: #AEF1AE">
+          se.getEndMark()
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          3157
+        </td>
+        <td>
+          5721
+          -
+          5733
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #AEF1AE">
+          start.offset
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          3159
+        </td>
+        <td>
+          5708
+          -
+          5746
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.substring
+        </td>
+        <td style="background: #AEF1AE">
+          in.substring(start.offset, end.offset)
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          3158
+        </td>
+        <td>
+          5735
+          -
+          5745
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #AEF1AE">
+          end.offset
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          3160
+        </td>
+        <td>
+          5929
+          -
+          5942
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          m.getLine().+(1)
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          3162
+        </td>
+        <td>
+          5903
+          -
+          5960
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineInputPositionImpl.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.content.text.LineInputPositionImpl.apply(in, m.getLine().+(1), m.getColumn().+(1))
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          3161
+        </td>
+        <td>
+          5944
+          -
+          5959
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          m.getColumn().+(1)
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          3163
+        </td>
+        <td>
+          6518
+          -
+          6518
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.PositionedTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          3165
+        </td>
+        <td>
+          6492
+          -
+          6525
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode._childNodes_=
+        </td>
+        <td style="background: #AEF1AE">
+          YamlPositionedTreeNode.this._childNodes_=(YamlPositionedTreeNode.this._childNodes.:+[com.atomist.tree.content.text.PositionedTreeNode, Seq[com.atomist.tree.content.text.PositionedTreeNode]](baby)(collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.PositionedTreeNode]))
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          3164
+        </td>
+        <td>
+          6506
+          -
+          6525
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          YamlPositionedTreeNode.this._childNodes.:+[com.atomist.tree.content.text.PositionedTreeNode, Seq[com.atomist.tree.content.text.PositionedTreeNode]](baby)(collection.this.Seq.canBuildFrom[com.atomist.tree.content.text.PositionedTreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          3166
+        </td>
+        <td>
+          6573
+          -
+          6593
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode._endPosition_=
+        </td>
+        <td style="background: #AEF1AE">
+          YamlPositionedTreeNode.this._endPosition_=(where)
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          3167
+        </td>
+        <td>
+          6638
+          -
+          6649
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode._childNodes
+        </td>
+        <td style="background: #AEF1AE">
+          YamlPositionedTreeNode.this._childNodes
+        </td>
+      </tr><tr>
+        <td>
+          189
+        </td>
+        <td>
+          3169
+        </td>
+        <td>
+          6721
+          -
+          6724
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          189
+        </td>
+        <td>
+          3172
+        </td>
+        <td>
+          6730
+          -
+          6742
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode._endPosition
+        </td>
+        <td style="background: #AEF1AE">
+          YamlPositionedTreeNode.this._endPosition
+        </td>
+      </tr><tr>
+        <td>
+          189
+        </td>
+        <td>
+          3171
+        </td>
+        <td>
+          6730
+          -
+          6742
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode._endPosition
+        </td>
+        <td style="background: #AEF1AE">
+          YamlPositionedTreeNode.this._endPosition
+        </td>
+      </tr><tr>
+        <td>
+          189
+        </td>
+        <td>
+          3168
+        </td>
+        <td>
+          6699
+          -
+          6719
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          YamlPositionedTreeNode.this._endPosition.==(null)
+        </td>
+      </tr><tr>
+        <td>
+          189
+        </td>
+        <td>
+          3170
+        </td>
+        <td>
+          6721
+          -
+          6724
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          3173
+        </td>
+        <td>
+          6886
+          -
+          6889
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          3174
+        </td>
+        <td>
+          6936
+          -
+          6939
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          197
+        </td>
+        <td>
+          3175
+        </td>
+        <td>
+          6986
+          -
+          6989
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          3177
+        </td>
+        <td>
+          7050
+          -
+          7086
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #F0ADAD">
+          YamlPositionedTreeNode.this.childNodes.filter(((x$1: com.atomist.tree.TreeNode) =&gt; x$1.nodeName.==(key)))
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          3176
+        </td>
+        <td>
+          7068
+          -
+          7085
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          x$1.nodeName.==(key)
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          3178
+        </td>
+        <td>
+          7273
+          -
+          7277
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          3181
+        </td>
+        <td>
+          7233
+          -
+          7327
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.yaml.YamlPositionedTreeNode.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new YamlPositionedTreeNode(name, start, null, collection.this.Seq.apply[Nothing](), nodeTags, com.atomist.tree.TreeNode.Signal)
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          3180
+        </td>
+        <td>
+          7311
+          -
+          7326
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Signal
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Signal
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          3179
+        </td>
+        <td>
+          7279
+          -
+          7284
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          3182
+        </td>
+        <td>
+          7375
+          -
+          7385
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Sequence&quot;
+        </td>
+      </tr><tr>
+        <td>
+          211
+        </td>
+        <td>
+          3183
+        </td>
+        <td>
+          7407
+          -
+          7416
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Mapping&quot;
+        </td>
+      </tr><tr>
+        <td>
+          213
+        </td>
+        <td>
+          3184
+        </td>
+        <td>
+          7434
+          -
+          7439
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Key&quot;
+        </td>
+      </tr><tr>
+        <td>
+          215
+        </td>
+        <td>
+          3185
+        </td>
+        <td>
+          7460
+          -
+          7468
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Scalar&quot;
+        </td>
+      </tr><tr>
+        <td>
+          217
+        </td>
+        <td>
+          3186
+        </td>
+        <td>
+          7489
+          -
+          7496
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;value&quot;
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

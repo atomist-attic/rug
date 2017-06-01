@@ -1,0 +1,1264 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/test/gherkin/ScenarioWorld.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.test.gherkin
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.param.{ParameterValues, SimpleParameterValues}
+</span>4 <span style=''>import com.atomist.project.archive.Rugs
+</span>5 <span style=''>import com.atomist.project.common.InvalidParametersException
+</span>6 <span style=''>import com.atomist.rug.kind.DefaultTypeRegistry
+</span>7 <span style=''>import com.atomist.rug.kind.core.ProjectMutableView
+</span>8 <span style=''>import com.atomist.rug.runtime.js.interop.NashornUtils
+</span>9 <span style=''>import com.atomist.rug.spi.{TypeRegistry, Typed, UsageSpecificTypeRegistry}
+</span>10 <span style=''>import com.atomist.rug.ts.{CortexTypeGenerator, DefaultTypeGeneratorConfig}
+</span>11 <span style=''>import com.atomist.source.git.GitRepositoryCloner
+</span>12 <span style=''>import jdk.nashorn.api.scripting.ScriptObjectMirror
+</span>13 <span style=''>
+</span>14 <span style=''>object ScenarioWorld {
+</span>15 <span style=''>
+</span>16 <span style=''>  lazy val ExtendedTypes: TypeRegistry = </span><span style='background: #AEF1AE'>CortexTypeGenerator.extendedTypes(DefaultTypeGeneratorConfig.CortexJson)</span><span style=''>
+</span>17 <span style=''>
+</span>18 <span style=''>}
+</span>19 <span style=''>
+</span>20 <span style=''>/**
+</span>21 <span style=''>  * Standard world for a scenario that lets us add bindings
+</span>22 <span style=''>  * and subclasses attach further state and helper methods.
+</span>23 <span style=''>  */
+</span>24 <span style=''>abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs], config: GherkinRunnerConfig) {
+</span>25 <span style=''>
+</span>26 <span style=''>  private var bindings: Map[String, Object] = </span><span style='background: #AEF1AE'>Map()</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>  private var abortedBy: Option[String] = </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>29 <span style=''>
+</span>30 <span style=''>  private var ipe: InvalidParametersException = _
+</span>31 <span style=''>
+</span>32 <span style=''>  private var tr: TypeRegistry = </span><span style='background: #AEF1AE'>DefaultTypeRegistry + ScenarioWorld.ExtendedTypes</span><span style=''>
+</span>33 <span style=''>
+</span>34 <span style=''>  def typeRegistry: TypeRegistry = </span><span style='background: #AEF1AE'>tr</span><span style=''>
+</span>35 <span style=''>
+</span>36 <span style=''>  def registerType(t: Typed): Unit = {
+</span>37 <span style=''>    </span><span style='background: #F0ADAD'>this.tr = new UsageSpecificTypeRegistry(this.tr, Seq(t))</span><span style=''>
+</span>38 <span style=''>  }
+</span>39 <span style=''>
+</span>40 <span style=''>  /**
+</span>41 <span style=''>    * Target for each test. Defaults to the world. First parameter to step functions
+</span>42 <span style=''>    */
+</span>43 <span style=''>  def target: AnyRef = this
+</span>44 <span style=''>
+</span>45 <span style=''>  /**
+</span>46 <span style=''>    * Was the scenario run aborted?
+</span>47 <span style=''>    */
+</span>48 <span style=''>  def aborted: Boolean = </span><span style='background: #AEF1AE'>abortedBy.isDefined</span><span style=''>
+</span>49 <span style=''>
+</span>50 <span style=''>  def abortMessage: String = </span><span style='background: #AEF1AE'>abortedBy.getOrElse(&quot;NOT aborted&quot;)</span><span style=''>
+</span>51 <span style=''>
+</span>52 <span style=''>  /**
+</span>53 <span style=''>    * Abort the scenario run, for example, because a given threw an exception.
+</span>54 <span style=''>    */
+</span>55 <span style=''>  def abort(msg: String): Unit = {
+</span>56 <span style=''>    </span><span style='background: #AEF1AE'>abortedBy = Some(msg)</span><span style=''>
+</span>57 <span style=''>  }
+</span>58 <span style=''>
+</span>59 <span style=''>  def put(key: String, value: Object): Unit = {
+</span>60 <span style=''>    </span><span style='background: #F0ADAD'>bindings = bindings + (key -&gt; value)</span><span style=''>
+</span>61 <span style=''>  }
+</span>62 <span style=''>
+</span>63 <span style=''>  def get(key: String): Object =
+</span>64 <span style=''>    </span><span style='background: #F0ADAD'>bindings.get(key).orNull</span><span style=''>
+</span>65 <span style=''>
+</span>66 <span style=''>  def clear(key: String): Unit =
+</span>67 <span style=''>    </span><span style='background: #F0ADAD'>bindings = bindings - key</span><span style=''>
+</span>68 <span style=''>
+</span>69 <span style=''>  /**
+</span>70 <span style=''>    * Invalid parameters exception that aborted execution, or null
+</span>71 <span style=''>    */
+</span>72 <span style=''>  def invalidParameters: InvalidParametersException = </span><span style='background: #AEF1AE'>ipe</span><span style=''>
+</span>73 <span style=''>
+</span>74 <span style=''>  def logInvalidParameters(ipe: InvalidParametersException): Unit = {
+</span>75 <span style=''>    </span><span style='background: #AEF1AE'>this.ipe = ipe</span><span style=''>
+</span>76 <span style=''>  }
+</span>77 <span style=''>
+</span>78 <span style=''>  protected def parameters(params: Any): ParameterValues = {
+</span>79 <span style=''>    params match {
+</span>80 <span style=''>      case som: ScriptObjectMirror =&gt;
+</span>81 <span style=''>        // The user has created a new JavaScript object, as in { foo: &quot;bar&quot; },
+</span>82 <span style=''>        // to pass up as an argument to the invoked editor. Extract its properties
+</span>83 <span style=''>        </span><span style='background: #AEF1AE'>SimpleParameterValues(NashornUtils.extractProperties(som))</span><span style=''>
+</span>84 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>SimpleParameterValues.Empty</span><span style=''>
+</span>85 <span style=''>    }
+</span>86 <span style=''>  }
+</span>87 <span style=''>
+</span>88 <span style=''>  protected case class RepoIdentification(owner: String, name: String, branch: Option[String], sha: Option[String])
+</span>89 <span style=''>
+</span>90 <span style=''>  def cloneRepo(cloneInfo: AnyRef): ProjectMutableView = {
+</span>91 <span style=''>    val rid = </span><span style='background: #AEF1AE'>extractRepoId(cloneInfo)</span><span style=''>
+</span>92 <span style=''>    val cloner = </span><span style='background: #AEF1AE'>new GitRepositoryCloner(oAuthToken = config.oAuthToken.getOrElse(&quot;&quot;))</span><span style=''>
+</span>93 <span style=''>    val as = </span><span style='background: #AEF1AE'>cloner.clone(rid.name, rid.owner, rid.branch, rid.sha)</span><span style=''>
+</span>94 <span style=''>    </span><span style='background: #AEF1AE'>new ProjectMutableView(as)</span><span style=''>
+</span>95 <span style=''>  }
+</span>96 <span style=''>
+</span>97 <span style=''>  import NashornUtils._
+</span>98 <span style=''>
+</span>99 <span style=''>  protected def extractRepoId(o: AnyRef): RepoIdentification = o match {
+</span>100 <span style=''>    case som: ScriptObjectMirror =&gt;
+</span>101 <span style=''>      val owner = </span><span style='background: #AEF1AE'>stringProperty(som, &quot;owner&quot;)</span><span style=''>
+</span>102 <span style=''>      val name = </span><span style='background: #AEF1AE'>stringProperty(som, &quot;name&quot;)</span><span style=''>
+</span>103 <span style=''>      val branch = </span><span style='background: #AEF1AE'>stringProperty(som, &quot;branch&quot;)</span><span style=''>
+</span>104 <span style=''>      val sha = </span><span style='background: #AEF1AE'>stringProperty(som, &quot;sha&quot;)</span><span style=''>
+</span>105 <span style=''>      </span><span style='background: #AEF1AE'>RepoIdentification(owner, name, Option(branch), Option(sha))</span><span style=''>
+</span>106 <span style=''>    case x =&gt;
+</span>107 <span style=''>      </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Required JavaScript object repo ID, not $x&quot;)</span><span style=''>
+</span>108 <span style=''>  }
+</span>109 <span style=''>
+</span>110 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          5834
+        </td>
+        <td>
+          680
+          -
+          752
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.CortexTypeGenerator.extendedTypes
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.ts.CortexTypeGenerator.extendedTypes(com.atomist.rug.ts.DefaultTypeGeneratorConfig.CortexJson)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5835
+        </td>
+        <td>
+          1043
+          -
+          1048
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenMapFactory.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Map.apply[String, Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          5836
+        </td>
+        <td>
+          1092
+          -
+          1096
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          5837
+        </td>
+        <td>
+          1182
+          -
+          1231
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeRegistry.+
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.DefaultTypeRegistry.+(ScenarioWorld.ExtendedTypes)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          5838
+        </td>
+        <td>
+          1268
+          -
+          1270
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.tr
+        </td>
+        <td style="background: #AEF1AE">
+          ScenarioWorld.this.tr
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          5840
+        </td>
+        <td>
+          1364
+          -
+          1370
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[com.atomist.rug.spi.Typed](t)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          5839
+        </td>
+        <td>
+          1355
+          -
+          1362
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.tr
+        </td>
+        <td style="background: #F0ADAD">
+          this.tr
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          5842
+        </td>
+        <td>
+          1315
+          -
+          1371
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.tr_=
+        </td>
+        <td style="background: #F0ADAD">
+          this.tr_=(new com.atomist.rug.spi.UsageSpecificTypeRegistry(this.tr, collection.this.Seq.apply[com.atomist.rug.spi.Typed](t)))
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          5841
+        </td>
+        <td>
+          1325
+          -
+          1371
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.UsageSpecificTypeRegistry.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new com.atomist.rug.spi.UsageSpecificTypeRegistry(this.tr, collection.this.Seq.apply[com.atomist.rug.spi.Typed](t))
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          5843
+        </td>
+        <td>
+          1578
+          -
+          1597
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #AEF1AE">
+          ScenarioWorld.this.abortedBy.isDefined
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          5844
+        </td>
+        <td>
+          1628
+          -
+          1662
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          ScenarioWorld.this.abortedBy.getOrElse[String](&quot;NOT aborted&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          5846
+        </td>
+        <td>
+          1795
+          -
+          1816
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.abortedBy_=
+        </td>
+        <td style="background: #AEF1AE">
+          ScenarioWorld.this.abortedBy_=(scala.Some.apply[String](msg))
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          5845
+        </td>
+        <td>
+          1807
+          -
+          1816
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](msg)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          5849
+        </td>
+        <td>
+          1874
+          -
+          1910
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.bindings_=
+        </td>
+        <td style="background: #F0ADAD">
+          ScenarioWorld.this.bindings_=(ScenarioWorld.this.bindings.+[Object](scala.this.Predef.ArrowAssoc[String](key).-&gt;[Object](value)))
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          5848
+        </td>
+        <td>
+          1885
+          -
+          1910
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Map.+
+        </td>
+        <td style="background: #F0ADAD">
+          ScenarioWorld.this.bindings.+[Object](scala.this.Predef.ArrowAssoc[String](key).-&gt;[Object](value))
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          5847
+        </td>
+        <td>
+          1897
+          -
+          1909
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.ArrowAssoc[String](key).-&gt;[Object](value)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          5851
+        </td>
+        <td>
+          1953
+          -
+          1977
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.Option.orNull
+        </td>
+        <td style="background: #F0ADAD">
+          ScenarioWorld.this.bindings.get(key).orNull[Object](scala.this.Predef.$conforms[Null])
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          5850
+        </td>
+        <td>
+          1971
+          -
+          1971
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.$conforms[Null]
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          5852
+        </td>
+        <td>
+          2027
+          -
+          2041
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.-
+        </td>
+        <td style="background: #F0ADAD">
+          ScenarioWorld.this.bindings.-(key)
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          5853
+        </td>
+        <td>
+          2016
+          -
+          2041
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.bindings_=
+        </td>
+        <td style="background: #F0ADAD">
+          ScenarioWorld.this.bindings_=(ScenarioWorld.this.bindings.-(key))
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          5854
+        </td>
+        <td>
+          2177
+          -
+          2180
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.ipe
+        </td>
+        <td style="background: #AEF1AE">
+          ScenarioWorld.this.ipe
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          5855
+        </td>
+        <td>
+          2256
+          -
+          2270
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.ipe_=
+        </td>
+        <td style="background: #AEF1AE">
+          this.ipe_=(ipe)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          5857
+        </td>
+        <td>
+          2564
+          -
+          2622
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValues.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.param.SimpleParameterValues.apply(com.atomist.rug.runtime.js.interop.NashornUtils.extractProperties(som))
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          5856
+        </td>
+        <td>
+          2586
+          -
+          2621
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.extractProperties
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornUtils.extractProperties(som)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          5858
+        </td>
+        <td>
+          2639
+          -
+          2666
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValues.Empty
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.param.SimpleParameterValues.Empty
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          5859
+        </td>
+        <td>
+          2868
+          -
+          2892
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.extractRepoId
+        </td>
+        <td style="background: #AEF1AE">
+          ScenarioWorld.this.extractRepoId(cloneInfo)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          5861
+        </td>
+        <td>
+          2910
+          -
+          2910
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.git.GitRepositoryCloner.&lt;init&gt;$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          git.this.GitRepositoryCloner.&lt;init&gt;$default$2
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          5860
+        </td>
+        <td>
+          2947
+          -
+          2978
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          ScenarioWorld.this.config.oAuthToken.getOrElse[String](&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          5862
+        </td>
+        <td>
+          2910
+          -
+          2979
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.git.GitRepositoryCloner.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.source.git.GitRepositoryCloner(ScenarioWorld.this.config.oAuthToken.getOrElse[String](&quot;&quot;), git.this.GitRepositoryCloner.&lt;init&gt;$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          5864
+        </td>
+        <td>
+          3016
+          -
+          3025
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.RepoIdentification.owner
+        </td>
+        <td style="background: #AEF1AE">
+          rid.owner
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          5867
+        </td>
+        <td>
+          3000
+          -
+          3000
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.git.GitRepositoryCloner.clone$default$5
+        </td>
+        <td style="background: #AEF1AE">
+          cloner.clone$default$5
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          5866
+        </td>
+        <td>
+          3039
+          -
+          3046
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.RepoIdentification.sha
+        </td>
+        <td style="background: #AEF1AE">
+          rid.sha
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          5869
+        </td>
+        <td>
+          2993
+          -
+          3047
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.git.GitRepositoryCloner.clone
+        </td>
+        <td style="background: #AEF1AE">
+          cloner.clone(rid.name, rid.owner, rid.branch, rid.sha, cloner.clone$default$5, cloner.clone$default$6)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          5863
+        </td>
+        <td>
+          3006
+          -
+          3014
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.RepoIdentification.name
+        </td>
+        <td style="background: #AEF1AE">
+          rid.name
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          5865
+        </td>
+        <td>
+          3027
+          -
+          3037
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.RepoIdentification.branch
+        </td>
+        <td style="background: #AEF1AE">
+          rid.branch
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          5868
+        </td>
+        <td>
+          3000
+          -
+          3000
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.git.GitRepositoryCloner.clone$default$6
+        </td>
+        <td style="background: #AEF1AE">
+          cloner.clone$default$6
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          5870
+        </td>
+        <td>
+          3052
+          -
+          3078
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.kind.core.ProjectMutableView(as)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          5873
+        </td>
+        <td>
+          3236
+          -
+          3264
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty(som, &quot;owner&quot;, com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          5872
+        </td>
+        <td>
+          3236
+          -
+          3236
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty$default$3
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          5871
+        </td>
+        <td>
+          3256
+          -
+          3263
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;owner&quot;
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          5875
+        </td>
+        <td>
+          3282
+          -
+          3282
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty$default$3
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          5874
+        </td>
+        <td>
+          3302
+          -
+          3308
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          5876
+        </td>
+        <td>
+          3282
+          -
+          3309
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty(som, &quot;name&quot;, com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          5879
+        </td>
+        <td>
+          3329
+          -
+          3358
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty(som, &quot;branch&quot;, com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          5878
+        </td>
+        <td>
+          3329
+          -
+          3329
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty$default$3
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          5877
+        </td>
+        <td>
+          3349
+          -
+          3357
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;branch&quot;
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          5882
+        </td>
+        <td>
+          3375
+          -
+          3401
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty(som, &quot;sha&quot;, com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          5881
+        </td>
+        <td>
+          3375
+          -
+          3375
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty$default$3
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          5880
+        </td>
+        <td>
+          3395
+          -
+          3400
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;sha&quot;
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          5884
+        </td>
+        <td>
+          3456
+          -
+          3467
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Option.apply[String](sha)
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          5883
+        </td>
+        <td>
+          3440
+          -
+          3454
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Option.apply[String](branch)
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          5885
+        </td>
+        <td>
+          3408
+          -
+          3468
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.RepoIdentification.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ScenarioWorld.this.RepoIdentification.apply(owner, name, scala.Option.apply[String](branch), scala.Option.apply[String](sha))
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          5886
+        </td>
+        <td>
+          3489
+          -
+          3570
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Required JavaScript object repo ID, not &quot;, &quot;&quot;).s(x))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

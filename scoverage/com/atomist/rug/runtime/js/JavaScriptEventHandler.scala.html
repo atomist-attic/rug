@@ -1,0 +1,1418 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/js/JavaScriptEventHandler.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.js
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.param.Tag
+</span>5 <span style=''>import com.atomist.project.archive.RugResolver
+</span>6 <span style=''>import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsContextMatch, jsSafeCommittingProxy, jsScalaHidingProxy}
+</span>7 <span style=''>import com.atomist.rug.runtime.{EventHandler, SystemEvent}
+</span>8 <span style=''>import com.atomist.rug.spi.Handlers.Plan
+</span>9 <span style=''>import com.atomist.rug.spi.{Secret, TypeRegistry}
+</span>10 <span style=''>import com.atomist.rug.{InvalidHandlerResultException, RugRuntimeException}
+</span>11 <span style=''>import com.atomist.tree.TreeNode
+</span>12 <span style=''>import com.atomist.tree.pathexpression.{NamedNodeTest, NodesWithTag, PathExpression, PathExpressionParser}
+</span>13 <span style=''>import com.atomist.util.lang.JavaScriptArray
+</span>14 <span style=''>import jdk.nashorn.api.scripting.ScriptObjectMirror
+</span>15 <span style=''>
+</span>16 <span style=''>/**
+</span>17 <span style=''>  * Discover JavaScriptEventHandlers from a Nashorn instance
+</span>18 <span style=''>  */
+</span>19 <span style=''>class JavaScriptEventHandlerFinder
+</span>20 <span style=''>  extends JavaScriptRugFinder[JavaScriptEventHandler]
+</span>21 <span style=''>    with JavaScriptUtils {
+</span>22 <span style=''>
+</span>23 <span style=''>  /**
+</span>24 <span style=''>    * Is the supplied thing valid at all?
+</span>25 <span style=''>    */
+</span>26 <span style=''>  def isValid(obj: ScriptObjectMirror): Boolean = {
+</span>27 <span style=''>    </span><span style='background: #AEF1AE'>obj.getMember(&quot;__kind&quot;) == &quot;event-handler&quot; &amp;&amp;
+</span>28 <span style=''></span><span style='background: #AEF1AE'>      obj.hasMember(&quot;handle&quot;) &amp;&amp;
+</span>29 <span style=''></span><span style='background: #AEF1AE'>      obj.getMember(&quot;handle&quot;).asInstanceOf[ScriptObjectMirror].isFunction</span><span style=''>
+</span>30 <span style=''>  }
+</span>31 <span style=''>
+</span>32 <span style=''>  override def create(jsc: JavaScriptContext, someVar: ScriptObjectMirror, resolver: Option[RugResolver]): Option[JavaScriptEventHandler] = {
+</span>33 <span style=''>    </span><span style='background: #AEF1AE'>Option(someVar.getMember(&quot;__expression&quot;)).map(v =&gt; {
+</span>34 <span style=''></span><span style='background: #AEF1AE'>      val expression: String = v.asInstanceOf[String]
+</span>35 <span style=''></span><span style='background: #AEF1AE'>      new JavaScriptEventHandler(jsc, someVar, expression, name(someVar), description(someVar), tags(someVar), secrets(someVar))
+</span>36 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
+</span>37 <span style=''>  }
+</span>38 <span style=''>}
+</span>39 <span style=''>
+</span>40 <span style=''>object JavaScriptEventHandler {
+</span>41 <span style=''>
+</span>42 <span style=''>  def rootNodeFor(targetNode: GraphNode): GraphNode =
+</span>43 <span style=''>    </span><span style='background: #AEF1AE'>SimpleContainerGraphNode(&quot;root&quot;, targetNode, TreeNode.Dynamic)</span><span style=''>
+</span>44 <span style=''>}
+</span>45 <span style=''>
+</span>46 <span style=''>/**
+</span>47 <span style=''>  * An invokable JS based handler for System Events
+</span>48 <span style=''>  */
+</span>49 <span style=''>class JavaScriptEventHandler(jsc: JavaScriptContext,
+</span>50 <span style=''>                             val handler: ScriptObjectMirror,
+</span>51 <span style=''>                             val pathExpressionStr: String,
+</span>52 <span style=''>                             override val name: String,
+</span>53 <span style=''>                             override val description: String,
+</span>54 <span style=''>                             override val tags: Seq[Tag],
+</span>55 <span style=''>                             override val secrets: Seq[Secret])
+</span>56 <span style=''>  extends EventHandler
+</span>57 <span style=''>    with JavaScriptUtils {
+</span>58 <span style=''>
+</span>59 <span style=''>  val pathExpression: PathExpression = </span><span style='background: #AEF1AE'>PathExpressionParser.parsePathExpression(pathExpressionStr)</span><span style=''>
+</span>60 <span style=''>
+</span>61 <span style=''>  override val rootNodeName: String = </span><span style='background: #AEF1AE'>pathExpression.locationSteps.head.test</span><span style=''> match {
+</span>62 <span style=''>    case nnt: NamedNodeTest =&gt; </span><span style='background: #AEF1AE'>nnt.name</span><span style=''>
+</span>63 <span style=''>    case nwt: NodesWithTag =&gt; </span><span style='background: #AEF1AE'>nwt.tag</span><span style=''>
+</span>64 <span style=''>    case _ =&gt; </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Cannot start path expression without root node&quot;)</span><span style=''>
+</span>65 <span style=''>  }
+</span>66 <span style=''>
+</span>67 <span style=''>  override def handle(ctx: RugContext, e: SystemEvent): Option[Plan] = {
+</span>68 <span style=''>    val targetNode = </span><span style='background: #AEF1AE'>ctx.treeMaterializer.rootNodeFor(e, pathExpression)</span><span style=''>
+</span>69 <span style=''>    // Put a new artificial root above to make expression work
+</span>70 <span style=''>    val root = </span><span style='background: #AEF1AE'>JavaScriptEventHandler.rootNodeFor(targetNode)</span><span style=''>
+</span>71 <span style=''>    </span><span style='background: #AEF1AE'>ctx.pathExpressionEngine.ee.evaluate(root, pathExpression, ctx, None)</span><span style=''> match {
+</span>72 <span style=''>      case Right(Nil) =&gt; </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>73 <span style=''>      case Right(matches) if </span><span style='background: #AEF1AE'>matches.nonEmpty</span><span style=''> =&gt;
+</span>74 <span style=''>        val cm = </span><span style='background: #AEF1AE'>jsContextMatch(
+</span>75 <span style=''></span><span style='background: #AEF1AE'>          wrapOne(targetNode, ctx.typeRegistry),
+</span>76 <span style=''></span><span style='background: #AEF1AE'>          wrap(matches, ctx.typeRegistry),
+</span>77 <span style=''></span><span style='background: #AEF1AE'>          ctx.pathExpressionEngine,
+</span>78 <span style=''></span><span style='background: #AEF1AE'>          ctx.contextRoot(),
+</span>79 <span style=''></span><span style='background: #AEF1AE'>          teamId = e.teamId)</span><span style=''>
+</span>80 <span style=''>        </span><span style='background: #AEF1AE'>invokeMemberFunction(
+</span>81 <span style=''></span><span style='background: #AEF1AE'>          jsc,
+</span>82 <span style=''></span><span style='background: #AEF1AE'>          handler,
+</span>83 <span style=''></span><span style='background: #AEF1AE'>          &quot;handle&quot;,
+</span>84 <span style=''></span><span style='background: #AEF1AE'>          None,
+</span>85 <span style=''></span><span style='background: #AEF1AE'>          jsScalaHidingProxy(cm, returnNotToProxy = _ =&gt; true)
+</span>86 <span style=''></span><span style='background: #AEF1AE'>        )</span><span style=''> match {
+</span>87 <span style=''>          case plan: ScriptObjectMirror =&gt; </span><span style='background: #AEF1AE'>ConstructPlan(plan, Some(this))</span><span style=''>
+</span>88 <span style=''>          case other =&gt; </span><span style='background: #F0ADAD'>throw new InvalidHandlerResultException(s&quot;$name EventHandler returned an invalid response ($other) when handling $pathExpressionStr&quot;)</span><span style=''>
+</span>89 <span style=''>        }
+</span>90 <span style=''>      case Right(matches) if </span><span style='background: #F0ADAD'>matches.isEmpty</span><span style=''> =&gt; </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>91 <span style=''>      case Left(failure) =&gt;
+</span>92 <span style=''>        </span><span style='background: #F0ADAD'>throw new RugRuntimeException(pathExpressionStr,
+</span>93 <span style=''></span><span style='background: #F0ADAD'>          s&quot;Error evaluating path expression $pathExpression: [$failure]&quot;)</span><span style=''>
+</span>94 <span style=''>    }
+</span>95 <span style=''>  }
+</span>96 <span style=''>
+</span>97 <span style=''>  private def wrapOne(n: GraphNode, typeRegistry: TypeRegistry): AnyRef = n match {
+</span>98 <span style=''>    case nbgn: NashornMapBackedGraphNode =&gt;
+</span>99 <span style=''>      </span><span style='background: #AEF1AE'>nbgn.scriptObject</span><span style=''>
+</span>100 <span style=''>    case _ =&gt;
+</span>101 <span style=''>      </span><span style='background: #AEF1AE'>jsSafeCommittingProxy.wrapOne(n, typeRegistry)</span><span style=''>
+</span>102 <span style=''>  }
+</span>103 <span style=''>
+</span>104 <span style=''>  import scala.collection.JavaConverters._
+</span>105 <span style=''>
+</span>106 <span style=''>  private def wrap(nodes: Seq[GraphNode], typeRegistry: TypeRegistry): java.util.List[AnyRef] =
+</span>107 <span style=''>    </span><span style='background: #AEF1AE'>new JavaScriptArray(nodes.map(wrapOne(_, typeRegistry)).asJava)</span><span style=''>
+</span>108 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          3468
+        </td>
+        <td>
+          1065
+          -
+          1080
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;event-handler&quot;
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          3467
+        </td>
+        <td>
+          1052
+          -
+          1060
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;__kind&quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          3471
+        </td>
+        <td>
+          1038
+          -
+          1190
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          obj.getMember(&quot;__kind&quot;).==(&quot;event-handler&quot;).&amp;&amp;(obj.hasMember(&quot;handle&quot;)).&amp;&amp;(obj.getMember(&quot;handle&quot;).asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror].isFunction())
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          3469
+        </td>
+        <td>
+          1090
+          -
+          1113
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.hasMember
+        </td>
+        <td style="background: #AEF1AE">
+          obj.hasMember(&quot;handle&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          3470
+        </td>
+        <td>
+          1123
+          -
+          1190
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.isFunction
+        </td>
+        <td style="background: #AEF1AE">
+          obj.getMember(&quot;handle&quot;).asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror].isFunction()
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          3479
+        </td>
+        <td>
+          1342
+          -
+          1584
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Option.apply[Object](someVar.getMember(&quot;__expression&quot;)).map[com.atomist.rug.runtime.js.JavaScriptEventHandler](((v: Object) =&gt; {
+  val expression: String = v.asInstanceOf[String];
+  new JavaScriptEventHandler(jsc, someVar, expression, JavaScriptEventHandlerFinder.this.name(someVar), JavaScriptEventHandlerFinder.this.description(someVar), JavaScriptEventHandlerFinder.this.tags(someVar), JavaScriptEventHandlerFinder.this.secrets(someVar))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          3472
+        </td>
+        <td>
+          1349
+          -
+          1382
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          someVar.getMember(&quot;__expression&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          3473
+        </td>
+        <td>
+          1426
+          -
+          1448
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          v.asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3474
+        </td>
+        <td>
+          1508
+          -
+          1521
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.name
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptEventHandlerFinder.this.name(someVar)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3477
+        </td>
+        <td>
+          1560
+          -
+          1576
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.secrets
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptEventHandlerFinder.this.secrets(someVar)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3476
+        </td>
+        <td>
+          1545
+          -
+          1558
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.tags
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptEventHandlerFinder.this.tags(someVar)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3475
+        </td>
+        <td>
+          1523
+          -
+          1543
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.description
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptEventHandlerFinder.this.description(someVar)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3478
+        </td>
+        <td>
+          1455
+          -
+          1577
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptEventHandler.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new JavaScriptEventHandler(jsc, someVar, expression, JavaScriptEventHandlerFinder.this.name(someVar), JavaScriptEventHandlerFinder.this.description(someVar), JavaScriptEventHandlerFinder.this.tags(someVar), JavaScriptEventHandlerFinder.this.secrets(someVar))
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          3480
+        </td>
+        <td>
+          1708
+          -
+          1714
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;root&quot;
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          3482
+        </td>
+        <td>
+          1683
+          -
+          1745
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleContainerGraphNode.apply(&quot;root&quot;, targetNode, com.atomist.tree.TreeNode.Dynamic)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          3481
+        </td>
+        <td>
+          1728
+          -
+          1744
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Dynamic
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Dynamic
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3483
+        </td>
+        <td>
+          2357
+          -
+          2374
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptEventHandler.pathExpressionStr
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptEventHandler.this.pathExpressionStr
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3484
+        </td>
+        <td>
+          2316
+          -
+          2375
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionParser.parsePathExpression
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.pathexpression.PathExpressionParser.parsePathExpression(JavaScriptEventHandler.this.pathExpressionStr)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          3485
+        </td>
+        <td>
+          2415
+          -
+          2453
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.LocationStep.test
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptEventHandler.this.pathExpression.locationSteps.head.test
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          3486
+        </td>
+        <td>
+          2493
+          -
+          2501
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NamedNodeTest.name
+        </td>
+        <td style="background: #AEF1AE">
+          nnt.name
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          3487
+        </td>
+        <td>
+          2532
+          -
+          2539
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NodesWithTag.tag
+        </td>
+        <td style="background: #AEF1AE">
+          nwt.tag
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          3488
+        </td>
+        <td>
+          2554
+          -
+          2639
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Cannot start path expression without root node&quot;).s())
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          3489
+        </td>
+        <td>
+          2775
+          -
+          2789
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptEventHandler.pathExpression
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptEventHandler.this.pathExpression
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          3490
+        </td>
+        <td>
+          2739
+          -
+          2790
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.TreeMaterializer.rootNodeFor
+        </td>
+        <td style="background: #AEF1AE">
+          ctx.treeMaterializer.rootNodeFor(e, JavaScriptEventHandler.this.pathExpression)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          3491
+        </td>
+        <td>
+          2869
+          -
+          2915
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptEventHandler.rootNodeFor
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptEventHandler.rootNodeFor(targetNode)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          3492
+        </td>
+        <td>
+          2963
+          -
+          2977
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptEventHandler.pathExpression
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptEventHandler.this.pathExpression
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          3494
+        </td>
+        <td>
+          2920
+          -
+          2989
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExpressionEngine.evaluate
+        </td>
+        <td style="background: #AEF1AE">
+          ctx.pathExpressionEngine.ee.evaluate(root, JavaScriptEventHandler.this.pathExpression, ctx, scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          3493
+        </td>
+        <td>
+          2984
+          -
+          2988
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          3495
+        </td>
+        <td>
+          3023
+          -
+          3027
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          3496
+        </td>
+        <td>
+          3057
+          -
+          3073
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          matches.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          3504
+        </td>
+        <td>
+          3094
+          -
+          3295
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsContextMatch.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.jsContextMatch.apply(JavaScriptEventHandler.this.wrapOne(targetNode, ctx.typeRegistry), JavaScriptEventHandler.this.wrap(matches, ctx.typeRegistry), ctx.pathExpressionEngine, ctx.contextRoot(), e.teamId)
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          3498
+        </td>
+        <td>
+          3120
+          -
+          3157
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptEventHandler.wrapOne
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptEventHandler.this.wrapOne(targetNode, ctx.typeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          3497
+        </td>
+        <td>
+          3140
+          -
+          3156
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.ExecutionContext.typeRegistry
+        </td>
+        <td style="background: #AEF1AE">
+          ctx.typeRegistry
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          3500
+        </td>
+        <td>
+          3169
+          -
+          3200
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptEventHandler.wrap
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptEventHandler.this.wrap(matches, ctx.typeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          3499
+        </td>
+        <td>
+          3183
+          -
+          3199
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.ExecutionContext.typeRegistry
+        </td>
+        <td style="background: #AEF1AE">
+          ctx.typeRegistry
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          3501
+        </td>
+        <td>
+          3212
+          -
+          3236
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.RugContext.pathExpressionEngine
+        </td>
+        <td style="background: #AEF1AE">
+          ctx.pathExpressionEngine
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          3502
+        </td>
+        <td>
+          3248
+          -
+          3265
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.RugContext.contextRoot
+        </td>
+        <td style="background: #AEF1AE">
+          ctx.contextRoot()
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          3503
+        </td>
+        <td>
+          3286
+          -
+          3294
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.SystemEvent.teamId
+        </td>
+        <td style="background: #AEF1AE">
+          e.teamId
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          3513
+        </td>
+        <td>
+          3304
+          -
+          3468
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.invokeMemberFunction
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptEventHandler.this.invokeMemberFunction(JavaScriptEventHandler.this.jsc, JavaScriptEventHandler.this.handler, &quot;handle&quot;, scala.None, {
+  &lt;artifact&gt; val x$3: com.atomist.rug.runtime.js.interop.jsContextMatch = cm;
+  &lt;artifact&gt; val x$4: Any =&gt; Boolean @scala.reflect.internal.annotations.uncheckedBounds = ((x$1: Any) =&gt; true);
+  &lt;artifact&gt; val x$5: Set[String] @scala.reflect.internal.annotations.uncheckedBounds = com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$2;
+  &lt;artifact&gt; val x$6: com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.MethodValidator = com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$3;
+  com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply(x$3, x$5, x$6, x$4)
+})
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          3505
+        </td>
+        <td>
+          3336
+          -
+          3339
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptEventHandler.jsc
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptEventHandler.this.jsc
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          3506
+        </td>
+        <td>
+          3351
+          -
+          3358
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptEventHandler.handler
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptEventHandler.this.handler
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          3507
+        </td>
+        <td>
+          3370
+          -
+          3378
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;handle&quot;
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          3508
+        </td>
+        <td>
+          3390
+          -
+          3394
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          3510
+        </td>
+        <td>
+          3406
+          -
+          3406
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          3512
+        </td>
+        <td>
+          3406
+          -
+          3458
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply(x$3, x$5, x$6, x$4)
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          3509
+        </td>
+        <td>
+          3453
+          -
+          3457
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          3511
+        </td>
+        <td>
+          3406
+          -
+          3406
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          3515
+        </td>
+        <td>
+          3520
+          -
+          3551
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.ConstructPlan.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ConstructPlan.apply(plan, scala.Some.apply[com.atomist.rug.runtime.js.JavaScriptEventHandler](this))
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          3514
+        </td>
+        <td>
+          3540
+          -
+          3550
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.runtime.js.JavaScriptEventHandler](this)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          3516
+        </td>
+        <td>
+          3576
+          -
+          3709
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.InvalidHandlerResultException(scala.StringContext.apply(&quot;&quot;, &quot; EventHandler returned an invalid response (&quot;, &quot;) when handling &quot;, &quot;&quot;).s(JavaScriptEventHandler.this.name, other, JavaScriptEventHandler.this.pathExpressionStr))
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          3518
+        </td>
+        <td>
+          3768
+          -
+          3772
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          3517
+        </td>
+        <td>
+          3749
+          -
+          3764
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #F0ADAD">
+          matches.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          3519
+        </td>
+        <td>
+          3809
+          -
+          3932
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugRuntimeException(JavaScriptEventHandler.this.pathExpressionStr, scala.StringContext.apply(&quot;Error evaluating path expression &quot;, &quot;: [&quot;, &quot;]&quot;).s(JavaScriptEventHandler.this.pathExpression, failure), rug.this.RugRuntimeException.&lt;init&gt;$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          3520
+        </td>
+        <td>
+          4078
+          -
+          4095
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.scriptObject
+        </td>
+        <td style="background: #AEF1AE">
+          nbgn.scriptObject
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          3521
+        </td>
+        <td>
+          4116
+          -
+          4162
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.wrapOne
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.wrapOne(n, typeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          3525
+        </td>
+        <td>
+          4332
+          -
+          4374
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsJava.asJava
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.seqAsJavaListConverter[AnyRef](nodes.map[AnyRef, Seq[AnyRef]](((x$2: com.atomist.graph.GraphNode) =&gt; JavaScriptEventHandler.this.wrapOne(x$2, typeRegistry)))(collection.this.Seq.canBuildFrom[AnyRef])).asJava
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          3522
+        </td>
+        <td>
+          4342
+          -
+          4366
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptEventHandler.wrapOne
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptEventHandler.this.wrapOne(x$2, typeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          3524
+        </td>
+        <td>
+          4332
+          -
+          4367
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          nodes.map[AnyRef, Seq[AnyRef]](((x$2: com.atomist.graph.GraphNode) =&gt; JavaScriptEventHandler.this.wrapOne(x$2, typeRegistry)))(collection.this.Seq.canBuildFrom[AnyRef])
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          3526
+        </td>
+        <td>
+          4312
+          -
+          4375
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.JavaScriptArray[AnyRef](scala.collection.JavaConverters.seqAsJavaListConverter[AnyRef](nodes.map[AnyRef, Seq[AnyRef]](((x$2: com.atomist.graph.GraphNode) =&gt; JavaScriptEventHandler.this.wrapOne(x$2, typeRegistry)))(collection.this.Seq.canBuildFrom[AnyRef])).asJava)
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          3523
+        </td>
+        <td>
+          4341
+          -
+          4341
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[AnyRef]
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

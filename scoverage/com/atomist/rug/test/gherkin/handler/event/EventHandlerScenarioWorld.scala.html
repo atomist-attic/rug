@@ -1,0 +1,1234 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/test/gherkin/handler/event/EventHandlerScenarioWorld.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.test.gherkin.handler.event
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.project.archive.Rugs
+</span>5 <span style=''>import com.atomist.rug.RugNotFoundException
+</span>6 <span style=''>import com.atomist.rug.runtime.js.{JavaScriptEventHandler, RugContext}
+</span>7 <span style=''>import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode
+</span>8 <span style=''>import com.atomist.rug.runtime.{EventHandler, SystemEvent}
+</span>9 <span style=''>import com.atomist.rug.test.gherkin.{Definitions, GherkinExecutionListener, GherkinRunnerConfig, PathExpressionEvaluation}
+</span>10 <span style=''>import com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld
+</span>11 <span style=''>import com.atomist.tree.TreeMaterializer
+</span>12 <span style=''>import com.atomist.tree.pathexpression.PathExpression
+</span>13 <span style=''>
+</span>14 <span style=''>import scala.collection.mutable.ListBuffer
+</span>15 <span style=''>
+</span>16 <span style=''>/**
+</span>17 <span style=''>  * World implementation for testing event handlers. Allows us to pump in events
+</span>18 <span style=''>  * and test the reaction
+</span>19 <span style=''>  */
+</span>20 <span style=''>class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = None, listeners: Seq[GherkinExecutionListener], config: GherkinRunnerConfig)
+</span>21 <span style=''>  extends AbstractHandlerScenarioWorld(definitions, rugs, listeners, config) {
+</span>22 <span style=''>
+</span>23 <span style=''>  private val registeredHandlers = </span><span style='background: #AEF1AE'>ListBuffer.empty[EventHandler]</span><span style=''>
+</span>24 <span style=''>
+</span>25 <span style=''>  def eventHandler(name: String): EventHandler = {
+</span>26 <span style=''>    </span><span style='background: #AEF1AE'>rugs</span><span style=''> match {
+</span>27 <span style=''>      case Some(r) =&gt;
+</span>28 <span style=''>        </span><span style='background: #AEF1AE'>r.eventHandlers.find(e =&gt; e.name == name)</span><span style=''> match {
+</span>29 <span style=''>          case Some(e) =&gt; e
+</span>30 <span style=''>          case _ =&gt; </span><span style='background: #F0ADAD'>throw new RugNotFoundException(
+</span>31 <span style=''></span><span style='background: #F0ADAD'>            s&quot;EventHandler with name '$name' can not be found in current context. Known EventHandlers are [${r.eventHandlerNames.mkString(&quot;, &quot;)}]&quot;)</span><span style=''>
+</span>32 <span style=''>        }
+</span>33 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>throw new RugNotFoundException(&quot;No context provided&quot;)</span><span style=''>
+</span>34 <span style=''>    }
+</span>35 <span style=''>  }
+</span>36 <span style=''>
+</span>37 <span style=''>  def registerHandler(name: String): EventHandler = {
+</span>38 <span style=''>    val eh = </span><span style='background: #AEF1AE'>eventHandler(name)</span><span style=''>
+</span>39 <span style=''>    </span><span style='background: #AEF1AE'>registeredHandlers.append(eh)</span><span style=''>
+</span>40 <span style=''>    eh
+</span>41 <span style=''>  }
+</span>42 <span style=''>
+</span>43 <span style=''>  /**
+</span>44 <span style=''>    * Publish an event constructed in TypeScript using our API
+</span>45 <span style=''>    * (normally a cortex stub)
+</span>46 <span style=''>    * It's hopefully a ScriptObjectMirror
+</span>47 <span style=''>    */
+</span>48 <span style=''>  def sendEvent(e: AnyRef): Unit = {
+</span>49 <span style=''>    val gn = </span><span style='background: #AEF1AE'>NashornMapBackedGraphNode.toGraphNode(e).getOrElse(
+</span>50 <span style=''></span><span style='background: #AEF1AE'>      </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Cannot make a GraphNode out of $e&quot;)</span><span style='background: #AEF1AE'>
+</span>51 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>52 <span style=''>    if (</span><span style='background: #AEF1AE'>registeredHandlers.isEmpty</span><span style=''>)
+</span>53 <span style=''>      </span><span style='background: #AEF1AE'>throw new IllegalStateException(&quot;No handler is registered&quot;)</span><span style=''>
+</span>54 <span style=''>    </span><span style='background: #AEF1AE'>for (h &lt;- registeredHandlers) {
+</span>55 <span style=''></span><span style='background: #AEF1AE'>      handleEventNode(gn, h)</span><span style=''>
+</span>56 <span style=''>    }
+</span>57 <span style=''>  }
+</span>58 <span style=''>
+</span>59 <span style=''>  private def handleEventNode(eventNode: GraphNode, h: EventHandler) = {
+</span>60 <span style=''>    if (</span><span style='background: #AEF1AE'>eventNode.nodeTags.contains(h.rootNodeName)</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>61 <span style=''></span><span style='background: #AEF1AE'>      val tm = new TreeMaterializer {
+</span>62 <span style=''></span><span style='background: #AEF1AE'>        override def rootNodeFor(e: SystemEvent, pe: PathExpression) = eventNode
+</span>63 <span style=''></span><span style='background: #AEF1AE'>
+</span>64 <span style=''></span><span style='background: #AEF1AE'>        override def hydrate(teamId: String, rawRootNode: GraphNode, pe: PathExpression) = rawRootNode
+</span>65 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>66 <span style=''></span><span style='background: #AEF1AE'>      val rugContext: RugContext = createRugContext(tm)
+</span>67 <span style=''></span><span style='background: #AEF1AE'>
+</span>68 <span style=''></span><span style='background: #AEF1AE'>      // Check if it matches, if we can
+</span>69 <span style=''></span><span style='background: #AEF1AE'>      notifyListenersOfMatchResult(eventNode, h, rugContext)
+</span>70 <span style=''></span><span style='background: #AEF1AE'>
+</span>71 <span style=''></span><span style='background: #AEF1AE'>      //println(&quot;About to handle event&quot;)
+</span>72 <span style=''></span><span style='background: #AEF1AE'>      val plan = h.handle(rugContext, SystemEvent(rugContext.teamId, h.rootNodeName, 1))
+</span>73 <span style=''></span><span style='background: #AEF1AE'>      plan.foreach(recordPlan(h.name, _))
+</span>74 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>75 <span style=''>    else {
+</span>76 <span style=''>      </span><span style='background: #AEF1AE'>notifyListenersOfMatchPossible(eventNode, h)</span><span style=''>
+</span>77 <span style=''>    }
+</span>78 <span style=''>  }
+</span>79 <span style=''>
+</span>80 <span style=''>  private def notifyListenersOfMatchResult(eventNode: GraphNode, h: EventHandler, rugContext: RugContext) = {
+</span>81 <span style=''>    h match {
+</span>82 <span style=''>      case jsh: JavaScriptEventHandler =&gt;
+</span>83 <span style=''>        </span><span style='background: #AEF1AE'>rugContext.pathExpressionEngine.ee.evaluate(JavaScriptEventHandler.rootNodeFor(eventNode), jsh.pathExpression, rugContext)</span><span style=''> match {
+</span>84 <span style=''>          case Right(nodes) =&gt;
+</span>85 <span style=''>            //println(s&quot;Results for [${jsh.pathExpressionStr}] were ${nodes}&quot;)
+</span>86 <span style=''>            </span><span style='background: #AEF1AE'>for (l &lt;- listeners)
+</span>87 <span style=''></span><span style='background: #AEF1AE'>              l.pathExpressionResult(PathExpressionEvaluation(jsh.pathExpressionStr, eventNode, nodes))</span><span style=''>
+</span>88 <span style=''>          case Left(_) </span><span style='background: #F0ADAD'>=&gt;</span><span style=''>
+</span>89 <span style=''>          // The evaluation failed. Who cares. The test will blow up anyway
+</span>90 <span style=''>        }
+</span>91 <span style=''>      case _ </span><span style='background: #F0ADAD'>=&gt;</span><span style=''>
+</span>92 <span style=''>      // We can't find the path expression to check the match for
+</span>93 <span style=''>    }
+</span>94 <span style=''>  }
+</span>95 <span style=''>
+</span>96 <span style=''>  private def notifyListenersOfMatchPossible(eventNode: GraphNode, h: EventHandler) = {
+</span>97 <span style=''>    h match {
+</span>98 <span style=''>      case jsh: JavaScriptEventHandler =&gt;
+</span>99 <span style=''>        </span><span style='background: #AEF1AE'>for (l &lt;- listeners)
+</span>100 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>l.pathExpressionResult(PathExpressionEvaluation(jsh.pathExpressionStr, eventNode, Nil))</span><span style=''>
+</span>101 <span style=''>      case _ </span><span style='background: #F0ADAD'>=&gt;</span><span style=''>
+</span>102 <span style=''>      // We can't find the path expression to check the match for
+</span>103 <span style=''>    }
+</span>104 <span style=''>  }
+</span>105 <span style=''>
+</span>106 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          6028
+        </td>
+        <td>
+          1092
+          -
+          1122
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.empty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.mutable.ListBuffer.empty[com.atomist.rug.runtime.EventHandler]
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          6029
+        </td>
+        <td>
+          1179
+          -
+          1183
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.event.EventHandlerScenarioWorld.rugs
+        </td>
+        <td style="background: #AEF1AE">
+          EventHandlerScenarioWorld.this.rugs
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          6031
+        </td>
+        <td>
+          1222
+          -
+          1263
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #AEF1AE">
+          r.eventHandlers.find(((e: com.atomist.rug.runtime.EventHandler) =&gt; e.name.==(name)))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          6030
+        </td>
+        <td>
+          1248
+          -
+          1262
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          e.name.==(name)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          6032
+        </td>
+        <td>
+          1320
+          -
+          1499
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugNotFoundException(scala.StringContext.apply(&quot;EventHandler with name \'&quot;, &quot;\' can not be found in current context. Known EventHandlers are [&quot;, &quot;]&quot;).s(name, r.eventHandlerNames.mkString(&quot;, &quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          6033
+        </td>
+        <td>
+          1526
+          -
+          1579
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugNotFoundException(&quot;No context provided&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          6034
+        </td>
+        <td>
+          1658
+          -
+          1676
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.event.EventHandlerScenarioWorld.eventHandler
+        </td>
+        <td style="background: #AEF1AE">
+          EventHandlerScenarioWorld.this.eventHandler(name)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          6035
+        </td>
+        <td>
+          1681
+          -
+          1710
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.BufferLike.append
+        </td>
+        <td style="background: #AEF1AE">
+          EventHandlerScenarioWorld.this.registeredHandlers.append(eh)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          6036
+        </td>
+        <td>
+          1948
+          -
+          1948
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.toGraphNode$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.toGraphNode$default$2
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          6038
+        </td>
+        <td>
+          1922
+          -
+          2058
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.toGraphNode(e, com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.toGraphNode$default$2).getOrElse[com.atomist.graph.GraphNode](throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Cannot make a GraphNode out of &quot;, &quot;&quot;).s(e)))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          6037
+        </td>
+        <td>
+          1980
+          -
+          2052
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Cannot make a GraphNode out of &quot;, &quot;&quot;).s(e))
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          6043
+        </td>
+        <td>
+          2063
+          -
+          2063
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          6042
+        </td>
+        <td>
+          2063
+          -
+          2063
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          6039
+        </td>
+        <td>
+          2067
+          -
+          2093
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.generic.TraversableForwarder.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          EventHandlerScenarioWorld.this.registeredHandlers.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          6040
+        </td>
+        <td>
+          2101
+          -
+          2160
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new java.this.lang.IllegalStateException(&quot;No handler is registered&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          6041
+        </td>
+        <td>
+          2101
+          -
+          2160
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new java.this.lang.IllegalStateException(&quot;No handler is registered&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          6045
+        </td>
+        <td>
+          2165
+          -
+          2225
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.TraversableForwarder.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          EventHandlerScenarioWorld.this.registeredHandlers.foreach[Unit](((h: com.atomist.rug.runtime.EventHandler) =&gt; EventHandlerScenarioWorld.this.handleEventNode(gn, h)))
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          6044
+        </td>
+        <td>
+          2203
+          -
+          2225
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.event.EventHandlerScenarioWorld.handleEventNode
+        </td>
+        <td style="background: #AEF1AE">
+          EventHandlerScenarioWorld.this.handleEventNode(gn, h)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          6046
+        </td>
+        <td>
+          2346
+          -
+          2360
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.EventHandler.rootNodeName
+        </td>
+        <td style="background: #AEF1AE">
+          h.rootNodeName
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          6059
+        </td>
+        <td>
+          2363
+          -
+          2932
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val tm: com.atomist.tree.TreeMaterializer = {
+    final class $anon extends AnyRef with com.atomist.tree.TreeMaterializer {
+      def &lt;init&gt;(): &lt;$anon: com.atomist.tree.TreeMaterializer&gt; = {
+        $anon.super.&lt;init&gt;();
+        ()
+      };
+      override def rootNodeFor(e: com.atomist.rug.runtime.SystemEvent, pe: com.atomist.tree.pathexpression.PathExpression): com.atomist.graph.GraphNode = eventNode;
+      override def hydrate(teamId: String, rawRootNode: com.atomist.graph.GraphNode, pe: com.atomist.tree.pathexpression.PathExpression): com.atomist.graph.GraphNode = rawRootNode
+    };
+    new $anon()
+  };
+  val rugContext: com.atomist.rug.runtime.js.RugContext = EventHandlerScenarioWorld.this.createRugContext(tm);
+  EventHandlerScenarioWorld.this.notifyListenersOfMatchResult(eventNode, h, rugContext);
+  val plan: Option[com.atomist.rug.spi.Handlers.Plan] = h.handle(rugContext, com.atomist.rug.runtime.SystemEvent.apply(rugContext.teamId, h.rootNodeName, 1L));
+  plan.foreach[Unit](((x$1: com.atomist.rug.spi.Handlers.Plan) =&gt; EventHandlerScenarioWorld.this.recordPlan(h.name, x$1)))
+}
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          6047
+        </td>
+        <td>
+          2318
+          -
+          2361
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          eventNode.nodeTags.contains(h.rootNodeName)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          6048
+        </td>
+        <td>
+          2380
+          -
+          2383
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.event.EventHandlerScenarioWorld.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          6049
+        </td>
+        <td>
+          2631
+          -
+          2651
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld.createRugContext
+        </td>
+        <td style="background: #AEF1AE">
+          EventHandlerScenarioWorld.this.createRugContext(tm)
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          6050
+        </td>
+        <td>
+          2699
+          -
+          2753
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.event.EventHandlerScenarioWorld.notifyListenersOfMatchResult
+        </td>
+        <td style="background: #AEF1AE">
+          EventHandlerScenarioWorld.this.notifyListenersOfMatchResult(eventNode, h, rugContext)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          6055
+        </td>
+        <td>
+          2813
+          -
+          2884
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.EventHandler.handle
+        </td>
+        <td style="background: #AEF1AE">
+          h.handle(rugContext, com.atomist.rug.runtime.SystemEvent.apply(rugContext.teamId, h.rootNodeName, 1L))
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          6052
+        </td>
+        <td>
+          2865
+          -
+          2879
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.EventHandler.rootNodeName
+        </td>
+        <td style="background: #AEF1AE">
+          h.rootNodeName
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          6051
+        </td>
+        <td>
+          2846
+          -
+          2863
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.RugContext.teamId
+        </td>
+        <td style="background: #AEF1AE">
+          rugContext.teamId
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          6054
+        </td>
+        <td>
+          2834
+          -
+          2883
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.SystemEvent.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.SystemEvent.apply(rugContext.teamId, h.rootNodeName, 1L)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          6053
+        </td>
+        <td>
+          2881
+          -
+          2882
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1L
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6058
+        </td>
+        <td>
+          2891
+          -
+          2926
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          plan.foreach[Unit](((x$1: com.atomist.rug.spi.Handlers.Plan) =&gt; EventHandlerScenarioWorld.this.recordPlan(h.name, x$1)))
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6057
+        </td>
+        <td>
+          2904
+          -
+          2925
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld.recordPlan
+        </td>
+        <td style="background: #AEF1AE">
+          EventHandlerScenarioWorld.this.recordPlan(h.name, x$1)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6056
+        </td>
+        <td>
+          2915
+          -
+          2921
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.Rug.name
+        </td>
+        <td style="background: #AEF1AE">
+          h.name
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          6061
+        </td>
+        <td>
+          2950
+          -
+          2994
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.event.EventHandlerScenarioWorld.notifyListenersOfMatchPossible
+        </td>
+        <td style="background: #AEF1AE">
+          EventHandlerScenarioWorld.this.notifyListenersOfMatchPossible(eventNode, h)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          6060
+        </td>
+        <td>
+          2950
+          -
+          2994
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.event.EventHandlerScenarioWorld.notifyListenersOfMatchPossible
+        </td>
+        <td style="background: #AEF1AE">
+          EventHandlerScenarioWorld.this.notifyListenersOfMatchPossible(eventNode, h)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          6064
+        </td>
+        <td>
+          3271
+          -
+          3289
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptEventHandler.pathExpression
+        </td>
+        <td style="background: #AEF1AE">
+          jsh.pathExpression
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          6063
+        </td>
+        <td>
+          3224
+          -
+          3269
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptEventHandler.rootNodeFor
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.JavaScriptEventHandler.rootNodeFor(eventNode)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          6066
+        </td>
+        <td>
+          3180
+          -
+          3302
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExpressionEngine.evaluate
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.evaluate(x$2, x$3, x$4, x$5)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          6065
+        </td>
+        <td>
+          3215
+          -
+          3215
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExpressionEngine.evaluate$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.evaluate$default$4
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          6062
+        </td>
+        <td>
+          3180
+          -
+          3214
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsPathExpressionEngine.ee
+        </td>
+        <td style="background: #AEF1AE">
+          rugContext.pathExpressionEngine.ee
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          6070
+        </td>
+        <td>
+          3433
+          -
+          3557
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          EventHandlerScenarioWorld.this.listeners.foreach[Unit](((l: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; l.pathExpressionResult(com.atomist.rug.test.gherkin.PathExpressionEvaluation.apply(jsh.pathExpressionStr, eventNode, nodes))))
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          6067
+        </td>
+        <td>
+          3516
+          -
+          3537
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptEventHandler.pathExpressionStr
+        </td>
+        <td style="background: #AEF1AE">
+          jsh.pathExpressionStr
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          6069
+        </td>
+        <td>
+          3468
+          -
+          3557
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinExecutionListener.pathExpressionResult
+        </td>
+        <td style="background: #AEF1AE">
+          l.pathExpressionResult(com.atomist.rug.test.gherkin.PathExpressionEvaluation.apply(jsh.pathExpressionStr, eventNode, nodes))
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          6068
+        </td>
+        <td>
+          3491
+          -
+          3556
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.PathExpressionEvaluation.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.test.gherkin.PathExpressionEvaluation.apply(jsh.pathExpressionStr, eventNode, nodes)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          6071
+        </td>
+        <td>
+          3581
+          -
+          3583
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          6072
+        </td>
+        <td>
+          3683
+          -
+          3685
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          6077
+        </td>
+        <td>
+          3915
+          -
+          4033
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          EventHandlerScenarioWorld.this.listeners.foreach[Unit](((l: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; l.pathExpressionResult(com.atomist.rug.test.gherkin.PathExpressionEvaluation.apply(jsh.pathExpressionStr, eventNode, immutable.this.Nil))))
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          6073
+        </td>
+        <td>
+          3994
+          -
+          4015
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptEventHandler.pathExpressionStr
+        </td>
+        <td style="background: #F0ADAD">
+          jsh.pathExpressionStr
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          6076
+        </td>
+        <td>
+          3946
+          -
+          4033
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinExecutionListener.pathExpressionResult
+        </td>
+        <td style="background: #F0ADAD">
+          l.pathExpressionResult(com.atomist.rug.test.gherkin.PathExpressionEvaluation.apply(jsh.pathExpressionStr, eventNode, immutable.this.Nil))
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          6075
+        </td>
+        <td>
+          3969
+          -
+          4032
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.PathExpressionEvaluation.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.test.gherkin.PathExpressionEvaluation.apply(jsh.pathExpressionStr, eventNode, immutable.this.Nil)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          6074
+        </td>
+        <td>
+          4028
+          -
+          4031
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          6078
+        </td>
+        <td>
+          4047
+          -
+          4049
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

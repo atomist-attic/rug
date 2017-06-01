@@ -1,0 +1,305 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/java/GitHubJavaParserExtractor.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.java
+</span>2 <span style=''>
+</span>3 <span style=''>import java.io.InputStreamReader
+</span>4 <span style=''>import java.util.{List =&gt; JList}
+</span>5 <span style=''>
+</span>6 <span style=''>import com.atomist.source.{ArtifactSourceAccessException, FileArtifact}
+</span>7 <span style=''>import com.github.javaparser.ast.CompilationUnit
+</span>8 <span style=''>import com.github.javaparser.{JavaParser, ParseException}
+</span>9 <span style=''>import com.typesafe.scalalogging.LazyLogging
+</span>10 <span style=''>
+</span>11 <span style=''>case class FileAndCompilationUnit(file: FileArtifact, compilationUnit: CompilationUnit)
+</span>12 <span style=''>
+</span>13 <span style=''>import com.atomist.util.Utils.withCloseable
+</span>14 <span style=''>
+</span>15 <span style=''>import scala.collection.JavaConverters._
+</span>16 <span style=''>
+</span>17 <span style=''>/**
+</span>18 <span style=''>  * Extract JavaParser CompilationUnits from Artifact Source.
+</span>19 <span style=''>  */
+</span>20 <span style=''>object GitHubJavaParserExtractor extends Function[JList[FileArtifact], Seq[FileAndCompilationUnit]] with LazyLogging {
+</span>21 <span style=''>
+</span>22 <span style=''>  override def apply(javaFiles: JList[FileArtifact]): Seq[FileAndCompilationUnit] = {
+</span>23 <span style=''>    </span><span style='background: #AEF1AE'>javaFiles.asScala.map(f =&gt; {
+</span>24 <span style=''></span><span style='background: #AEF1AE'>      logger.debug(s&quot;Looking at Java artifact $f using $this&quot;)
+</span>25 <span style=''></span><span style='background: #AEF1AE'>      withCloseable(f.inputStream())(is =&gt;
+</span>26 <span style=''></span><span style='background: #AEF1AE'>        withCloseable(new InputStreamReader(is))(reader =&gt; {
+</span>27 <span style=''></span><span style='background: #AEF1AE'>          try {
+</span>28 <span style=''></span><span style='background: #AEF1AE'>            FileAndCompilationUnit(f, JavaParser.parse(reader))
+</span>29 <span style=''></span><span style='background: #AEF1AE'>          } catch {
+</span>30 <span style=''></span><span style='background: #AEF1AE'>            case pex: ParseException =&gt; </span><span style='background: #F0ADAD'>throw new ArtifactSourceAccessException(s&quot;Parsing error in ${f.path},content was\n${f.content}&quot;, pex)</span><span style='background: #AEF1AE'>
+</span>31 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>32 <span style=''></span><span style='background: #AEF1AE'>        })
+</span>33 <span style=''></span><span style='background: #AEF1AE'>      )
+</span>34 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
+</span>35 <span style=''>  }
+</span>36 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1844
+        </td>
+        <td>
+          805
+          -
+          805
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Buffer.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Buffer.canBuildFrom[com.atomist.rug.kind.java.FileAndCompilationUnit]
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1845
+        </td>
+        <td>
+          784
+          -
+          1259
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.atomist.source.FileArtifact](javaFiles).asScala.map[com.atomist.rug.kind.java.FileAndCompilationUnit, Seq[com.atomist.rug.kind.java.FileAndCompilationUnit]](((f: com.atomist.source.FileArtifact) =&gt; {
+  (if (GitHubJavaParserExtractor.this.logger.underlying.isDebugEnabled())
+    GitHubJavaParserExtractor.this.logger.underlying.debug(scala.StringContext.apply(&quot;Looking at Java artifact &quot;, &quot; using &quot;, &quot;&quot;).s(f, this))
+  else
+    (): Unit);
+  com.atomist.util.Utils.withCloseable[java.io.InputStream, com.atomist.rug.kind.java.FileAndCompilationUnit](f.inputStream())(((is: java.io.InputStream) =&gt; com.atomist.util.Utils.withCloseable[java.io.InputStreamReader, com.atomist.rug.kind.java.FileAndCompilationUnit](new java.io.InputStreamReader(is))(((reader: java.io.InputStreamReader) =&gt; try {
+    FileAndCompilationUnit.apply(f, com.github.javaparser.JavaParser.parse(reader))
+  } catch {
+    case (pex @ (_: com.github.javaparser.ParseException)) =&gt; throw new com.atomist.source.ArtifactSourceAccessException(scala.StringContext.apply(&quot;Parsing error in &quot;, &quot;,content was\\n&quot;, &quot;&quot;).s(f.path, f.content), pex)
+  }))))
+}))(mutable.this.Buffer.canBuildFrom[com.atomist.rug.kind.java.FileAndCompilationUnit])
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1843
+        </td>
+        <td>
+          882
+          -
+          1252
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.Utils.withCloseable
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.Utils.withCloseable[java.io.InputStream, com.atomist.rug.kind.java.FileAndCompilationUnit](f.inputStream())(((is: java.io.InputStream) =&gt; com.atomist.util.Utils.withCloseable[java.io.InputStreamReader, com.atomist.rug.kind.java.FileAndCompilationUnit](new java.io.InputStreamReader(is))(((reader: java.io.InputStreamReader) =&gt; try {
+  FileAndCompilationUnit.apply(f, com.github.javaparser.JavaParser.parse(reader))
+} catch {
+  case (pex @ (_: com.github.javaparser.ParseException)) =&gt; throw new com.atomist.source.ArtifactSourceAccessException(scala.StringContext.apply(&quot;Parsing error in &quot;, &quot;,content was\\n&quot;, &quot;&quot;).s(f.path, f.content), pex)
+}))))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1836
+        </td>
+        <td>
+          896
+          -
+          911
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.inputStream
+        </td>
+        <td style="background: #AEF1AE">
+          f.inputStream()
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1842
+        </td>
+        <td>
+          927
+          -
+          1244
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.Utils.withCloseable
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.Utils.withCloseable[java.io.InputStreamReader, com.atomist.rug.kind.java.FileAndCompilationUnit](new java.io.InputStreamReader(is))(((reader: java.io.InputStreamReader) =&gt; try {
+  FileAndCompilationUnit.apply(f, com.github.javaparser.JavaParser.parse(reader))
+} catch {
+  case (pex @ (_: com.github.javaparser.ParseException)) =&gt; throw new com.atomist.source.ArtifactSourceAccessException(scala.StringContext.apply(&quot;Parsing error in &quot;, &quot;,content was\\n&quot;, &quot;&quot;).s(f.path, f.content), pex)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1837
+        </td>
+        <td>
+          941
+          -
+          966
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.InputStreamReader.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.io.InputStreamReader(is)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1838
+        </td>
+        <td>
+          1034
+          -
+          1058
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.JavaParser.parse
+        </td>
+        <td style="background: #AEF1AE">
+          com.github.javaparser.JavaParser.parse(reader)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1840
+        </td>
+        <td>
+          1008
+          -
+          1059
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.kind.java.FileAndCompilationUnit.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FileAndCompilationUnit.apply(f, com.github.javaparser.JavaParser.parse(reader))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1839
+        </td>
+        <td>
+          1008
+          -
+          1059
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.FileAndCompilationUnit.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FileAndCompilationUnit.apply(f, com.github.javaparser.JavaParser.parse(reader))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1841
+        </td>
+        <td>
+          1120
+          -
+          1221
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.source.ArtifactSourceAccessException(scala.StringContext.apply(&quot;Parsing error in &quot;, &quot;,content was\\n&quot;, &quot;&quot;).s(f.path, f.content), pex)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

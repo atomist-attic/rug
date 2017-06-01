@@ -1,0 +1,361 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/param/ParameterValue.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.param
+</span>2 <span style=''>
+</span>3 <span style=''>import com.fasterxml.jackson.core.JsonParser
+</span>4 <span style=''>import com.fasterxml.jackson.databind.{DeserializationContext, JsonDeserializer, JsonNode}
+</span>5 <span style=''>
+</span>6 <span style=''>trait ParameterValue {
+</span>7 <span style=''>
+</span>8 <span style=''>  def getName: String
+</span>9 <span style=''>
+</span>10 <span style=''>  def getValue: AnyRef
+</span>11 <span style=''>}
+</span>12 <span style=''>
+</span>13 <span style=''>object ParameterValueDeserializer extends JsonDeserializer[ParameterValue] {
+</span>14 <span style=''>
+</span>15 <span style=''>  override def deserialize(jsonParser: JsonParser, deserializationContext: DeserializationContext): ParameterValue = {
+</span>16 <span style=''>    val node: JsonNode = </span><span style='background: #F0ADAD'>jsonParser.getCodec.readTree(jsonParser)</span><span style=''>
+</span>17 <span style=''>
+</span>18 <span style=''>    val name = </span><span style='background: #F0ADAD'>node.get(&quot;name&quot;).asText</span><span style=''>
+</span>19 <span style=''>    if (</span><span style='background: #F0ADAD'>name == null</span><span style=''>) </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(&quot;Expected 'name' parameter of TemplateParameterValue&quot;)</span><span style=''>
+</span>20 <span style=''>
+</span>21 <span style=''>    val value = </span><span style='background: #F0ADAD'>node.get(&quot;value&quot;).asText</span><span style=''>
+</span>22 <span style=''>    if (</span><span style='background: #F0ADAD'>value == null</span><span style=''>) </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(&quot;Expected 'value' parameter of TemplateParameterValue&quot;)</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>    </span><span style='background: #F0ADAD'>SimpleParameterValue(name, value)</span><span style=''>
+</span>25 <span style=''>  }
+</span>26 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          144
+        </td>
+        <td>
+          459
+          -
+          499
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.core.ObjectCodec.readTree
+        </td>
+        <td style="background: #F0ADAD">
+          jsonParser.getCodec().readTree[Nothing](jsonParser)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          145
+        </td>
+        <td>
+          516
+          -
+          539
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.databind.JsonNode.asText
+        </td>
+        <td style="background: #F0ADAD">
+          node.get(&quot;name&quot;).asText()
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          146
+        </td>
+        <td>
+          548
+          -
+          560
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          name.==(null)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          149
+        </td>
+        <td>
+          544
+          -
+          544
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          148
+        </td>
+        <td>
+          562
+          -
+          651
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(&quot;Expected \'name\' parameter of TemplateParameterValue&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          147
+        </td>
+        <td>
+          562
+          -
+          651
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(&quot;Expected \'name\' parameter of TemplateParameterValue&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          150
+        </td>
+        <td>
+          544
+          -
+          544
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          151
+        </td>
+        <td>
+          669
+          -
+          693
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.databind.JsonNode.asText
+        </td>
+        <td style="background: #F0ADAD">
+          node.get(&quot;value&quot;).asText()
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          155
+        </td>
+        <td>
+          698
+          -
+          698
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          154
+        </td>
+        <td>
+          717
+          -
+          807
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(&quot;Expected \'value\' parameter of TemplateParameterValue&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          156
+        </td>
+        <td>
+          698
+          -
+          698
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          153
+        </td>
+        <td>
+          717
+          -
+          807
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(&quot;Expected \'value\' parameter of TemplateParameterValue&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          152
+        </td>
+        <td>
+          702
+          -
+          715
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          value.==(null)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          157
+        </td>
+        <td>
+          813
+          -
+          846
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValue.apply
+        </td>
+        <td style="background: #F0ADAD">
+          SimpleParameterValue.apply(name, value)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

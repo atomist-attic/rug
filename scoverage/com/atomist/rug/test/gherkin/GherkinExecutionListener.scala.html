@@ -1,0 +1,339 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/test/gherkin/GherkinExecutionListener.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.test.gherkin
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import gherkin.ast.{ScenarioDefinition, Step}
+</span>5 <span style=''>
+</span>6 <span style=''>/**
+</span>7 <span style=''>  * Simple listener trait that can be implemented to receive notifications during
+</span>8 <span style=''>  * test execution.
+</span>9 <span style=''>  */
+</span>10 <span style=''>trait GherkinExecutionListener {
+</span>11 <span style=''>
+</span>12 <span style=''>  /**
+</span>13 <span style=''>    * Notifies about an immediate feature definition execution start
+</span>14 <span style=''>    *
+</span>15 <span style=''>    * @param feature feature definition that is about to be executed
+</span>16 <span style=''>    */
+</span>17 <span style=''>  def featureStarting(feature: FeatureDefinition)
+</span>18 <span style=''>
+</span>19 <span style=''>  /**
+</span>20 <span style=''>    * Notifies about an immediate scenrio definition execution start
+</span>21 <span style=''>    *
+</span>22 <span style=''>    * @param scenario scenarion definition that is about to be executed
+</span>23 <span style=''>    */
+</span>24 <span style=''>  def scenarioStarting(scenario: ScenarioDefinition)
+</span>25 <span style=''>
+</span>26 <span style=''>  /**
+</span>27 <span style=''>    * Notifies about an immediate step exection start
+</span>28 <span style=''>    *
+</span>29 <span style=''>    * @param step steo that is about to be executed
+</span>30 <span style=''>    */
+</span>31 <span style=''>  def stepStarting(step: Step)
+</span>32 <span style=''>
+</span>33 <span style=''>  /**
+</span>34 <span style=''>    * Notifies about an error occurred during execution of a step
+</span>35 <span style=''>    *
+</span>36 <span style=''>    * @param step      step that failed
+</span>37 <span style=''>    * @param throwable error that occurred
+</span>38 <span style=''>    */
+</span>39 <span style=''>  def stepFailed(step: Step, throwable: Throwable)
+</span>40 <span style=''>
+</span>41 <span style=''>  /**
+</span>42 <span style=''>    * Notifies about a step completion
+</span>43 <span style=''>    *
+</span>44 <span style=''>    * @param step completed step
+</span>45 <span style=''>    */
+</span>46 <span style=''>  def stepCompleted(step: Step)
+</span>47 <span style=''>
+</span>48 <span style=''>  /**
+</span>49 <span style=''>    * Notifies about a scenario completion
+</span>50 <span style=''>    *
+</span>51 <span style=''>    * @param scenario completed scenarion definition
+</span>52 <span style=''>    * @param result   result of scenario definition execution
+</span>53 <span style=''>    */
+</span>54 <span style=''>  def scenarioCompleted(scenario: ScenarioDefinition, result: ScenarioResult)
+</span>55 <span style=''>
+</span>56 <span style=''>  /**
+</span>57 <span style=''>    * Notifies about a feature completion
+</span>58 <span style=''>    *
+</span>59 <span style=''>    * @param feature completed feature definition
+</span>60 <span style=''>    * @param result  result of the feature definition execution
+</span>61 <span style=''>    */
+</span>62 <span style=''>  def featureCompleted(feature: FeatureDefinition, result: FeatureResult)
+</span>63 <span style=''>
+</span>64 <span style=''>  /**
+</span>65 <span style=''>    * Notifies that a path expression matched
+</span>66 <span style=''>    *
+</span>67 <span style=''>    * @param peval path expression evaluation information
+</span>68 <span style=''>    */
+</span>69 <span style=''>  def pathExpressionResult(peval: PathExpressionEvaluation)
+</span>70 <span style=''>
+</span>71 <span style=''>}
+</span>72 <span style=''>
+</span>73 <span style=''>/**
+</span>74 <span style=''>  * Represents a path expression evaluation in a test
+</span>75 <span style=''>  *
+</span>76 <span style=''>  * @param pathExpression path expression that matched or not
+</span>77 <span style=''>  * @param event          event that fired
+</span>78 <span style=''>  * @param nodes          nodes that matched
+</span>79 <span style=''>  */
+</span>80 <span style=''>case class PathExpressionEvaluation(pathExpression: String, event: GraphNode, nodes: Seq[GraphNode]) {
+</span>81 <span style=''>
+</span>82 <span style=''>  /**
+</span>83 <span style=''>    * Did any nodes match?
+</span>84 <span style=''>    */
+</span>85 <span style=''>  def matched: Boolean = </span><span style='background: #AEF1AE'>nodes.nonEmpty</span><span style=''>
+</span>86 <span style=''>}
+</span>87 <span style=''>
+</span>88 <span style=''>/**
+</span>89 <span style=''>  * Simple no-op GherkinExecutionListener allowing clients to overwrite just certain
+</span>90 <span style=''>  * methods of interest.
+</span>91 <span style=''>  */
+</span>92 <span style=''>class GherkinExecutionListenerAdapter extends GherkinExecutionListener {
+</span>93 <span style=''>
+</span>94 <span style=''>  override def featureStarting(feature: FeatureDefinition): Unit = </span><span style='background: #AEF1AE'>{}</span><span style=''>
+</span>95 <span style=''>
+</span>96 <span style=''>  override def scenarioStarting(scenario: ScenarioDefinition): Unit = </span><span style='background: #AEF1AE'>{}</span><span style=''>
+</span>97 <span style=''>
+</span>98 <span style=''>  override def stepStarting(step: Step): Unit = </span><span style='background: #AEF1AE'>{}</span><span style=''>
+</span>99 <span style=''>
+</span>100 <span style=''>  override def stepFailed(step: Step, throwable: Throwable): Unit = </span><span style='background: #AEF1AE'>{}</span><span style=''>
+</span>101 <span style=''>
+</span>102 <span style=''>  override def stepCompleted(step: Step): Unit = </span><span style='background: #AEF1AE'>{}</span><span style=''>
+</span>103 <span style=''>
+</span>104 <span style=''>  override def scenarioCompleted(scenario: ScenarioDefinition, result: ScenarioResult): Unit = </span><span style='background: #AEF1AE'>{}</span><span style=''>
+</span>105 <span style=''>
+</span>106 <span style=''>  override def featureCompleted(feature: FeatureDefinition, result: FeatureResult): Unit = </span><span style='background: #AEF1AE'>{}</span><span style=''>
+</span>107 <span style=''>
+</span>108 <span style=''>  override def pathExpressionResult(peval: PathExpressionEvaluation): Unit = </span><span style='background: #F0ADAD'>{}</span><span style=''>
+</span>109 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          5737
+        </td>
+        <td>
+          2267
+          -
+          2281
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpressionEvaluation.this.nodes.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          5738
+        </td>
+        <td>
+          2545
+          -
+          2547
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          5739
+        </td>
+        <td>
+          2619
+          -
+          2621
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          5740
+        </td>
+        <td>
+          2671
+          -
+          2673
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          5741
+        </td>
+        <td>
+          2743
+          -
+          2745
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          5742
+        </td>
+        <td>
+          2796
+          -
+          2798
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          5743
+        </td>
+        <td>
+          2895
+          -
+          2897
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          5744
+        </td>
+        <td>
+          2990
+          -
+          2992
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          5745
+        </td>
+        <td>
+          3071
+          -
+          3073
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

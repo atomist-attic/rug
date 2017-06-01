@@ -1,0 +1,193 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>marshal - rug 1.0.0-m.4 API - com.atomist.tree.marshal</title>
+          <meta name="description" content="marshal - rug 1.0.0 - m.4 API - com.atomist.tree.marshal" />
+          <meta name="keywords" content="marshal rug 1.0.0 m.4 API com.atomist.tree.marshal" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.atomist.tree.marshal.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.atomist">atomist</a>.<a href="../package.html" class="extype" name="com.atomist.tree">tree</a></p>
+        <h1>marshal</h1><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.marshal.package" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">marshal</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="com.atomist.tree.marshal.EmptyContainerGraphNode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="EmptyContainerGraphNodeextendsGraphNode"></a>
+      <a id="EmptyContainerGraphNode:EmptyContainerGraphNode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="EmptyContainerGraphNode.html"><span class="name">EmptyContainerGraphNode</span></a><span class="result"> extends <a href="../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.marshal.package@EmptyContainerGraphNodeextendsGraphNode" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.marshal.JsonBackedContainerGraphNode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JsonBackedContainerGraphNodeextendsGraphNode"></a>
+      <a id="JsonBackedContainerGraphNode:JsonBackedContainerGraphNode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JsonBackedContainerGraphNode.html"><span class="name">JsonBackedContainerGraphNode</span></a><span class="result"> extends <a href="../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.marshal.package@JsonBackedContainerGraphNodeextendsGraphNode" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Allows us to return a ContainerTreeNode that encapsulates a json representation
+of the object tree.</p>
+    </li><li name="com.atomist.tree.marshal.Unresolvable" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="UnresolvableextendsProductwithSerializable"></a>
+      <a id="Unresolvable:Unresolvable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Unresolvable.html"><span class="name">Unresolvable</span></a><span class="params">(<span name="remainingPathExpression">remainingPathExpression: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="rawNode">rawNode: <a href="../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.marshal.package@UnresolvableextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="com.atomist.tree.marshal.LinkedJsonGraphDeserializer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LinkedJsonGraphDeserializer"></a>
+      <a id="LinkedJsonGraphDeserializer:LinkedJsonGraphDeserializer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="LinkedJsonGraphDeserializer$.html"><span class="name">LinkedJsonGraphDeserializer</span></a><span class="result"> extends <span class="extype" name="com.typesafe.scalalogging.LazyLogging">LazyLogging</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.marshal.package@LinkedJsonGraphDeserializer" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Deserialize a tree from JSON.</p>
+    </li><li name="com.atomist.tree.marshal.Unresolvable" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Unresolvable"></a>
+      <a id="Unresolvable:Unresolvable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Unresolvable$.html"><span class="name">Unresolvable</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.tree.marshal.package@Unresolvable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Supporting unresolvable nodes.</p><div class="fullcomment"><div class="comment cmt"><p>Supporting unresolvable nodes.
+We don't use a special node type, but
+a convention for marking nodes as unresolvable.
+</p></div></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

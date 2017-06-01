@@ -1,0 +1,3743 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/content/text/OverwritableTextTreeNode.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.content.text
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.kind.core.FileArtifactBackedMutableView
+</span>4 <span style=''>import com.atomist.rug.spi.{ExportFunction, TypeProvider, Typed}
+</span>5 <span style=''>import com.atomist.tree.TreeNode.{Noise, Signal}
+</span>6 <span style=''>import com.atomist.tree._
+</span>7 <span style=''>
+</span>8 <span style=''>trait OverwritableTextTreeNodeChild {
+</span>9 <span style=''>
+</span>10 <span style=''>  def setParent(p: OverwritableTextTreeNodeParent,
+</span>11 <span style=''>                locationStepIntoMe: String,
+</span>12 <span style=''>                rootNode: OverwritableTextInFile): Unit
+</span>13 <span style=''>
+</span>14 <span style=''>  def invalidate(by: OverwritableTextTreeNodeParent): Unit // Should be only done by parents?
+</span>15 <span style=''>
+</span>16 <span style=''>}
+</span>17 <span style=''>
+</span>18 <span style=''>trait OverwritableTextTreeNodeParent extends TreeNode {
+</span>19 <span style=''>
+</span>20 <span style=''>  def commit(): Unit // should be only done by children?
+</span>21 <span style=''>
+</span>22 <span style=''>  def address: String
+</span>23 <span style=''>
+</span>24 <span style=''>  def formatInfoFromHere(stringsToLeft: Seq[String], childAsking: OverwritableTextTreeNodeChild, valueOfInterest: String): FormatInfo
+</span>25 <span style=''>
+</span>26 <span style=''>}
+</span>27 <span style=''>
+</span>28 <span style=''>class OverwritableTextTypeProvider extends TypeProvider(classOf[OverwritableTextTreeNode]) {
+</span>29 <span style=''>
+</span>30 <span style=''>  override def description: String = </span><span style='background: #AEF1AE'>&quot;Generic text container&quot;</span><span style=''>
+</span>31 <span style=''>}
+</span>32 <span style=''>
+</span>33 <span style=''>/**
+</span>34 <span style=''>  * Serves as a mutable, updatable-from-rug hierarchy
+</span>35 <span style=''>  *
+</span>36 <span style=''>  * does not need a MutableView over it
+</span>37 <span style=''>  *
+</span>38 <span style=''>  * @param name           This node is addressable by this in a path expression
+</span>39 <span style=''>  * @param allKids        children include Padding nodes and more OverwritableTextTreeNodes.
+</span>40 <span style=''>  * @param additionalTags This node is addressable by each of these, as tag()
+</span>41 <span style=''>  */
+</span>42 <span style=''>class OverwritableTextTreeNode(name: String,
+</span>43 <span style=''>                               allKids: Seq[TreeNode],
+</span>44 <span style=''>                               additionalTags: Set[String])
+</span>45 <span style=''>  extends UpdatableTreeNode
+</span>46 <span style=''>    with ContainerTreeNode // tag
+</span>47 <span style=''>    with AddressableTreeNode // we conform, but we implement this here
+</span>48 <span style=''>    with ParentAwareTreeNode
+</span>49 <span style=''>    with OverwritableTextTreeNodeChild
+</span>50 <span style=''>    with OverwritableTextTreeNodeParent {
+</span>51 <span style=''>
+</span>52 <span style=''>  import OverwritableTextTreeNode._
+</span>53 <span style=''>
+</span>54 <span style=''>  /* This hierarchy is constructed bottom-up, then hydrated with parent references.
+</span>55 <span style=''>   * When update() is called on a node, it replaces itself with that text
+</span>56 <span style=''>   * Invalidates everything below it
+</span>57 <span style=''>   * marks a change in everything above it.
+</span>58 <span style=''>   *
+</span>59 <span style=''>                     │
+</span>60 <span style=''>               construction
+</span>61 <span style=''>                     │
+</span>62 <span style=''>                     ▼
+</span>63 <span style=''>             ┌───────────────┐
+</span>64 <span style=''>             │               │
+</span>65 <span style=''>             │    Unready    │
+</span>66 <span style=''>             │               │
+</span>67 <span style=''>             └───────────────┘
+</span>68 <span style=''>                     │
+</span>69 <span style=''>               iAmYourFather
+</span>70 <span style=''>                     │
+</span>71 <span style=''>                     ▼
+</span>72 <span style=''>             ┌───────────────┐
+</span>73 <span style=''>             │               │
+</span>74 <span style=''>        ┌────│     Ready     │────┐
+</span>75 <span style=''>        │    │               │    │
+</span>76 <span style=''>        │    └───────────────┘    │
+</span>77 <span style=''>     update                  invalidate
+</span>78 <span style=''>        │                         │
+</span>79 <span style=''>        ▼                         ▼
+</span>80 <span style=''>┌───────────────┐         ┌───────────────┐
+</span>81 <span style=''>│               │         │               │
+</span>82 <span style=''>│  Overridden   │         │  Invalidated  │
+</span>83 <span style=''>│               │         │               │
+</span>84 <span style=''>└───────────────┘         └───────────────┘
+</span>85 <span style=''>   */
+</span>86 <span style=''>
+</span>87 <span style=''>  private var state: LifecyclePhase = </span><span style='background: #AEF1AE'>Unready</span><span style=''>
+</span>88 <span style=''>  private var _value: String = </span><span style='background: #AEF1AE'>allKids.map(_.value).mkString</span><span style=''>
+</span>89 <span style=''>
+</span>90 <span style=''>  private[text] val allKidsIncludingPadding = </span><span style='background: #AEF1AE'>allKids</span><span style=''>
+</span>91 <span style=''>
+</span>92 <span style=''>  private val visibleChildren = </span><span style='background: #AEF1AE'>allKids.filter(_.significance != Noise)</span><span style=''>
+</span>93 <span style=''>
+</span>94 <span style=''>  def setParent(p: OverwritableTextTreeNodeParent, locationStepIntoMe: String, rootNode: OverwritableTextInFile): Unit = {
+</span>95 <span style=''>    if (</span><span style='background: #AEF1AE'>state != Unready</span><span style=''>)
+</span>96 <span style=''>      </span><span style='background: #F0ADAD'>throw new IllegalStateException(s&quot;Can only set parent once: $this&quot;)</span><span style=''>
+</span>97 <span style=''>    </span><span style='background: #AEF1AE'>_parent = p</span><span style=''>
+</span>98 <span style=''>    </span><span style='background: #AEF1AE'>this.rootNode = rootNode</span><span style=''>
+</span>99 <span style=''>    </span><span style='background: #AEF1AE'>locationStep = locationStepIntoMe</span><span style=''>
+</span>100 <span style=''>    </span><span style='background: #AEF1AE'>claimChildren(rootNode)</span><span style=''>
+</span>101 <span style=''>    </span><span style='background: #AEF1AE'>state = Ready</span><span style=''>
+</span>102 <span style=''>  }
+</span>103 <span style=''>
+</span>104 <span style=''>  private var _parent: OverwritableTextTreeNodeParent = _
+</span>105 <span style=''>  private var locationStep: String = _
+</span>106 <span style=''>  private var rootNode: OverwritableTextInFile = _
+</span>107 <span style=''>
+</span>108 <span style=''>  def invalidate(by: OverwritableTextTreeNodeParent): Unit = </span><span style='background: #AEF1AE'>requireReady {
+</span>109 <span style=''></span><span style='background: #AEF1AE'>    invalidator = by
+</span>110 <span style=''></span><span style='background: #AEF1AE'>    invalidateChildren(by)
+</span>111 <span style=''></span><span style='background: #AEF1AE'>    state = Invalidated
+</span>112 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>113 <span style=''>
+</span>114 <span style=''>  private var invalidator: OverwritableTextTreeNodeParent = _
+</span>115 <span style=''>
+</span>116 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Update the whole value&quot;)
+</span>117 <span style=''>  override def update(to: String): Unit = </span><span style='background: #AEF1AE'>requireReady {
+</span>118 <span style=''></span><span style='background: #AEF1AE'>    _value = to
+</span>119 <span style=''></span><span style='background: #AEF1AE'>    invalidateChildren(this)
+</span>120 <span style=''></span><span style='background: #AEF1AE'>    _parent.commit()
+</span>121 <span style=''></span><span style='background: #AEF1AE'>    state = Overwritten
+</span>122 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>123 <span style=''>
+</span>124 <span style=''>  /*
+</span>125 <span style=''>   * Normal TreeNode methods
+</span>126 <span style=''>   */
+</span>127 <span style=''>  override val nodeTags: Set[String] = </span><span style='background: #AEF1AE'>additionalTags + TreeNode.Dynamic + Typed.typeToTypeName(classOf[OverwritableTextTreeNode])</span><span style=''>
+</span>128 <span style=''>
+</span>129 <span style=''>  override val nodeName: String = </span><span style='background: #AEF1AE'>name</span><span style=''>
+</span>130 <span style=''>
+</span>131 <span style=''>  override val significance = </span><span style='background: #AEF1AE'>Signal</span><span style=''>
+</span>132 <span style=''>
+</span>133 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Node content&quot;)
+</span>134 <span style=''>  override def value: String = </span><span style='background: #AEF1AE'>requireNotInvalidated(_value)</span><span style=''>
+</span>135 <span style=''>
+</span>136 <span style=''>  override def childNodeNames: Set[String] = </span><span style='background: #AEF1AE'>requireNotInvalidated(requireNotOverwritten(visibleChildren.map(_.nodeName).toSet))</span><span style=''>
+</span>137 <span style=''>
+</span>138 <span style=''>  override def childNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>requireNotInvalidated(requireNotOverwritten(visibleChildren.flatMap(_.nodeTags).toSet))</span><span style=''>
+</span>139 <span style=''>
+</span>140 <span style=''>  override def childrenNamed(key: String): Seq[TreeNode] = </span><span style='background: #AEF1AE'>requireNotInvalidated(requireNotOverwritten(visibleChildren.filter(_.nodeName == key)))</span><span style=''>
+</span>141 <span style=''>
+</span>142 <span style=''>  override def childNodes: Seq[TreeNode] = </span><span style='background: #AEF1AE'>requireNotInvalidated(requireNotOverwritten(visibleChildren))</span><span style=''>
+</span>143 <span style=''>
+</span>144 <span style=''>  override def address: String = </span><span style='background: #AEF1AE'>requireParentalKnowledge(_parent.address + &quot;/&quot; + locationStep)</span><span style=''>
+</span>145 <span style=''>
+</span>146 <span style=''>  override def commit(): Unit = </span><span style='background: #AEF1AE'>requireReady {
+</span>147 <span style=''></span><span style='background: #AEF1AE'>    _value = allKids.map(_.value).mkString(&quot;&quot;) // some child has changed
+</span>148 <span style=''></span><span style='background: #AEF1AE'>    _parent.commit()
+</span>149 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>150 <span style=''>
+</span>151 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Return the parent node&quot;)
+</span>152 <span style=''>  def parent: TreeNode = {
+</span>153 <span style=''>    </span><span style='background: #AEF1AE'>_parent</span><span style=''> match {
+</span>154 <span style=''>      case o: OverwritableTextInFile =&gt; </span><span style='background: #AEF1AE'>o.fileView</span><span style=''>
+</span>155 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>_parent</span><span style=''>
+</span>156 <span style=''>    }
+</span>157 <span style=''>  }
+</span>158 <span style=''>
+</span>159 <span style=''>  @ExportFunction(readOnly = true,
+</span>160 <span style=''>    exposeAsProperty = true,
+</span>161 <span style=''>    exposeResultDirectlyToNashorn = true,
+</span>162 <span style=''>    description = &quot;Return the format info for the start of this structure in the file or null if not available&quot;)
+</span>163 <span style=''>  final def formatInfo: FormatInfo =
+</span>164 <span style=''>    </span><span style='background: #AEF1AE'>requireNotInvalidated(_parent.formatInfoFromHere(Seq(), this, value))</span><span style=''>
+</span>165 <span style=''>
+</span>166 <span style=''>  def formatInfoFromHere(stringsSoFar: Seq[String], childAsking: OverwritableTextTreeNodeChild, valueOfInterest: String): FormatInfo = {
+</span>167 <span style=''>    def valueBefore(child: OverwritableTextTreeNodeChild) = </span><span style='background: #AEF1AE'>allKidsIncludingPadding.takeWhile(_ != childAsking).map(_.value).mkString</span><span style=''>
+</span>168 <span style=''>    </span><span style='background: #AEF1AE'>_parent.formatInfoFromHere(valueBefore(childAsking) +: stringsSoFar, this, valueOfInterest)</span><span style=''>
+</span>169 <span style=''>  }
+</span>170 <span style=''>
+</span>171 <span style=''>  def nodeAt(pos: InputPosition): Option[TreeNode] =
+</span>172 <span style=''>    </span><span style='background: #AEF1AE'>rootNode.nodeAt(pos)</span><span style=''>
+</span>173 <span style=''>
+</span>174 <span style=''>  def file: FileArtifactBackedMutableView =
+</span>175 <span style=''>    </span><span style='background: #AEF1AE'>rootNode.fileView</span><span style=''>
+</span>176 <span style=''>
+</span>177 <span style=''>  private def maxLengthToRender = </span><span style='background: #F0ADAD'>32</span><span style=''>
+</span>178 <span style=''>
+</span>179 <span style=''>  override def toString: String =
+</span>180 <span style=''>    if (</span><span style='background: #F0ADAD'>state == Unready</span><span style=''>)
+</span>181 <span style=''>      </span><span style='background: #F0ADAD'>s&quot;unready ${super.toString}&quot;</span><span style=''>
+</span>182 <span style=''>    else </span><span style='background: #F0ADAD'>{
+</span>183 <span style=''></span><span style='background: #F0ADAD'>      val showValue =
+</span>184 <span style=''></span><span style='background: #F0ADAD'>        if (value.length &lt; maxLengthToRender) s&quot;value=[$value]&quot;
+</span>185 <span style=''></span><span style='background: #F0ADAD'>      else
+</span>186 <span style=''></span><span style='background: #F0ADAD'>        s&quot;length=${value.length}[${value.take(5)}...${value.takeRight(5)}}]&quot;
+</span>187 <span style=''></span><span style='background: #F0ADAD'>      s&quot;OverwritableTextTreeNode:name=[$name];$showValue&quot;
+</span>188 <span style=''></span><span style='background: #F0ADAD'>    }</span><span style=''>
+</span>189 <span style=''>
+</span>190 <span style=''>  /* mine */
+</span>191 <span style=''>  private def requireReady[T](result: =&gt; T): T =
+</span>192 <span style=''>    </span><span style='background: #AEF1AE'>requireNotInvalidated {
+</span>193 <span style=''></span><span style='background: #AEF1AE'>      if (state != Ready)
+</span>194 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>throw new IllegalStateException(s&quot;This is only valid when the node is Ready but I am in $state&quot;)</span><span style='background: #AEF1AE'>
+</span>195 <span style=''></span><span style='background: #AEF1AE'>      result
+</span>196 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>197 <span style=''>
+</span>198 <span style=''>  private def requireNotInvalidated[T](result: =&gt; T): T = {
+</span>199 <span style=''>    if (</span><span style='background: #AEF1AE'>state == Invalidated</span><span style=''>)
+</span>200 <span style=''>      </span><span style='background: #F0ADAD'>throw new OutOfDateNodeException(s&quot;This node has been overwritten by ${invalidator.address}&quot;)</span><span style=''> // could print my address, highlighting where this one is in it
+</span>201 <span style=''>    result
+</span>202 <span style=''>  }
+</span>203 <span style=''>
+</span>204 <span style=''>  private def requireNotOverwritten[T](result: =&gt; T): T = {
+</span>205 <span style=''>    if (</span><span style='background: #AEF1AE'>state == Overwritten</span><span style=''>)
+</span>206 <span style=''>      </span><span style='background: #F0ADAD'>throw new OutOfDateNodeException(s&quot;This node's value has been overwritten.&quot;)</span><span style=''>
+</span>207 <span style=''>    result
+</span>208 <span style=''>  }
+</span>209 <span style=''>
+</span>210 <span style=''>  private def requireParentalKnowledge[T](result: =&gt; T): T = {
+</span>211 <span style=''>    if (</span><span style='background: #AEF1AE'>state == Unready</span><span style=''>) {
+</span>212 <span style=''>      </span><span style='background: #F0ADAD'>throw new IllegalStateException(s&quot;This node is not ready yet! Who is my father??&quot;)</span><span style=''>
+</span>213 <span style=''>    }
+</span>214 <span style=''>    result
+</span>215 <span style=''>  }
+</span>216 <span style=''>
+</span>217 <span style=''>  private def invalidateChildren(by: OverwritableTextTreeNodeParent) =
+</span>218 <span style=''>    </span><span style='background: #AEF1AE'>allKids.foreach {
+</span>219 <span style=''></span><span style='background: #AEF1AE'>      case ch: OverwritableTextTreeNodeChild =&gt; ch.invalidate(by)
+</span>220 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; // meh, padding
+</span>221 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>222 <span style=''>
+</span>223 <span style=''>  private def claimChildren(rootNode: OverwritableTextInFile): Unit = </span><span style='background: #AEF1AE'>allKids.foreach {
+</span>224 <span style=''></span><span style='background: #AEF1AE'>    case ch: OverwritableTextTreeNodeChild =&gt;
+</span>225 <span style=''></span><span style='background: #AEF1AE'>      ch.setParent(this, determineLocationStep(visibleChildren, ch), rootNode)
+</span>226 <span style=''></span><span style='background: #AEF1AE'>    case _ =&gt; // padding, whatever
+</span>227 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>228 <span style=''>}
+</span>229 <span style=''>
+</span>230 <span style=''>object OverwritableTextTreeNode {
+</span>231 <span style=''>  def apply(ptn: PositionedTreeNode, fields: Seq[TreeNode]): OverwritableTextTreeNode = {
+</span>232 <span style=''>    </span><span style='background: #AEF1AE'>new OverwritableTextTreeNode(ptn.nodeName, fields, ptn.nodeTags)</span><span style=''>
+</span>233 <span style=''>  }
+</span>234 <span style=''>
+</span>235 <span style=''>  sealed trait LifecyclePhase
+</span>236 <span style=''>
+</span>237 <span style=''>  case object Unready extends LifecyclePhase
+</span>238 <span style=''>
+</span>239 <span style=''>  case object Ready extends LifecyclePhase
+</span>240 <span style=''>
+</span>241 <span style=''>  case object Overwritten extends LifecyclePhase
+</span>242 <span style=''>
+</span>243 <span style=''>  case object Invalidated extends LifecyclePhase
+</span>244 <span style=''>
+</span>245 <span style=''>  /*
+</span>246 <span style=''>   * Tell the child its piece of its address.
+</span>247 <span style=''>   * There is an assumption here that our children remain the same and their names remain the same,
+</span>248 <span style=''>   * for this address to continue to work as children are updated.
+</span>249 <span style=''>   */
+</span>250 <span style=''>  private def determineLocationStep(visibleChildren: Seq[TreeNode], forChild: TreeNode): String = {
+</span>251 <span style=''>    val thisChildsName = </span><span style='background: #AEF1AE'>forChild.nodeName</span><span style=''>
+</span>252 <span style=''>    if (</span><span style='background: #AEF1AE'>!visibleChildren.contains(forChild)</span><span style=''>)
+</span>253 <span style=''>      </span><span style='background: #F0ADAD'>throw new IllegalStateException(s&quot;I can't find my child $forChild&quot;)</span><span style=''>
+</span>254 <span style=''>    else </span><span style='background: #AEF1AE'>{
+</span>255 <span style=''></span><span style='background: #AEF1AE'>      val childrenBeforeThisWithTheSameName = visibleChildren.takeWhile(_ != forChild).filter(_.nodeName == thisChildsName)
+</span>256 <span style=''></span><span style='background: #AEF1AE'>      val thisChildsIndex = childrenBeforeThisWithTheSameName.size
+</span>257 <span style=''></span><span style='background: #AEF1AE'>      // XPath indexes from 1
+</span>258 <span style=''></span><span style='background: #AEF1AE'>      s&quot;$thisChildsName[${thisChildsIndex + 1}]&quot;
+</span>259 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>260 <span style=''>  }
+</span>261 <span style=''>}
+</span>262 <span style=''>
+</span>263 <span style=''>class OutOfDateNodeException(msg: String) extends RuntimeException(msg)
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          7474
+        </td>
+        <td>
+          939
+          -
+          963
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Generic text container&quot;
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          7475
+        </td>
+        <td>
+          2911
+          -
+          2918
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.Unready
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.Unready
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          7476
+        </td>
+        <td>
+          2962
+          -
+          2969
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.value
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.value
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          7478
+        </td>
+        <td>
+          2950
+          -
+          2979
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.allKids.map[String, Seq[String]](((x$1: com.atomist.tree.TreeNode) =&gt; x$1.value))(collection.this.Seq.canBuildFrom[String]).mkString
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          7477
+        </td>
+        <td>
+          2961
+          -
+          2961
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          7479
+        </td>
+        <td>
+          3027
+          -
+          3034
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.allKids
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.allKids
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          7481
+        </td>
+        <td>
+          3083
+          -
+          3106
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.significance.!=(com.atomist.tree.TreeNode.Noise)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          7480
+        </td>
+        <td>
+          3101
+          -
+          3106
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Noise
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Noise
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          7482
+        </td>
+        <td>
+          3068
+          -
+          3107
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.allKids.filter(((x$2: com.atomist.tree.TreeNode) =&gt; x$2.significance.!=(com.atomist.tree.TreeNode.Noise)))
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          7488
+        </td>
+        <td>
+          3236
+          -
+          3236
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          7487
+        </td>
+        <td>
+          3236
+          -
+          3236
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          7484
+        </td>
+        <td>
+          3240
+          -
+          3256
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.state.!=(OverwritableTextTreeNode.Unready)
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          7483
+        </td>
+        <td>
+          3249
+          -
+          3256
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.Unready
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.Unready
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          7485
+        </td>
+        <td>
+          3264
+          -
+          3331
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;Can only set parent once: &quot;, &quot;&quot;).s(this))
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          7486
+        </td>
+        <td>
+          3264
+          -
+          3331
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;Can only set parent once: &quot;, &quot;&quot;).s(this))
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          7489
+        </td>
+        <td>
+          3336
+          -
+          3347
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode._parent_=
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this._parent_=(p)
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          7490
+        </td>
+        <td>
+          3352
+          -
+          3376
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.rootNode_=
+        </td>
+        <td style="background: #AEF1AE">
+          this.rootNode_=(rootNode)
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          7491
+        </td>
+        <td>
+          3381
+          -
+          3414
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.locationStep_=
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.locationStep_=(locationStepIntoMe)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          7492
+        </td>
+        <td>
+          3419
+          -
+          3442
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.claimChildren
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.claimChildren(rootNode)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          7494
+        </td>
+        <td>
+          3447
+          -
+          3460
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.state_=
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.state_=(OverwritableTextTreeNode.Ready)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          7493
+        </td>
+        <td>
+          3455
+          -
+          3460
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.Ready
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.Ready
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          7499
+        </td>
+        <td>
+          3676
+          -
+          3766
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.requireReady
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.requireReady[Unit]({
+  OverwritableTextTreeNode.this.invalidator_=(by);
+  OverwritableTextTreeNode.this.invalidateChildren(by);
+  OverwritableTextTreeNode.this.state_=(OverwritableTextTreeNode.Invalidated)
+})
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          7495
+        </td>
+        <td>
+          3695
+          -
+          3711
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.invalidator_=
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.invalidator_=(by)
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          7496
+        </td>
+        <td>
+          3716
+          -
+          3738
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.invalidateChildren
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.invalidateChildren(by)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          7497
+        </td>
+        <td>
+          3751
+          -
+          3762
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.Invalidated
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.Invalidated
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          7498
+        </td>
+        <td>
+          3743
+          -
+          3762
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.state_=
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.state_=(OverwritableTextTreeNode.Invalidated)
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          7505
+        </td>
+        <td>
+          3949
+          -
+          4057
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.requireReady
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.requireReady[Unit]({
+  OverwritableTextTreeNode.this._value_=(to);
+  OverwritableTextTreeNode.this.invalidateChildren(this);
+  OverwritableTextTreeNode.this._parent.commit();
+  OverwritableTextTreeNode.this.state_=(OverwritableTextTreeNode.Overwritten)
+})
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          7500
+        </td>
+        <td>
+          3968
+          -
+          3979
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode._value_=
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this._value_=(to)
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          7501
+        </td>
+        <td>
+          3984
+          -
+          4008
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.invalidateChildren
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.invalidateChildren(this)
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          7502
+        </td>
+        <td>
+          4013
+          -
+          4029
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNodeParent.commit
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this._parent.commit()
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          7503
+        </td>
+        <td>
+          4042
+          -
+          4053
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.Overwritten
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.Overwritten
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          7504
+        </td>
+        <td>
+          4034
+          -
+          4053
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.state_=
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.state_=(OverwritableTextTreeNode.Overwritten)
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          7506
+        </td>
+        <td>
+          4155
+          -
+          4171
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Dynamic
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Dynamic
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          7508
+        </td>
+        <td>
+          4180
+          -
+          4180
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          7510
+        </td>
+        <td>
+          4138
+          -
+          4229
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.+
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.additionalTags.+(com.atomist.tree.TreeNode.Dynamic).+(com.atomist.rug.spi.Typed.typeToTypeName(classOf[com.atomist.tree.content.text.OverwritableTextTreeNode], com.atomist.rug.spi.Typed.typeToTypeName$default$2))
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          7507
+        </td>
+        <td>
+          4195
+          -
+          4228
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.tree.content.text.OverwritableTextTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          7509
+        </td>
+        <td>
+          4174
+          -
+          4229
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName(classOf[com.atomist.tree.content.text.OverwritableTextTreeNode], com.atomist.rug.spi.Typed.typeToTypeName$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          7511
+        </td>
+        <td>
+          4265
+          -
+          4269
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.name
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.name
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          7512
+        </td>
+        <td>
+          4301
+          -
+          4307
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Signal
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Signal
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          7514
+        </td>
+        <td>
+          4405
+          -
+          4434
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.requireNotInvalidated
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.requireNotInvalidated[String](OverwritableTextTreeNode.this._value)
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          7513
+        </td>
+        <td>
+          4427
+          -
+          4433
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode._value
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this._value
+        </td>
+      </tr><tr>
+        <td>
+          136
+        </td>
+        <td>
+          7515
+        </td>
+        <td>
+          4545
+          -
+          4555
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          x$3.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          136
+        </td>
+        <td>
+          7517
+        </td>
+        <td>
+          4525
+          -
+          4562
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.visibleChildren.map[String, Seq[String]](((x$3: com.atomist.tree.TreeNode) =&gt; x$3.nodeName))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          136
+        </td>
+        <td>
+          7519
+        </td>
+        <td>
+          4481
+          -
+          4564
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.requireNotInvalidated
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.requireNotInvalidated[scala.collection.immutable.Set[String]](OverwritableTextTreeNode.this.requireNotOverwritten[scala.collection.immutable.Set[String]](OverwritableTextTreeNode.this.visibleChildren.map[String, Seq[String]](((x$3: com.atomist.tree.TreeNode) =&gt; x$3.nodeName))(collection.this.Seq.canBuildFrom[String]).toSet[String]))
+        </td>
+      </tr><tr>
+        <td>
+          136
+        </td>
+        <td>
+          7516
+        </td>
+        <td>
+          4544
+          -
+          4544
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          136
+        </td>
+        <td>
+          7518
+        </td>
+        <td>
+          4503
+          -
+          4563
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.requireNotOverwritten
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.requireNotOverwritten[scala.collection.immutable.Set[String]](OverwritableTextTreeNode.this.visibleChildren.map[String, Seq[String]](((x$3: com.atomist.tree.TreeNode) =&gt; x$3.nodeName))(collection.this.Seq.canBuildFrom[String]).toSet[String])
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          7521
+        </td>
+        <td>
+          4678
+          -
+          4678
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          7524
+        </td>
+        <td>
+          4611
+          -
+          4698
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.requireNotInvalidated
+        </td>
+        <td style="background: #F0ADAD">
+          OverwritableTextTreeNode.this.requireNotInvalidated[scala.collection.immutable.Set[String]](OverwritableTextTreeNode.this.requireNotOverwritten[scala.collection.immutable.Set[String]](OverwritableTextTreeNode.this.visibleChildren.flatMap[String, Seq[String]](((x$4: com.atomist.tree.TreeNode) =&gt; x$4.nodeTags))(collection.this.Seq.canBuildFrom[String]).toSet[String]))
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          7523
+        </td>
+        <td>
+          4633
+          -
+          4697
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.requireNotOverwritten
+        </td>
+        <td style="background: #F0ADAD">
+          OverwritableTextTreeNode.this.requireNotOverwritten[scala.collection.immutable.Set[String]](OverwritableTextTreeNode.this.visibleChildren.flatMap[String, Seq[String]](((x$4: com.atomist.tree.TreeNode) =&gt; x$4.nodeTags))(collection.this.Seq.canBuildFrom[String]).toSet[String])
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          7520
+        </td>
+        <td>
+          4679
+          -
+          4689
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeTags
+        </td>
+        <td style="background: #F0ADAD">
+          x$4.nodeTags
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          7522
+        </td>
+        <td>
+          4655
+          -
+          4696
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #F0ADAD">
+          OverwritableTextTreeNode.this.visibleChildren.flatMap[String, Seq[String]](((x$4: com.atomist.tree.TreeNode) =&gt; x$4.nodeTags))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          7526
+        </td>
+        <td>
+          4803
+          -
+          4844
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.visibleChildren.filter(((x$5: com.atomist.tree.TreeNode) =&gt; x$5.nodeName.==(key)))
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          7528
+        </td>
+        <td>
+          4759
+          -
+          4846
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.requireNotInvalidated
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.requireNotInvalidated[Seq[com.atomist.tree.TreeNode]](OverwritableTextTreeNode.this.requireNotOverwritten[Seq[com.atomist.tree.TreeNode]](OverwritableTextTreeNode.this.visibleChildren.filter(((x$5: com.atomist.tree.TreeNode) =&gt; x$5.nodeName.==(key)))))
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          7525
+        </td>
+        <td>
+          4826
+          -
+          4843
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$5.nodeName.==(key)
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          7527
+        </td>
+        <td>
+          4781
+          -
+          4845
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.requireNotOverwritten
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.requireNotOverwritten[Seq[com.atomist.tree.TreeNode]](OverwritableTextTreeNode.this.visibleChildren.filter(((x$5: com.atomist.tree.TreeNode) =&gt; x$5.nodeName.==(key))))
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          7530
+        </td>
+        <td>
+          4913
+          -
+          4951
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.requireNotOverwritten
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.requireNotOverwritten[Seq[com.atomist.tree.TreeNode]](OverwritableTextTreeNode.this.visibleChildren)
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          7529
+        </td>
+        <td>
+          4935
+          -
+          4950
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.visibleChildren
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.visibleChildren
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          7531
+        </td>
+        <td>
+          4891
+          -
+          4952
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.requireNotInvalidated
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.requireNotInvalidated[Seq[com.atomist.tree.TreeNode]](OverwritableTextTreeNode.this.requireNotOverwritten[Seq[com.atomist.tree.TreeNode]](OverwritableTextTreeNode.this.visibleChildren))
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          7532
+        </td>
+        <td>
+          5030
+          -
+          5033
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;/&quot;
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          7535
+        </td>
+        <td>
+          4987
+          -
+          5049
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.requireParentalKnowledge
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.requireParentalKnowledge[String](OverwritableTextTreeNode.this._parent.address.+(&quot;/&quot;).+(OverwritableTextTreeNode.this.locationStep))
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          7534
+        </td>
+        <td>
+          5012
+          -
+          5048
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this._parent.address.+(&quot;/&quot;).+(OverwritableTextTreeNode.this.locationStep)
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          7533
+        </td>
+        <td>
+          5036
+          -
+          5048
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.locationStep
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.locationStep
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          7539
+        </td>
+        <td>
+          5083
+          -
+          5195
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.requireReady
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.requireReady[Unit]({
+  OverwritableTextTreeNode.this._value_=(OverwritableTextTreeNode.this.allKids.map[String, Seq[String]](((x$6: com.atomist.tree.TreeNode) =&gt; x$6.value))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;&quot;));
+  OverwritableTextTreeNode.this._parent.commit()
+})
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          7537
+        </td>
+        <td>
+          5102
+          -
+          5144
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode._value_=
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this._value_=(OverwritableTextTreeNode.this.allKids.map[String, Seq[String]](((x$6: com.atomist.tree.TreeNode) =&gt; x$6.value))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          7536
+        </td>
+        <td>
+          5111
+          -
+          5144
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.allKids.map[String, Seq[String]](((x$6: com.atomist.tree.TreeNode) =&gt; x$6.value))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          7538
+        </td>
+        <td>
+          5175
+          -
+          5191
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNodeParent.commit
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this._parent.commit()
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          7540
+        </td>
+        <td>
+          5303
+          -
+          5310
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode._parent
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this._parent
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          7541
+        </td>
+        <td>
+          5359
+          -
+          5369
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextInFile.fileView
+        </td>
+        <td style="background: #AEF1AE">
+          o.fileView
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          7542
+        </td>
+        <td>
+          5386
+          -
+          5393
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode._parent
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this._parent
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          7544
+        </td>
+        <td>
+          5727
+          -
+          5732
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.value
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.value
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          7546
+        </td>
+        <td>
+          5665
+          -
+          5734
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.requireNotInvalidated
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.requireNotInvalidated[com.atomist.tree.content.text.FormatInfo](OverwritableTextTreeNode.this._parent.formatInfoFromHere(collection.this.Seq.apply[Nothing](), this, OverwritableTextTreeNode.this.value))
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          7543
+        </td>
+        <td>
+          5714
+          -
+          5719
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          7545
+        </td>
+        <td>
+          5687
+          -
+          5733
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNodeParent.formatInfoFromHere
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this._parent.formatInfoFromHere(collection.this.Seq.apply[Nothing](), this, OverwritableTextTreeNode.this.value)
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          7548
+        </td>
+        <td>
+          5989
+          -
+          5996
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.value
+        </td>
+        <td style="background: #AEF1AE">
+          x$8.value
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          7547
+        </td>
+        <td>
+          5967
+          -
+          5983
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          x$7.!=(childAsking)
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          7550
+        </td>
+        <td>
+          5933
+          -
+          6006
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.allKidsIncludingPadding.takeWhile(((x$7: com.atomist.tree.TreeNode) =&gt; x$7.!=(childAsking))).map[String, Seq[String]](((x$8: com.atomist.tree.TreeNode) =&gt; x$8.value))(collection.this.Seq.canBuildFrom[String]).mkString
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          7549
+        </td>
+        <td>
+          5988
+          -
+          5988
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          7553
+        </td>
+        <td>
+          6011
+          -
+          6102
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNodeParent.formatInfoFromHere
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this._parent.formatInfoFromHere({
+  &lt;synthetic&gt; &lt;artifact&gt; val x$9: String = valueBefore(childAsking);
+  stringsSoFar.+:[String, Seq[String]](x$9)(collection.this.Seq.canBuildFrom[String])
+}, this, valueOfInterest)
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          7552
+        </td>
+        <td>
+          6063
+          -
+          6078
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.+:
+        </td>
+        <td style="background: #AEF1AE">
+          stringsSoFar.+:[String, Seq[String]](x$9)(collection.this.Seq.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          7551
+        </td>
+        <td>
+          6063
+          -
+          6063
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          7554
+        </td>
+        <td>
+          6165
+          -
+          6185
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextInFile.nodeAt
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.rootNode.nodeAt(pos)
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          7555
+        </td>
+        <td>
+          6235
+          -
+          6252
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextInFile.fileView
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.rootNode.fileView
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          7556
+        </td>
+        <td>
+          6288
+          -
+          6290
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          32
+        </td>
+      </tr><tr>
+        <td>
+          180
+        </td>
+        <td>
+          7557
+        </td>
+        <td>
+          6343
+          -
+          6350
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.Unready
+        </td>
+        <td style="background: #F0ADAD">
+          OverwritableTextTreeNode.Unready
+        </td>
+      </tr><tr>
+        <td>
+          180
+        </td>
+        <td>
+          7558
+        </td>
+        <td>
+          6334
+          -
+          6350
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          OverwritableTextTreeNode.this.state.==(OverwritableTextTreeNode.Unready)
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          7559
+        </td>
+        <td>
+          6360
+          -
+          6369
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;unready &quot;
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          7562
+        </td>
+        <td>
+          6358
+          -
+          6386
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;unready &quot;, &quot;&quot;).s(OverwritableTextTreeNode.super.toString())
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          7561
+        </td>
+        <td>
+          6370
+          -
+          6384
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #F0ADAD">
+          OverwritableTextTreeNode.super.toString()
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          7560
+        </td>
+        <td>
+          6385
+          -
+          6386
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          7563
+        </td>
+        <td>
+          6358
+          -
+          6386
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;unready &quot;, &quot;&quot;).s(OverwritableTextTreeNode.super.toString())
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          7585
+        </td>
+        <td>
+          6396
+          -
+          6635
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  val showValue: String = if (OverwritableTextTreeNode.this.value.length().&lt;(OverwritableTextTreeNode.this.maxLengthToRender))
+    scala.StringContext.apply(&quot;value=[&quot;, &quot;]&quot;).s(OverwritableTextTreeNode.this.value)
+  else
+    scala.StringContext.apply(&quot;length=&quot;, &quot;[&quot;, &quot;...&quot;, &quot;}]&quot;).s(OverwritableTextTreeNode.this.value.length(), scala.this.Predef.augmentString(OverwritableTextTreeNode.this.value).take(5), scala.this.Predef.augmentString(OverwritableTextTreeNode.this.value).takeRight(5));
+  scala.StringContext.apply(&quot;OverwritableTextTreeNode:name=[&quot;, &quot;];&quot;, &quot;&quot;).s(OverwritableTextTreeNode.this.name, showValue)
+}
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          7566
+        </td>
+        <td>
+          6468
+          -
+          6476
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;value=[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          7565
+        </td>
+        <td>
+          6432
+          -
+          6464
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #F0ADAD">
+          OverwritableTextTreeNode.this.value.length().&lt;(OverwritableTextTreeNode.this.maxLengthToRender)
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          7568
+        </td>
+        <td>
+          6476
+          -
+          6481
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.value
+        </td>
+        <td style="background: #F0ADAD">
+          OverwritableTextTreeNode.this.value
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          7570
+        </td>
+        <td>
+          6466
+          -
+          6483
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;value=[&quot;, &quot;]&quot;).s(OverwritableTextTreeNode.this.value)
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          7564
+        </td>
+        <td>
+          6447
+          -
+          6464
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.maxLengthToRender
+        </td>
+        <td style="background: #F0ADAD">
+          OverwritableTextTreeNode.this.maxLengthToRender
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          7567
+        </td>
+        <td>
+          6481
+          -
+          6483
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          7569
+        </td>
+        <td>
+          6466
+          -
+          6483
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;value=[&quot;, &quot;]&quot;).s(OverwritableTextTreeNode.this.value)
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          7575
+        </td>
+        <td>
+          6514
+          -
+          6526
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.length
+        </td>
+        <td style="background: #F0ADAD">
+          OverwritableTextTreeNode.this.value.length()
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          7574
+        </td>
+        <td>
+          6568
+          -
+          6571
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;}]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          7577
+        </td>
+        <td>
+          6549
+          -
+          6567
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.takeRight
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.augmentString(OverwritableTextTreeNode.this.value).takeRight(5)
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          7571
+        </td>
+        <td>
+          6505
+          -
+          6513
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;length=&quot;
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          7579
+        </td>
+        <td>
+          6503
+          -
+          6571
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;length=&quot;, &quot;[&quot;, &quot;...&quot;, &quot;}]&quot;).s(OverwritableTextTreeNode.this.value.length(), scala.this.Predef.augmentString(OverwritableTextTreeNode.this.value).take(5), scala.this.Predef.augmentString(OverwritableTextTreeNode.this.value).takeRight(5))
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          7573
+        </td>
+        <td>
+          6544
+          -
+          6548
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;...&quot;
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          7576
+        </td>
+        <td>
+          6530
+          -
+          6543
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.take
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.augmentString(OverwritableTextTreeNode.this.value).take(5)
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          7578
+        </td>
+        <td>
+          6503
+          -
+          6571
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;length=&quot;, &quot;[&quot;, &quot;...&quot;, &quot;}]&quot;).s(OverwritableTextTreeNode.this.value.length(), scala.this.Predef.augmentString(OverwritableTextTreeNode.this.value).take(5), scala.this.Predef.augmentString(OverwritableTextTreeNode.this.value).takeRight(5))
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          7572
+        </td>
+        <td>
+          6527
+          -
+          6529
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          7584
+        </td>
+        <td>
+          6578
+          -
+          6629
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;OverwritableTextTreeNode:name=[&quot;, &quot;];&quot;, &quot;&quot;).s(OverwritableTextTreeNode.this.name, showValue)
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          7583
+        </td>
+        <td>
+          6612
+          -
+          6616
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.name
+        </td>
+        <td style="background: #F0ADAD">
+          OverwritableTextTreeNode.this.name
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          7580
+        </td>
+        <td>
+          6580
+          -
+          6612
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;OverwritableTextTreeNode:name=[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          7582
+        </td>
+        <td>
+          6628
+          -
+          6629
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          7581
+        </td>
+        <td>
+          6616
+          -
+          6619
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;];&quot;
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          7592
+        </td>
+        <td>
+          6703
+          -
+          6876
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.requireNotInvalidated
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.requireNotInvalidated[T]({
+  if (OverwritableTextTreeNode.this.state.!=(OverwritableTextTreeNode.Ready))
+    throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;This is only valid when the node is Ready but I am in &quot;, &quot;&quot;).s(OverwritableTextTreeNode.this.state))
+  else
+    ();
+  result
+})
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          7586
+        </td>
+        <td>
+          6746
+          -
+          6751
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.Ready
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.Ready
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          7591
+        </td>
+        <td>
+          6733
+          -
+          6733
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          7587
+        </td>
+        <td>
+          6737
+          -
+          6751
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.state.!=(OverwritableTextTreeNode.Ready)
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          7590
+        </td>
+        <td>
+          6733
+          -
+          6733
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          194
+        </td>
+        <td>
+          7589
+        </td>
+        <td>
+          6761
+          -
+          6857
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;This is only valid when the node is Ready but I am in &quot;, &quot;&quot;).s(OverwritableTextTreeNode.this.state))
+        </td>
+      </tr><tr>
+        <td>
+          194
+        </td>
+        <td>
+          7588
+        </td>
+        <td>
+          6761
+          -
+          6857
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;This is only valid when the node is Ready but I am in &quot;, &quot;&quot;).s(OverwritableTextTreeNode.this.state))
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          7598
+        </td>
+        <td>
+          6942
+          -
+          6942
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          7597
+        </td>
+        <td>
+          6942
+          -
+          6942
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          7594
+        </td>
+        <td>
+          6946
+          -
+          6966
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.state.==(OverwritableTextTreeNode.Invalidated)
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          7593
+        </td>
+        <td>
+          6955
+          -
+          6966
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.Invalidated
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.Invalidated
+        </td>
+      </tr><tr>
+        <td>
+          200
+        </td>
+        <td>
+          7595
+        </td>
+        <td>
+          6974
+          -
+          7067
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new OutOfDateNodeException(scala.StringContext.apply(&quot;This node has been overwritten by &quot;, &quot;&quot;).s(OverwritableTextTreeNode.this.invalidator.address))
+        </td>
+      </tr><tr>
+        <td>
+          200
+        </td>
+        <td>
+          7596
+        </td>
+        <td>
+          6974
+          -
+          7067
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new OutOfDateNodeException(scala.StringContext.apply(&quot;This node has been overwritten by &quot;, &quot;&quot;).s(OverwritableTextTreeNode.this.invalidator.address))
+        </td>
+      </tr><tr>
+        <td>
+          205
+        </td>
+        <td>
+          7604
+        </td>
+        <td>
+          7212
+          -
+          7212
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          205
+        </td>
+        <td>
+          7600
+        </td>
+        <td>
+          7216
+          -
+          7236
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.state.==(OverwritableTextTreeNode.Overwritten)
+        </td>
+      </tr><tr>
+        <td>
+          205
+        </td>
+        <td>
+          7603
+        </td>
+        <td>
+          7212
+          -
+          7212
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          205
+        </td>
+        <td>
+          7599
+        </td>
+        <td>
+          7225
+          -
+          7236
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.Overwritten
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.Overwritten
+        </td>
+      </tr><tr>
+        <td>
+          206
+        </td>
+        <td>
+          7601
+        </td>
+        <td>
+          7244
+          -
+          7320
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new OutOfDateNodeException(scala.StringContext.apply(&quot;This node\'s value has been overwritten.&quot;).s())
+        </td>
+      </tr><tr>
+        <td>
+          206
+        </td>
+        <td>
+          7602
+        </td>
+        <td>
+          7244
+          -
+          7320
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new OutOfDateNodeException(scala.StringContext.apply(&quot;This node\'s value has been overwritten.&quot;).s())
+        </td>
+      </tr><tr>
+        <td>
+          211
+        </td>
+        <td>
+          7610
+        </td>
+        <td>
+          7404
+          -
+          7404
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          211
+        </td>
+        <td>
+          7606
+        </td>
+        <td>
+          7408
+          -
+          7424
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.state.==(OverwritableTextTreeNode.Unready)
+        </td>
+      </tr><tr>
+        <td>
+          211
+        </td>
+        <td>
+          7609
+        </td>
+        <td>
+          7404
+          -
+          7404
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          211
+        </td>
+        <td>
+          7605
+        </td>
+        <td>
+          7417
+          -
+          7424
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.Unready
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.Unready
+        </td>
+      </tr><tr>
+        <td>
+          212
+        </td>
+        <td>
+          7607
+        </td>
+        <td>
+          7434
+          -
+          7516
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;This node is not ready yet! Who is my father??&quot;).s())
+        </td>
+      </tr><tr>
+        <td>
+          212
+        </td>
+        <td>
+          7608
+        </td>
+        <td>
+          7434
+          -
+          7516
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;This node is not ready yet! Who is my father??&quot;).s())
+        </td>
+      </tr><tr>
+        <td>
+          218
+        </td>
+        <td>
+          7613
+        </td>
+        <td>
+          7614
+          -
+          7735
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.allKids.foreach[Unit](((x0$1: com.atomist.tree.TreeNode) =&gt; x0$1 match {
+  case (ch @ (_: com.atomist.tree.content.text.OverwritableTextTreeNodeChild)) =&gt; ch.invalidate(by)
+  case _ =&gt; ()
+}))
+        </td>
+      </tr><tr>
+        <td>
+          219
+        </td>
+        <td>
+          7611
+        </td>
+        <td>
+          7680
+          -
+          7697
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNodeChild.invalidate
+        </td>
+        <td style="background: #AEF1AE">
+          ch.invalidate(by)
+        </td>
+      </tr><tr>
+        <td>
+          220
+        </td>
+        <td>
+          7612
+        </td>
+        <td>
+          7711
+          -
+          7713
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          223
+        </td>
+        <td>
+          7618
+        </td>
+        <td>
+          7807
+          -
+          7988
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.allKids.foreach[Unit](((x0$2: com.atomist.tree.TreeNode) =&gt; x0$2 match {
+  case (ch @ (_: com.atomist.tree.content.text.OverwritableTextTreeNodeChild)) =&gt; ch.setParent(this, OverwritableTextTreeNode.determineLocationStep(OverwritableTextTreeNode.this.visibleChildren, ch), rootNode)
+  case _ =&gt; ()
+}))
+        </td>
+      </tr><tr>
+        <td>
+          225
+        </td>
+        <td>
+          7616
+        </td>
+        <td>
+          7877
+          -
+          7949
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNodeChild.setParent
+        </td>
+        <td style="background: #AEF1AE">
+          ch.setParent(this, OverwritableTextTreeNode.determineLocationStep(OverwritableTextTreeNode.this.visibleChildren, ch), rootNode)
+        </td>
+      </tr><tr>
+        <td>
+          225
+        </td>
+        <td>
+          7615
+        </td>
+        <td>
+          7896
+          -
+          7938
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.determineLocationStep
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.determineLocationStep(OverwritableTextTreeNode.this.visibleChildren, ch)
+        </td>
+      </tr><tr>
+        <td>
+          225
+        </td>
+        <td>
+          7614
+        </td>
+        <td>
+          7918
+          -
+          7933
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.visibleChildren
+        </td>
+        <td style="background: #AEF1AE">
+          OverwritableTextTreeNode.this.visibleChildren
+        </td>
+      </tr><tr>
+        <td>
+          226
+        </td>
+        <td>
+          7617
+        </td>
+        <td>
+          7961
+          -
+          7963
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          232
+        </td>
+        <td>
+          7619
+        </td>
+        <td>
+          8149
+          -
+          8161
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.ParsedNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          ptn.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          232
+        </td>
+        <td>
+          7621
+        </td>
+        <td>
+          8120
+          -
+          8184
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new OverwritableTextTreeNode(ptn.nodeName, fields, ptn.nodeTags)
+        </td>
+      </tr><tr>
+        <td>
+          232
+        </td>
+        <td>
+          7620
+        </td>
+        <td>
+          8171
+          -
+          8183
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeTags
+        </td>
+        <td style="background: #AEF1AE">
+          ptn.nodeTags
+        </td>
+      </tr><tr>
+        <td>
+          251
+        </td>
+        <td>
+          7622
+        </td>
+        <td>
+          8760
+          -
+          8777
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          forChild.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          252
+        </td>
+        <td>
+          7623
+        </td>
+        <td>
+          8786
+          -
+          8821
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          visibleChildren.contains[com.atomist.tree.TreeNode](forChild).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          253
+        </td>
+        <td>
+          7625
+        </td>
+        <td>
+          8829
+          -
+          8896
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;I can\'t find my child &quot;, &quot;&quot;).s(forChild))
+        </td>
+      </tr><tr>
+        <td>
+          253
+        </td>
+        <td>
+          7624
+        </td>
+        <td>
+          8829
+          -
+          8896
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;I can\'t find my child &quot;, &quot;&quot;).s(forChild))
+        </td>
+      </tr><tr>
+        <td>
+          254
+        </td>
+        <td>
+          7635
+        </td>
+        <td>
+          8906
+          -
+          9183
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val childrenBeforeThisWithTheSameName: Seq[com.atomist.tree.TreeNode] = visibleChildren.takeWhile(((x$10: com.atomist.tree.TreeNode) =&gt; x$10.!=(forChild))).filter(((x$11: com.atomist.tree.TreeNode) =&gt; x$11.nodeName.==(thisChildsName)));
+  val thisChildsIndex: Int = childrenBeforeThisWithTheSameName.size;
+  scala.StringContext.apply(&quot;&quot;, &quot;[&quot;, &quot;]&quot;).s(thisChildsName, thisChildsIndex.+(1))
+}
+        </td>
+      </tr><tr>
+        <td>
+          255
+        </td>
+        <td>
+          7628
+        </td>
+        <td>
+          8954
+          -
+          9031
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          visibleChildren.takeWhile(((x$10: com.atomist.tree.TreeNode) =&gt; x$10.!=(forChild))).filter(((x$11: com.atomist.tree.TreeNode) =&gt; x$11.nodeName.==(thisChildsName)))
+        </td>
+      </tr><tr>
+        <td>
+          255
+        </td>
+        <td>
+          7627
+        </td>
+        <td>
+          9002
+          -
+          9030
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$11.nodeName.==(thisChildsName)
+        </td>
+      </tr><tr>
+        <td>
+          255
+        </td>
+        <td>
+          7626
+        </td>
+        <td>
+          8980
+          -
+          8993
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          x$10.!=(forChild)
+        </td>
+      </tr><tr>
+        <td>
+          256
+        </td>
+        <td>
+          7629
+        </td>
+        <td>
+          9060
+          -
+          9098
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #AEF1AE">
+          childrenBeforeThisWithTheSameName.size
+        </td>
+      </tr><tr>
+        <td>
+          258
+        </td>
+        <td>
+          7634
+        </td>
+        <td>
+          9135
+          -
+          9177
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;[&quot;, &quot;]&quot;).s(thisChildsName, thisChildsIndex.+(1))
+        </td>
+      </tr><tr>
+        <td>
+          258
+        </td>
+        <td>
+          7631
+        </td>
+        <td>
+          9152
+          -
+          9154
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          258
+        </td>
+        <td>
+          7630
+        </td>
+        <td>
+          9137
+          -
+          9138
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          258
+        </td>
+        <td>
+          7633
+        </td>
+        <td>
+          9155
+          -
+          9174
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          thisChildsIndex.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          258
+        </td>
+        <td>
+          7632
+        </td>
+        <td>
+          9175
+          -
+          9177
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;]&quot;
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

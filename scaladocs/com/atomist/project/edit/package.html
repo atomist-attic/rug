@@ -1,0 +1,268 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>edit - rug 1.0.0-m.4 API - com.atomist.project.edit</title>
+          <meta name="description" content="edit - rug 1.0.0 - m.4 API - com.atomist.project.edit" />
+          <meta name="keywords" content="edit rug 1.0.0 m.4 API com.atomist.project.edit" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.atomist.project.edit.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.atomist">atomist</a>.<a href="../package.html" class="extype" name="com.atomist.project">project</a></p>
+        <h1>edit</h1><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.edit.package" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">edit</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="com.atomist.project.edit.Applicability" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ApplicabilityextendsProductwithSerializable"></a>
+      <a id="Applicability:Applicability"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Applicability.html"><span class="name">Applicability</span></a><span class="params">(<span name="canApply">canApply: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="message">message: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.edit.package@ApplicabilityextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Indicates whether this can be applied to a particular ArtifactSource.</p><div class="fullcomment"><div class="comment cmt"><p>Indicates whether this can be applied to a particular ArtifactSource.
+</p></div><dl class="paramcmts block"><dt class="param">canApply</dt><dd class="cmt"><p>can we apply this editor to the given ArtifactSource?</p></dd><dt class="param">message</dt><dd class="cmt"><p>why we can or can't apply the given editor</p></dd></dl></div>
+    </li><li name="com.atomist.project.edit.FailedModificationAttempt" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="FailedModificationAttemptextendsModificationAttemptwithProductwithSerializable"></a>
+      <a id="FailedModificationAttempt:FailedModificationAttempt"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="FailedModificationAttempt.html"><span class="name">FailedModificationAttempt</span></a><span class="params">(<span name="failureExplanation">failureExplanation: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="cause">cause: <span class="extype" name="scala.Option">Option</span>[<a href="../../../../scala/package.html#Throwable=Throwable" class="extmbr" name="scala.Throwable">Throwable</a>] = <span class="symbol"><span class="name"><a href="../../../../scala/package.html">None</a></span></span></span>)</span><span class="result"> extends <a href="ModificationAttempt.html" class="extype" name="com.atomist.project.edit.ModificationAttempt">ModificationAttempt</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.edit.package@FailedModificationAttemptextendsModificationAttemptwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Project modification failed.</p><div class="fullcomment"><div class="comment cmt"><p>Project modification failed.
+</p></div><dl class="paramcmts block"><dt class="param">failureExplanation</dt><dd class="cmt"><p>description of what went wrong</p></dd></dl></div>
+    </li><li name="com.atomist.project.edit.ModificationAttempt" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ModificationAttemptextendsAnyRef"></a>
+      <a id="ModificationAttempt:ModificationAttempt"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ModificationAttempt.html"><span class="name">ModificationAttempt</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.edit.package@ModificationAttemptextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Supertrait for attempts to modify a project.</p>
+    </li><li name="com.atomist.project.edit.NoModificationNeeded" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="NoModificationNeededextendsModificationAttemptwithProductwithSerializable"></a>
+      <a id="NoModificationNeeded:NoModificationNeeded"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="NoModificationNeeded.html"><span class="name">NoModificationNeeded</span></a><span class="params">(<span name="comment">comment: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="ModificationAttempt.html" class="extype" name="com.atomist.project.edit.ModificationAttempt">ModificationAttempt</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.edit.package@NoModificationNeededextendsModificationAttemptwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returned when no modification is needed, because the post condition
+of the editor is already met.</p><div class="fullcomment"><div class="comment cmt"><p>Returned when no modification is needed, because the post condition
+of the editor is already met.
+</p></div><dl class="paramcmts block"><dt class="param">comment</dt><dd class="cmt"><p>a comment</p></dd></dl></div>
+    </li><li name="com.atomist.project.edit.ProjectEditor" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="ProjectEditorextendsProjectOperation"></a>
+      <a id="ProjectEditor:ProjectEditor"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ProjectEditor.html"><span class="name">ProjectEditor</span></a><span class="result"> extends <a href="../ProjectOperation.html" class="extype" name="com.atomist.project.ProjectOperation">ProjectOperation</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.edit.package@ProjectEditorextendsProjectOperation" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Interface implemented by classes that know how to modify an existing project.</p><div class="fullcomment"><div class="comment cmt"><p>Interface implemented by classes that know how to modify an existing project.
+Extend ProjectEditorSupport rather than implementing this interface directly.
+</p></div></div>
+    </li><li name="com.atomist.project.edit.ProjectEditorSupport" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ProjectEditorSupportextendsProjectEditor"></a>
+      <a id="ProjectEditorSupport:ProjectEditorSupport"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ProjectEditorSupport.html"><span class="name">ProjectEditorSupport</span></a><span class="result"> extends <a href="ProjectEditor.html" class="extype" name="com.atomist.project.edit.ProjectEditor">ProjectEditor</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.edit.package@ProjectEditorSupportextendsProjectEditor" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Uses template method pattern to add applicability check
+and to check whether the post condition is already satisfied.</p>
+    </li><li name="com.atomist.project.edit.SuccessfulModification" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="SuccessfulModificationextendsModificationAttemptwithProductwithSerializable"></a>
+      <a id="SuccessfulModification:SuccessfulModification"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SuccessfulModification.html"><span class="name">SuccessfulModification</span></a><span class="params">(<span name="result">result: <span class="extype" name="com.atomist.source.ArtifactSource">ArtifactSource</span></span>, <span name="changeLogEntries">changeLogEntries: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="../../rug/kind/core/ChangeLogEntry.html" class="extype" name="com.atomist.rug.kind.core.ChangeLogEntry">ChangeLogEntry</a>[<span class="extype" name="com.atomist.source.ArtifactSource">ArtifactSource</span>]] = <span class="symbol">Nil</span></span>)</span><span class="result"> extends <a href="ModificationAttempt.html" class="extype" name="com.atomist.project.edit.ModificationAttempt">ModificationAttempt</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.edit.package@SuccessfulModificationextendsModificationAttemptwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Project was modified successfully.</p><div class="fullcomment"><div class="comment cmt"><p>Project was modified successfully.
+</p></div><dl class="paramcmts block"><dt class="param">result</dt><dd class="cmt"><p>resulting ArtifactSource containing the changes.
+There must have been changed files. Otherwise,
+NoModificationNeeded or FailedModificationAttempt should have been returned.</p></dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="com.atomist.project.edit.Applicability" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Applicability"></a>
+      <a id="Applicability:Applicability"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Applicability$.html"><span class="name">Applicability</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.edit.package@Applicability" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.project.edit.ProjectEditorUtils" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ProjectEditorUtils"></a>
+      <a id="ProjectEditorUtils:ProjectEditorUtils"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ProjectEditorUtils$.html"><span class="name">ProjectEditorUtils</span></a><span class="result"> extends <span class="extype" name="com.typesafe.scalalogging.LazyLogging">LazyLogging</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.edit.package@ProjectEditorUtils" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Convenience methods for working with results.</p>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

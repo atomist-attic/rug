@@ -1,0 +1,1776 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/marshal/LinkedJsonGraphDeserializer.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.marshal
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.ts.Cardinality
+</span>5 <span style=''>import com.atomist.tree.{SimpleTerminalTreeNode, TreeNode}
+</span>6 <span style=''>import com.fasterxml.jackson.databind.ObjectMapper
+</span>7 <span style=''>import com.fasterxml.jackson.module.scala.DefaultScalaModule
+</span>8 <span style=''>import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+</span>9 <span style=''>import com.typesafe.scalalogging.LazyLogging
+</span>10 <span style=''>
+</span>11 <span style=''>/**
+</span>12 <span style=''>  * Deserialize a tree from JSON.
+</span>13 <span style=''>  */
+</span>14 <span style=''>object LinkedJsonGraphDeserializer extends LazyLogging {
+</span>15 <span style=''>
+</span>16 <span style=''>  private val NodeId = </span><span style='background: #AEF1AE'>&quot;nodeId&quot;</span><span style=''>
+</span>17 <span style=''>  private val StartNodeId = </span><span style='background: #AEF1AE'>&quot;startNodeId&quot;</span><span style=''>
+</span>18 <span style=''>  private val EndNodeId = </span><span style='background: #AEF1AE'>&quot;endNodeId&quot;</span><span style=''>
+</span>19 <span style=''>  private val Type = </span><span style='background: #AEF1AE'>&quot;type&quot;</span><span style=''>
+</span>20 <span style=''>  private val CardinalityStr = </span><span style='background: #AEF1AE'>&quot;cardinality&quot;</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>  // Properties that we handle specially, rather than treating as ordinary subnodes
+</span>23 <span style=''>  private val SpecialProperties = </span><span style='background: #AEF1AE'>Set(NodeId, Type)</span><span style=''>
+</span>24 <span style=''>
+</span>25 <span style=''>  // Configure this to handle Scala
+</span>26 <span style=''>  private val mapper = </span><span style='background: #AEF1AE'>new</span><span style=''> ObjectMapper() with ScalaObjectMapper
+</span>27 <span style=''>  </span><span style='background: #AEF1AE'>mapper.registerModule(DefaultScalaModule)</span><span style=''>
+</span>28 <span style=''>
+</span>29 <span style=''>  /**
+</span>30 <span style=''>    * Deserialize from JSON.
+</span>31 <span style=''>    */
+</span>32 <span style=''>  def fromJson(json: String): GraphNode = {
+</span>33 <span style=''>    val l = </span><span style='background: #AEF1AE'>toListOfMaps(json)</span><span style=''>
+</span>34 <span style=''>    </span><span style='background: #AEF1AE'>nodeify(l)</span><span style=''>
+</span>35 <span style=''>  }
+</span>36 <span style=''>
+</span>37 <span style=''>  private def toListOfMaps(json: String): List[Map[String, Object]] = {
+</span>38 <span style=''>    </span><span style='background: #AEF1AE'>mapper.readValue(json, classOf[List[Map[String, Object]]])</span><span style=''>
+</span>39 <span style=''>  }
+</span>40 <span style=''>
+</span>41 <span style=''>  private def nodeify(l: List[Map[String, Object]]): GraphNode = {
+</span>42 <span style=''>    // Pass 1: Get all nodes individually and put them in a map
+</span>43 <span style=''>    var idToNode: Map[String, LinkableContainerTreeNode] = </span><span style='background: #AEF1AE'>Map()</span><span style=''>
+</span>44 <span style=''>    val nodes: Seq[LinkableContainerTreeNode] =
+</span>45 <span style=''>      </span><span style='background: #AEF1AE'>for {
+</span>46 <span style=''></span><span style='background: #AEF1AE'>        m &lt;- l
+</span>47 <span style=''></span><span style='background: #AEF1AE'>        if !m.contains(StartNodeId)
+</span>48 <span style=''></span><span style='background: #AEF1AE'>      } yield {
+</span>49 <span style=''></span><span style='background: #AEF1AE'>        val nodeType: String = m.get(Type) match {
+</span>50 <span style=''></span><span style='background: #AEF1AE'>          case Some(l: Seq[_]) =&gt; l.last.toString
+</span>51 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt; </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Type is required&quot;)</span><span style='background: #AEF1AE'>
+</span>52 <span style=''></span><span style='background: #AEF1AE'>          case _ =&gt; </span><span style='background: #F0ADAD'>???</span><span style='background: #AEF1AE'>
+</span>53 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>54 <span style=''></span><span style='background: #AEF1AE'>        val nodeTags: Set[String] = m.get(Type) match {
+</span>55 <span style=''></span><span style='background: #AEF1AE'>          case Some(l: Seq[_]) =&gt; l.map(_.toString).toSet
+</span>56 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt; </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Type is required&quot;)</span><span style='background: #AEF1AE'>
+</span>57 <span style=''></span><span style='background: #AEF1AE'>          case _ =&gt; </span><span style='background: #F0ADAD'>???</span><span style='background: #AEF1AE'>
+</span>58 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>59 <span style=''></span><span style='background: #AEF1AE'>        val nodeName = nodeType
+</span>60 <span style=''></span><span style='background: #AEF1AE'>        val simpleFields =
+</span>61 <span style=''></span><span style='background: #AEF1AE'>          for {
+</span>62 <span style=''></span><span style='background: #AEF1AE'>            k &lt;- m.keys
+</span>63 <span style=''></span><span style='background: #AEF1AE'>            if !SpecialProperties.contains(k)
+</span>64 <span style=''></span><span style='background: #AEF1AE'>          } yield {
+</span>65 <span style=''></span><span style='background: #AEF1AE'>            val nodeValue = m.get(k) match {
+</span>66 <span style=''></span><span style='background: #AEF1AE'>              case Some(s: String) =&gt; s
+</span>67 <span style=''></span><span style='background: #AEF1AE'>              case Some(ns) =&gt; ns.toString
+</span>68 <span style=''></span><span style='background: #AEF1AE'>              case None =&gt; </span><span style='background: #F0ADAD'>null</span><span style='background: #AEF1AE'>
+</span>69 <span style=''></span><span style='background: #AEF1AE'>            }
+</span>70 <span style=''></span><span style='background: #AEF1AE'>            SimpleTerminalTreeNode(k, nodeValue)
+</span>71 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>72 <span style=''></span><span style='background: #AEF1AE'>        val ctn = new LinkableContainerTreeNode(nodeName, nodeTags + TreeNode.Dynamic, simpleFields.toSeq)
+</span>73 <span style=''></span><span style='background: #AEF1AE'>        val nodeId: String = requiredStringEntry(m, NodeId)
+</span>74 <span style=''></span><span style='background: #AEF1AE'>        idToNode += (nodeId -&gt; ctn)
+</span>75 <span style=''></span><span style='background: #AEF1AE'>        ctn
+</span>76 <span style=''></span><span style='background: #AEF1AE'>      }</span><span style=''>
+</span>77 <span style=''>
+</span>78 <span style=''>    // Create the linkages
+</span>79 <span style=''>    </span><span style='background: #AEF1AE'>for {
+</span>80 <span style=''></span><span style='background: #AEF1AE'>      m &lt;- l
+</span>81 <span style=''></span><span style='background: #AEF1AE'>      if m.contains(StartNodeId)
+</span>82 <span style=''></span><span style='background: #AEF1AE'>    } {
+</span>83 <span style=''></span><span style='background: #AEF1AE'>      val startNodeId: String = requiredStringEntry(m, StartNodeId)
+</span>84 <span style=''></span><span style='background: #AEF1AE'>      val endNodeId: String = requiredStringEntry(m, EndNodeId)
+</span>85 <span style=''></span><span style='background: #AEF1AE'>      val cardinality: Cardinality =
+</span>86 <span style=''></span><span style='background: #AEF1AE'>        Cardinality(defaultedStringEntry(m, CardinalityStr, Cardinality.One2One))
+</span>87 <span style=''></span><span style='background: #AEF1AE'>      val link: String = requiredStringEntry(m, Type)
+</span>88 <span style=''></span><span style='background: #AEF1AE'>      logger.debug(s&quot;Creating link from $startNodeId to $endNodeId&quot;)
+</span>89 <span style=''></span><span style='background: #AEF1AE'>      idToNode.get(startNodeId) match {
+</span>90 <span style=''></span><span style='background: #AEF1AE'>        case Some(parent) =&gt; parent.link(
+</span>91 <span style=''></span><span style='background: #AEF1AE'>          idToNode.getOrElse(endNodeId,
+</span>92 <span style=''></span><span style='background: #AEF1AE'>            </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Cannot link to end node $endNodeId: not found&quot;)</span><span style='background: #AEF1AE'>),
+</span>93 <span style=''></span><span style='background: #AEF1AE'>          link,
+</span>94 <span style=''></span><span style='background: #AEF1AE'>          cardinality)
+</span>95 <span style=''></span><span style='background: #AEF1AE'>        case None =&gt;
+</span>96 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Cannot link to start node $startNodeId: not found&quot;)</span><span style='background: #AEF1AE'>
+</span>97 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>98 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>99 <span style=''>
+</span>100 <span style=''>    if (</span><span style='background: #AEF1AE'>nodes.nonEmpty</span><span style=''>) </span><span style='background: #AEF1AE'>nodes.head</span><span style=''> else </span><span style='background: #AEF1AE'>new EmptyContainerGraphNode</span><span style=''>
+</span>101 <span style=''>  }
+</span>102 <span style=''>
+</span>103 <span style=''>  private def requiredStringEntry(m: Map[String,Any], key: String): String =
+</span>104 <span style=''>    </span><span style='background: #AEF1AE'>m.get(key)</span><span style=''> match {
+</span>105 <span style=''>      case None =&gt; </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Property [$key] was required, but not found in map with keys [${m.keySet.mkString(&quot;,&quot;)}]&quot;)</span><span style=''>
+</span>106 <span style=''>      case Some(s: String) =&gt; s
+</span>107 <span style=''>      case Some(x) =&gt; </span><span style='background: #AEF1AE'>x.toString</span><span style=''>
+</span>108 <span style=''>    }
+</span>109 <span style=''>
+</span>110 <span style=''>  private def defaultedStringEntry(m: Map[String,Any], key: String, default: String): String =
+</span>111 <span style=''>    </span><span style='background: #AEF1AE'>m.get(key)</span><span style=''> match {
+</span>112 <span style=''>      case None =&gt; default
+</span>113 <span style=''>      case Some(s: String) =&gt; s
+</span>114 <span style=''>      case Some(x) =&gt; </span><span style='background: #F0ADAD'>x.toString</span><span style=''>
+</span>115 <span style=''>    }
+</span>116 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          7924
+        </td>
+        <td>
+          521
+          -
+          529
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;nodeId&quot;
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          7925
+        </td>
+        <td>
+          558
+          -
+          571
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;startNodeId&quot;
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          7926
+        </td>
+        <td>
+          598
+          -
+          609
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;endNodeId&quot;
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          7927
+        </td>
+        <td>
+          631
+          -
+          637
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;type&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7928
+        </td>
+        <td>
+          669
+          -
+          682
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;cardinality&quot;
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          7930
+        </td>
+        <td>
+          814
+          -
+          818
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.Type
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.Type
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          7929
+        </td>
+        <td>
+          806
+          -
+          812
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.NodeId
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.NodeId
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          7931
+        </td>
+        <td>
+          802
+          -
+          819
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](LinkedJsonGraphDeserializer.this.NodeId, LinkedJsonGraphDeserializer.this.Type)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          7932
+        </td>
+        <td>
+          880
+          -
+          883
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          7933
+        </td>
+        <td>
+          946
+          -
+          964
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.fasterxml.jackson.module.scala.DefaultScalaModule
+        </td>
+        <td style="background: #AEF1AE">
+          com.fasterxml.jackson.module.scala.DefaultScalaModule
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          7934
+        </td>
+        <td>
+          924
+          -
+          965
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.databind.ObjectMapper.registerModule
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.mapper.registerModule(com.fasterxml.jackson.module.scala.DefaultScalaModule)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          7935
+        </td>
+        <td>
+          1065
+          -
+          1083
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.toListOfMaps
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.toListOfMaps(json)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          7936
+        </td>
+        <td>
+          1088
+          -
+          1098
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.nodeify
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.nodeify(l)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          7937
+        </td>
+        <td>
+          1180
+          -
+          1238
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.databind.ObjectMapper.readValue
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.mapper.readValue[List[Map[String,Object]]](json, classOf[scala.collection.immutable.List])
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          7938
+        </td>
+        <td>
+          1434
+          -
+          1439
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenMapFactory.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Map.apply[String, Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          7969
+        </td>
+        <td>
+          1510
+          -
+          1510
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[com.atomist.tree.marshal.LinkableContainerTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          7970
+        </td>
+        <td>
+          1494
+          -
+          2630
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.generic.FilterMonadic.map
+        </td>
+        <td style="background: #AEF1AE">
+          l.withFilter(((m: Map[String,Object]) =&gt; m.contains(LinkedJsonGraphDeserializer.this.StartNodeId).unary_!)).map[com.atomist.tree.marshal.LinkableContainerTreeNode, Seq[com.atomist.tree.marshal.LinkableContainerTreeNode]](((m: Map[String,Object]) =&gt; {
+  val nodeType: String = m.get(LinkedJsonGraphDeserializer.this.Type) match {
+    case (x: Object)Some[Object]((l @ (_: Seq[_]))) =&gt; l.last.toString()
+    case scala.None =&gt; throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Type is required&quot;).s())
+    case _ =&gt; scala.this.Predef.???
+  };
+  val nodeTags: Set[String] = m.get(LinkedJsonGraphDeserializer.this.Type) match {
+    case (x: Object)Some[Object]((l @ (_: Seq[_]))) =&gt; l.map[String, Seq[String]](((x$1: _) =&gt; x$1.toString()))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+    case scala.None =&gt; throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Type is required&quot;).s())
+    case _ =&gt; scala.this.Predef.???
+  };
+  val nodeName: String = nodeType;
+  val simpleFields: Iterable[com.atomist.tree.SimpleTerminalTreeNode] = m.keys.withFilter(((k: String) =&gt; LinkedJsonGraphDeserializer.this.SpecialProperties.contains(k).unary_!)).map[com.atomist.tree.SimpleTerminalTreeNode, Iterable[com.atomist.tree.SimpleTerminalTreeNode]](((k: String) =&gt; {
+    val nodeValue: String = m.get(k) match {
+      case (x: Object)Some[Object]((s @ (_: String))) =&gt; s
+      case (x: Object)Some[Object]((ns @ _)) =&gt; ns.toString()
+      case scala.None =&gt; null
+    };
+    com.atomist.tree.SimpleTerminalTreeNode.apply(k, nodeValue, com.atomist.tree.SimpleTerminalTreeNode.apply$default$3)
+  }))(collection.this.Iterable.canBuildFrom[com.atomist.tree.SimpleTerminalTreeNode]);
+  val ctn: com.atomist.tree.marshal.LinkableContainerTreeNode = new LinkableContainerTreeNode(nodeName, nodeTags.+(com.atomist.tree.TreeNode.Dynamic), simpleFields.toSeq);
+  val nodeId: String = LinkedJsonGraphDeserializer.this.requiredStringEntry(m, LinkedJsonGraphDeserializer.this.NodeId);
+  idToNode = idToNode.+[com.atomist.tree.marshal.LinkableContainerTreeNode](scala.this.Predef.ArrowAssoc[String](nodeId).-&gt;[com.atomist.tree.marshal.LinkableContainerTreeNode](ctn));
+  ctn
+}))(immutable.this.List.canBuildFrom[com.atomist.tree.marshal.LinkableContainerTreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          7939
+        </td>
+        <td>
+          1538
+          -
+          1549
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.StartNodeId
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.StartNodeId
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          7940
+        </td>
+        <td>
+          1526
+          -
+          1550
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          m.contains(LinkedJsonGraphDeserializer.this.StartNodeId).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          7942
+        </td>
+        <td>
+          1598
+          -
+          1609
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.get
+        </td>
+        <td style="background: #AEF1AE">
+          m.get(LinkedJsonGraphDeserializer.this.Type)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          7941
+        </td>
+        <td>
+          1604
+          -
+          1608
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.Type
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.Type
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          7943
+        </td>
+        <td>
+          1652
+          -
+          1667
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Any.toString
+        </td>
+        <td style="background: #AEF1AE">
+          l.last.toString()
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          7944
+        </td>
+        <td>
+          1691
+          -
+          1746
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Type is required&quot;).s())
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          7945
+        </td>
+        <td>
+          1767
+          -
+          1770
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          7947
+        </td>
+        <td>
+          1817
+          -
+          1828
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.get
+        </td>
+        <td style="background: #AEF1AE">
+          m.get(LinkedJsonGraphDeserializer.this.Type)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          7946
+        </td>
+        <td>
+          1823
+          -
+          1827
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.Type
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.Type
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          7948
+        </td>
+        <td>
+          1877
+          -
+          1887
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Any.toString
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.toString()
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          7950
+        </td>
+        <td>
+          1871
+          -
+          1894
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          l.map[String, Seq[String]](((x$1: _) =&gt; x$1.toString()))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          7949
+        </td>
+        <td>
+          1876
+          -
+          1876
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          7951
+        </td>
+        <td>
+          1918
+          -
+          1973
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Type is required&quot;).s())
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          7952
+        </td>
+        <td>
+          1994
+          -
+          1997
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          7960
+        </td>
+        <td>
+          2077
+          -
+          2407
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.generic.FilterMonadic.map
+        </td>
+        <td style="background: #AEF1AE">
+          m.keys.withFilter(((k: String) =&gt; LinkedJsonGraphDeserializer.this.SpecialProperties.contains(k).unary_!)).map[com.atomist.tree.SimpleTerminalTreeNode, Iterable[com.atomist.tree.SimpleTerminalTreeNode]](((k: String) =&gt; {
+  val nodeValue: String = m.get(k) match {
+    case (x: Object)Some[Object]((s @ (_: String))) =&gt; s
+    case (x: Object)Some[Object]((ns @ _)) =&gt; ns.toString()
+    case scala.None =&gt; null
+  };
+  com.atomist.tree.SimpleTerminalTreeNode.apply(k, nodeValue, com.atomist.tree.SimpleTerminalTreeNode.apply$default$3)
+}))(collection.this.Iterable.canBuildFrom[com.atomist.tree.SimpleTerminalTreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          7959
+        </td>
+        <td>
+          2097
+          -
+          2097
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Iterable.canBuildFrom[com.atomist.tree.SimpleTerminalTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          7953
+        </td>
+        <td>
+          2122
+          -
+          2152
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.SpecialProperties.contains(k).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          7954
+        </td>
+        <td>
+          2201
+          -
+          2209
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.get
+        </td>
+        <td style="background: #AEF1AE">
+          m.get(k)
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          7955
+        </td>
+        <td>
+          2289
+          -
+          2300
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #AEF1AE">
+          ns.toString()
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          7956
+        </td>
+        <td>
+          2328
+          -
+          2332
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          7957
+        </td>
+        <td>
+          2359
+          -
+          2359
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.SimpleTerminalTreeNode.apply$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.SimpleTerminalTreeNode.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          7958
+        </td>
+        <td>
+          2359
+          -
+          2395
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.SimpleTerminalTreeNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.SimpleTerminalTreeNode.apply(k, nodeValue, com.atomist.tree.SimpleTerminalTreeNode.apply$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          7963
+        </td>
+        <td>
+          2495
+          -
+          2513
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          simpleFields.toSeq
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          7962
+        </td>
+        <td>
+          2466
+          -
+          2493
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.+
+        </td>
+        <td style="background: #AEF1AE">
+          nodeTags.+(com.atomist.tree.TreeNode.Dynamic)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          7961
+        </td>
+        <td>
+          2477
+          -
+          2493
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Dynamic
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Dynamic
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          7964
+        </td>
+        <td>
+          2426
+          -
+          2514
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkableContainerTreeNode.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new LinkableContainerTreeNode(nodeName, nodeTags.+(com.atomist.tree.TreeNode.Dynamic), simpleFields.toSeq)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          7966
+        </td>
+        <td>
+          2544
+          -
+          2574
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.requiredStringEntry
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.requiredStringEntry(m, LinkedJsonGraphDeserializer.this.NodeId)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          7965
+        </td>
+        <td>
+          2567
+          -
+          2573
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.NodeId
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.NodeId
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          7968
+        </td>
+        <td>
+          2583
+          -
+          2610
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Map.+
+        </td>
+        <td style="background: #AEF1AE">
+          idToNode.+[com.atomist.tree.marshal.LinkableContainerTreeNode](scala.this.Predef.ArrowAssoc[String](nodeId).-&gt;[com.atomist.tree.marshal.LinkableContainerTreeNode](ctn))
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          7967
+        </td>
+        <td>
+          2596
+          -
+          2609
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.ArrowAssoc[String](nodeId).-&gt;[com.atomist.tree.marshal.LinkableContainerTreeNode](ctn)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          7988
+        </td>
+        <td>
+          2663
+          -
+          3490
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.FilterMonadic.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          l.withFilter(((m: Map[String,Object]) =&gt; m.contains(LinkedJsonGraphDeserializer.this.StartNodeId))).foreach[Unit](((m: Map[String,Object]) =&gt; {
+  val startNodeId: String = LinkedJsonGraphDeserializer.this.requiredStringEntry(m, LinkedJsonGraphDeserializer.this.StartNodeId);
+  val endNodeId: String = LinkedJsonGraphDeserializer.this.requiredStringEntry(m, LinkedJsonGraphDeserializer.this.EndNodeId);
+  val cardinality: com.atomist.rug.ts.Cardinality = com.atomist.rug.ts.Cardinality.apply(LinkedJsonGraphDeserializer.this.defaultedStringEntry(m, LinkedJsonGraphDeserializer.this.CardinalityStr, com.atomist.rug.ts.Cardinality.One2One));
+  val link: String = LinkedJsonGraphDeserializer.this.requiredStringEntry(m, LinkedJsonGraphDeserializer.this.Type);
+  (if (LinkedJsonGraphDeserializer.this.logger.underlying.isDebugEnabled())
+    LinkedJsonGraphDeserializer.this.logger.underlying.debug(scala.StringContext.apply(&quot;Creating link from &quot;, &quot; to &quot;, &quot;&quot;).s(startNodeId, endNodeId))
+  else
+    (): Unit);
+  idToNode.get(startNodeId) match {
+    case (x: com.atomist.tree.marshal.LinkableContainerTreeNode)Some[com.atomist.tree.marshal.LinkableContainerTreeNode]((parent @ _)) =&gt; parent.link(idToNode.getOrElse[com.atomist.tree.marshal.LinkableContainerTreeNode](endNodeId, throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Cannot link to end node &quot;, &quot;: not found&quot;).s(endNodeId))), link, cardinality)
+    case scala.None =&gt; throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Cannot link to start node &quot;, &quot;: not found&quot;).s(startNodeId))
+  }
+}))
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          7972
+        </td>
+        <td>
+          2691
+          -
+          2714
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          m.contains(LinkedJsonGraphDeserializer.this.StartNodeId)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          7971
+        </td>
+        <td>
+          2702
+          -
+          2713
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.StartNodeId
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.StartNodeId
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          7974
+        </td>
+        <td>
+          2755
+          -
+          2790
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.requiredStringEntry
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.requiredStringEntry(m, LinkedJsonGraphDeserializer.this.StartNodeId)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          7973
+        </td>
+        <td>
+          2778
+          -
+          2789
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.StartNodeId
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.StartNodeId
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          7975
+        </td>
+        <td>
+          2844
+          -
+          2853
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.EndNodeId
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.EndNodeId
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          7976
+        </td>
+        <td>
+          2821
+          -
+          2854
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.requiredStringEntry
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.requiredStringEntry(m, LinkedJsonGraphDeserializer.this.EndNodeId)
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          7978
+        </td>
+        <td>
+          2952
+          -
+          2971
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.Cardinality.One2One
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.ts.Cardinality.One2One
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          7980
+        </td>
+        <td>
+          2900
+          -
+          2973
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.Cardinality.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.ts.Cardinality.apply(LinkedJsonGraphDeserializer.this.defaultedStringEntry(m, LinkedJsonGraphDeserializer.this.CardinalityStr, com.atomist.rug.ts.Cardinality.One2One))
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          7977
+        </td>
+        <td>
+          2936
+          -
+          2950
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.CardinalityStr
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.CardinalityStr
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          7979
+        </td>
+        <td>
+          2912
+          -
+          2972
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.defaultedStringEntry
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.defaultedStringEntry(m, LinkedJsonGraphDeserializer.this.CardinalityStr, com.atomist.rug.ts.Cardinality.One2One)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          7981
+        </td>
+        <td>
+          3022
+          -
+          3026
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.Type
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.Type
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          7982
+        </td>
+        <td>
+          2999
+          -
+          3027
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkedJsonGraphDeserializer.requiredStringEntry
+        </td>
+        <td style="background: #AEF1AE">
+          LinkedJsonGraphDeserializer.this.requiredStringEntry(m, LinkedJsonGraphDeserializer.this.Type)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          7983
+        </td>
+        <td>
+          3103
+          -
+          3128
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.get
+        </td>
+        <td style="background: #AEF1AE">
+          idToNode.get(startNodeId)
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          7986
+        </td>
+        <td>
+          3166
+          -
+          3356
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.marshal.LinkableContainerTreeNode.link
+        </td>
+        <td style="background: #AEF1AE">
+          parent.link(idToNode.getOrElse[com.atomist.tree.marshal.LinkableContainerTreeNode](endNodeId, throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Cannot link to end node &quot;, &quot;: not found&quot;).s(endNodeId))), link, cardinality)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          7985
+        </td>
+        <td>
+          3189
+          -
+          3316
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          idToNode.getOrElse[com.atomist.tree.marshal.LinkableContainerTreeNode](endNodeId, throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Cannot link to end node &quot;, &quot;: not found&quot;).s(endNodeId)))
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          7984
+        </td>
+        <td>
+          3231
+          -
+          3315
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Cannot link to end node &quot;, &quot;: not found&quot;).s(endNodeId))
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          7987
+        </td>
+        <td>
+          3388
+          -
+          3476
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Cannot link to start node &quot;, &quot;: not found&quot;).s(startNodeId))
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          7990
+        </td>
+        <td>
+          3516
+          -
+          3526
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          nodes.head
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          7993
+        </td>
+        <td>
+          3532
+          -
+          3559
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.tree.marshal.EmptyContainerGraphNode.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new EmptyContainerGraphNode()
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          7989
+        </td>
+        <td>
+          3500
+          -
+          3514
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          nodes.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          7992
+        </td>
+        <td>
+          3532
+          -
+          3559
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.marshal.EmptyContainerGraphNode.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new EmptyContainerGraphNode()
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          7991
+        </td>
+        <td>
+          3516
+          -
+          3526
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          nodes.head
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          7994
+        </td>
+        <td>
+          3646
+          -
+          3656
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.get
+        </td>
+        <td style="background: #AEF1AE">
+          m.get(key)
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          7995
+        </td>
+        <td>
+          3684
+          -
+          3811
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Property [&quot;, &quot;] was required, but not found in map with keys [&quot;, &quot;]&quot;).s(key, m.keySet.mkString(&quot;,&quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          7996
+        </td>
+        <td>
+          3866
+          -
+          3876
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Any.toString
+        </td>
+        <td style="background: #AEF1AE">
+          x.toString()
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          7997
+        </td>
+        <td>
+          3983
+          -
+          3993
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.get
+        </td>
+        <td style="background: #AEF1AE">
+          m.get(key)
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          7998
+        </td>
+        <td>
+          4083
+          -
+          4093
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Any.toString
+        </td>
+        <td style="background: #F0ADAD">
+          x.toString()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

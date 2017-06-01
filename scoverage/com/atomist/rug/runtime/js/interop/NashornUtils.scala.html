@@ -1,0 +1,1285 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/js/interop/NashornUtils.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.js.interop
+</span>2 <span style=''>
+</span>3 <span style=''>import java.util.Map.Entry
+</span>4 <span style=''>import java.util.Objects
+</span>5 <span style=''>
+</span>6 <span style=''>import jdk.nashorn.api.scripting.ScriptObjectMirror
+</span>7 <span style=''>import jdk.nashorn.internal.runtime.ConsString
+</span>8 <span style=''>
+</span>9 <span style=''>import scala.util.control.Exception._
+</span>10 <span style=''>
+</span>11 <span style=''>/**
+</span>12 <span style=''>  * Utilities to help in binding to Nashorn.
+</span>13 <span style=''>  */
+</span>14 <span style=''>object NashornUtils {
+</span>15 <span style=''>
+</span>16 <span style=''>  import scala.collection.JavaConverters._
+</span>17 <span style=''>
+</span>18 <span style=''>  /**
+</span>19 <span style=''>    * Get all key values, ignoring exceptions, which can be thrown
+</span>20 <span style=''>    * by Nashorn entrySet
+</span>21 <span style=''>    */
+</span>22 <span style=''>  private def safeObjectMap(som: ScriptObjectMirror): Map[String, AnyRef] =
+</span>23 <span style=''>    </span><span style='background: #AEF1AE'>som.keySet().asScala
+</span>24 <span style=''></span><span style='background: #AEF1AE'>      .flatMap(key =&gt; {
+</span>25 <span style=''></span><span style='background: #AEF1AE'>        // TypeScript &quot;get&quot; properties can throw exceptions
+</span>26 <span style=''></span><span style='background: #AEF1AE'>        val maybeValue = allCatch.opt(som.get(key))
+</span>27 <span style=''></span><span style='background: #AEF1AE'>        maybeValue.map(value =&gt; key -&gt; value)
+</span>28 <span style=''></span><span style='background: #AEF1AE'>      }).toMap</span><span style=''>
+</span>29 <span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>  def extractProperties(som: ScriptObjectMirror): Map[String, AnyRef] =
+</span>32 <span style=''>    </span><span style='background: #AEF1AE'>safeObjectMap(som) flatMap {
+</span>33 <span style=''></span><span style='background: #AEF1AE'>      case (_, som: ScriptObjectMirror) if som.isFunction =&gt;
+</span>34 <span style=''></span><span style='background: #AEF1AE'>        None
+</span>35 <span style=''></span><span style='background: #AEF1AE'>      case (key, value) =&gt;
+</span>36 <span style=''></span><span style='background: #AEF1AE'>        Some(key -&gt; value)
+</span>37 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>38 <span style=''>
+</span>39 <span style=''>  /**
+</span>40 <span style=''>    * Return the current state of no-arg methods on this object
+</span>41 <span style=''>    */
+</span>42 <span style=''>  def extractNoArgFunctionValues(som: ScriptObjectMirror): Map[String, AnyRef] = {
+</span>43 <span style=''>    val m = </span><span style='background: #AEF1AE'>safeObjectMap(som) flatMap {
+</span>44 <span style=''></span><span style='background: #AEF1AE'>      case (key, f: ScriptObjectMirror) if isNoArgFunction(f) =&gt;
+</span>45 <span style=''></span><span style='background: #AEF1AE'>        // If calling the function throws an exception, discard the value.
+</span>46 <span style=''></span><span style='background: #AEF1AE'>        // This will happen with builder stubs that haven't been fully initialized
+</span>47 <span style=''></span><span style='background: #AEF1AE'>        // Otherwise, use it
+</span>48 <span style=''></span><span style='background: #AEF1AE'>        allCatch.opt(som.callMember(key))
+</span>49 <span style=''></span><span style='background: #AEF1AE'>          .map(result =&gt; {
+</span>50 <span style=''></span><span style='background: #AEF1AE'>            (key, result)
+</span>51 <span style=''></span><span style='background: #AEF1AE'>          })
+</span>52 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; None
+</span>53 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>54 <span style=''>    m
+</span>55 <span style=''>  }
+</span>56 <span style=''>
+</span>57 <span style=''>  // TODO this is fragile but can't find a Nashorn method to do it
+</span>58 <span style=''>  private def isNoArgFunction(f: ScriptObjectMirror): Boolean = {
+</span>59 <span style=''>    </span><span style='background: #AEF1AE'>f.isFunction &amp;&amp; {
+</span>60 <span style=''></span><span style='background: #AEF1AE'>      val s = f.toString
+</span>61 <span style=''></span><span style='background: #AEF1AE'>      s.startsWith(&quot;function ()&quot;)
+</span>62 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>63 <span style=''>  }
+</span>64 <span style=''>
+</span>65 <span style=''>  def toJavaType(nashornReturn: Object): Object = nashornReturn match {
+</span>66 <span style=''>    case s: ConsString =&gt; </span><span style='background: #F0ADAD'>s.toString</span><span style=''>
+</span>67 <span style=''>    case r: ScriptObjectMirror if </span><span style='background: #AEF1AE'>r.isArray</span><span style=''> =&gt;
+</span>68 <span style=''>      </span><span style='background: #F0ADAD'>r.values().asScala</span><span style=''>
+</span>69 <span style=''>    case x =&gt; x
+</span>70 <span style=''>  }
+</span>71 <span style=''>
+</span>72 <span style=''>  def toJavaMap(nashornReturn: Object): Map[String, Object] =
+</span>73 <span style=''>    nashornReturn match {
+</span>74 <span style=''>      case som: ScriptObjectMirror =&gt;
+</span>75 <span style=''>        val scalaMap = </span><span style='background: #F0ADAD'>som.entrySet().asScala.map {
+</span>76 <span style=''></span><span style='background: #F0ADAD'>          e: Entry[String, Object] =&gt; (e.getKey, e.getValue)
+</span>77 <span style=''></span><span style='background: #F0ADAD'>        }.toMap</span><span style=''>
+</span>78 <span style=''>        </span><span style='background: #F0ADAD'>scalaMap.mapValues {
+</span>79 <span style=''></span><span style='background: #F0ADAD'>          case som: ScriptObjectMirror =&gt;
+</span>80 <span style=''></span><span style='background: #F0ADAD'>            toJavaMap(som)
+</span>81 <span style=''></span><span style='background: #F0ADAD'>          case x =&gt;
+</span>82 <span style=''></span><span style='background: #F0ADAD'>            toJavaType(x)
+</span>83 <span style=''></span><span style='background: #F0ADAD'>        }</span><span style=''>
+</span>84 <span style=''>    }
+</span>85 <span style=''>
+</span>86 <span style=''>  def toScalaSeq(nashornReturn: Object): Seq[Object] = nashornReturn match {
+</span>87 <span style=''>    case r: ScriptObjectMirror if </span><span style='background: #AEF1AE'>r.isArray</span><span style=''> =&gt;
+</span>88 <span style=''>      </span><span style='background: #AEF1AE'>r.values().asScala.toSeq</span><span style=''>
+</span>89 <span style=''>  }
+</span>90 <span style=''>
+</span>91 <span style=''>  /**
+</span>92 <span style=''>    * Return the given property of the JavaScript object or default value if not found
+</span>93 <span style=''>    *
+</span>94 <span style=''>    * @param default default value if not found. Defaults to null.
+</span>95 <span style=''>    */
+</span>96 <span style=''>  def stringProperty(som: ScriptObjectMirror, name: String, default: String = null): String =
+</span>97 <span style=''>    </span><span style='background: #AEF1AE'>som.get(name)</span><span style=''> match {
+</span>98 <span style=''>      case null =&gt; default
+</span>99 <span style=''>      case x =&gt; </span><span style='background: #AEF1AE'>Objects.toString(x)</span><span style=''>
+</span>100 <span style=''>    }
+</span>101 <span style=''>
+</span>102 <span style=''>  /**
+</span>103 <span style=''>    * Call the given JavaScript function, which must return a string
+</span>104 <span style=''>    */
+</span>105 <span style=''>  def stringFunction(som: ScriptObjectMirror, name: String): String =
+</span>106 <span style=''>    </span><span style='background: #AEF1AE'>som.callMember(name)</span><span style=''> match {
+</span>107 <span style=''>      case null =&gt; </span><span style='background: #F0ADAD'>null</span><span style=''>
+</span>108 <span style=''>      case x =&gt; </span><span style='background: #AEF1AE'>Objects.toString(x)</span><span style=''>
+</span>109 <span style=''>    }
+</span>110 <span style=''>
+</span>111 <span style=''>  /**
+</span>112 <span style=''>    * Are all these properties defined
+</span>113 <span style=''>    */
+</span>114 <span style=''>  def hasDefinedProperties(som: ScriptObjectMirror, properties: String*): Boolean =
+</span>115 <span style=''>    </span><span style='background: #AEF1AE'>properties.forall(p =&gt; som.get(p) != null)</span><span style=''>
+</span>116 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          4223
+        </td>
+        <td>
+          543
+          -
+          555
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.keySet
+        </td>
+        <td style="background: #AEF1AE">
+          som.keySet()
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          4229
+        </td>
+        <td>
+          578
+          -
+          578
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Set.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Set.canBuildFrom[(String, Object)]
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          4225
+        </td>
+        <td>
+          673
+          -
+          699
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.control.Exception.Catch.opt
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.control.Exception.allCatch[Nothing].opt[Object](som.get(key))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          4224
+        </td>
+        <td>
+          686
+          -
+          698
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.get
+        </td>
+        <td style="background: #AEF1AE">
+          som.get(key)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          4228
+        </td>
+        <td>
+          708
+          -
+          745
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[(String, Object)](maybeValue.map[(String, Object)](((value: Object) =&gt; scala.this.Predef.ArrowAssoc[String](key).-&gt;[Object](value))))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          4227
+        </td>
+        <td>
+          708
+          -
+          745
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.map
+        </td>
+        <td style="background: #AEF1AE">
+          maybeValue.map[(String, Object)](((value: Object) =&gt; scala.this.Predef.ArrowAssoc[String](key).-&gt;[Object](value)))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          4226
+        </td>
+        <td>
+          732
+          -
+          744
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.ArrowAssoc[String](key).-&gt;[Object](value)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          4231
+        </td>
+        <td>
+          543
+          -
+          760
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toMap
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaSetConverter[String](som.keySet()).asScala.flatMap[(String, Object), scala.collection.mutable.Set[(String, Object)]](((key: String) =&gt; {
+  val maybeValue: Option[Object] = scala.util.control.Exception.allCatch[Nothing].opt[Object](som.get(key));
+  scala.this.Option.option2Iterable[(String, Object)](maybeValue.map[(String, Object)](((value: Object) =&gt; scala.this.Predef.ArrowAssoc[String](key).-&gt;[Object](value))))
+}))(mutable.this.Set.canBuildFrom[(String, Object)]).toMap[String, AnyRef](scala.this.Predef.$conforms[(String, Object)])
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          4230
+        </td>
+        <td>
+          755
+          -
+          755
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.$conforms[(String, Object)]
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4239
+        </td>
+        <td>
+          839
+          -
+          1001
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          NashornUtils.this.safeObjectMap(som).flatMap[(String, AnyRef), Map[String,AnyRef]](((x0$1: (String, AnyRef)) =&gt; x0$1 match {
+  case (_1: String, _2: AnyRef)(String, AnyRef)(_, (som @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror))) if som.isFunction() =&gt; scala.this.Option.option2Iterable[Nothing](scala.None)
+  case (_1: String, _2: AnyRef)(String, AnyRef)((key @ _), (value @ _)) =&gt; scala.this.Option.option2Iterable[(String, AnyRef)](scala.Some.apply[(String, AnyRef)](scala.this.Predef.ArrowAssoc[String](key).-&gt;[AnyRef](value)))
+}))(immutable.this.Map.canBuildFrom[String, AnyRef])
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4238
+        </td>
+        <td>
+          858
+          -
+          858
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Map.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Map.canBuildFrom[String, AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          4232
+        </td>
+        <td>
+          911
+          -
+          925
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.isFunction
+        </td>
+        <td style="background: #AEF1AE">
+          som.isFunction()
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          4234
+        </td>
+        <td>
+          937
+          -
+          941
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[Nothing](scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          4233
+        </td>
+        <td>
+          937
+          -
+          941
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4237
+        </td>
+        <td>
+          977
+          -
+          995
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[(String, AnyRef)](scala.Some.apply[(String, AnyRef)](scala.this.Predef.ArrowAssoc[String](key).-&gt;[AnyRef](value)))
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4236
+        </td>
+        <td>
+          977
+          -
+          995
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[(String, AnyRef)](scala.this.Predef.ArrowAssoc[String](key).-&gt;[AnyRef](value))
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4235
+        </td>
+        <td>
+          982
+          -
+          994
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.ArrowAssoc[String](key).-&gt;[AnyRef](value)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          4248
+        </td>
+        <td>
+          1175
+          -
+          1590
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          NashornUtils.this.safeObjectMap(som).flatMap[(String, Object), scala.collection.immutable.Map[String,Object]](((x0$2: (String, AnyRef)) =&gt; x0$2 match {
+  case (_1: String, _2: AnyRef)(String, AnyRef)((key @ _), (f @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror))) if NashornUtils.this.isNoArgFunction(f) =&gt; scala.this.Option.option2Iterable[(String, Object)](scala.util.control.Exception.allCatch[Nothing].opt[Object](som.callMember(key)).map[(String, Object)](((result: Object) =&gt; scala.Tuple2.apply[String, Object](key, result))))
+  case _ =&gt; scala.this.Option.option2Iterable[Nothing](scala.None)
+}))(immutable.this.Map.canBuildFrom[String, Object])
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          4247
+        </td>
+        <td>
+          1194
+          -
+          1194
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Map.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Map.canBuildFrom[String, Object]
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          4240
+        </td>
+        <td>
+          1247
+          -
+          1265
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.isNoArgFunction
+        </td>
+        <td style="background: #AEF1AE">
+          NashornUtils.this.isNoArgFunction(f)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          4241
+        </td>
+        <td>
+          1477
+          -
+          1496
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.callMember
+        </td>
+        <td style="background: #AEF1AE">
+          som.callMember(key)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          4243
+        </td>
+        <td>
+          1464
+          -
+          1563
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.control.Exception.allCatch[Nothing].opt[Object](som.callMember(key)).map[(String, Object)](((result: Object) =&gt; scala.Tuple2.apply[String, Object](key, result)))
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          4244
+        </td>
+        <td>
+          1464
+          -
+          1563
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[(String, Object)](scala.util.control.Exception.allCatch[Nothing].opt[Object](som.callMember(key)).map[(String, Object)](((result: Object) =&gt; scala.Tuple2.apply[String, Object](key, result))))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          4242
+        </td>
+        <td>
+          1537
+          -
+          1550
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple2.apply[String, Object](key, result)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          4246
+        </td>
+        <td>
+          1580
+          -
+          1584
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[Nothing](scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          4245
+        </td>
+        <td>
+          1580
+          -
+          1584
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          4251
+        </td>
+        <td>
+          1739
+          -
+          1821
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          f.isFunction().&amp;&amp;({
+  val s: String = f.toString();
+  s.startsWith(&quot;function ()&quot;)
+})
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          4249
+        </td>
+        <td>
+          1771
+          -
+          1781
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.toString
+        </td>
+        <td style="background: #AEF1AE">
+          f.toString()
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4250
+        </td>
+        <td>
+          1788
+          -
+          1815
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.startsWith
+        </td>
+        <td style="background: #AEF1AE">
+          s.startsWith(&quot;function ()&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          4252
+        </td>
+        <td>
+          1925
+          -
+          1935
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.internal.runtime.ConsString.toString
+        </td>
+        <td style="background: #F0ADAD">
+          s.toString()
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          4253
+        </td>
+        <td>
+          1970
+          -
+          1979
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.isArray
+        </td>
+        <td style="background: #AEF1AE">
+          r.isArray()
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          4255
+        </td>
+        <td>
+          1989
+          -
+          2007
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsScala.asScala
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.JavaConverters.collectionAsScalaIterableConverter[Object](r.values()).asScala
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          4254
+        </td>
+        <td>
+          1989
+          -
+          1999
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.values
+        </td>
+        <td style="background: #F0ADAD">
+          r.values()
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          4260
+        </td>
+        <td>
+          2205
+          -
+          2205
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Set.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          mutable.this.Set.canBuildFrom[(String, Object)]
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          4256
+        </td>
+        <td>
+          2178
+          -
+          2192
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.entrySet
+        </td>
+        <td style="background: #F0ADAD">
+          som.entrySet()
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          4258
+        </td>
+        <td>
+          2256
+          -
+          2266
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Map.Entry.getValue
+        </td>
+        <td style="background: #F0ADAD">
+          e.getValue()
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          4257
+        </td>
+        <td>
+          2246
+          -
+          2254
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Map.Entry.getKey
+        </td>
+        <td style="background: #F0ADAD">
+          e.getKey()
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          4259
+        </td>
+        <td>
+          2245
+          -
+          2267
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Tuple2.apply[String, Object](e.getKey(), e.getValue())
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          4261
+        </td>
+        <td>
+          2278
+          -
+          2278
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.$conforms[(String, Object)]
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          4262
+        </td>
+        <td>
+          2178
+          -
+          2283
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toMap
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.JavaConverters.asScalaSetConverter[java.util.Map.Entry[String,Object]](som.entrySet()).asScala.map[(String, Object), scala.collection.mutable.Set[(String, Object)]](((e: java.util.Map.Entry[String,Object]) =&gt; scala.Tuple2.apply[String, Object](e.getKey(), e.getValue())))(mutable.this.Set.canBuildFrom[(String, Object)]).toMap[String, Object](scala.this.Predef.$conforms[(String, Object)])
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          4265
+        </td>
+        <td>
+          2292
+          -
+          2437
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.MapLike.mapValues
+        </td>
+        <td style="background: #F0ADAD">
+          scalaMap.mapValues[Object](((x0$3: Object) =&gt; x0$3 match {
+  case (som @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror)) =&gt; NashornUtils.this.toJavaMap(som)
+  case (x @ _) =&gt; NashornUtils.this.toJavaType(x)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          4263
+        </td>
+        <td>
+          2367
+          -
+          2381
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.toJavaMap
+        </td>
+        <td style="background: #F0ADAD">
+          NashornUtils.this.toJavaMap(som)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          4264
+        </td>
+        <td>
+          2414
+          -
+          2427
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.toJavaType
+        </td>
+        <td style="background: #F0ADAD">
+          NashornUtils.this.toJavaType(x)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          4266
+        </td>
+        <td>
+          2556
+          -
+          2565
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.isArray
+        </td>
+        <td style="background: #AEF1AE">
+          r.isArray()
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          4267
+        </td>
+        <td>
+          2575
+          -
+          2585
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.values
+        </td>
+        <td style="background: #AEF1AE">
+          r.values()
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          4268
+        </td>
+        <td>
+          2575
+          -
+          2599
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.collectionAsScalaIterableConverter[Object](r.values()).asScala.toSeq
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          4269
+        </td>
+        <td>
+          2876
+          -
+          2889
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.get
+        </td>
+        <td style="background: #AEF1AE">
+          som.get(name)
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          4270
+        </td>
+        <td>
+          2941
+          -
+          2960
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Objects.toString
+        </td>
+        <td style="background: #AEF1AE">
+          java.util.Objects.toString(x)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          4271
+        </td>
+        <td>
+          3124
+          -
+          3144
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.callMember
+        </td>
+        <td style="background: #AEF1AE">
+          som.callMember(name)
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          4272
+        </td>
+        <td>
+          3172
+          -
+          3176
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          4273
+        </td>
+        <td>
+          3193
+          -
+          3212
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Objects.toString
+        </td>
+        <td style="background: #AEF1AE">
+          java.util.Objects.toString(x)
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          4275
+        </td>
+        <td>
+          3360
+          -
+          3402
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.forall
+        </td>
+        <td style="background: #AEF1AE">
+          properties.forall(((p: String) =&gt; som.get(p).!=(null)))
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          4274
+        </td>
+        <td>
+          3383
+          -
+          3401
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          som.get(p).!=(null)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

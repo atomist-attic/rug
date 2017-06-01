@@ -1,0 +1,802 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/util/yaml/PropertiesToMapStructureParser.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.util.yaml
+</span>2 <span style=''>
+</span>3 <span style=''>import java.util
+</span>4 <span style=''>import java.util.Properties
+</span>5 <span style=''>
+</span>6 <span style=''>object PropertiesToMapStructureParser {
+</span>7 <span style=''>
+</span>8 <span style=''>  def constructYamlMapForProperties(properties: Properties): util.HashMap[String, Object] = {
+</span>9 <span style=''>    val yamlMap = </span><span style='background: #AEF1AE'>new util.HashMap[String, Object]</span><span style=''>
+</span>10 <span style=''>    val e = </span><span style='background: #AEF1AE'>properties.propertyNames</span><span style=''>
+</span>11 <span style=''>
+</span>12 <span style=''>    while (</span><span style='background: #AEF1AE'>e.hasMoreElements</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>13 <span style=''></span><span style='background: #AEF1AE'>      val key = e.nextElement
+</span>14 <span style=''></span><span style='background: #AEF1AE'>      val value = properties.getProperty(key.asInstanceOf[String])
+</span>15 <span style=''></span><span style='background: #AEF1AE'>      populateYamlForPeriodScopedProperty(key.asInstanceOf[String], value.asInstanceOf[String], yamlMap)
+</span>16 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>17 <span style=''>
+</span>18 <span style=''>    yamlMap
+</span>19 <span style=''>  }
+</span>20 <span style=''>
+</span>21 <span style=''>  def populateYamlForPeriodScopedProperty(property: String, propertyValue: String, currentMap: util.HashMap[String, Object]): Unit = {
+</span>22 <span style=''>    val propertyTokens = </span><span style='background: #AEF1AE'>property.split(&quot;\\.&quot;)</span><span style=''>
+</span>23 <span style=''>    </span><span style='background: #AEF1AE'>constructYamlForPeriodScopedProperty(0, propertyTokens, currentMap, propertyValue)</span><span style=''>
+</span>24 <span style=''>  }
+</span>25 <span style=''>
+</span>26 <span style=''>  private def constructYamlForPeriodScopedProperty(index: Int, propertyTokens: Array[String], currentMap: util.HashMap[String, Object], propertyValue: Object) {
+</span>27 <span style=''>    if (</span><span style='background: #AEF1AE'>index &lt; propertyTokens.length</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>28 <span style=''></span><span style='background: #AEF1AE'>      val currentToken = propertyTokens(index)
+</span>29 <span style=''></span><span style='background: #AEF1AE'>      if (index &lt; propertyTokens.length - 1) {
+</span>30 <span style=''></span><span style='background: #AEF1AE'>        val nextMap = new util.HashMap[String, Object]()
+</span>31 <span style=''></span><span style='background: #AEF1AE'>        currentMap.putIfAbsent(currentToken, nextMap)
+</span>32 <span style=''></span><span style='background: #AEF1AE'>        val nextResultingMap = currentMap.get(currentToken)
+</span>33 <span style=''></span><span style='background: #AEF1AE'>        constructYamlForPeriodScopedProperty(index + 1, propertyTokens, nextResultingMap.asInstanceOf[util.HashMap[String, Object]], propertyValue)
+</span>34 <span style=''></span><span style='background: #AEF1AE'>      } else {
+</span>35 <span style=''></span><span style='background: #AEF1AE'>        currentMap.putIfAbsent(currentToken, propertyValue)
+</span>36 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>37 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>38 <span style=''>  }
+</span>39 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          9535
+        </td>
+        <td>
+          230
+          -
+          262
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.HashMap.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.util.HashMap[String,Object]()
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          9536
+        </td>
+        <td>
+          275
+          -
+          299
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Properties.propertyNames
+        </td>
+        <td style="background: #AEF1AE">
+          properties.propertyNames()
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          9545
+        </td>
+        <td>
+          331
+          -
+          540
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  {
+    val key: Any = e.nextElement();
+    val value: String = properties.getProperty(key.asInstanceOf[String]);
+    PropertiesToMapStructureParser.this.populateYamlForPeriodScopedProperty(key.asInstanceOf[String], value.asInstanceOf[String], yamlMap)
+  };
+  while$1()
+}
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          9544
+        </td>
+        <td>
+          331
+          -
+          331
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.yaml.PropertiesToMapStructureParser.while$1
+        </td>
+        <td style="background: #AEF1AE">
+          while$1()
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          9547
+        </td>
+        <td>
+          305
+          -
+          305
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          9546
+        </td>
+        <td>
+          305
+          -
+          305
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          9537
+        </td>
+        <td>
+          312
+          -
+          329
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Enumeration.hasMoreElements
+        </td>
+        <td style="background: #AEF1AE">
+          e.hasMoreElements()
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          9538
+        </td>
+        <td>
+          349
+          -
+          362
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Enumeration.nextElement
+        </td>
+        <td style="background: #AEF1AE">
+          e.nextElement()
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          9539
+        </td>
+        <td>
+          404
+          -
+          428
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          key.asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          9540
+        </td>
+        <td>
+          381
+          -
+          429
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Properties.getProperty
+        </td>
+        <td style="background: #AEF1AE">
+          properties.getProperty(key.asInstanceOf[String])
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          9542
+        </td>
+        <td>
+          498
+          -
+          524
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          value.asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          9541
+        </td>
+        <td>
+          472
+          -
+          496
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          key.asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          9543
+        </td>
+        <td>
+          436
+          -
+          534
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.yaml.PropertiesToMapStructureParser.populateYamlForPeriodScopedProperty
+        </td>
+        <td style="background: #AEF1AE">
+          PropertiesToMapStructureParser.this.populateYamlForPeriodScopedProperty(key.asInstanceOf[String], value.asInstanceOf[String], yamlMap)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          9548
+        </td>
+        <td>
+          719
+          -
+          740
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.split
+        </td>
+        <td style="background: #AEF1AE">
+          property.split(&quot;\\.&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          9549
+        </td>
+        <td>
+          745
+          -
+          827
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.yaml.PropertiesToMapStructureParser.constructYamlForPeriodScopedProperty
+        </td>
+        <td style="background: #AEF1AE">
+          PropertiesToMapStructureParser.this.constructYamlForPeriodScopedProperty(0, propertyTokens, currentMap, propertyValue)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9566
+        </td>
+        <td>
+          998
+          -
+          998
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9551
+        </td>
+        <td>
+          1002
+          -
+          1031
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          index.&lt;(propertyTokens.length)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9550
+        </td>
+        <td>
+          1010
+          -
+          1031
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Array.length
+        </td>
+        <td style="background: #AEF1AE">
+          propertyTokens.length
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9565
+        </td>
+        <td>
+          1033
+          -
+          1536
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val currentToken: String = propertyTokens.apply(index);
+  if (index.&lt;(propertyTokens.length.-(1)))
+    {
+      val nextMap: java.util.HashMap[String,Object] = new java.util.HashMap[String,Object]();
+      currentMap.putIfAbsent(currentToken, nextMap);
+      val nextResultingMap: Object = currentMap.get(currentToken);
+      PropertiesToMapStructureParser.this.constructYamlForPeriodScopedProperty(index.+(1), propertyTokens, nextResultingMap.asInstanceOf[java.util.HashMap[String,Object]], propertyValue)
+    }
+  else
+    {
+      currentMap.putIfAbsent(currentToken, propertyValue);
+      ()
+    }
+}
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9567
+        </td>
+        <td>
+          998
+          -
+          998
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          9552
+        </td>
+        <td>
+          1060
+          -
+          1081
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Array.apply
+        </td>
+        <td style="background: #AEF1AE">
+          propertyTokens.apply(index)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          9554
+        </td>
+        <td>
+          1092
+          -
+          1125
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          index.&lt;(propertyTokens.length.-(1))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          9553
+        </td>
+        <td>
+          1100
+          -
+          1125
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          propertyTokens.length.-(1)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          9561
+        </td>
+        <td>
+          1127
+          -
+          1455
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val nextMap: java.util.HashMap[String,Object] = new java.util.HashMap[String,Object]();
+  currentMap.putIfAbsent(currentToken, nextMap);
+  val nextResultingMap: Object = currentMap.get(currentToken);
+  PropertiesToMapStructureParser.this.constructYamlForPeriodScopedProperty(index.+(1), propertyTokens, nextResultingMap.asInstanceOf[java.util.HashMap[String,Object]], propertyValue)
+}
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          9555
+        </td>
+        <td>
+          1151
+          -
+          1185
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.HashMap.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.util.HashMap[String,Object]()
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          9556
+        </td>
+        <td>
+          1194
+          -
+          1239
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.HashMap.putIfAbsent
+        </td>
+        <td style="background: #AEF1AE">
+          currentMap.putIfAbsent(currentToken, nextMap)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          9557
+        </td>
+        <td>
+          1271
+          -
+          1299
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.HashMap.get
+        </td>
+        <td style="background: #AEF1AE">
+          currentMap.get(currentToken)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          9560
+        </td>
+        <td>
+          1308
+          -
+          1447
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.yaml.PropertiesToMapStructureParser.constructYamlForPeriodScopedProperty
+        </td>
+        <td style="background: #AEF1AE">
+          PropertiesToMapStructureParser.this.constructYamlForPeriodScopedProperty(index.+(1), propertyTokens, nextResultingMap.asInstanceOf[java.util.HashMap[String,Object]], propertyValue)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          9559
+        </td>
+        <td>
+          1372
+          -
+          1431
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          nextResultingMap.asInstanceOf[java.util.HashMap[String,Object]]
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          9558
+        </td>
+        <td>
+          1345
+          -
+          1354
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          index.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          9563
+        </td>
+        <td>
+          1493
+          -
+          1493
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          9562
+        </td>
+        <td>
+          1471
+          -
+          1522
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.HashMap.putIfAbsent
+        </td>
+        <td style="background: #AEF1AE">
+          currentMap.putIfAbsent(currentToken, propertyValue)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          9564
+        </td>
+        <td>
+          1471
+          -
+          1522
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  currentMap.putIfAbsent(currentToken, propertyValue);
+  ()
+}
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

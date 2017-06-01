@@ -1,0 +1,399 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/java/JavaSourceType.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.java
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
+</span>5 <span style=''>import com.atomist.rug.spi._
+</span>6 <span style=''>import com.typesafe.scalalogging.LazyLogging
+</span>7 <span style=''>
+</span>8 <span style=''>/**
+</span>9 <span style=''>  * Represents a Java source file.
+</span>10 <span style=''>  * Note: This is the first generation, verb-oriented Java type.
+</span>11 <span style=''>  * It supports path expressions into itself but no deeper. Use
+</span>12 <span style=''>  * the ANTLR-based JavaFileType if you wish to use path expressions throughout
+</span>13 <span style=''>  * the Java AST.
+</span>14 <span style=''>  *
+</span>15 <span style=''>  * This type may be deleted in a future version of Rug, if the JavaFileType
+</span>16 <span style=''>  * and TypeScript helpers prove capable of replacing all its functionality
+</span>17 <span style=''>  * in a convenient manner.
+</span>18 <span style=''>  */
+</span>19 <span style=''>class JavaSourceType
+</span>20 <span style=''>  extends Type
+</span>21 <span style=''>    with ReflectivelyTypedType
+</span>22 <span style=''>    with LazyLogging {
+</span>23 <span style=''>
+</span>24 <span style=''>  override def description = </span><span style='background: #AEF1AE'>&quot;Java source file&quot;</span><span style=''>
+</span>25 <span style=''>
+</span>26 <span style=''>  override def runtimeClass: Class[JavaSourceMutableView] = </span><span style='background: #AEF1AE'>classOf[JavaSourceMutableView]</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
+</span>29 <span style=''>      case pv: ProjectMutableView =&gt;
+</span>30 <span style=''>        </span><span style='background: #AEF1AE'>Some(JavaProjectMutableView(pv).javaSourceViews)</span><span style=''>
+</span>31 <span style=''>      case fmv: FileArtifactBackedMutableView if </span><span style='background: #AEF1AE'>fmv.path.endsWith(JavaSourceType.JavaExtension)</span><span style=''>=&gt;
+</span>32 <span style=''>        val jpv = </span><span style='background: #AEF1AE'>JavaProjectMutableView(fmv.parent)</span><span style=''>
+</span>33 <span style=''>        </span><span style='background: #AEF1AE'>Some(Seq(new JavaSourceMutableView(fmv.currentBackingObject, jpv)))</span><span style=''>
+</span>34 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>35 <span style=''>    }
+</span>36 <span style=''>}
+</span>37 <span style=''>
+</span>38 <span style=''>object JavaSourceType {
+</span>39 <span style=''>
+</span>40 <span style=''>  val JavaExtension = </span><span style='background: #AEF1AE'>&quot;.java&quot;</span><span style=''>
+</span>41 <span style=''>
+</span>42 <span style=''>  val FieldAlias = </span><span style='background: #AEF1AE'>&quot;JavaField&quot;</span><span style=''>
+</span>43 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          2065
+        </td>
+        <td>
+          806
+          -
+          824
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Java source file&quot;
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2066
+        </td>
+        <td>
+          886
+          -
+          916
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.rug.kind.java.JavaSourceMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2068
+        </td>
+        <td>
+          1055
+          -
+          1103
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Seq[com.atomist.rug.kind.java.JavaSourceMutableView]](JavaProjectMutableView.apply(pv).javaSourceViews)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2067
+        </td>
+        <td>
+          1060
+          -
+          1102
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaProjectMutableView.javaSourceViews
+        </td>
+        <td style="background: #AEF1AE">
+          JavaProjectMutableView.apply(pv).javaSourceViews
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          2069
+        </td>
+        <td>
+          1171
+          -
+          1199
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaSourceType.JavaExtension
+        </td>
+        <td style="background: #AEF1AE">
+          JavaSourceType.JavaExtension
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          2070
+        </td>
+        <td>
+          1153
+          -
+          1200
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          fmv.path.endsWith(JavaSourceType.JavaExtension)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          2071
+        </td>
+        <td>
+          1244
+          -
+          1254
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.parent
+        </td>
+        <td style="background: #AEF1AE">
+          fmv.parent
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          2072
+        </td>
+        <td>
+          1221
+          -
+          1255
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaProjectMutableView.apply
+        </td>
+        <td style="background: #AEF1AE">
+          JavaProjectMutableView.apply(fmv.parent)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          2075
+        </td>
+        <td>
+          1269
+          -
+          1330
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.kind.java.JavaSourceMutableView](new JavaSourceMutableView(fmv.currentBackingObject, jpv))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          2074
+        </td>
+        <td>
+          1273
+          -
+          1329
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaSourceMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new JavaSourceMutableView(fmv.currentBackingObject, jpv)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          2076
+        </td>
+        <td>
+          1264
+          -
+          1331
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Seq[com.atomist.rug.kind.java.JavaSourceMutableView]](collection.this.Seq.apply[com.atomist.rug.kind.java.JavaSourceMutableView](new JavaSourceMutableView(fmv.currentBackingObject, jpv)))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          2073
+        </td>
+        <td>
+          1299
+          -
+          1323
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          fmv.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          2077
+        </td>
+        <td>
+          1348
+          -
+          1352
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          2078
+        </td>
+        <td>
+          1409
+          -
+          1416
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;.java&quot;
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          2079
+        </td>
+        <td>
+          1437
+          -
+          1448
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;JavaField&quot;
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

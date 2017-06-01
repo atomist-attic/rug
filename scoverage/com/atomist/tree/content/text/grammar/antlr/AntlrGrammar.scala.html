@@ -1,0 +1,403 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/content/text/grammar/antlr/AntlrGrammar.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.content.text.grammar.antlr
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.tree.content.text.PositionedTreeNode
+</span>4 <span style=''>import org.antlr.v4.runtime.{InputMismatchException, NoViableAltException}
+</span>5 <span style=''>import org.snt.inmemantlr.GenericParser
+</span>6 <span style=''>
+</span>7 <span style=''>/**
+</span>8 <span style=''>  * Parse input using Antlr, with classes created and compiled on the fly.
+</span>9 <span style=''>  * Uses Inmemantlr (https://github.com/julianthome/inmemantlr)
+</span>10 <span style=''>  *
+</span>11 <span style=''>  * @param grammars Antlr G4 grammar definitions to use
+</span>12 <span style=''>  */
+</span>13 <span style=''>class AntlrGrammar(
+</span>14 <span style=''>                    production: String,
+</span>15 <span style=''>                    nodeCreationStrategy: AstNodeCreationStrategy,
+</span>16 <span style=''>                    grammars: String*)
+</span>17 <span style=''>  extends AbstractInMemAntlrGrammar {
+</span>18 <span style=''>
+</span>19 <span style=''>  override protected def setup: ParserSetup = {
+</span>20 <span style=''>    val parser = </span><span style='background: #AEF1AE'>new GenericParser(this, false, grammars:_*)</span><span style=''>
+</span>21 <span style=''>    </span><span style='background: #AEF1AE'>ParserSetup(grammars, parser, production)</span><span style=''>
+</span>22 <span style=''>  }
+</span>23 <span style=''>
+</span>24 <span style=''>  def parse(input: String): Option[PositionedTreeNode] = {
+</span>25 <span style=''>    logger.debug(s&quot;Using grammars:\n$grammars&quot;)
+</span>26 <span style=''>    val l = </span><span style='background: #AEF1AE'>new ModelBuildingListener(production, nodeCreationStrategy)</span><span style=''>
+</span>27 <span style=''>    try {
+</span>28 <span style=''>      </span><span style='background: #AEF1AE'>val parser = config.parser
+</span>29 <span style=''></span><span style='background: #AEF1AE'>      parser.setListener(l)
+</span>30 <span style=''></span><span style='background: #AEF1AE'>      parser.parse(input, production)</span><span style=''>
+</span>31 <span style=''>    } catch {
+</span>32 <span style=''>      case nva: NoViableAltException =&gt;
+</span>33 <span style=''>        logger.info(s&quot;Unable to parse file: $nva on [$input]&quot;, nva)
+</span>34 <span style=''>      case ime: InputMismatchException =&gt;
+</span>35 <span style=''>        logger.info(s&quot;Antlr parse failure: $ime on [$input]&quot;, ime)
+</span>36 <span style=''>      case t: Throwable =&gt;
+</span>37 <span style=''>        logger.error(s&quot;Unexpected Antlr parse failure: $t on [$input]&quot;, t)
+</span>38 <span style=''>      // Return any results we found
+</span>39 <span style=''>    }
+</span>40 <span style=''>
+</span>41 <span style=''>    </span><span style='background: #AEF1AE'>l.ruleNodes.headOption</span><span style=''>
+</span>42 <span style=''>  }
+</span>43 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7733
+        </td>
+        <td>
+          727
+          -
+          732
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7735
+        </td>
+        <td>
+          703
+          -
+          746
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.snt.inmemantlr.GenericParser.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new org.snt.inmemantlr.GenericParser(this, false, (AntlrGrammar.this.grammars: _*))
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7734
+        </td>
+        <td>
+          734
+          -
+          742
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AntlrGrammar.grammars
+        </td>
+        <td style="background: #AEF1AE">
+          AntlrGrammar.this.grammars
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          7736
+        </td>
+        <td>
+          763
+          -
+          771
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AntlrGrammar.grammars
+        </td>
+        <td style="background: #AEF1AE">
+          AntlrGrammar.this.grammars
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          7738
+        </td>
+        <td>
+          751
+          -
+          792
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ParserSetup.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ParserSetup.apply(AntlrGrammar.this.grammars, parser, AntlrGrammar.this.production)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          7737
+        </td>
+        <td>
+          781
+          -
+          791
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AntlrGrammar.production
+        </td>
+        <td style="background: #AEF1AE">
+          AntlrGrammar.this.production
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          7739
+        </td>
+        <td>
+          943
+          -
+          953
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AntlrGrammar.production
+        </td>
+        <td style="background: #AEF1AE">
+          AntlrGrammar.this.production
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          7741
+        </td>
+        <td>
+          917
+          -
+          976
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ModelBuildingListener.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new ModelBuildingListener(AntlrGrammar.this.production, AntlrGrammar.this.nodeCreationStrategy)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          7740
+        </td>
+        <td>
+          955
+          -
+          975
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AntlrGrammar.nodeCreationStrategy
+        </td>
+        <td style="background: #AEF1AE">
+          AntlrGrammar.this.nodeCreationStrategy
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          7746
+        </td>
+        <td>
+          993
+          -
+          1085
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val parser: org.snt.inmemantlr.GenericParser = AntlrGrammar.this.config.parser;
+  parser.setListener(l);
+  parser.parse(input, AntlrGrammar.this.production)
+}
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7742
+        </td>
+        <td>
+          1006
+          -
+          1019
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.ParserSetup.parser
+        </td>
+        <td style="background: #AEF1AE">
+          AntlrGrammar.this.config.parser
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          7743
+        </td>
+        <td>
+          1026
+          -
+          1047
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.snt.inmemantlr.GenericParser.setListener
+        </td>
+        <td style="background: #AEF1AE">
+          parser.setListener(l)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          7745
+        </td>
+        <td>
+          1054
+          -
+          1085
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.snt.inmemantlr.GenericParser.parse
+        </td>
+        <td style="background: #AEF1AE">
+          parser.parse(input, AntlrGrammar.this.production)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          7744
+        </td>
+        <td>
+          1074
+          -
+          1084
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.grammar.antlr.AntlrGrammar.production
+        </td>
+        <td style="background: #AEF1AE">
+          AntlrGrammar.this.production
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          7747
+        </td>
+        <td>
+          1467
+          -
+          1489
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #AEF1AE">
+          l.ruleNodes.headOption
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

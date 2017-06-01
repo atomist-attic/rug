@@ -1,0 +1,893 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/test/gherkin/Result.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.test.gherkin
+</span>2 <span style=''>
+</span>3 <span style=''>import gherkin.ast.{Feature, ScenarioDefinition}
+</span>4 <span style=''>
+</span>5 <span style=''>/**
+</span>6 <span style=''>  * Result of one or more tests
+</span>7 <span style=''>  */
+</span>8 <span style=''>sealed trait Result {
+</span>9 <span style=''>
+</span>10 <span style=''>  def message: String
+</span>11 <span style=''>}
+</span>12 <span style=''>
+</span>13 <span style=''>object Result {
+</span>14 <span style=''>
+</span>15 <span style=''>  def apply(f: Boolean, s: String): Result = {
+</span>16 <span style=''>    if (f) </span><span style='background: #AEF1AE'>Passed</span><span style=''>
+</span>17 <span style=''>    else </span><span style='background: #AEF1AE'>Failed(s)</span><span style=''>
+</span>18 <span style=''>  }
+</span>19 <span style=''>}
+</span>20 <span style=''>
+</span>21 <span style=''>case object Passed extends Result {
+</span>22 <span style=''>
+</span>23 <span style=''>  override def message = </span><span style='background: #F0ADAD'>&quot;Passed&quot;</span><span style=''>
+</span>24 <span style=''>}
+</span>25 <span style=''>
+</span>26 <span style=''>case class Failed(message: String) extends Result
+</span>27 <span style=''>
+</span>28 <span style=''>case class NotYetImplemented(name: String) extends Result {
+</span>29 <span style=''>
+</span>30 <span style=''>  override def message = </span><span style='background: #F0ADAD'>s&quot;Not yet implemented: [$name]&quot;</span><span style=''>
+</span>31 <span style=''>}
+</span>32 <span style=''>
+</span>33 <span style=''>/**
+</span>34 <span style=''>  * Consistent interface for every layer of tests
+</span>35 <span style=''>  */
+</span>36 <span style=''>trait TestRun {
+</span>37 <span style=''>
+</span>38 <span style=''>  def result: Result
+</span>39 <span style=''>
+</span>40 <span style=''>  def passed: Boolean = </span><span style='background: #AEF1AE'>result == Passed</span><span style=''>
+</span>41 <span style=''>
+</span>42 <span style=''>  def testCount: Int
+</span>43 <span style=''>}
+</span>44 <span style=''>
+</span>45 <span style=''>abstract class MultiTestRun(results: Seq[TestRun]) extends TestRun {
+</span>46 <span style=''>
+</span>47 <span style=''>  override def testCount: Int = </span><span style='background: #AEF1AE'>results.size</span><span style=''>
+</span>48 <span style=''>
+</span>49 <span style=''>  override def result: Result =
+</span>50 <span style=''>    if (</span><span style='background: #AEF1AE'>results.forall(_.result == Passed)</span><span style=''>) </span><span style='background: #AEF1AE'>Passed</span><span style=''>
+</span>51 <span style=''>    else </span><span style='background: #AEF1AE'>{
+</span>52 <span style=''></span><span style='background: #AEF1AE'>      val r = results.find(_.result.isInstanceOf[Failed])
+</span>53 <span style=''></span><span style='background: #AEF1AE'>        .map(_.result)
+</span>54 <span style=''></span><span style='background: #AEF1AE'>      r match {
+</span>55 <span style=''></span><span style='background: #AEF1AE'>        case Some(Failed(why)) =&gt; Failed(why)
+</span>56 <span style=''></span><span style='background: #AEF1AE'>        case _ =&gt; NotYetImplemented(results.mkString(&quot;,&quot;))
+</span>57 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>58 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>59 <span style=''>}
+</span>60 <span style=''>
+</span>61 <span style=''>case class AssertionResult(assertion: String, result: Result) extends TestRun {
+</span>62 <span style=''>
+</span>63 <span style=''>  override def testCount: Int = </span><span style='background: #F0ADAD'>1</span><span style=''>
+</span>64 <span style=''>}
+</span>65 <span style=''>
+</span>66 <span style=''>case class ScenarioResult(scenario: ScenarioDefinition, results: Seq[AssertionResult], data: String)
+</span>67 <span style=''>  extends MultiTestRun(results) {
+</span>68 <span style=''>
+</span>69 <span style=''>  override def toString: String =
+</span>70 <span style=''>    </span><span style='background: #AEF1AE'>s&quot;Scenario [${scenario.getName}]: Results = {${results.mkString(&quot;,&quot;)}&quot;</span><span style=''>
+</span>71 <span style=''>}
+</span>72 <span style=''>
+</span>73 <span style=''>case class FeatureResult(feature: Feature, scenarioResults: Seq[ScenarioResult])
+</span>74 <span style=''>  extends MultiTestRun(scenarioResults) {
+</span>75 <span style=''>
+</span>76 <span style=''>  /**
+</span>77 <span style=''>    * Results of all the individual assertions executed in running this scenario
+</span>78 <span style=''>    */
+</span>79 <span style=''>  def assertions: Seq[AssertionResult] = </span><span style='background: #F0ADAD'>scenarioResults.flatMap(sr =&gt; sr.results)</span><span style=''>
+</span>80 <span style=''>
+</span>81 <span style=''>  override def toString: String =
+</span>82 <span style=''>    </span><span style='background: #AEF1AE'>s&quot;Feature [${feature.getName}]: Results = {${scenarioResults.mkString(&quot;,&quot;)}&quot;</span><span style=''>
+</span>83 <span style=''>}
+</span>84 <span style=''>
+</span>85 <span style=''>/**
+</span>86 <span style=''>  * Result of running tests for all features in an archive
+</span>87 <span style=''>  * @param featureResults results for each feature in the archive
+</span>88 <span style=''>  */
+</span>89 <span style=''>case class ArchiveTestResult(featureResults: Seq[FeatureResult])
+</span>90 <span style=''>  extends MultiTestRun(featureResults)
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          5798
+        </td>
+        <td>
+          252
+          -
+          258
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Passed
+        </td>
+        <td style="background: #AEF1AE">
+          Passed
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          5800
+        </td>
+        <td>
+          268
+          -
+          277
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Failed.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Failed.apply(s)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          5799
+        </td>
+        <td>
+          268
+          -
+          277
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Failed.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Failed.apply(s)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          5801
+        </td>
+        <td>
+          347
+          -
+          355
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Passed&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          5804
+        </td>
+        <td>
+          521
+          -
+          525
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.NotYetImplemented.name
+        </td>
+        <td style="background: #F0ADAD">
+          NotYetImplemented.this.name
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          5803
+        </td>
+        <td>
+          525
+          -
+          527
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          5802
+        </td>
+        <td>
+          498
+          -
+          521
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Not yet implemented: [&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          5805
+        </td>
+        <td>
+          496
+          -
+          527
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Not yet implemented: [&quot;, &quot;]&quot;).s(NotYetImplemented.this.name)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          5806
+        </td>
+        <td>
+          653
+          -
+          669
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          TestRun.this.result.==(Passed)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          5807
+        </td>
+        <td>
+          797
+          -
+          809
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #AEF1AE">
+          MultiTestRun.this.results.size
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          5810
+        </td>
+        <td>
+          887
+          -
+          893
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Passed
+        </td>
+        <td style="background: #AEF1AE">
+          Passed
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          5809
+        </td>
+        <td>
+          851
+          -
+          885
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.forall
+        </td>
+        <td style="background: #AEF1AE">
+          MultiTestRun.this.results.forall(((x$1: com.atomist.rug.test.gherkin.TestRun) =&gt; x$1.result.==(Passed)))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          5808
+        </td>
+        <td>
+          866
+          -
+          884
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.result.==(Passed)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          5817
+        </td>
+        <td>
+          903
+          -
+          1120
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val r: Option[com.atomist.rug.test.gherkin.Result] = MultiTestRun.this.results.find(((x$2: com.atomist.rug.test.gherkin.TestRun) =&gt; x$2.result.isInstanceOf[com.atomist.rug.test.gherkin.Failed])).map[com.atomist.rug.test.gherkin.Result](((x$3: com.atomist.rug.test.gherkin.TestRun) =&gt; x$3.result));
+  r match {
+    case (x: com.atomist.rug.test.gherkin.Result)Some[com.atomist.rug.test.gherkin.Result]((message: String)com.atomist.rug.test.gherkin.Failed((why @ _))) =&gt; Failed.apply(why)
+    case _ =&gt; NotYetImplemented.apply(MultiTestRun.this.results.mkString(&quot;,&quot;))
+  }
+}
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          5811
+        </td>
+        <td>
+          932
+          -
+          961
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.isInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.result.isInstanceOf[com.atomist.rug.test.gherkin.Failed]
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          5813
+        </td>
+        <td>
+          919
+          -
+          985
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.map
+        </td>
+        <td style="background: #AEF1AE">
+          MultiTestRun.this.results.find(((x$2: com.atomist.rug.test.gherkin.TestRun) =&gt; x$2.result.isInstanceOf[com.atomist.rug.test.gherkin.Failed])).map[com.atomist.rug.test.gherkin.Result](((x$3: com.atomist.rug.test.gherkin.TestRun) =&gt; x$3.result))
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          5812
+        </td>
+        <td>
+          976
+          -
+          984
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.TestRun.result
+        </td>
+        <td style="background: #AEF1AE">
+          x$3.result
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          5814
+        </td>
+        <td>
+          1036
+          -
+          1047
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Failed.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Failed.apply(why)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          5816
+        </td>
+        <td>
+          1066
+          -
+          1106
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.NotYetImplemented.apply
+        </td>
+        <td style="background: #AEF1AE">
+          NotYetImplemented.apply(MultiTestRun.this.results.mkString(&quot;,&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          5815
+        </td>
+        <td>
+          1084
+          -
+          1105
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          MultiTestRun.this.results.mkString(&quot;,&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          5818
+        </td>
+        <td>
+          1237
+          -
+          1238
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          5819
+        </td>
+        <td>
+          1418
+          -
+          1429
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Scenario [&quot;
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          5822
+        </td>
+        <td>
+          1430
+          -
+          1446
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.ScenarioDefinition.getName
+        </td>
+        <td style="background: #AEF1AE">
+          ScenarioResult.this.scenario.getName()
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          5824
+        </td>
+        <td>
+          1416
+          -
+          1486
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Scenario [&quot;, &quot;]: Results = {&quot;, &quot;&quot;).s(ScenarioResult.this.scenario.getName(), ScenarioResult.this.results.mkString(&quot;,&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          5821
+        </td>
+        <td>
+          1485
+          -
+          1486
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          5820
+        </td>
+        <td>
+          1447
+          -
+          1462
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;]: Results = {&quot;
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          5823
+        </td>
+        <td>
+          1463
+          -
+          1484
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          ScenarioResult.this.results.mkString(&quot;,&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          5825
+        </td>
+        <td>
+          1779
+          -
+          1789
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioResult.results
+        </td>
+        <td style="background: #F0ADAD">
+          sr.results
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          5827
+        </td>
+        <td>
+          1749
+          -
+          1790
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #F0ADAD">
+          FeatureResult.this.scenarioResults.flatMap[com.atomist.rug.test.gherkin.AssertionResult, Seq[com.atomist.rug.test.gherkin.AssertionResult]](((sr: com.atomist.rug.test.gherkin.ScenarioResult) =&gt; sr.results))(collection.this.Seq.canBuildFrom[com.atomist.rug.test.gherkin.AssertionResult])
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          5826
+        </td>
+        <td>
+          1772
+          -
+          1772
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.test.gherkin.AssertionResult]
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          5828
+        </td>
+        <td>
+          1832
+          -
+          1842
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Feature [&quot;
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          5831
+        </td>
+        <td>
+          1843
+          -
+          1858
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Feature.getName
+        </td>
+        <td style="background: #AEF1AE">
+          FeatureResult.this.feature.getName()
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          5833
+        </td>
+        <td>
+          1830
+          -
+          1906
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Feature [&quot;, &quot;]: Results = {&quot;, &quot;&quot;).s(FeatureResult.this.feature.getName(), FeatureResult.this.scenarioResults.mkString(&quot;,&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          5830
+        </td>
+        <td>
+          1905
+          -
+          1906
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          5829
+        </td>
+        <td>
+          1859
+          -
+          1874
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;]: Results = {&quot;
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          5832
+        </td>
+        <td>
+          1875
+          -
+          1904
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          FeatureResult.this.scenarioResults.mkString(&quot;,&quot;)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

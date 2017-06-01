@@ -1,0 +1,429 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/content/text/TreeNodeOperations.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.content.text
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.tree.{ParentAwareTreeNode, TreeNode}
+</span>4 <span style=''>
+</span>5 <span style=''>/**
+</span>6 <span style=''>  * Operations on TreeNodes
+</span>7 <span style=''>  */
+</span>8 <span style=''>object TreeNodeOperations {
+</span>9 <span style=''>
+</span>10 <span style=''>  /**
+</span>11 <span style=''>    * Is a given node a known ancestor
+</span>12 <span style=''>    */
+</span>13 <span style=''>  def isKnownAncestor(n: TreeNode, possibleParent: TreeNode): Boolean =
+</span>14 <span style=''>    </span><span style='background: #F0ADAD'>knownAncestorMatching(n, tn =&gt; possibleParent == tn).isDefined</span><span style=''>
+</span>15 <span style=''>
+</span>16 <span style=''>  def knownAncestorMatching(n: TreeNode, test: TreeNode =&gt; Boolean): Option[TreeNode] = n match {
+</span>17 <span style=''>    case patn: ParentAwareTreeNode if </span><span style='background: #F0ADAD'>test(patn.parent)</span><span style=''> =&gt; </span><span style='background: #F0ADAD'>Some(patn)</span><span style=''>
+</span>18 <span style=''>    case patn: ParentAwareTreeNode if </span><span style='background: #F0ADAD'>patn.parent == null</span><span style=''> =&gt; </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>19 <span style=''>    case patn: ParentAwareTreeNode =&gt; </span><span style='background: #F0ADAD'>knownAncestorMatching(patn.parent, test)</span><span style=''>
+</span>20 <span style=''>    case _ =&gt; </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>21 <span style=''>  }
+</span>22 <span style=''>
+</span>23 <span style=''>  /**
+</span>24 <span style=''>    * Return all the terminals under the given tree node.
+</span>25 <span style=''>    * Return the node itself if it's terminal
+</span>26 <span style=''>    */
+</span>27 <span style=''>  def terminals(tn: TreeNode): Seq[TreeNode] =
+</span>28 <span style=''>    if (</span><span style='background: #AEF1AE'>tn.childNodes.isEmpty</span><span style=''>) </span><span style='background: #AEF1AE'>Seq(tn)</span><span style=''>
+</span>29 <span style=''>    else </span><span style='background: #AEF1AE'>tn.childNodes.flatMap(kid =&gt; terminals(kid))</span><span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          7684
+        </td>
+        <td>
+          290
+          -
+          352
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #F0ADAD">
+          TreeNodeOperations.this.knownAncestorMatching(n, ((tn: com.atomist.tree.TreeNode) =&gt; possibleParent.==(tn))).isDefined
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          7683
+        </td>
+        <td>
+          321
+          -
+          341
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          possibleParent.==(tn)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          7685
+        </td>
+        <td>
+          495
+          -
+          506
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.ParentAwareTreeNode.parent
+        </td>
+        <td style="background: #F0ADAD">
+          patn.parent
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          7687
+        </td>
+        <td>
+          511
+          -
+          521
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[com.atomist.tree.ParentAwareTreeNode](patn)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          7686
+        </td>
+        <td>
+          490
+          -
+          507
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #F0ADAD">
+          test.apply(patn.parent)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          7688
+        </td>
+        <td>
+          560
+          -
+          579
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          patn.parent.==(null)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          7689
+        </td>
+        <td>
+          583
+          -
+          587
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          7691
+        </td>
+        <td>
+          626
+          -
+          666
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.TreeNodeOperations.knownAncestorMatching
+        </td>
+        <td style="background: #F0ADAD">
+          TreeNodeOperations.this.knownAncestorMatching(patn.parent, test)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          7690
+        </td>
+        <td>
+          648
+          -
+          659
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.ParentAwareTreeNode.parent
+        </td>
+        <td style="background: #F0ADAD">
+          patn.parent
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7692
+        </td>
+        <td>
+          681
+          -
+          685
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7694
+        </td>
+        <td>
+          886
+          -
+          893
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.tree.TreeNode](tn)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7693
+        </td>
+        <td>
+          863
+          -
+          884
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          tn.childNodes.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7695
+        </td>
+        <td>
+          886
+          -
+          893
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.tree.TreeNode](tn)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          7697
+        </td>
+        <td>
+          924
+          -
+          924
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.TreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          7699
+        </td>
+        <td>
+          903
+          -
+          947
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          tn.childNodes.flatMap[com.atomist.tree.TreeNode, Seq[com.atomist.tree.TreeNode]](((kid: com.atomist.tree.TreeNode) =&gt; TreeNodeOperations.this.terminals(kid)))(collection.this.Seq.canBuildFrom[com.atomist.tree.TreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          7696
+        </td>
+        <td>
+          932
+          -
+          946
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.TreeNodeOperations.terminals
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNodeOperations.this.terminals(kid)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          7698
+        </td>
+        <td>
+          903
+          -
+          947
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          tn.childNodes.flatMap[com.atomist.tree.TreeNode, Seq[com.atomist.tree.TreeNode]](((kid: com.atomist.tree.TreeNode) =&gt; TreeNodeOperations.this.terminals(kid)))(collection.this.Seq.canBuildFrom[com.atomist.tree.TreeNode])
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

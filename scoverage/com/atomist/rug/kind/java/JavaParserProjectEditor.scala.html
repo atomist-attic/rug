@@ -1,0 +1,984 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/java/JavaParserProjectEditor.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.java
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.param.ParameterValues
+</span>4 <span style=''>import com.atomist.project.common.JavaTag
+</span>5 <span style=''>import com.atomist.project.edit.{ProjectEditorSupport, _}
+</span>6 <span style=''>import com.atomist.rug.kind.java.support.JavaAssertions
+</span>7 <span style=''>import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileEditor, StringFileArtifact}
+</span>8 <span style=''>import com.atomist.util.lang.JavaConstants
+</span>9 <span style=''>import com.github.javaparser.ast.CompilationUnit
+</span>10 <span style=''>import com.typesafe.scalalogging.LazyLogging
+</span>11 <span style=''>
+</span>12 <span style=''>import scala.collection.JavaConverters._
+</span>13 <span style=''>
+</span>14 <span style=''>/**
+</span>15 <span style=''>  * Support for in-place editing of Java files using GitHubJavaParser.
+</span>16 <span style=''>  */
+</span>17 <span style=''>abstract class JavaParserProjectEditor(val name: String,
+</span>18 <span style=''>                                       javaSourcePath: String = JavaConstants.DefaultBaseSourcePath)
+</span>19 <span style=''>  extends ProjectEditorSupport
+</span>20 <span style=''>    with LazyLogging {
+</span>21 <span style=''>
+</span>22 <span style=''>  override def tags: Seq[JavaTag.type] = </span><span style='background: #F0ADAD'>Seq(JavaTag)</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>  final override def applicability(as: ArtifactSource): Applicability = {
+</span>25 <span style=''>    </span><span style='background: #AEF1AE'>Applicability(JavaAssertions.isJava(as), &quot;IsJava&quot;)</span><span style=''>
+</span>26 <span style=''>  }
+</span>27 <span style=''>
+</span>28 <span style=''>  protected final override def modifyInternal(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = {
+</span>29 <span style=''>    val javaFiles = (</span><span style='background: #AEF1AE'>as / javaSourcePath).allFiles.filter(_.name.endsWith(&quot;.java&quot;))</span><span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>    val filesAndCompilationUnits = </span><span style='background: #AEF1AE'>GitHubJavaParserExtractor(javaFiles.asJava)</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>    val modifiedFiles: Seq[FileArtifact] =
+</span>34 <span style=''>      </span><span style='background: #AEF1AE'>for {
+</span>35 <span style=''></span><span style='background: #AEF1AE'>        facu &lt;- filesAndCompilationUnits
+</span>36 <span style=''></span><span style='background: #AEF1AE'>        modifiedCu &lt;- maybeModifyCompilationUnit(facu.compilationUnit, poa)
+</span>37 <span style=''></span><span style='background: #AEF1AE'>      } yield {
+</span>38 <span style=''></span><span style='background: #AEF1AE'>        val f = StringFileArtifact(javaSourcePath + &quot;/&quot; + facu.file.path, modifiedCu.toString)
+</span>39 <span style=''></span><span style='background: #AEF1AE'>        logger.debug(s&quot;Modified file: ${f.path}\n${f.content}\n&quot;)
+</span>40 <span style=''></span><span style='background: #AEF1AE'>        f
+</span>41 <span style=''></span><span style='background: #AEF1AE'>      }</span><span style=''>
+</span>42 <span style=''>
+</span>43 <span style=''>    if (</span><span style='background: #AEF1AE'>modifiedFiles.isEmpty</span><span style=''>)
+</span>44 <span style=''>      </span><span style='background: #F0ADAD'>NoModificationNeeded(s&quot;$name: No files modified&quot;)</span><span style=''>
+</span>45 <span style=''>    else </span><span style='background: #AEF1AE'>{
+</span>46 <span style=''></span><span style='background: #AEF1AE'>      modifiedFiles.filter(_.name.endsWith(&quot;java&quot;)).foreach(f =&gt; logger.debug(s&quot;${f.path}\n${f.content}\n&quot;))
+</span>47 <span style=''></span><span style='background: #AEF1AE'>
+</span>48 <span style=''></span><span style='background: #AEF1AE'>      val fe = SimpleFileEditor(f =&gt; modifiedFiles.exists(mf =&gt; mf.path equals f.path),
+</span>49 <span style=''></span><span style='background: #AEF1AE'>        f =&gt; modifiedFiles.find(mf =&gt; mf.path equals f.path).getOrElse(f))
+</span>50 <span style=''></span><span style='background: #AEF1AE'>      val result = as ✎ fe
+</span>51 <span style=''></span><span style='background: #AEF1AE'>
+</span>52 <span style=''></span><span style='background: #AEF1AE'>      result.allFiles.filter(_.name.endsWith(&quot;java&quot;)).foreach(f =&gt; logger.debug(s&quot;${f.path}\n${f.content}\n&quot;))
+</span>53 <span style=''></span><span style='background: #AEF1AE'>      SuccessfulModification(result)
+</span>54 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>55 <span style=''>  }
+</span>56 <span style=''>
+</span>57 <span style=''>  /**
+</span>58 <span style=''>    * Returns an Option of a modified compilation unit.
+</span>59 <span style=''>    *
+</span>60 <span style=''>    * @param cu the compilation unit
+</span>61 <span style=''>    * @return modified compilation unit if a change was made
+</span>62 <span style=''>    */
+</span>63 <span style=''>  protected def maybeModifyCompilationUnit(cu: CompilationUnit, poa: ParameterValues): Option[CompilationUnit]
+</span>64 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1928
+        </td>
+        <td>
+          841
+          -
+          853
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[com.atomist.project.common.JavaTag.type](com.atomist.project.common.JavaTag)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1927
+        </td>
+        <td>
+          845
+          -
+          852
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.common.JavaTag
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.project.common.JavaTag
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1931
+        </td>
+        <td>
+          933
+          -
+          983
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.Applicability.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.project.edit.Applicability.apply(com.atomist.rug.kind.java.support.JavaAssertions.isJava.apply(as), &quot;IsJava&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1930
+        </td>
+        <td>
+          974
+          -
+          982
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;IsJava&quot;
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1929
+        </td>
+        <td>
+          947
+          -
+          972
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.java.support.JavaAssertions.isJava.apply(as)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1934
+        </td>
+        <td>
+          1123
+          -
+          1185
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          as./(JavaParserProjectEditor.this.javaSourcePath).allFiles.filter(((x$1: com.atomist.source.FileArtifact) =&gt; x$1.name.endsWith(&quot;.java&quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1933
+        </td>
+        <td>
+          1160
+          -
+          1184
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.name.endsWith(&quot;.java&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1932
+        </td>
+        <td>
+          1128
+          -
+          1142
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaParserProjectEditor.javaSourcePath
+        </td>
+        <td style="background: #AEF1AE">
+          JavaParserProjectEditor.this.javaSourcePath
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1936
+        </td>
+        <td>
+          1222
+          -
+          1265
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.GitHubJavaParserExtractor.apply
+        </td>
+        <td style="background: #AEF1AE">
+          GitHubJavaParserExtractor.apply(scala.collection.JavaConverters.seqAsJavaListConverter[com.atomist.source.FileArtifact](javaFiles).asJava)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1935
+        </td>
+        <td>
+          1248
+          -
+          1264
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsJava.asJava
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.seqAsJavaListConverter[com.atomist.source.FileArtifact](javaFiles).asJava
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1946
+        </td>
+        <td>
+          1316
+          -
+          1633
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          filesAndCompilationUnits.flatMap[com.atomist.source.StringFileArtifact, Seq[com.atomist.source.FileArtifact]](((facu: com.atomist.rug.kind.java.FileAndCompilationUnit) =&gt; scala.this.Option.option2Iterable[com.atomist.source.StringFileArtifact](JavaParserProjectEditor.this.maybeModifyCompilationUnit(facu.compilationUnit, poa).map[com.atomist.source.StringFileArtifact](((modifiedCu: com.github.javaparser.ast.CompilationUnit) =&gt; {
+  val f: com.atomist.source.StringFileArtifact = com.atomist.source.StringFileArtifact.apply(JavaParserProjectEditor.this.javaSourcePath.+(&quot;/&quot;).+(facu.file.path), modifiedCu.toString());
+  (if (JavaParserProjectEditor.this.logger.underlying.isDebugEnabled())
+    JavaParserProjectEditor.this.logger.underlying.debug(scala.StringContext.apply(&quot;Modified file: &quot;, &quot;\\n&quot;, &quot;\\n&quot;).s(f.path, f.content))
+  else
+    (): Unit);
+  f
+})))))(collection.this.Seq.canBuildFrom[com.atomist.source.StringFileArtifact])
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1945
+        </td>
+        <td>
+          1335
+          -
+          1335
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.source.StringFileArtifact]
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1943
+        </td>
+        <td>
+          1371
+          -
+          1633
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.map
+        </td>
+        <td style="background: #AEF1AE">
+          JavaParserProjectEditor.this.maybeModifyCompilationUnit(facu.compilationUnit, poa).map[com.atomist.source.StringFileArtifact](((modifiedCu: com.github.javaparser.ast.CompilationUnit) =&gt; {
+  val f: com.atomist.source.StringFileArtifact = com.atomist.source.StringFileArtifact.apply(JavaParserProjectEditor.this.javaSourcePath.+(&quot;/&quot;).+(facu.file.path), modifiedCu.toString());
+  (if (JavaParserProjectEditor.this.logger.underlying.isDebugEnabled())
+    JavaParserProjectEditor.this.logger.underlying.debug(scala.StringContext.apply(&quot;Modified file: &quot;, &quot;\\n&quot;, &quot;\\n&quot;).s(f.path, f.content))
+  else
+    (): Unit);
+  f
+}))
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1937
+        </td>
+        <td>
+          1412
+          -
+          1432
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.FileAndCompilationUnit.compilationUnit
+        </td>
+        <td style="background: #AEF1AE">
+          facu.compilationUnit
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1944
+        </td>
+        <td>
+          1371
+          -
+          1633
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[com.atomist.source.StringFileArtifact](JavaParserProjectEditor.this.maybeModifyCompilationUnit(facu.compilationUnit, poa).map[com.atomist.source.StringFileArtifact](((modifiedCu: com.github.javaparser.ast.CompilationUnit) =&gt; {
+  val f: com.atomist.source.StringFileArtifact = com.atomist.source.StringFileArtifact.apply(JavaParserProjectEditor.this.javaSourcePath.+(&quot;/&quot;).+(facu.file.path), modifiedCu.toString());
+  (if (JavaParserProjectEditor.this.logger.underlying.isDebugEnabled())
+    JavaParserProjectEditor.this.logger.underlying.debug(scala.StringContext.apply(&quot;Modified file: &quot;, &quot;\\n&quot;, &quot;\\n&quot;).s(f.path, f.content))
+  else
+    (): Unit);
+  f
+})))
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1940
+        </td>
+        <td>
+          1490
+          -
+          1527
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          JavaParserProjectEditor.this.javaSourcePath.+(&quot;/&quot;).+(facu.file.path)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1942
+        </td>
+        <td>
+          1471
+          -
+          1549
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.StringFileArtifact.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.StringFileArtifact.apply(JavaParserProjectEditor.this.javaSourcePath.+(&quot;/&quot;).+(facu.file.path), modifiedCu.toString())
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1939
+        </td>
+        <td>
+          1513
+          -
+          1527
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.path
+        </td>
+        <td style="background: #AEF1AE">
+          facu.file.path
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1938
+        </td>
+        <td>
+          1507
+          -
+          1510
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;/&quot;
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1941
+        </td>
+        <td>
+          1529
+          -
+          1548
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.Node.toString
+        </td>
+        <td style="background: #AEF1AE">
+          modifiedCu.toString()
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1947
+        </td>
+        <td>
+          1643
+          -
+          1664
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          modifiedFiles.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1952
+        </td>
+        <td>
+          1672
+          -
+          1721
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.NoModificationNeeded.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.project.edit.NoModificationNeeded.apply(scala.StringContext.apply(&quot;&quot;, &quot;: No files modified&quot;).s(JavaParserProjectEditor.this.name))
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1949
+        </td>
+        <td>
+          1700
+          -
+          1720
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;: No files modified&quot;
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1951
+        </td>
+        <td>
+          1693
+          -
+          1720
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;: No files modified&quot;).s(JavaParserProjectEditor.this.name)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1948
+        </td>
+        <td>
+          1695
+          -
+          1696
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1950
+        </td>
+        <td>
+          1696
+          -
+          1700
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaParserProjectEditor.name
+        </td>
+        <td style="background: #F0ADAD">
+          JavaParserProjectEditor.this.name
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1953
+        </td>
+        <td>
+          1672
+          -
+          1721
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.project.edit.NoModificationNeeded.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.project.edit.NoModificationNeeded.apply(scala.StringContext.apply(&quot;&quot;, &quot;: No files modified&quot;).s(JavaParserProjectEditor.this.name))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1966
+        </td>
+        <td>
+          1731
+          -
+          2187
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  modifiedFiles.filter(((x$2: com.atomist.source.FileArtifact) =&gt; x$2.name.endsWith(&quot;java&quot;))).foreach[Unit](((f: com.atomist.source.FileArtifact) =&gt; (if (JavaParserProjectEditor.this.logger.underlying.isDebugEnabled())
+    JavaParserProjectEditor.this.logger.underlying.debug(scala.StringContext.apply(&quot;&quot;, &quot;\\n&quot;, &quot;\\n&quot;).s(f.path, f.content))
+  else
+    (): Unit)));
+  val fe: com.atomist.source.SimpleFileEditor = com.atomist.source.SimpleFileEditor.apply(((f: com.atomist.source.FileArtifact) =&gt; modifiedFiles.exists(((mf: com.atomist.source.FileArtifact) =&gt; mf.path.equals(f.path)))), ((f: com.atomist.source.FileArtifact) =&gt; modifiedFiles.find(((mf: com.atomist.source.FileArtifact) =&gt; mf.path.equals(f.path))).getOrElse[com.atomist.source.FileArtifact](f)));
+  val result: com.atomist.source.ArtifactSource = as.✎(fe);
+  result.allFiles.filter(((x$3: com.atomist.source.FileArtifact) =&gt; x$3.name.endsWith(&quot;java&quot;))).foreach[Unit](((f: com.atomist.source.FileArtifact) =&gt; (if (JavaParserProjectEditor.this.logger.underlying.isDebugEnabled())
+    JavaParserProjectEditor.this.logger.underlying.debug(scala.StringContext.apply(&quot;&quot;, &quot;\\n&quot;, &quot;\\n&quot;).s(f.path, f.content))
+  else
+    (): Unit)));
+  com.atomist.project.edit.SuccessfulModification.apply(result, com.atomist.project.edit.SuccessfulModification.apply$default$2)
+}
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1955
+        </td>
+        <td>
+          1739
+          -
+          1841
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          modifiedFiles.filter(((x$2: com.atomist.source.FileArtifact) =&gt; x$2.name.endsWith(&quot;java&quot;))).foreach[Unit](((f: com.atomist.source.FileArtifact) =&gt; (if (JavaParserProjectEditor.this.logger.underlying.isDebugEnabled())
+  JavaParserProjectEditor.this.logger.underlying.debug(scala.StringContext.apply(&quot;&quot;, &quot;\\n&quot;, &quot;\\n&quot;).s(f.path, f.content))
+else
+  (): Unit)))
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1954
+        </td>
+        <td>
+          1760
+          -
+          1783
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.name.endsWith(&quot;java&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1958
+        </td>
+        <td>
+          1880
+          -
+          1929
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #AEF1AE">
+          modifiedFiles.exists(((mf: com.atomist.source.FileArtifact) =&gt; mf.path.equals(f.path)))
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1957
+        </td>
+        <td>
+          1907
+          -
+          1928
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          mf.path.equals(f.path)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1960
+        </td>
+        <td>
+          1858
+          -
+          2005
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.SimpleFileEditor.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.SimpleFileEditor.apply(((f: com.atomist.source.FileArtifact) =&gt; modifiedFiles.exists(((mf: com.atomist.source.FileArtifact) =&gt; mf.path.equals(f.path)))), ((f: com.atomist.source.FileArtifact) =&gt; modifiedFiles.find(((mf: com.atomist.source.FileArtifact) =&gt; mf.path.equals(f.path))).getOrElse[com.atomist.source.FileArtifact](f)))
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1956
+        </td>
+        <td>
+          1922
+          -
+          1928
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.path
+        </td>
+        <td style="background: #AEF1AE">
+          f.path
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1959
+        </td>
+        <td>
+          1944
+          -
+          2004
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          modifiedFiles.find(((mf: com.atomist.source.FileArtifact) =&gt; mf.path.equals(f.path))).getOrElse[com.atomist.source.FileArtifact](f)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1961
+        </td>
+        <td>
+          2025
+          -
+          2032
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.✎
+        </td>
+        <td style="background: #AEF1AE">
+          as.✎(fe)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          1963
+        </td>
+        <td>
+          2040
+          -
+          2144
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          result.allFiles.filter(((x$3: com.atomist.source.FileArtifact) =&gt; x$3.name.endsWith(&quot;java&quot;))).foreach[Unit](((f: com.atomist.source.FileArtifact) =&gt; (if (JavaParserProjectEditor.this.logger.underlying.isDebugEnabled())
+  JavaParserProjectEditor.this.logger.underlying.debug(scala.StringContext.apply(&quot;&quot;, &quot;\\n&quot;, &quot;\\n&quot;).s(f.path, f.content))
+else
+  (): Unit)))
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          1962
+        </td>
+        <td>
+          2063
+          -
+          2086
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          x$3.name.endsWith(&quot;java&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1964
+        </td>
+        <td>
+          2151
+          -
+          2151
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.edit.SuccessfulModification.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.project.edit.SuccessfulModification.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1965
+        </td>
+        <td>
+          2151
+          -
+          2181
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.SuccessfulModification.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.project.edit.SuccessfulModification.apply(result, com.atomist.project.edit.SuccessfulModification.apply$default$2)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

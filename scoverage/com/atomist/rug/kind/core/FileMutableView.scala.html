@@ -1,0 +1,1092 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/core/FileMutableView.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.core
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, TerminalView}
+</span>4 <span style=''>import com.atomist.source.{FileArtifact, StringFileArtifact}
+</span>5 <span style=''>
+</span>6 <span style=''>import scala.collection.JavaConverters._
+</span>7 <span style=''>
+</span>8 <span style=''>/**
+</span>9 <span style=''>  * Mutable view for working directly with files.
+</span>10 <span style=''>  */
+</span>11 <span style=''>class FileMutableView(
+</span>12 <span style=''>                       originalBackingObject: FileArtifact,
+</span>13 <span style=''>                       override val parent: ProjectMutableView)
+</span>14 <span style=''>  extends FileArtifactBackedMutableView(originalBackingObject, parent)
+</span>15 <span style=''>    with TerminalView[FileArtifact] {
+</span>16 <span style=''>
+</span>17 <span style=''>  @ExportFunction(readOnly = false, description = &quot;If the file already contains the specified text, does nothing. Otherwise appends it to the file&quot;)
+</span>18 <span style=''>  def mustContain(@ExportFunctionParameterDescription(name = &quot;content&quot;, description = &quot;The content that the file will contain&quot;)
+</span>19 <span style=''>                  newString: String): Unit = {
+</span>20 <span style=''>    if (</span><span style='background: #AEF1AE'>!contains(newString)</span><span style=''>) {
+</span>21 <span style=''>      </span><span style='background: #AEF1AE'>append(newString)</span><span style=''>
+</span>22 <span style=''>    }
+</span>23 <span style=''>  }
+</span>24 <span style=''>
+</span>25 <span style=''>  @ExportFunction(readOnly = true,
+</span>26 <span style=''>    description = &quot;Node content&quot;)
+</span>27 <span style=''>  override def value: String = </span><span style='background: #F0ADAD'>currentBackingObject.path</span><span style=''>
+</span>28 <span style=''>
+</span>29 <span style=''>  @ExportFunction(readOnly = true,
+</span>30 <span style=''>    exposeAsProperty = true,
+</span>31 <span style=''>    description = &quot;Name of the file, excluding path&quot;)
+</span>32 <span style=''>  def name: String = </span><span style='background: #AEF1AE'>filename</span><span style=''>
+</span>33 <span style=''>
+</span>34 <span style=''>  @ExportFunction(readOnly = true,
+</span>35 <span style=''>    exposeAsProperty = true,
+</span>36 <span style=''>    description = &quot;Is this a Java file?&quot;)
+</span>37 <span style=''>  @Deprecated
+</span>38 <span style=''>  def isJava: Boolean = </span><span style='background: #F0ADAD'>currentBackingObject.name.endsWith(&quot;.java&quot;)</span><span style=''>
+</span>39 <span style=''>
+</span>40 <span style=''>  @ExportFunction(readOnly = true,
+</span>41 <span style=''>    exposeAsProperty = true,
+</span>42 <span style=''>    description = &quot;Is this a Scala file?&quot;)
+</span>43 <span style=''>  @Deprecated
+</span>44 <span style=''>  def isScala: Boolean = </span><span style='background: #F0ADAD'>currentBackingObject.name.endsWith(&quot;.scala&quot;)</span><span style=''>
+</span>45 <span style=''>
+</span>46 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Set entire file content to new string&quot;)
+</span>47 <span style=''>  def setContent(@ExportFunctionParameterDescription(name = &quot;newContent&quot;,
+</span>48 <span style=''>    description = &quot;The content to set the file to&quot;)
+</span>49 <span style=''>                 newContent: String): Unit =
+</span>50 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(StringFileArtifact.updated(currentBackingObject, newContent))</span><span style=''>
+</span>51 <span style=''>
+</span>52 <span style=''>  @ExportFunction(readOnly = true,
+</span>53 <span style=''>    description = &quot;Does the file name (not path) contain the given string?&quot;)
+</span>54 <span style=''>  @Deprecated
+</span>55 <span style=''>  def nameContains(@ExportFunctionParameterDescription(name = &quot;what&quot;,
+</span>56 <span style=''>    description = &quot;The string to use when looking for it in the file name or path&quot;)
+</span>57 <span style=''>                   what: String): Boolean =
+</span>58 <span style=''>    </span><span style='background: #AEF1AE'>currentBackingObject.name.contains(what)</span><span style=''>
+</span>59 <span style=''>
+</span>60 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Does the file content contain the given string?&quot;)
+</span>61 <span style=''>  def contains(@ExportFunctionParameterDescription(name = &quot;what&quot;,
+</span>62 <span style=''>    description = &quot;The string to use when looking for it in the file&quot;)
+</span>63 <span style=''>               what: String): Boolean =
+</span>64 <span style=''>    </span><span style='background: #AEF1AE'>currentBackingObject.content.contains(what)</span><span style=''>
+</span>65 <span style=''>
+</span>66 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Does the file content contain a match for the given regex&quot;)
+</span>67 <span style=''>  def containsMatch(@ExportFunctionParameterDescription(name = &quot;regexp&quot;,
+</span>68 <span style=''>    description = &quot;The regular expression to look for in the file's content&quot;)
+</span>69 <span style=''>                    regexp: String): Boolean = {
+</span>70 <span style=''>    val pat = </span><span style='background: #AEF1AE'>regexp.r</span><span style=''>
+</span>71 <span style=''>    </span><span style='background: #AEF1AE'>pat.findFirstIn(currentBackingObject.content).isDefined</span><span style=''>
+</span>72 <span style=''>  }
+</span>73 <span style=''>
+</span>74 <span style=''>  @ExportFunction(readOnly = true,
+</span>75 <span style=''>    description = &quot;Return the first match for the given regex, or the empty string if not found. &quot; +
+</span>76 <span style=''>      &quot;Call containsMatch first to check presence.&quot;)
+</span>77 <span style=''>  def firstMatch(@ExportFunctionParameterDescription(name = &quot;regexp&quot;,
+</span>78 <span style=''>    description = &quot;The regular expression to search for&quot;)
+</span>79 <span style=''>                 regexp: String): String = {
+</span>80 <span style=''>    val pat = </span><span style='background: #F0ADAD'>regexp.r</span><span style=''>
+</span>81 <span style=''>    </span><span style='background: #F0ADAD'>pat.findFirstIn(currentBackingObject.content).getOrElse(&quot;&quot;)</span><span style=''>
+</span>82 <span style=''>  }
+</span>83 <span style=''>
+</span>84 <span style=''>  @ExportFunction(readOnly = true,
+</span>85 <span style=''>    description = &quot;Return all matches for the given regexp in this file&quot;)
+</span>86 <span style=''>  def findMatches(@ExportFunctionParameterDescription(name = &quot;regexp&quot;,
+</span>87 <span style=''>    description = &quot;The regular expression to search for&quot;)
+</span>88 <span style=''>                  regexp: String): java.util.List[String] = {
+</span>89 <span style=''>    val pat = </span><span style='background: #F0ADAD'>regexp.r</span><span style=''>
+</span>90 <span style=''>    </span><span style='background: #F0ADAD'>pat.findAllIn(currentBackingObject.content).toSeq.asJava</span><span style=''>
+</span>91 <span style=''>  }
+</span>92 <span style=''>
+</span>93 <span style=''>  @ExportFunction(readOnly = false,
+</span>94 <span style=''>    description = &quot;Replace all occurrences of the given regexp in this file&quot;)
+</span>95 <span style=''>  def regexpReplace(@ExportFunctionParameterDescription(name = &quot;regexp&quot;,
+</span>96 <span style=''>    description = &quot;The regular expression to search for&quot;)
+</span>97 <span style=''>                    regexp: String,
+</span>98 <span style=''>                    @ExportFunctionParameterDescription(name = &quot;replaceWith&quot;,
+</span>99 <span style=''>                      description = &quot;The string to replace matching expressions with&quot;)
+</span>100 <span style=''>                    replaceWith: String): Unit = {
+</span>101 <span style=''>    val newContent = </span><span style='background: #AEF1AE'>currentBackingObject.content.replaceAll(regexp, replaceWith)</span><span style=''>
+</span>102 <span style=''>    logger.debug(s&quot;Replacing regexp [$regexp] with [$replaceWith] produced [$newContent]&quot;)
+</span>103 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(StringFileArtifact.updated(currentBackingObject, newContent))</span><span style=''>
+</span>104 <span style=''>  }
+</span>105 <span style=''>
+</span>106 <span style=''>  @ExportFunction(readOnly = false,
+</span>107 <span style=''>    description = &quot;Replace all instances of the given literal string in this file&quot;)
+</span>108 <span style=''>  def replace(@ExportFunctionParameterDescription(name = &quot;literal&quot;,
+</span>109 <span style=''>    description = &quot;The string to search for&quot;)
+</span>110 <span style=''>              literal: String,
+</span>111 <span style=''>              @ExportFunctionParameterDescription(name = &quot;replaceWith&quot;,
+</span>112 <span style=''>                description = &quot;The string to replace the matches with&quot;)
+</span>113 <span style=''>              replaceWith: String): Unit = {
+</span>114 <span style=''>    val newContent = </span><span style='background: #AEF1AE'>currentBackingObject.content.replace(literal, replaceWith)</span><span style=''>
+</span>115 <span style=''>    logger.debug(s&quot;Replacing literal [$literal] with [$replaceWith] produced [$newContent]&quot;)
+</span>116 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(StringFileArtifact.updated(currentBackingObject, newContent))</span><span style=''>
+</span>117 <span style=''>  }
+</span>118 <span style=''>
+</span>119 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Append the given content to the file&quot;)
+</span>120 <span style=''>  def append(@ExportFunctionParameterDescription(name = &quot;literal&quot;,
+</span>121 <span style=''>    description = &quot;The string to append&quot;)
+</span>122 <span style=''>             literal: String): Unit = {
+</span>123 <span style=''>    val newContent = </span><span style='background: #AEF1AE'>currentBackingObject.content + literal</span><span style=''>
+</span>124 <span style=''>    logger.debug(s&quot;Appended literal [$literal] produced [$newContent]&quot;)
+</span>125 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(StringFileArtifact.updated(currentBackingObject, newContent))</span><span style=''>
+</span>126 <span style=''>  }
+</span>127 <span style=''>
+</span>128 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Prepend the given content to the file&quot;)
+</span>129 <span style=''>  def prepend(@ExportFunctionParameterDescription(name = &quot;literal&quot;,
+</span>130 <span style=''>    description = &quot;The string to prepend to the file&quot;) literal: String): Unit = {
+</span>131 <span style=''>    val newContent = </span><span style='background: #AEF1AE'>literal + currentBackingObject.content</span><span style=''>
+</span>132 <span style=''>    logger.debug(s&quot;Appended literal [$literal] produced [$newContent]&quot;)
+</span>133 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(StringFileArtifact.updated(currentBackingObject, newContent))</span><span style=''>
+</span>134 <span style=''>  }
+</span>135 <span style=''>
+</span>136 <span style=''>  @ExportFunction(readOnly = false,
+</span>137 <span style=''>    description = &quot;Change the path to the given value. Path should use forward slashes to denote directories&quot;)
+</span>138 <span style=''>  def setPath(@ExportFunctionParameterDescription(name = &quot;newPath&quot;,
+</span>139 <span style=''>    description = &quot;The path to change the file to&quot;)
+</span>140 <span style=''>              newPath: String): Unit = {
+</span>141 <span style=''>    logger.debug(s&quot;Changed path on $originalBackingObject to $currentBackingObject&quot;)
+</span>142 <span style=''>    </span><span style='background: #AEF1AE'>updateTo(currentBackingObject.withPath(newPath))</span><span style=''>
+</span>143 <span style=''>  }
+</span>144 <span style=''>
+</span>145 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Set the file name, not path, to the given value&quot;)
+</span>146 <span style=''>  override def setName(@ExportFunctionParameterDescription(name = &quot;name&quot;,
+</span>147 <span style=''>    description = &quot;The name to set the file to&quot;) name: String): Unit = </span><span style='background: #AEF1AE'>super.setName(name)</span><span style=''>
+</span>148 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          830
+        </td>
+        <td>
+          881
+          -
+          901
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.contains(newString).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          833
+        </td>
+        <td>
+          877
+          -
+          877
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          834
+        </td>
+        <td>
+          877
+          -
+          877
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          831
+        </td>
+        <td>
+          911
+          -
+          928
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileMutableView.append
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.append(newString)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          832
+        </td>
+        <td>
+          911
+          -
+          928
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileMutableView.append
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.append(newString)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          835
+        </td>
+        <td>
+          1040
+          -
+          1065
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.path
+        </td>
+        <td style="background: #F0ADAD">
+          FileMutableView.this.currentBackingObject.path
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          836
+        </td>
+        <td>
+          1206
+          -
+          1214
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.filename
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.filename
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          837
+        </td>
+        <td>
+          1360
+          -
+          1403
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #F0ADAD">
+          FileMutableView.this.currentBackingObject.name.endsWith(&quot;.java&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          838
+        </td>
+        <td>
+          1551
+          -
+          1595
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #F0ADAD">
+          FileMutableView.this.currentBackingObject.name.endsWith(&quot;.scala&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          839
+        </td>
+        <td>
+          1899
+          -
+          1919
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          841
+        </td>
+        <td>
+          1863
+          -
+          1933
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.updateTo(com.atomist.source.StringFileArtifact.updated(FileMutableView.this.currentBackingObject, newContent))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          840
+        </td>
+        <td>
+          1872
+          -
+          1932
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.StringFileArtifact.updated
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.StringFileArtifact.updated(FileMutableView.this.currentBackingObject, newContent)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          842
+        </td>
+        <td>
+          2263
+          -
+          2303
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.contains
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.currentBackingObject.name.contains(what)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          843
+        </td>
+        <td>
+          2586
+          -
+          2629
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.contains
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.currentBackingObject.content.contains(what)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          844
+        </td>
+        <td>
+          2955
+          -
+          2963
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.r
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(regexp).r
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          846
+        </td>
+        <td>
+          2968
+          -
+          3023
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #AEF1AE">
+          pat.findFirstIn(FileMutableView.this.currentBackingObject.content).isDefined
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          845
+        </td>
+        <td>
+          2984
+          -
+          3012
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.currentBackingObject.content
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          847
+        </td>
+        <td>
+          3405
+          -
+          3413
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.r
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.augmentString(regexp).r
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          848
+        </td>
+        <td>
+          3418
+          -
+          3477
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          pat.findFirstIn(FileMutableView.this.currentBackingObject.content).getOrElse[String](&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          849
+        </td>
+        <td>
+          3797
+          -
+          3805
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.r
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.augmentString(regexp).r
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          851
+        </td>
+        <td>
+          3810
+          -
+          3859
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #F0ADAD">
+          pat.findAllIn(FileMutableView.this.currentBackingObject.content).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          850
+        </td>
+        <td>
+          3824
+          -
+          3852
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #F0ADAD">
+          FileMutableView.this.currentBackingObject.content
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          852
+        </td>
+        <td>
+          3810
+          -
+          3866
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsJava.asJava
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.JavaConverters.seqAsJavaListConverter[String](pat.findAllIn(FileMutableView.this.currentBackingObject.content).toSeq).asJava
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          853
+        </td>
+        <td>
+          4390
+          -
+          4450
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replaceAll
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.currentBackingObject.content.replaceAll(regexp, replaceWith)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          855
+        </td>
+        <td>
+          4555
+          -
+          4615
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.StringFileArtifact.updated
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.StringFileArtifact.updated(FileMutableView.this.currentBackingObject, newContent)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          854
+        </td>
+        <td>
+          4582
+          -
+          4602
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          856
+        </td>
+        <td>
+          4546
+          -
+          4616
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.updateTo(com.atomist.source.StringFileArtifact.updated(FileMutableView.this.currentBackingObject, newContent))
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          857
+        </td>
+        <td>
+          5097
+          -
+          5155
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.currentBackingObject.content.replace(literal, replaceWith)
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          860
+        </td>
+        <td>
+          5253
+          -
+          5323
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.updateTo(com.atomist.source.StringFileArtifact.updated(FileMutableView.this.currentBackingObject, newContent))
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          859
+        </td>
+        <td>
+          5262
+          -
+          5322
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.StringFileArtifact.updated
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.StringFileArtifact.updated(FileMutableView.this.currentBackingObject, newContent)
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          858
+        </td>
+        <td>
+          5289
+          -
+          5309
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          861
+        </td>
+        <td>
+          5589
+          -
+          5627
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.currentBackingObject.content.+(literal)
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          864
+        </td>
+        <td>
+          5704
+          -
+          5774
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.updateTo(com.atomist.source.StringFileArtifact.updated(FileMutableView.this.currentBackingObject, newContent))
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          863
+        </td>
+        <td>
+          5713
+          -
+          5773
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.StringFileArtifact.updated
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.StringFileArtifact.updated(FileMutableView.this.currentBackingObject, newContent)
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          862
+        </td>
+        <td>
+          5740
+          -
+          5760
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          866
+        </td>
+        <td>
+          6042
+          -
+          6080
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          literal.+(FileMutableView.this.currentBackingObject.content)
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          865
+        </td>
+        <td>
+          6052
+          -
+          6080
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.currentBackingObject.content
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          869
+        </td>
+        <td>
+          6157
+          -
+          6227
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.updateTo(com.atomist.source.StringFileArtifact.updated(FileMutableView.this.currentBackingObject, newContent))
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          868
+        </td>
+        <td>
+          6166
+          -
+          6226
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.StringFileArtifact.updated
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.StringFileArtifact.updated(FileMutableView.this.currentBackingObject, newContent)
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          867
+        </td>
+        <td>
+          6193
+          -
+          6213
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          871
+        </td>
+        <td>
+          6630
+          -
+          6678
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.updateTo(FileMutableView.this.currentBackingObject.withPath(newPath))
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          870
+        </td>
+        <td>
+          6639
+          -
+          6677
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.withPath
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.this.currentBackingObject.withPath(newPath)
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          872
+        </td>
+        <td>
+          6930
+          -
+          6949
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.setName
+        </td>
+        <td style="background: #AEF1AE">
+          FileMutableView.super.setName(name)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

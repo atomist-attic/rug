@@ -1,0 +1,853 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/impact/ImpactType.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.impact
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.kind.core.ProjectType
+</span>5 <span style=''>import com.atomist.rug.runtime.js.ExecutionContext
+</span>6 <span style=''>import com.atomist.rug.spi.{ReflectivelyTypedType, Type}
+</span>7 <span style=''>import com.atomist.tree.TreeNode
+</span>8 <span style=''>import com.atomist.tree.utils.NodeUtils
+</span>9 <span style=''>
+</span>10 <span style=''>/**
+</span>11 <span style=''>  * Type representing change to a project in a Push
+</span>12 <span style=''>  */
+</span>13 <span style=''>class ImpactType extends Type with ReflectivelyTypedType {
+</span>14 <span style=''>
+</span>15 <span style=''>  import NodeUtils._
+</span>16 <span style=''>  import ProjectType._
+</span>17 <span style=''>
+</span>18 <span style=''>  override def description: String = </span><span style='background: #AEF1AE'>&quot;Represents an impact of a change&quot;</span><span style=''>
+</span>19 <span style=''>
+</span>20 <span style=''>  override def runtimeClass: Class[Impact] = </span><span style='background: #AEF1AE'>classOf[Impact]</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>  override def findAllIn(context: GraphNode): Option[Seq[TreeNode]] =
+</span>23 <span style=''>    </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>24 <span style=''>
+</span>25 <span style=''>  override def navigate(context: GraphNode, edgeName: String, executionContext: ExecutionContext): Option[Seq[Impact]] = {
+</span>26 <span style=''>    val repoResolver = </span><span style='background: #AEF1AE'>executionContext.repoResolver.getOrElse(
+</span>27 <span style=''></span><span style='background: #AEF1AE'>      </span><span style='background: #F0ADAD'>throw new UnsupportedOperationException(
+</span>28 <span style=''></span><span style='background: #F0ADAD'>        s&quot;No repo resolver available: Passed [$executionContext]&quot;)</span><span style='background: #AEF1AE'>
+</span>29 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>    context match {
+</span>32 <span style=''>      case push if </span><span style='background: #AEF1AE'>push.hasTag(&quot;Push&quot;)</span><span style=''> =&gt;
+</span>33 <span style=''>        // Push has before and after commits and an associated repo
+</span>34 <span style=''>        // We don't care about the edge name
+</span>35 <span style=''>        val beforeCommit = </span><span style='background: #AEF1AE'>requiredKey(push, &quot;before&quot;)</span><span style=''>
+</span>36 <span style=''>        val afterCommit = </span><span style='background: #AEF1AE'>requiredKey(push, &quot;after&quot;)</span><span style=''>
+</span>37 <span style=''>        val beforeSha = </span><span style='background: #AEF1AE'>requiredKeyValue(beforeCommit, &quot;sha&quot;)</span><span style=''>
+</span>38 <span style=''>        val afterSha = </span><span style='background: #AEF1AE'>requiredKeyValue(afterCommit, &quot;sha&quot;)</span><span style=''>
+</span>39 <span style=''>
+</span>40 <span style=''>        val (owner, name) = extractOwnerAndRepoFromAssociatedRepo(context)
+</span>41 <span style=''>        val beforeSources = </span><span style='background: #AEF1AE'>repoResolver.resolveSha(owner, name, beforeSha)</span><span style=''>
+</span>42 <span style=''>        val afterSources = </span><span style='background: #AEF1AE'>repoResolver.resolveSha(owner, name, afterSha)</span><span style=''>
+</span>43 <span style=''>        </span><span style='background: #AEF1AE'>Some(Seq(new Impact(push, beforeSources, afterSources)))</span><span style=''>
+</span>44 <span style=''>      case pr if </span><span style='background: #AEF1AE'>pr.hasTag(&quot;PullRequest&quot;)</span><span style=''> =&gt;
+</span>45 <span style=''>        val beforeSha = </span><span style='background: #AEF1AE'>extractShaFromAssociatedCommitNamed(pr, &quot;base&quot;)</span><span style=''>
+</span>46 <span style=''>        val afterSha = </span><span style='background: #AEF1AE'>extractShaFromAssociatedCommitNamed(pr, &quot;head&quot;)</span><span style=''>
+</span>47 <span style=''>        val (owner, name) = extractOwnerAndRepoFromAssociatedRepo(context)
+</span>48 <span style=''>        val beforeSources = </span><span style='background: #AEF1AE'>repoResolver.resolveSha(owner, name, beforeSha)</span><span style=''>
+</span>49 <span style=''>        val afterSources = </span><span style='background: #AEF1AE'>repoResolver.resolveSha(owner, name, afterSha)</span><span style=''>
+</span>50 <span style=''>        </span><span style='background: #AEF1AE'>Some(Seq(new Impact(pr, beforeSources, afterSources)))</span><span style=''>
+</span>51 <span style=''>
+</span>52 <span style=''>      case _ =&gt;
+</span>53 <span style=''>        </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>54 <span style=''>    }
+</span>55 <span style=''>  }
+</span>56 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1671
+        </td>
+        <td>
+          502
+          -
+          536
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Represents an impact of a change&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1672
+        </td>
+        <td>
+          583
+          -
+          598
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.rug.kind.impact.Impact]
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1673
+        </td>
+        <td>
+          674
+          -
+          678
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1675
+        </td>
+        <td>
+          826
+          -
+          986
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          executionContext.repoResolver.getOrElse[com.atomist.rug.kind.core.RepoResolver](throw new scala.`package`.UnsupportedOperationException(scala.StringContext.apply(&quot;No repo resolver available: Passed [&quot;, &quot;]&quot;).s(executionContext)))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1674
+        </td>
+        <td>
+          873
+          -
+          980
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.UnsupportedOperationException(scala.StringContext.apply(&quot;No repo resolver available: Passed [&quot;, &quot;]&quot;).s(executionContext))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1676
+        </td>
+        <td>
+          1027
+          -
+          1046
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.hasTag
+        </td>
+        <td style="background: #AEF1AE">
+          push.hasTag(&quot;Push&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1677
+        </td>
+        <td>
+          1208
+          -
+          1216
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;before&quot;
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1679
+        </td>
+        <td>
+          1190
+          -
+          1217
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.NodeUtils.requiredKey
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.requiredKey(push, &quot;before&quot;, com.atomist.tree.utils.NodeUtils.requiredKey$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1678
+        </td>
+        <td>
+          1190
+          -
+          1190
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.utils.NodeUtils.requiredKey$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.requiredKey$default$3
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1680
+        </td>
+        <td>
+          1262
+          -
+          1269
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;after&quot;
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1682
+        </td>
+        <td>
+          1244
+          -
+          1270
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.NodeUtils.requiredKey
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.requiredKey(push, &quot;after&quot;, com.atomist.tree.utils.NodeUtils.requiredKey$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1681
+        </td>
+        <td>
+          1244
+          -
+          1244
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.utils.NodeUtils.requiredKey$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.requiredKey$default$3
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1683
+        </td>
+        <td>
+          1326
+          -
+          1331
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;sha&quot;
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1685
+        </td>
+        <td>
+          1295
+          -
+          1332
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.NodeUtils.requiredKeyValue
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.requiredKeyValue(beforeCommit, &quot;sha&quot;, com.atomist.tree.utils.NodeUtils.requiredKeyValue$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1684
+        </td>
+        <td>
+          1295
+          -
+          1295
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.utils.NodeUtils.requiredKeyValue$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.requiredKeyValue$default$3
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1686
+        </td>
+        <td>
+          1386
+          -
+          1391
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;sha&quot;
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1688
+        </td>
+        <td>
+          1356
+          -
+          1392
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.NodeUtils.requiredKeyValue
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.requiredKeyValue(afterCommit, &quot;sha&quot;, com.atomist.tree.utils.NodeUtils.requiredKeyValue$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1687
+        </td>
+        <td>
+          1356
+          -
+          1356
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.utils.NodeUtils.requiredKeyValue$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.requiredKeyValue$default$3
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1689
+        </td>
+        <td>
+          1407
+          -
+          1407
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$1._1
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1690
+        </td>
+        <td>
+          1414
+          -
+          1414
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          x$1._2
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          1691
+        </td>
+        <td>
+          1497
+          -
+          1544
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.RepoResolver.resolveSha
+        </td>
+        <td style="background: #AEF1AE">
+          repoResolver.resolveSha(owner, name, beforeSha)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          1692
+        </td>
+        <td>
+          1572
+          -
+          1618
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.RepoResolver.resolveSha
+        </td>
+        <td style="background: #AEF1AE">
+          repoResolver.resolveSha(owner, name, afterSha)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1695
+        </td>
+        <td>
+          1627
+          -
+          1683
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Seq[com.atomist.rug.kind.impact.Impact]](collection.this.Seq.apply[com.atomist.rug.kind.impact.Impact](new Impact(push, beforeSources, afterSources)))
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1694
+        </td>
+        <td>
+          1632
+          -
+          1682
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.kind.impact.Impact](new Impact(push, beforeSources, afterSources))
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1693
+        </td>
+        <td>
+          1636
+          -
+          1681
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.Impact.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new Impact(push, beforeSources, afterSources)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1696
+        </td>
+        <td>
+          1701
+          -
+          1725
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.hasTag
+        </td>
+        <td style="background: #AEF1AE">
+          pr.hasTag(&quot;PullRequest&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1697
+        </td>
+        <td>
+          1753
+          -
+          1800
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectType.extractShaFromAssociatedCommitNamed
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.core.ProjectType.extractShaFromAssociatedCommitNamed(pr, &quot;base&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1698
+        </td>
+        <td>
+          1824
+          -
+          1871
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectType.extractShaFromAssociatedCommitNamed
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.core.ProjectType.extractShaFromAssociatedCommitNamed(pr, &quot;head&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1700
+        </td>
+        <td>
+          1892
+          -
+          1892
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          x$2._2
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1699
+        </td>
+        <td>
+          1885
+          -
+          1885
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$2._1
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1701
+        </td>
+        <td>
+          1975
+          -
+          2022
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.RepoResolver.resolveSha
+        </td>
+        <td style="background: #AEF1AE">
+          repoResolver.resolveSha(owner, name, beforeSha)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1702
+        </td>
+        <td>
+          2050
+          -
+          2096
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.RepoResolver.resolveSha
+        </td>
+        <td style="background: #AEF1AE">
+          repoResolver.resolveSha(owner, name, afterSha)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1704
+        </td>
+        <td>
+          2110
+          -
+          2158
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.kind.impact.Impact](new Impact(pr, beforeSources, afterSources))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1703
+        </td>
+        <td>
+          2114
+          -
+          2157
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.impact.Impact.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new Impact(pr, beforeSources, afterSources)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1705
+        </td>
+        <td>
+          2105
+          -
+          2159
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Seq[com.atomist.rug.kind.impact.Impact]](collection.this.Seq.apply[com.atomist.rug.kind.impact.Impact](new Impact(pr, beforeSources, afterSources)))
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1706
+        </td>
+        <td>
+          2185
+          -
+          2189
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

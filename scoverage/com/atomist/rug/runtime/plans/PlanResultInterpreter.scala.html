@@ -1,0 +1,709 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/plans/PlanResultInterpreter.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.plans
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.spi.Handlers.Status.{Failure, Success}
+</span>4 <span style=''>import com.atomist.rug.spi.Handlers._
+</span>5 <span style=''>
+</span>6 <span style=''>import scala.annotation.tailrec
+</span>7 <span style=''>import scala.concurrent.Await
+</span>8 <span style=''>import scala.concurrent.duration.DurationInt
+</span>9 <span style=''>
+</span>10 <span style=''>/**
+</span>11 <span style=''>  * Utils to example PlanResults
+</span>12 <span style=''>  */
+</span>13 <span style=''>object PlanResultInterpreter {
+</span>14 <span style=''>
+</span>15 <span style=''>  def interpret(planResult: PlanResult): Response = {
+</span>16 <span style=''>    if (</span><span style='background: #AEF1AE'>hasLogFailure(planResult.log)</span><span style=''>) {
+</span>17 <span style=''>      </span><span style='background: #AEF1AE'>Response(Failure)</span><span style=''>
+</span>18 <span style=''>    } else {
+</span>19 <span style=''>      </span><span style='background: #AEF1AE'>Response(Success)</span><span style=''>
+</span>20 <span style=''>    }
+</span>21 <span style=''>  }
+</span>22 <span style=''>
+</span>23 <span style=''>  @tailrec
+</span>24 <span style=''>  def hasLogFailure(log: Seq[PlanLogEvent]): Boolean = {
+</span>25 <span style=''>    </span><span style='background: #AEF1AE'>log.headOption</span><span style=''> match {
+</span>26 <span style=''>      case Some(head) =&gt;
+</span>27 <span style=''>        head match {
+</span>28 <span style=''>          case _: PlanLogError =&gt; </span><span style='background: #AEF1AE'>true</span><span style=''>
+</span>29 <span style=''>          case result: InstructionResult if </span><span style='background: #AEF1AE'>result.response.status == Failure</span><span style=''> =&gt; </span><span style='background: #AEF1AE'>true</span><span style=''>
+</span>30 <span style=''>          case result: NestedPlanRun =&gt;
+</span>31 <span style=''>            val planResult = </span><span style='background: #AEF1AE'>Await.result(result.planResult, 5.minutes)</span><span style=''>
+</span>32 <span style=''>            </span><span style='background: #AEF1AE'>hasLogFailure(log.tail ++ planResult.log)</span><span style=''>
+</span>33 <span style=''>          case _ =&gt; </span><span style='background: #AEF1AE'>hasLogFailure(log.tail)</span><span style=''>
+</span>34 <span style=''>        }
+</span>35 <span style=''>      case None =&gt; </span><span style='background: #AEF1AE'>false</span><span style=''>
+</span>36 <span style=''>    }
+</span>37 <span style=''>  }
+</span>38 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          4940
+        </td>
+        <td>
+          398
+          -
+          412
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.PlanResult.log
+        </td>
+        <td style="background: #AEF1AE">
+          planResult.log
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          4941
+        </td>
+        <td>
+          384
+          -
+          413
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanResultInterpreter.hasLogFailure
+        </td>
+        <td style="background: #AEF1AE">
+          PlanResultInterpreter.this.hasLogFailure(planResult.log)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          4946
+        </td>
+        <td>
+          423
+          -
+          440
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Failure, com.atomist.rug.spi.Handlers.Response.apply$default$2, com.atomist.rug.spi.Handlers.Response.apply$default$3, com.atomist.rug.spi.Handlers.Response.apply$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          4942
+        </td>
+        <td>
+          432
+          -
+          439
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Status.Failure
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Status.Failure
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          4945
+        </td>
+        <td>
+          423
+          -
+          423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Response.apply$default$4
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          4947
+        </td>
+        <td>
+          423
+          -
+          440
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Failure, com.atomist.rug.spi.Handlers.Response.apply$default$2, com.atomist.rug.spi.Handlers.Response.apply$default$3, com.atomist.rug.spi.Handlers.Response.apply$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          4944
+        </td>
+        <td>
+          423
+          -
+          423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Response.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          4943
+        </td>
+        <td>
+          423
+          -
+          423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Response.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          4949
+        </td>
+        <td>
+          460
+          -
+          460
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Response.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          4948
+        </td>
+        <td>
+          469
+          -
+          476
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Status.Success
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Status.Success
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          4951
+        </td>
+        <td>
+          460
+          -
+          460
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Response.apply$default$4
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          4950
+        </td>
+        <td>
+          460
+          -
+          460
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Response.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          4953
+        </td>
+        <td>
+          460
+          -
+          477
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Success, com.atomist.rug.spi.Handlers.Response.apply$default$2, com.atomist.rug.spi.Handlers.Response.apply$default$3, com.atomist.rug.spi.Handlers.Response.apply$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          4952
+        </td>
+        <td>
+          460
+          -
+          477
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Success, com.atomist.rug.spi.Handlers.Response.apply$default$2, com.atomist.rug.spi.Handlers.Response.apply$default$3, com.atomist.rug.spi.Handlers.Response.apply$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          4954
+        </td>
+        <td>
+          561
+          -
+          575
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #AEF1AE">
+          log.headOption
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          4955
+        </td>
+        <td>
+          664
+          -
+          668
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          4958
+        </td>
+        <td>
+          750
+          -
+          754
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          4957
+        </td>
+        <td>
+          713
+          -
+          746
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          result.response.status.==(com.atomist.rug.spi.Handlers.Status.Failure)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          4956
+        </td>
+        <td>
+          739
+          -
+          746
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Status.Failure
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Status.Failure
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          4960
+        </td>
+        <td>
+          856
+          -
+          857
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          5
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          4962
+        </td>
+        <td>
+          824
+          -
+          866
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Await.result
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Await.result[com.atomist.rug.spi.Handlers.PlanResult](result.planResult, scala.concurrent.duration.`package`.DurationInt(5).minutes)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          4959
+        </td>
+        <td>
+          837
+          -
+          854
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.NestedPlanRun.planResult
+        </td>
+        <td style="background: #AEF1AE">
+          result.planResult
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          4961
+        </td>
+        <td>
+          856
+          -
+          865
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.concurrent.duration.DurationConversions.minutes
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.duration.`package`.DurationInt(5).minutes
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4964
+        </td>
+        <td>
+          902
+          -
+          902
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.PlanLogEvent]
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4966
+        </td>
+        <td>
+          879
+          -
+          920
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanResultInterpreter.hasLogFailure
+        </td>
+        <td style="background: #AEF1AE">
+          PlanResultInterpreter.this.hasLogFailure(log.tail.++[com.atomist.rug.spi.Handlers.PlanLogEvent, Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](planResult.log)(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.PlanLogEvent]))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4963
+        </td>
+        <td>
+          905
+          -
+          919
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.PlanResult.log
+        </td>
+        <td style="background: #AEF1AE">
+          planResult.log
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4965
+        </td>
+        <td>
+          893
+          -
+          919
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          log.tail.++[com.atomist.rug.spi.Handlers.PlanLogEvent, Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](planResult.log)(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.PlanLogEvent])
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          4967
+        </td>
+        <td>
+          955
+          -
+          963
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.tail
+        </td>
+        <td style="background: #AEF1AE">
+          log.tail
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          4968
+        </td>
+        <td>
+          941
+          -
+          964
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanResultInterpreter.hasLogFailure
+        </td>
+        <td style="background: #AEF1AE">
+          PlanResultInterpreter.this.hasLogFailure(log.tail)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          4969
+        </td>
+        <td>
+          994
+          -
+          999
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

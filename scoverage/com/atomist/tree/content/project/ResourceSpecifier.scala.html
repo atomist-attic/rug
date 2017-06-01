@@ -1,0 +1,456 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/content/project/ResourceSpecifier.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.content.project
+</span>2 <span style=''>
+</span>3 <span style=''>import java.util.Objects
+</span>4 <span style=''>
+</span>5 <span style=''>import com.fasterxml.jackson.annotation.JsonProperty
+</span>6 <span style=''>
+</span>7 <span style=''>import scala.annotation.meta.field
+</span>8 <span style=''>
+</span>9 <span style=''>/**
+</span>10 <span style=''>  * Represents a published artifact: for example, in a Maven repository.
+</span>11 <span style=''>  */
+</span>12 <span style=''>trait ResourceSpecifier {
+</span>13 <span style=''>
+</span>14 <span style=''>  def groupId: String
+</span>15 <span style=''>
+</span>16 <span style=''>  def artifactId: String
+</span>17 <span style=''>
+</span>18 <span style=''>  def version: String
+</span>19 <span style=''>
+</span>20 <span style=''>  override def toString = </span><span style='background: #F0ADAD'>s&quot;${groupId}_${artifactId}_$version&quot;</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>  override def equals(o: Any) = o match {
+</span>23 <span style=''>    case that: ResourceSpecifier =&gt;
+</span>24 <span style=''>      </span><span style='background: #F0ADAD'>Objects.equals(groupId, that.groupId) &amp;&amp;
+</span>25 <span style=''></span><span style='background: #F0ADAD'>        Objects.equals(artifactId, that.artifactId) &amp;&amp;
+</span>26 <span style=''></span><span style='background: #F0ADAD'>        Objects.equals(version, that.version)</span><span style=''>
+</span>27 <span style=''>    case _ =&gt; </span><span style='background: #F0ADAD'>false</span><span style=''>
+</span>28 <span style=''>  }
+</span>29 <span style=''>}
+</span>30 <span style=''>
+</span>31 <span style=''>case class SimpleResourceSpecifier(
+</span>32 <span style=''>                                    @(JsonProperty@field)(&quot;group_id&quot;) groupId: String,
+</span>33 <span style=''>                                    @(JsonProperty@field)(&quot;artifact_id&quot;) artifactId: String,
+</span>34 <span style=''>                                    @(JsonProperty@field)(&quot;version&quot;) version: String)
+</span>35 <span style=''>  extends ResourceSpecifier
+</span>36 <span style=''>
+</span>37 <span style=''>object UnidentifiedResourceSpecifier extends SimpleResourceSpecifier(&quot;&quot;, &quot;&quot;, &quot;&quot;)
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7111
+        </td>
+        <td>
+          391
+          -
+          393
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;_&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7114
+        </td>
+        <td>
+          380
+          -
+          390
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.project.ResourceSpecifier.artifactId
+        </td>
+        <td style="background: #F0ADAD">
+          ResourceSpecifier.this.artifactId
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7113
+        </td>
+        <td>
+          369
+          -
+          376
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.project.ResourceSpecifier.groupId
+        </td>
+        <td style="background: #F0ADAD">
+          ResourceSpecifier.this.groupId
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7116
+        </td>
+        <td>
+          365
+          -
+          401
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;_&quot;, &quot;_&quot;, &quot;&quot;).s(ResourceSpecifier.this.groupId, ResourceSpecifier.this.artifactId, ResourceSpecifier.this.version)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7110
+        </td>
+        <td>
+          377
+          -
+          379
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;_&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7112
+        </td>
+        <td>
+          400
+          -
+          401
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7115
+        </td>
+        <td>
+          393
+          -
+          400
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.project.ResourceSpecifier.version
+        </td>
+        <td style="background: #F0ADAD">
+          ResourceSpecifier.this.version
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7109
+        </td>
+        <td>
+          367
+          -
+          368
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          7117
+        </td>
+        <td>
+          502
+          -
+          509
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.project.ResourceSpecifier.groupId
+        </td>
+        <td style="background: #F0ADAD">
+          ResourceSpecifier.this.groupId
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          7118
+        </td>
+        <td>
+          511
+          -
+          523
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.project.ResourceSpecifier.groupId
+        </td>
+        <td style="background: #F0ADAD">
+          that.groupId
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          7120
+        </td>
+        <td>
+          563
+          -
+          578
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.project.ResourceSpecifier.artifactId
+        </td>
+        <td style="background: #F0ADAD">
+          that.artifactId
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          7125
+        </td>
+        <td>
+          487
+          -
+          628
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #F0ADAD">
+          java.util.Objects.equals(ResourceSpecifier.this.groupId, that.groupId).&amp;&amp;(java.util.Objects.equals(ResourceSpecifier.this.artifactId, that.artifactId)).&amp;&amp;(java.util.Objects.equals(ResourceSpecifier.this.version, that.version))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          7119
+        </td>
+        <td>
+          551
+          -
+          561
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.project.ResourceSpecifier.artifactId
+        </td>
+        <td style="background: #F0ADAD">
+          ResourceSpecifier.this.artifactId
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          7121
+        </td>
+        <td>
+          536
+          -
+          579
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Objects.equals
+        </td>
+        <td style="background: #F0ADAD">
+          java.util.Objects.equals(ResourceSpecifier.this.artifactId, that.artifactId)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          7123
+        </td>
+        <td>
+          615
+          -
+          627
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.project.ResourceSpecifier.version
+        </td>
+        <td style="background: #F0ADAD">
+          that.version
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          7122
+        </td>
+        <td>
+          606
+          -
+          613
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.project.ResourceSpecifier.version
+        </td>
+        <td style="background: #F0ADAD">
+          ResourceSpecifier.this.version
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          7124
+        </td>
+        <td>
+          591
+          -
+          628
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Objects.equals
+        </td>
+        <td style="background: #F0ADAD">
+          java.util.Objects.equals(ResourceSpecifier.this.version, that.version)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          7126
+        </td>
+        <td>
+          643
+          -
+          648
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

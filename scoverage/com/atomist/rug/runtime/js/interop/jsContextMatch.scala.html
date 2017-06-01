@@ -1,0 +1,226 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/js/interop/jsContextMatch.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.js.interop
+</span>2 <span style=''>
+</span>3 <span style=''>/**
+</span>4 <span style=''>  * Fronts JavaScript Context object passed to an EventHandler
+</span>5 <span style=''>  * Detyped as a Nashorn objects may be passed that do not implement GraphNode
+</span>6 <span style=''>  */
+</span>7 <span style=''>case class jsContextMatch(root: AnyRef,
+</span>8 <span style=''>                          matches: _root_.java.util.List[AnyRef],
+</span>9 <span style=''>                          pathExpressionEngine: jsPathExpressionEngine,
+</span>10 <span style=''>                          contextRoot: AnyRef,
+</span>11 <span style=''>                          teamId: String) {
+</span>12 <span style=''>
+</span>13 <span style=''>  import scala.collection.JavaConverters._
+</span>14 <span style=''>
+</span>15 <span style=''>  override def toString: String =
+</span>16 <span style=''>    </span><span style='background: #F0ADAD'>s&quot;ContextMatch: TeamId=[$teamId]; root=$root, matches=[${matches.asScala.mkString(&quot;,&quot;)}]&quot;</span><span style=''>
+</span>17 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          4282
+        </td>
+        <td>
+          604
+          -
+          633
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.JavaConverters.asScalaBufferConverter[AnyRef](jsContextMatch.this.matches).asScala.mkString(&quot;,&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          4276
+        </td>
+        <td>
+          549
+          -
+          572
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;ContextMatch: TeamId=[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          4279
+        </td>
+        <td>
+          634
+          -
+          636
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          4278
+        </td>
+        <td>
+          591
+          -
+          603
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;, matches=[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          4281
+        </td>
+        <td>
+          587
+          -
+          591
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsContextMatch.root
+        </td>
+        <td style="background: #F0ADAD">
+          jsContextMatch.this.root
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          4283
+        </td>
+        <td>
+          547
+          -
+          636
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;ContextMatch: TeamId=[&quot;, &quot;]; root=&quot;, &quot;, matches=[&quot;, &quot;]&quot;).s(jsContextMatch.this.teamId, jsContextMatch.this.root, scala.collection.JavaConverters.asScalaBufferConverter[AnyRef](jsContextMatch.this.matches).asScala.mkString(&quot;,&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          4277
+        </td>
+        <td>
+          578
+          -
+          587
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;]; root=&quot;
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          4280
+        </td>
+        <td>
+          572
+          -
+          578
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsContextMatch.teamId
+        </td>
+        <td style="background: #F0ADAD">
+          jsContextMatch.this.teamId
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

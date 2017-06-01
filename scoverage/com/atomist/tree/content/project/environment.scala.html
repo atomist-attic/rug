@@ -1,0 +1,247 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/content/project/environment.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.content.project
+</span>2 <span style=''>
+</span>3 <span style=''>import org.apache.commons.lang3.builder.{EqualsBuilder, HashCodeBuilder}
+</span>4 <span style=''>
+</span>5 <span style=''>trait NameValuePair {
+</span>6 <span style=''>
+</span>7 <span style=''>  def name: String
+</span>8 <span style=''>
+</span>9 <span style=''>  def value: String
+</span>10 <span style=''>
+</span>11 <span style=''>  def description: String
+</span>12 <span style=''>
+</span>13 <span style=''>  override def equals(that: Any): Boolean = </span><span style='background: #F0ADAD'>EqualsBuilder.reflectionEquals(this, that)</span><span style=''>
+</span>14 <span style=''>
+</span>15 <span style=''>  override def hashCode(): Int = </span><span style='background: #F0ADAD'>HashCodeBuilder.reflectionHashCode(this)</span><span style=''>
+</span>16 <span style=''>}
+</span>17 <span style=''>
+</span>18 <span style=''>case class SimpleNameValuePair(name: String, value: String, description: String) extends NameValuePair
+</span>19 <span style=''>
+</span>20 <span style=''>object NameValuePair {
+</span>21 <span style=''>  def apply(name: String, value: String, description: String = &quot;&quot;): NameValuePair =
+</span>22 <span style=''>    </span><span style='background: #F0ADAD'>SimpleNameValuePair(name, value, description)</span><span style=''>
+</span>23 <span style=''>}
+</span>24 <span style=''>
+</span>25 <span style=''>trait ConfigValue extends NameValuePair {
+</span>26 <span style=''>
+</span>27 <span style=''>  /** URL convention for source */
+</span>28 <span style=''>  def source: String
+</span>29 <span style=''>
+</span>30 <span style=''>  /**
+</span>31 <span style=''>    * Profile, for example in Spring
+</span>32 <span style=''>    */
+</span>33 <span style=''>  def profile: String
+</span>34 <span style=''>}
+</span>35 <span style=''>
+</span>36 <span style=''>case class SimpleConfigValue(
+</span>37 <span style=''>                              name: String,
+</span>38 <span style=''>                              value: String,
+</span>39 <span style=''>                              source: String,
+</span>40 <span style=''>                              profile: String = &quot;&quot;,
+</span>41 <span style=''>                              description: String = &quot;&quot;
+</span>42 <span style=''>                            )
+</span>43 <span style=''>  extends ConfigValue
+</span>44 <span style=''>
+</span>45 <span style=''>/**
+</span>46 <span style=''>  * Note that we can figure out the hierarchy from the value names
+</span>47 <span style=''>  */
+</span>48 <span style=''>trait Configuration {
+</span>49 <span style=''>
+</span>50 <span style=''>  def configurationValues: Seq[ConfigValue]
+</span>51 <span style=''>
+</span>52 <span style=''>  def configurationValue(name: String): Option[ConfigValue] = </span><span style='background: #F0ADAD'>configurationValues.find(cv =&gt; name.equals(cv.name))</span><span style=''>
+</span>53 <span style=''>}
+</span>54 <span style=''>
+</span>55 <span style=''>class SimpleConfiguration(_configuration: Seq[ConfigValue])
+</span>56 <span style=''>  extends Configuration {
+</span>57 <span style=''>
+</span>58 <span style=''>  override val configurationValues: Seq[ConfigValue] = </span><span style='background: #AEF1AE'>_configuration</span><span style=''>
+</span>59 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          7127
+        </td>
+        <td>
+          251
+          -
+          293
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals
+        </td>
+        <td style="background: #F0ADAD">
+          org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals(this, that)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          7128
+        </td>
+        <td>
+          328
+          -
+          368
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCode
+        </td>
+        <td style="background: #F0ADAD">
+          org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCode(this)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          7129
+        </td>
+        <td>
+          587
+          -
+          632
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.project.SimpleNameValuePair.apply
+        </td>
+        <td style="background: #F0ADAD">
+          SimpleNameValuePair.apply(name, value, description)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          7132
+        </td>
+        <td>
+          1342
+          -
+          1394
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #F0ADAD">
+          Configuration.this.configurationValues.find(((cv: com.atomist.tree.content.project.ConfigValue) =&gt; name.equals(cv.name)))
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          7131
+        </td>
+        <td>
+          1373
+          -
+          1393
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #F0ADAD">
+          name.equals(cv.name)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          7130
+        </td>
+        <td>
+          1385
+          -
+          1392
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.project.NameValuePair.name
+        </td>
+        <td style="background: #F0ADAD">
+          cv.name
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          7133
+        </td>
+        <td>
+          1540
+          -
+          1554
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.project.SimpleConfiguration._configuration
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleConfiguration.this._configuration
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

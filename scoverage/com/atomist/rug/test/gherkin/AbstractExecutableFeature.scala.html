@@ -1,0 +1,2963 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/test/gherkin/AbstractExecutableFeature.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.test.gherkin
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.project.archive.Rugs
+</span>5 <span style=''>import com.atomist.project.common.InvalidParametersException
+</span>6 <span style=''>import com.atomist.rug.runtime.js.interop.{NashornUtils, jsSafeCommittingProxy}
+</span>7 <span style=''>import com.typesafe.scalalogging.LazyLogging
+</span>8 <span style=''>import gherkin.ast.{ScenarioDefinition, Step}
+</span>9 <span style=''>import jdk.nashorn.api.scripting.ScriptObjectMirror
+</span>10 <span style=''>
+</span>11 <span style=''>import scala.collection.JavaConverters._
+</span>12 <span style=''>
+</span>13 <span style=''>/**
+</span>14 <span style=''>  * Superclass for all features, regardless of what they act on
+</span>15 <span style=''>  */
+</span>16 <span style=''>abstract class AbstractExecutableFeature[W &lt;: ScenarioWorld](
+</span>17 <span style=''>                                                              val definition: FeatureDefinition,
+</span>18 <span style=''>                                                              val definitions: Definitions,
+</span>19 <span style=''>                                                              val rugs: Option[Rugs],
+</span>20 <span style=''>                                                              listeners: Seq[GherkinExecutionListener],
+</span>21 <span style=''>                                                              config: GherkinRunnerConfig)
+</span>22 <span style=''>  extends LazyLogging {
+</span>23 <span style=''>
+</span>24 <span style=''>  def execute(): FeatureResult = {
+</span>25 <span style=''>    </span><span style='background: #AEF1AE'>FeatureResult(definition.feature,
+</span>26 <span style=''></span><span style='background: #AEF1AE'>      definition.feature.getChildren.asScala
+</span>27 <span style=''></span><span style='background: #AEF1AE'>        .map(executeScenario)
+</span>28 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>29 <span style=''>  }
+</span>30 <span style=''>
+</span>31 <span style=''>  /**
+</span>32 <span style=''>    * Create a world for overall context
+</span>33 <span style=''>    * This creates a default world.
+</span>34 <span style=''>    */
+</span>35 <span style=''>  protected def createWorldForScenario(): ScenarioWorld
+</span>36 <span style=''>
+</span>37 <span style=''>  private def executeScenario(scenario: ScenarioDefinition): ScenarioResult = {
+</span>38 <span style=''>    </span><span style='background: #AEF1AE'>listeners.foreach(_.scenarioStarting(scenario))</span><span style=''>
+</span>39 <span style=''>    val world = </span><span style='background: #AEF1AE'>createWorldForScenario()</span><span style=''>
+</span>40 <span style=''>    val assertionResults: Seq[AssertionResult] =
+</span>41 <span style=''>      </span><span style='background: #AEF1AE'>scenario.getSteps.asScala.flatMap(step =&gt; {
+</span>42 <span style=''></span><span style='background: #AEF1AE'>        listeners.foreach(_.stepStarting(step))
+</span>43 <span style=''></span><span style='background: #AEF1AE'>        val result = step.getKeyword match {
+</span>44 <span style=''></span><span style='background: #AEF1AE'>          case &quot;Given &quot; if !world.aborted =&gt;
+</span>45 <span style=''></span><span style='background: #AEF1AE'>            runGiven(world, step)
+</span>46 <span style=''></span><span style='background: #AEF1AE'>          case &quot;When &quot; if !world.aborted =&gt;
+</span>47 <span style=''></span><span style='background: #AEF1AE'>            runWhen(world, step)
+</span>48 <span style=''></span><span style='background: #AEF1AE'>          case &quot;Then &quot; if step.getText == &quot;the scenario aborted&quot; =&gt;
+</span>49 <span style=''></span><span style='background: #AEF1AE'>            Some(AssertionResult(step.getText, Result(world.aborted, &quot;Scenario aborted&quot;)))
+</span>50 <span style=''></span><span style='background: #AEF1AE'>          case &quot;Then &quot; if !world.aborted =&gt;
+</span>51 <span style=''></span><span style='background: #AEF1AE'>            Some(runThen(world, step))
+</span>52 <span style=''></span><span style='background: #AEF1AE'>          case &quot;Then &quot; if world.aborted =&gt;
+</span>53 <span style=''></span><span style='background: #AEF1AE'>            Some(AssertionResult(step.getText,
+</span>54 <span style=''></span><span style='background: #AEF1AE'>              Failed(s&quot;Scenario aborted: Could not evaluate: [${world.abortMessage}]&quot;)))
+</span>55 <span style=''></span><span style='background: #AEF1AE'>          case _ =&gt;
+</span>56 <span style=''></span><span style='background: #AEF1AE'>            </span><span style='background: #F0ADAD'>None</span><span style='background: #AEF1AE'>
+</span>57 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>58 <span style=''></span><span style='background: #AEF1AE'>        listeners.foreach(_.stepCompleted(step))
+</span>59 <span style=''></span><span style='background: #AEF1AE'>        result
+</span>60 <span style=''></span><span style='background: #AEF1AE'>      })</span><span style=''>
+</span>61 <span style=''>    val sr = </span><span style='background: #AEF1AE'>ScenarioResult(scenario, assertionResults, &quot;&quot;)</span><span style=''>
+</span>62 <span style=''>    </span><span style='background: #AEF1AE'>listeners.foreach(_.scenarioCompleted(scenario, sr))</span><span style=''>
+</span>63 <span style=''>    sr
+</span>64 <span style=''>  }
+</span>65 <span style=''>
+</span>66 <span style=''>  private def runThen(world: ScenarioWorld, step: Step): AssertionResult = {
+</span>67 <span style=''>    val somo = </span><span style='background: #AEF1AE'>definitions.thenFor(step.getText)</span><span style=''>
+</span>68 <span style=''>    logger.debug(s&quot;Then for [${step.getText}]=$somo&quot;)
+</span>69 <span style=''>    somo match {
+</span>70 <span style=''>      case Some(stepMatch) =&gt;
+</span>71 <span style=''>        val r = </span><span style='background: #AEF1AE'>callFunction(stepMatch, world)</span><span style=''>
+</span>72 <span style=''>        r match {
+</span>73 <span style=''>          case Right(b: java.lang.Boolean) =&gt;
+</span>74 <span style=''>            </span><span style='background: #AEF1AE'>AssertionResult(step.getText, Result(b, stepMatch.jsVar.toString))</span><span style=''>
+</span>75 <span style=''>          case Right(rsom: ScriptObjectMirror) =&gt;
+</span>76 <span style=''>            val result = </span><span style='background: #F0ADAD'>NashornUtils.stringProperty(rsom, &quot;result&quot;, &quot;false&quot;) == &quot;true&quot;</span><span style=''>
+</span>77 <span style=''>            </span><span style='background: #F0ADAD'>AssertionResult(step.getText, Result(result, NashornUtils.stringProperty(rsom, &quot;message&quot;, &quot;Detailed information unavailable&quot;)))</span><span style=''>
+</span>78 <span style=''>          case Right(r) if </span><span style='background: #AEF1AE'>ScriptObjectMirror.isUndefined(r)</span><span style=''> =&gt;
+</span>79 <span style=''>            // Returning void (which will be undefined) is truthy
+</span>80 <span style=''>            // This enables use of frameworks such as as chai
+</span>81 <span style=''>            </span><span style='background: #AEF1AE'>AssertionResult(step.getText, Result(f = true, stepMatch.jsVar.toString))</span><span style=''>
+</span>82 <span style=''>          case Right(wtf) =&gt;
+</span>83 <span style=''>            </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Unexpected result from Then '${step.getText}': $wtf&quot;)</span><span style=''>
+</span>84 <span style=''>          case Left(t) =&gt;
+</span>85 <span style=''>            </span><span style='background: #AEF1AE'>AssertionResult(step.getText, Failed(t.getMessage))</span><span style=''>
+</span>86 <span style=''>        }
+</span>87 <span style=''>      case None =&gt;
+</span>88 <span style=''>        </span><span style='background: #AEF1AE'>AssertionResult(step.getText, NotYetImplemented(&quot;Then &quot; + step.getText))</span><span style=''>
+</span>89 <span style=''>    }
+</span>90 <span style=''>  }
+</span>91 <span style=''>
+</span>92 <span style=''>  private def runWhen(world: ScenarioWorld, step: Step): Option[AssertionResult] = {
+</span>93 <span style=''>    val somo = </span><span style='background: #AEF1AE'>definitions.whenFor(step.getText)</span><span style=''>
+</span>94 <span style=''>    logger.debug(s&quot;When for [${step.getText}]=$somo&quot;)
+</span>95 <span style=''>    somo match {
+</span>96 <span style=''>      case Some(som) =&gt;
+</span>97 <span style=''>        </span><span style='background: #AEF1AE'>callFunction(som, world)</span><span style=''> match {
+</span>98 <span style=''>          case Left(ipe: InvalidParametersException) =&gt;
+</span>99 <span style=''>            </span><span style='background: #F0ADAD'>listeners.foreach(_.stepFailed(step, ipe))</span><span style=''>
+</span>100 <span style=''>            </span><span style='background: #F0ADAD'>world.logInvalidParameters(ipe)</span><span style=''>
+</span>101 <span style=''>            </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>102 <span style=''>          case Left(e: Exception) if </span><span style='background: #AEF1AE'>e.getCause != null &amp;&amp; e.getCause.isInstanceOf[InvalidParametersException]</span><span style=''> =&gt;
+</span>103 <span style=''>            // Can sometimes get this wrapped
+</span>104 <span style=''>            </span><span style='background: #AEF1AE'>listeners.foreach(_.stepFailed(step, e.getCause.asInstanceOf[InvalidParametersException]))</span><span style=''>
+</span>105 <span style=''>            </span><span style='background: #AEF1AE'>world.logInvalidParameters(e.getCause.asInstanceOf[InvalidParametersException])</span><span style=''>
+</span>106 <span style=''>            </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>107 <span style=''>          case Left(t) =&gt;
+</span>108 <span style=''>            </span><span style='background: #AEF1AE'>listeners.foreach(</span><span style='background: #F0ADAD'>_.stepFailed(step, t)</span><span style='background: #AEF1AE'>)</span><span style=''>
+</span>109 <span style=''>            logger.error(t.getMessage, t)
+</span>110 <span style=''>            </span><span style='background: #AEF1AE'>world.abort(t.getMessage)</span><span style=''>
+</span>111 <span style=''>            </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>112 <span style=''>          case _ =&gt;
+</span>113 <span style=''>            </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>114 <span style=''>        }
+</span>115 <span style=''>      case None =&gt;
+</span>116 <span style=''>        </span><span style='background: #AEF1AE'>Some(AssertionResult(step.getText, NotYetImplemented(&quot;When &quot; + step.getText)))</span><span style=''>
+</span>117 <span style=''>    }
+</span>118 <span style=''>  }
+</span>119 <span style=''>
+</span>120 <span style=''>  private def runGiven(world: ScenarioWorld, step: Step): Option[AssertionResult] = {
+</span>121 <span style=''>    val somo = </span><span style='background: #AEF1AE'>definitions.givenFor(step.getText)</span><span style=''>
+</span>122 <span style=''>    logger.debug(s&quot;Given for [${step.getText}]=$somo&quot;)
+</span>123 <span style=''>    somo match {
+</span>124 <span style=''>      case Some(som) =&gt;
+</span>125 <span style=''>        </span><span style='background: #AEF1AE'>callFunction(som, world)</span><span style=''> match {
+</span>126 <span style=''>          case Left(t) =&gt;
+</span>127 <span style=''>            </span><span style='background: #F0ADAD'>world.abort(t.getMessage)</span><span style=''>
+</span>128 <span style=''>            </span><span style='background: #F0ADAD'>listeners.foreach(_.stepFailed(step, t))</span><span style=''>
+</span>129 <span style=''>            logger.error(t.getMessage, t)
+</span>130 <span style=''>            </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>131 <span style=''>          case _ =&gt;
+</span>132 <span style=''>            </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>133 <span style=''>        }
+</span>134 <span style=''>      case None =&gt;
+</span>135 <span style=''>        </span><span style='background: #AEF1AE'>Some(AssertionResult(step.getText, NotYetImplemented(&quot;Given &quot; + step.getText)))</span><span style=''>
+</span>136 <span style=''>    }
+</span>137 <span style=''>  }
+</span>138 <span style=''>
+</span>139 <span style=''>  // Call a ScriptObjectMirror function with appropriate error handling
+</span>140 <span style=''>  private def callFunction(sm: StepMatch, world: ScenarioWorld): Either[Throwable, Object] = {
+</span>141 <span style=''>    import scala.util.control.Exception._
+</span>142 <span style=''>    val target = </span><span style='background: #AEF1AE'>world.target</span><span style=''> match {
+</span>143 <span style=''>      case gn: GraphNode =&gt; </span><span style='background: #AEF1AE'>new jsSafeCommittingProxy(gn, world.typeRegistry)</span><span style=''>
+</span>144 <span style=''>      case t =&gt; t
+</span>145 <span style=''>    }
+</span>146 <span style=''>    // Only include the target if it's different from the world.
+</span>147 <span style=''>    val fixedParams: Seq[AnyRef] = target match {
+</span>148 <span style=''>      case `world` =&gt; </span><span style='background: #AEF1AE'>Seq(world)</span><span style=''>
+</span>149 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>Seq(target, world)</span><span style=''>
+</span>150 <span style=''>    }
+</span>151 <span style=''>    val args = </span><span style='background: #AEF1AE'>fixedParams ++ sm.args</span><span style=''>
+</span>152 <span style=''>    </span><span style='background: #AEF1AE'>allCatch.either(sm.jsVar.call(&quot;apply&quot;, args:_*))</span><span style=''>
+</span>153 <span style=''>  }
+</span>154 <span style=''>
+</span>155 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          5546
+        </td>
+        <td>
+          1123
+          -
+          1141
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.FeatureDefinition.feature
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.definition.feature
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          5551
+        </td>
+        <td>
+          1109
+          -
+          1223
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.FeatureResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FeatureResult.apply(AbstractExecutableFeature.this.definition.feature, scala.collection.JavaConverters.asScalaBufferConverter[gherkin.ast.ScenarioDefinition](AbstractExecutableFeature.this.definition.feature.getChildren()).asScala.map[com.atomist.rug.test.gherkin.ScenarioResult, Seq[com.atomist.rug.test.gherkin.ScenarioResult]]({
+  ((scenario: gherkin.ast.ScenarioDefinition) =&gt; AbstractExecutableFeature.this.executeScenario(scenario))
+})(mutable.this.Buffer.canBuildFrom[com.atomist.rug.test.gherkin.ScenarioResult]))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5547
+        </td>
+        <td>
+          1149
+          -
+          1179
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Feature.getChildren
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.definition.feature.getChildren()
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          5550
+        </td>
+        <td>
+          1149
+          -
+          1217
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[gherkin.ast.ScenarioDefinition](AbstractExecutableFeature.this.definition.feature.getChildren()).asScala.map[com.atomist.rug.test.gherkin.ScenarioResult, Seq[com.atomist.rug.test.gherkin.ScenarioResult]]({
+  ((scenario: gherkin.ast.ScenarioDefinition) =&gt; AbstractExecutableFeature.this.executeScenario(scenario))
+})(mutable.this.Buffer.canBuildFrom[com.atomist.rug.test.gherkin.ScenarioResult])
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          5549
+        </td>
+        <td>
+          1200
+          -
+          1200
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Buffer.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Buffer.canBuildFrom[com.atomist.rug.test.gherkin.ScenarioResult]
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          5548
+        </td>
+        <td>
+          1201
+          -
+          1216
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AbstractExecutableFeature.executeScenario
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.executeScenario(scenario)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          5553
+        </td>
+        <td>
+          1460
+          -
+          1507
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.listeners.foreach[Unit](((x$1: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$1.scenarioStarting(scenario)))
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          5552
+        </td>
+        <td>
+          1478
+          -
+          1506
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinExecutionListener.scenarioStarting
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.scenarioStarting(scenario)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          5554
+        </td>
+        <td>
+          1524
+          -
+          1548
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AbstractExecutableFeature.createWorldForScenario
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.createWorldForScenario()
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          5586
+        </td>
+        <td>
+          1637
+          -
+          1637
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Buffer.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Buffer.canBuildFrom[com.atomist.rug.test.gherkin.AssertionResult]
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          5555
+        </td>
+        <td>
+          1604
+          -
+          1621
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.ScenarioDefinition.getSteps
+        </td>
+        <td style="background: #AEF1AE">
+          scenario.getSteps()
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          5587
+        </td>
+        <td>
+          1604
+          -
+          2437
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[gherkin.ast.Step](scenario.getSteps()).asScala.flatMap[com.atomist.rug.test.gherkin.AssertionResult, Seq[com.atomist.rug.test.gherkin.AssertionResult]](((step: gherkin.ast.Step) =&gt; {
+  AbstractExecutableFeature.this.listeners.foreach[Unit](((x$2: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$2.stepStarting(step)));
+  val result: Option[com.atomist.rug.test.gherkin.AssertionResult] = step.getKeyword() match {
+    case &quot;Given &quot; if world.aborted.unary_! =&gt; AbstractExecutableFeature.this.runGiven(world, step)
+    case &quot;When &quot; if world.aborted.unary_! =&gt; AbstractExecutableFeature.this.runWhen(world, step)
+    case &quot;Then &quot; if step.getText().==(&quot;the scenario aborted&quot;) =&gt; scala.Some.apply[com.atomist.rug.test.gherkin.AssertionResult](AssertionResult.apply(step.getText(), Result.apply(world.aborted, &quot;Scenario aborted&quot;)))
+    case &quot;Then &quot; if world.aborted.unary_! =&gt; scala.Some.apply[com.atomist.rug.test.gherkin.AssertionResult](AbstractExecutableFeature.this.runThen(world, step))
+    case &quot;Then &quot; if world.aborted =&gt; scala.Some.apply[com.atomist.rug.test.gherkin.AssertionResult](AssertionResult.apply(step.getText(), Failed.apply(scala.StringContext.apply(&quot;Scenario aborted: Could not evaluate: [&quot;, &quot;]&quot;).s(world.abortMessage))))
+    case _ =&gt; scala.None
+  };
+  AbstractExecutableFeature.this.listeners.foreach[Unit](((x$3: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$3.stepCompleted(step)));
+  scala.this.Option.option2Iterable[com.atomist.rug.test.gherkin.AssertionResult](result)
+}))(mutable.this.Buffer.canBuildFrom[com.atomist.rug.test.gherkin.AssertionResult])
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          5556
+        </td>
+        <td>
+          1674
+          -
+          1694
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinExecutionListener.stepStarting
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.stepStarting(step)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          5557
+        </td>
+        <td>
+          1656
+          -
+          1695
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.listeners.foreach[Unit](((x$2: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$2.stepStarting(step)))
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          5558
+        </td>
+        <td>
+          1717
+          -
+          1732
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Step.getKeyword
+        </td>
+        <td style="background: #AEF1AE">
+          step.getKeyword()
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          5559
+        </td>
+        <td>
+          1768
+          -
+          1782
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          world.aborted.unary_!
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          5560
+        </td>
+        <td>
+          1798
+          -
+          1819
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AbstractExecutableFeature.runGiven
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.runGiven(world, step)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          5561
+        </td>
+        <td>
+          1846
+          -
+          1860
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          world.aborted.unary_!
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          5562
+        </td>
+        <td>
+          1876
+          -
+          1896
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AbstractExecutableFeature.runWhen
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.runWhen(world, step)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          5563
+        </td>
+        <td>
+          1923
+          -
+          1961
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          step.getText().==(&quot;the scenario aborted&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5565
+        </td>
+        <td>
+          2019
+          -
+          2032
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.aborted
+        </td>
+        <td style="background: #AEF1AE">
+          world.aborted
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5568
+        </td>
+        <td>
+          1982
+          -
+          2054
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AssertionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          AssertionResult.apply(step.getText(), Result.apply(world.aborted, &quot;Scenario aborted&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5564
+        </td>
+        <td>
+          1998
+          -
+          2010
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Step.getText
+        </td>
+        <td style="background: #AEF1AE">
+          step.getText()
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5567
+        </td>
+        <td>
+          2012
+          -
+          2053
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Result.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Result.apply(world.aborted, &quot;Scenario aborted&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5566
+        </td>
+        <td>
+          2034
+          -
+          2052
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Scenario aborted&quot;
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5569
+        </td>
+        <td>
+          1977
+          -
+          2055
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.test.gherkin.AssertionResult](AssertionResult.apply(step.getText(), Result.apply(world.aborted, &quot;Scenario aborted&quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          5570
+        </td>
+        <td>
+          2082
+          -
+          2096
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          world.aborted.unary_!
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          5572
+        </td>
+        <td>
+          2112
+          -
+          2138
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.test.gherkin.AssertionResult](AbstractExecutableFeature.this.runThen(world, step))
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          5571
+        </td>
+        <td>
+          2117
+          -
+          2137
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AbstractExecutableFeature.runThen
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.runThen(world, step)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          5573
+        </td>
+        <td>
+          2165
+          -
+          2178
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.aborted
+        </td>
+        <td style="background: #AEF1AE">
+          world.aborted
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          5574
+        </td>
+        <td>
+          2215
+          -
+          2227
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Step.getText
+        </td>
+        <td style="background: #AEF1AE">
+          step.getText()
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          5581
+        </td>
+        <td>
+          2194
+          -
+          2317
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.test.gherkin.AssertionResult](AssertionResult.apply(step.getText(), Failed.apply(scala.StringContext.apply(&quot;Scenario aborted: Could not evaluate: [&quot;, &quot;]&quot;).s(world.abortMessage))))
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          5580
+        </td>
+        <td>
+          2199
+          -
+          2316
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AssertionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          AssertionResult.apply(step.getText(), Failed.apply(scala.StringContext.apply(&quot;Scenario aborted: Could not evaluate: [&quot;, &quot;]&quot;).s(world.abortMessage)))
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          5577
+        </td>
+        <td>
+          2293
+          -
+          2311
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.abortMessage
+        </td>
+        <td style="background: #AEF1AE">
+          world.abortMessage
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          5576
+        </td>
+        <td>
+          2312
+          -
+          2314
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          5579
+        </td>
+        <td>
+          2243
+          -
+          2315
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Failed.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Failed.apply(scala.StringContext.apply(&quot;Scenario aborted: Could not evaluate: [&quot;, &quot;]&quot;).s(world.abortMessage))
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          5575
+        </td>
+        <td>
+          2252
+          -
+          2292
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Scenario aborted: Could not evaluate: [&quot;
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          5578
+        </td>
+        <td>
+          2250
+          -
+          2314
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Scenario aborted: Could not evaluate: [&quot;, &quot;]&quot;).s(world.abortMessage)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          5582
+        </td>
+        <td>
+          2350
+          -
+          2354
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          5583
+        </td>
+        <td>
+          2391
+          -
+          2412
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinExecutionListener.stepCompleted
+        </td>
+        <td style="background: #AEF1AE">
+          x$3.stepCompleted(step)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          5584
+        </td>
+        <td>
+          2373
+          -
+          2413
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.listeners.foreach[Unit](((x$3: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$3.stepCompleted(step)))
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          5585
+        </td>
+        <td>
+          2422
+          -
+          2428
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[com.atomist.rug.test.gherkin.AssertionResult](result)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          5588
+        </td>
+        <td>
+          2451
+          -
+          2497
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ScenarioResult.apply(scenario, assertionResults, &quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          5590
+        </td>
+        <td>
+          2502
+          -
+          2554
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.listeners.foreach[Unit](((x$4: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$4.scenarioCompleted(scenario, sr)))
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          5589
+        </td>
+        <td>
+          2520
+          -
+          2553
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinExecutionListener.scenarioCompleted
+        </td>
+        <td style="background: #AEF1AE">
+          x$4.scenarioCompleted(scenario, sr)
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          5592
+        </td>
+        <td>
+          2659
+          -
+          2692
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Definitions.thenFor
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.definitions.thenFor(step.getText())
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          5591
+        </td>
+        <td>
+          2679
+          -
+          2691
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Step.getText
+        </td>
+        <td style="background: #AEF1AE">
+          step.getText()
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          5593
+        </td>
+        <td>
+          2810
+          -
+          2840
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AbstractExecutableFeature.callFunction
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.callFunction(stepMatch, world)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          5595
+        </td>
+        <td>
+          2954
+          -
+          2955
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Predef.Boolean2boolean
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Boolean2boolean(b)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          5594
+        </td>
+        <td>
+          2933
+          -
+          2945
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Step.getText
+        </td>
+        <td style="background: #AEF1AE">
+          step.getText()
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          5597
+        </td>
+        <td>
+          2947
+          -
+          2982
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Result.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Result.apply(scala.this.Predef.Boolean2boolean(b), stepMatch.jsVar.toString())
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          5596
+        </td>
+        <td>
+          2957
+          -
+          2981
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.toString
+        </td>
+        <td style="background: #AEF1AE">
+          stepMatch.jsVar.toString()
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          5598
+        </td>
+        <td>
+          2917
+          -
+          2983
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AssertionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          AssertionResult.apply(step.getText(), Result.apply(scala.this.Predef.Boolean2boolean(b), stepMatch.jsVar.toString()))
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          5599
+        </td>
+        <td>
+          3059
+          -
+          3121
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty(rsom, &quot;result&quot;, &quot;false&quot;).==(&quot;true&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          5601
+        </td>
+        <td>
+          3179
+          -
+          3259
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty(rsom, &quot;message&quot;, &quot;Detailed information unavailable&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          5603
+        </td>
+        <td>
+          3134
+          -
+          3261
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AssertionResult.apply
+        </td>
+        <td style="background: #F0ADAD">
+          AssertionResult.apply(step.getText(), Result.apply(result, com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty(rsom, &quot;message&quot;, &quot;Detailed information unavailable&quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          5600
+        </td>
+        <td>
+          3150
+          -
+          3162
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Step.getText
+        </td>
+        <td style="background: #F0ADAD">
+          step.getText()
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          5602
+        </td>
+        <td>
+          3164
+          -
+          3260
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Result.apply
+        </td>
+        <td style="background: #F0ADAD">
+          Result.apply(result, com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty(rsom, &quot;message&quot;, &quot;Detailed information unavailable&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          5604
+        </td>
+        <td>
+          3289
+          -
+          3322
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.isUndefined
+        </td>
+        <td style="background: #AEF1AE">
+          jdk.nashorn.api.scripting.ScriptObjectMirror.isUndefined(r)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          5606
+        </td>
+        <td>
+          3507
+          -
+          3511
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          5609
+        </td>
+        <td>
+          3466
+          -
+          3539
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AssertionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          AssertionResult.apply(step.getText(), Result.apply(true, stepMatch.jsVar.toString()))
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          5608
+        </td>
+        <td>
+          3496
+          -
+          3538
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Result.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Result.apply(true, stepMatch.jsVar.toString())
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          5605
+        </td>
+        <td>
+          3482
+          -
+          3494
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Step.getText
+        </td>
+        <td style="background: #AEF1AE">
+          step.getText()
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          5607
+        </td>
+        <td>
+          3513
+          -
+          3537
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.toString
+        </td>
+        <td style="background: #AEF1AE">
+          stepMatch.jsVar.toString()
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          5610
+        </td>
+        <td>
+          3581
+          -
+          3671
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Unexpected result from Then \'&quot;, &quot;\': &quot;, &quot;&quot;).s(step.getText(), wtf))
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          5613
+        </td>
+        <td>
+          3740
+          -
+          3760
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Failed.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Failed.apply(t.getMessage())
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          5612
+        </td>
+        <td>
+          3747
+          -
+          3759
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Throwable.getMessage
+        </td>
+        <td style="background: #AEF1AE">
+          t.getMessage()
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          5611
+        </td>
+        <td>
+          3726
+          -
+          3738
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Step.getText
+        </td>
+        <td style="background: #AEF1AE">
+          step.getText()
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          5614
+        </td>
+        <td>
+          3710
+          -
+          3761
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AssertionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          AssertionResult.apply(step.getText(), Failed.apply(t.getMessage()))
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          5619
+        </td>
+        <td>
+          3829
+          -
+          3870
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.NotYetImplemented.apply
+        </td>
+        <td style="background: #AEF1AE">
+          NotYetImplemented.apply(&quot;Then &quot;.+(step.getText()))
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          5615
+        </td>
+        <td>
+          3815
+          -
+          3827
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Step.getText
+        </td>
+        <td style="background: #AEF1AE">
+          step.getText()
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          5618
+        </td>
+        <td>
+          3847
+          -
+          3869
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Then &quot;.+(step.getText())
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          5617
+        </td>
+        <td>
+          3857
+          -
+          3869
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Step.getText
+        </td>
+        <td style="background: #AEF1AE">
+          step.getText()
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          5620
+        </td>
+        <td>
+          3799
+          -
+          3871
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AssertionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          AssertionResult.apply(step.getText(), NotYetImplemented.apply(&quot;Then &quot;.+(step.getText())))
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          5616
+        </td>
+        <td>
+          3847
+          -
+          3854
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Then &quot;
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          5621
+        </td>
+        <td>
+          4003
+          -
+          4015
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Step.getText
+        </td>
+        <td style="background: #AEF1AE">
+          step.getText()
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          5622
+        </td>
+        <td>
+          3983
+          -
+          4016
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Definitions.whenFor
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.definitions.whenFor(step.getText())
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          5623
+        </td>
+        <td>
+          4120
+          -
+          4144
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AbstractExecutableFeature.callFunction
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.callFunction(som, world)
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          5624
+        </td>
+        <td>
+          4239
+          -
+          4262
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinExecutionListener.stepFailed
+        </td>
+        <td style="background: #F0ADAD">
+          x$5.stepFailed(step, ipe)
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          5625
+        </td>
+        <td>
+          4221
+          -
+          4263
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          AbstractExecutableFeature.this.listeners.foreach[Unit](((x$5: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$5.stepFailed(step, ipe)))
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          5626
+        </td>
+        <td>
+          4276
+          -
+          4307
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.logInvalidParameters
+        </td>
+        <td style="background: #F0ADAD">
+          world.logInvalidParameters(ipe)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          5627
+        </td>
+        <td>
+          4320
+          -
+          4324
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          5628
+        </td>
+        <td>
+          4376
+          -
+          4380
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          5630
+        </td>
+        <td>
+          4362
+          -
+          4435
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          e.getCause().!=(null).&amp;&amp;(e.getCause().isInstanceOf[com.atomist.project.common.InvalidParametersException])
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          5629
+        </td>
+        <td>
+          4384
+          -
+          4435
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.isInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          e.getCause().isInstanceOf[com.atomist.project.common.InvalidParametersException]
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          5633
+        </td>
+        <td>
+          4497
+          -
+          4587
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.listeners.foreach[Unit](((x$6: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$6.stepFailed(step, e.getCause().asInstanceOf[com.atomist.project.common.InvalidParametersException])))
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          5632
+        </td>
+        <td>
+          4515
+          -
+          4586
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinExecutionListener.stepFailed
+        </td>
+        <td style="background: #AEF1AE">
+          x$6.stepFailed(step, e.getCause().asInstanceOf[com.atomist.project.common.InvalidParametersException])
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          5631
+        </td>
+        <td>
+          4534
+          -
+          4585
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          e.getCause().asInstanceOf[com.atomist.project.common.InvalidParametersException]
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          5635
+        </td>
+        <td>
+          4600
+          -
+          4679
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.logInvalidParameters
+        </td>
+        <td style="background: #AEF1AE">
+          world.logInvalidParameters(e.getCause().asInstanceOf[com.atomist.project.common.InvalidParametersException])
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          5634
+        </td>
+        <td>
+          4627
+          -
+          4678
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          e.getCause().asInstanceOf[com.atomist.project.common.InvalidParametersException]
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          5636
+        </td>
+        <td>
+          4692
+          -
+          4696
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          5637
+        </td>
+        <td>
+          4753
+          -
+          4774
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinExecutionListener.stepFailed
+        </td>
+        <td style="background: #F0ADAD">
+          x$7.stepFailed(step, t)
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          5638
+        </td>
+        <td>
+          4735
+          -
+          4775
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.listeners.foreach[Unit](((x$7: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$7.stepFailed(step, t)))
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          5639
+        </td>
+        <td>
+          4842
+          -
+          4854
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Throwable.getMessage
+        </td>
+        <td style="background: #AEF1AE">
+          t.getMessage()
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          5640
+        </td>
+        <td>
+          4830
+          -
+          4855
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.abort
+        </td>
+        <td style="background: #AEF1AE">
+          world.abort(t.getMessage())
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          5641
+        </td>
+        <td>
+          4868
+          -
+          4872
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          5642
+        </td>
+        <td>
+          4905
+          -
+          4909
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          5646
+        </td>
+        <td>
+          5000
+          -
+          5022
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;When &quot;.+(step.getText())
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          5645
+        </td>
+        <td>
+          5010
+          -
+          5022
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Step.getText
+        </td>
+        <td style="background: #AEF1AE">
+          step.getText()
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          5648
+        </td>
+        <td>
+          4952
+          -
+          5024
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AssertionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          AssertionResult.apply(step.getText(), NotYetImplemented.apply(&quot;When &quot;.+(step.getText())))
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          5644
+        </td>
+        <td>
+          5000
+          -
+          5007
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;When &quot;
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          5647
+        </td>
+        <td>
+          4982
+          -
+          5023
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.NotYetImplemented.apply
+        </td>
+        <td style="background: #AEF1AE">
+          NotYetImplemented.apply(&quot;When &quot;.+(step.getText()))
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          5649
+        </td>
+        <td>
+          4947
+          -
+          5025
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.test.gherkin.AssertionResult](AssertionResult.apply(step.getText(), NotYetImplemented.apply(&quot;When &quot;.+(step.getText()))))
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          5643
+        </td>
+        <td>
+          4968
+          -
+          4980
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Step.getText
+        </td>
+        <td style="background: #AEF1AE">
+          step.getText()
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          5651
+        </td>
+        <td>
+          5138
+          -
+          5172
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Definitions.givenFor
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.definitions.givenFor(step.getText())
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          5650
+        </td>
+        <td>
+          5159
+          -
+          5171
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Step.getText
+        </td>
+        <td style="background: #AEF1AE">
+          step.getText()
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          5652
+        </td>
+        <td>
+          5277
+          -
+          5301
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AbstractExecutableFeature.callFunction
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractExecutableFeature.this.callFunction(som, world)
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          5654
+        </td>
+        <td>
+          5348
+          -
+          5373
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.abort
+        </td>
+        <td style="background: #F0ADAD">
+          world.abort(t.getMessage())
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          5653
+        </td>
+        <td>
+          5360
+          -
+          5372
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Throwable.getMessage
+        </td>
+        <td style="background: #F0ADAD">
+          t.getMessage()
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          5655
+        </td>
+        <td>
+          5404
+          -
+          5425
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinExecutionListener.stepFailed
+        </td>
+        <td style="background: #F0ADAD">
+          x$8.stepFailed(step, t)
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          5656
+        </td>
+        <td>
+          5386
+          -
+          5426
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          AbstractExecutableFeature.this.listeners.foreach[Unit](((x$8: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$8.stepFailed(step, t)))
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          5657
+        </td>
+        <td>
+          5481
+          -
+          5485
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          5658
+        </td>
+        <td>
+          5518
+          -
+          5522
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          5664
+        </td>
+        <td>
+          5565
+          -
+          5638
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AssertionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          AssertionResult.apply(step.getText(), NotYetImplemented.apply(&quot;Given &quot;.+(step.getText())))
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          5663
+        </td>
+        <td>
+          5595
+          -
+          5637
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.NotYetImplemented.apply
+        </td>
+        <td style="background: #AEF1AE">
+          NotYetImplemented.apply(&quot;Given &quot;.+(step.getText()))
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          5660
+        </td>
+        <td>
+          5613
+          -
+          5621
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Given &quot;
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          5659
+        </td>
+        <td>
+          5581
+          -
+          5593
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Step.getText
+        </td>
+        <td style="background: #AEF1AE">
+          step.getText()
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          5662
+        </td>
+        <td>
+          5613
+          -
+          5636
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Given &quot;.+(step.getText())
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          5665
+        </td>
+        <td>
+          5560
+          -
+          5639
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.test.gherkin.AssertionResult](AssertionResult.apply(step.getText(), NotYetImplemented.apply(&quot;Given &quot;.+(step.getText()))))
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          5661
+        </td>
+        <td>
+          5624
+          -
+          5636
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.Step.getText
+        </td>
+        <td style="background: #AEF1AE">
+          step.getText()
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          5666
+        </td>
+        <td>
+          5877
+          -
+          5889
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.target
+        </td>
+        <td style="background: #AEF1AE">
+          world.target
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          5668
+        </td>
+        <td>
+          5926
+          -
+          5975
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy(gn, world.typeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          5667
+        </td>
+        <td>
+          5956
+          -
+          5974
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ScenarioWorld.typeRegistry
+        </td>
+        <td style="background: #AEF1AE">
+          world.typeRegistry
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          5669
+        </td>
+        <td>
+          6137
+          -
+          6147
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.test.gherkin.ScenarioWorld](world)
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          5670
+        </td>
+        <td>
+          6164
+          -
+          6182
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[AnyRef](target, world)
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          5673
+        </td>
+        <td>
+          6204
+          -
+          6226
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          fixedParams.++[AnyRef, Seq[AnyRef]](sm.args)(collection.this.Seq.canBuildFrom[AnyRef])
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          5672
+        </td>
+        <td>
+          6216
+          -
+          6216
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          5671
+        </td>
+        <td>
+          6219
+          -
+          6226
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.StepMatch.args
+        </td>
+        <td style="background: #AEF1AE">
+          sm.args
+        </td>
+      </tr><tr>
+        <td>
+          152
+        </td>
+        <td>
+          5675
+        </td>
+        <td>
+          6247
+          -
+          6278
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.call
+        </td>
+        <td style="background: #AEF1AE">
+          sm.jsVar.call(&quot;apply&quot;, (args: _*))
+        </td>
+      </tr><tr>
+        <td>
+          152
+        </td>
+        <td>
+          5674
+        </td>
+        <td>
+          6261
+          -
+          6268
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;apply&quot;
+        </td>
+      </tr><tr>
+        <td>
+          152
+        </td>
+        <td>
+          5676
+        </td>
+        <td>
+          6231
+          -
+          6279
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.control.Exception.Catch.either
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.control.Exception.allCatch[Nothing].either[Object](sm.jsVar.call(&quot;apply&quot;, (args: _*)))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

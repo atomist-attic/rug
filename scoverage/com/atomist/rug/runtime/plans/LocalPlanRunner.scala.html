@@ -1,0 +1,3442 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/plans/LocalPlanRunner.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.plans
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.spi.Handlers.Instruction.Respond
+</span>4 <span style=''>import com.atomist.rug.spi.Handlers.Status.{Failure, Success}
+</span>5 <span style=''>import com.atomist.rug.spi.Handlers._
+</span>6 <span style=''>import org.slf4j.{Logger, LoggerFactory}
+</span>7 <span style=''>
+</span>8 <span style=''>import scala.concurrent.ExecutionContext.Implicits.global
+</span>9 <span style=''>import scala.concurrent.Future
+</span>10 <span style=''>import scala.util.{Try, Failure =&gt; ScalaFailure, Success =&gt; ScalaSuccess}
+</span>11 <span style=''>
+</span>12 <span style=''>/**
+</span>13 <span style=''>  * Runs Plans in this JVM - i.e. no work distribution.
+</span>14 <span style=''>  */
+</span>15 <span style=''>class LocalPlanRunner(messageDeliverer: MessageDeliverer,
+</span>16 <span style=''>                      instructionRunner: InstructionRunner,
+</span>17 <span style=''>                      nestedPlanRunner: Option[PlanRunner] = None,
+</span>18 <span style=''>                      loggerOption: Option[Logger] = None) extends PlanRunner {
+</span>19 <span style=''>
+</span>20 <span style=''>  private val logger: Logger = </span><span style='background: #AEF1AE'>loggerOption.getOrElse(LoggerFactory getLogger getClass.getName)</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>  override def run(plan: Plan, callbackInput: Option[Response]): Future[PlanResult] = {
+</span>23 <span style=''>    val allMessages = </span><span style='background: #AEF1AE'>plan.lifecycle ++ plan.local</span><span style=''>
+</span>24 <span style=''>    val messageLog: Seq[MessageDeliveryError] = </span><span style='background: #AEF1AE'>allMessages.flatMap { message =&gt;
+</span>25 <span style=''></span><span style='background: #AEF1AE'>      if (plan.returningRug.nonEmpty) {
+</span>26 <span style=''></span><span style='background: #AEF1AE'>        Try(messageDeliverer.deliver(plan.returningRug.get, message, callbackInput)) match {
+</span>27 <span style=''></span><span style='background: #AEF1AE'>          case ScalaFailure(error) =&gt;
+</span>28 <span style=''></span><span style='background: #AEF1AE'>            val msg = s&quot;Failed to deliver message ${message.toDisplay} - ${error.getMessage}&quot;
+</span>29 <span style=''></span><span style='background: #AEF1AE'>            logger.error(msg, error)
+</span>30 <span style=''></span><span style='background: #AEF1AE'>            Some(MessageDeliveryError(message, error))
+</span>31 <span style=''></span><span style='background: #AEF1AE'>          case ScalaSuccess(_) =&gt;
+</span>32 <span style=''></span><span style='background: #AEF1AE'>            val msg = s&quot;Delivered message ${message.toDisplay}&quot;
+</span>33 <span style=''></span><span style='background: #AEF1AE'>            logger.debug(msg)
+</span>34 <span style=''></span><span style='background: #AEF1AE'>            None
+</span>35 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>36 <span style=''></span><span style='background: #AEF1AE'>      } else </span><span style='background: #F0ADAD'>{
+</span>37 <span style=''></span><span style='background: #F0ADAD'>        val msg = s&quot;Failed to deliver message ${message.toDisplay} - current Rug not available for dependency resolution&quot;
+</span>38 <span style=''></span><span style='background: #F0ADAD'>        logger.error(msg)
+</span>39 <span style=''></span><span style='background: #F0ADAD'>        None
+</span>40 <span style=''></span><span style='background: #F0ADAD'>      }</span><span style='background: #AEF1AE'>
+</span>41 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>42 <span style=''>    val instructionResponseFutures: Seq[Future[Iterable[PlanLogEvent]]] = </span><span style='background: #AEF1AE'>plan.instructions.map { respondable =&gt;
+</span>43 <span style=''></span><span style='background: #AEF1AE'>      val instruction = handleInstruction(plan, respondable, callbackInput)
+</span>44 <span style=''></span><span style='background: #AEF1AE'>      Future {
+</span>45 <span style=''></span><span style='background: #AEF1AE'>        instruction
+</span>46 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>47 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>48 <span style=''>    val futureInstructionLog: Future[Seq[PlanLogEvent]] = </span><span style='background: #AEF1AE'>Future.fold(instructionResponseFutures)(Seq[PlanLogEvent]())(_ ++ _)</span><span style=''>
+</span>49 <span style=''>    </span><span style='background: #AEF1AE'>futureInstructionLog.map(instructionLogEvents =&gt; PlanResult(messageLog ++ instructionLogEvents))</span><span style=''>
+</span>50 <span style=''>  }
+</span>51 <span style=''>
+</span>52 <span style=''>  private def handleInstruction(currentPlan: Plan, plannable: Plannable, callbackInput: Option[Response]): Seq[PlanLogEvent] = {
+</span>53 <span style=''>    </span><span style='background: #AEF1AE'>Try {
+</span>54 <span style=''></span><span style='background: #AEF1AE'>      instructionRunner.run(plannable.instruction, callbackInput)
+</span>55 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''> match {
+</span>56 <span style=''>      case ScalaFailure(error) =&gt;
+</span>57 <span style=''>        val msg = </span><span style='background: #AEF1AE'>s&quot;Failed to run ${plannable.toDisplay} - ${error.getMessage}&quot;</span><span style=''>
+</span>58 <span style=''>        </span><span style='background: #AEF1AE'>logger.error(msg, error)</span><span style=''>
+</span>59 <span style=''>        </span><span style='background: #AEF1AE'>Seq(InstructionError(plannable.instruction, error))</span><span style=''>
+</span>60 <span style=''>      case ScalaSuccess(response) =&gt;
+</span>61 <span style=''>        val msg = </span><span style='background: #AEF1AE'>s&quot;Ran ${plannable.toDisplay} and then ${response.toDisplay}&quot;</span><span style=''>
+</span>62 <span style=''>        </span><span style='background: #AEF1AE'>logger.debug(msg)</span><span style=''>
+</span>63 <span style=''>        val callbackOption: Option[Callback] = plannable match {
+</span>64 <span style=''>          case _: Nonrespondable =&gt;
+</span>65 <span style=''>            response match {
+</span>66 <span style=''>              case Response(Success, _, _, Some(plan: Plan)) =&gt; </span><span style='background: #AEF1AE'>Some(plan)</span><span style=''>
+</span>67 <span style=''>              case _ =&gt; </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>68 <span style=''>            }
+</span>69 <span style=''>          case respondable: Respondable =&gt;
+</span>70 <span style=''>            response match {
+</span>71 <span style=''>              case Response(Success, _, _, _) =&gt; </span><span style='background: #AEF1AE'>respondable.onSuccess</span><span style=''>
+</span>72 <span style=''>              case Response(Failure, _, _, _) =&gt; </span><span style='background: #AEF1AE'>respondable.onFailure</span><span style=''>
+</span>73 <span style=''>            }
+</span>74 <span style=''>        }
+</span>75 <span style=''>        val callbackResults: Option[Seq[PlanLogEvent]] = </span><span style='background: #AEF1AE'>callbackOption.map { callback =&gt;
+</span>76 <span style=''></span><span style='background: #AEF1AE'>          Try(handleCallback(currentPlan, callback, Some(response))) match {
+</span>77 <span style=''></span><span style='background: #AEF1AE'>            case ScalaFailure(error) =&gt;
+</span>78 <span style=''></span><span style='background: #AEF1AE'>              val msg = s&quot;Failed to invoke ${callback.toDisplay} after ${plannable.toDisplay} - ${error.getMessage}&quot;
+</span>79 <span style=''></span><span style='background: #AEF1AE'>              logger.error(msg, error)
+</span>80 <span style=''></span><span style='background: #AEF1AE'>              Seq(CallbackError(callback, error))
+</span>81 <span style=''></span><span style='background: #AEF1AE'>            case ScalaSuccess(nestedPlanExecutionOption) =&gt;
+</span>82 <span style=''></span><span style='background: #AEF1AE'>              val msg = s&quot;Invoked ${callback.toDisplay} after ${plannable.toDisplay}&quot;
+</span>83 <span style=''></span><span style='background: #AEF1AE'>              logger.debug(msg)
+</span>84 <span style=''></span><span style='background: #AEF1AE'>              nestedPlanExecutionOption
+</span>85 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>86 <span style=''></span><span style='background: #AEF1AE'>        }</span><span style=''>
+</span>87 <span style=''>        //ensure handled errors don't return failure https://github.com/atomist/rug/issues/531
+</span>88 <span style=''>        (response, callbackResults, callbackOption) match {
+</span>89 <span style=''>          case (Response(Failure, _, _, _), Some(logs), Some(callback)) if </span><span style='background: #AEF1AE'>!PlanResultInterpreter.hasLogFailure(logs) &amp;&amp; callback.isInstanceOf[Respond]</span><span style=''> =&gt;
+</span>90 <span style=''>            val handled = </span><span style='background: #AEF1AE'>Response(Status.Handled, response.msg, response.code, response.body)</span><span style=''>
+</span>91 <span style=''>            </span><span style='background: #AEF1AE'>Seq(callbackResults, Some(Seq(InstructionResult(plannable.instruction, handled)))).flatten.flatten</span><span style=''>
+</span>92 <span style=''>          case _ =&gt;
+</span>93 <span style=''>            </span><span style='background: #AEF1AE'>Seq(callbackResults, Some(Seq(InstructionResult(plannable.instruction, response)))).flatten.flatten</span><span style=''>
+</span>94 <span style=''>        }
+</span>95 <span style=''>    }
+</span>96 <span style=''>  }
+</span>97 <span style=''>
+</span>98 <span style=''>  private def handleCallback(currentPlan: Plan, callback: Callback, instructionResult: Option[Response]): Seq[PlanLogEvent] = callback match {
+</span>99 <span style=''>    case m: Message =&gt;
+</span>100 <span style=''>      if (</span><span style='background: #AEF1AE'>currentPlan.returningRug.nonEmpty</span><span style=''>) {
+</span>101 <span style=''>        </span><span style='background: #AEF1AE'>Try(messageDeliverer.deliver(currentPlan.returningRug.get, m, instructionResult)) match {
+</span>102 <span style=''></span><span style='background: #AEF1AE'>          case ScalaFailure(error) =&gt;
+</span>103 <span style=''></span><span style='background: #AEF1AE'>            val msg = s&quot;Failed to deliver message ${m.toDisplay} - ${error.getMessage}&quot;
+</span>104 <span style=''></span><span style='background: #AEF1AE'>            logger.error(msg, error)
+</span>105 <span style=''></span><span style='background: #AEF1AE'>          case ScalaSuccess(_) =&gt;
+</span>106 <span style=''></span><span style='background: #AEF1AE'>            val msg = s&quot;Delivered message ${m.toDisplay}&quot;
+</span>107 <span style=''></span><span style='background: #AEF1AE'>            logger.debug(msg)
+</span>108 <span style=''></span><span style='background: #AEF1AE'>        }</span><span style=''>
+</span>109 <span style=''>      } else </span><span style='background: #F0ADAD'>{
+</span>110 <span style=''></span><span style='background: #F0ADAD'>        val msg = s&quot;Failed to deliver message ${m.toDisplay} - current Rug not available for dependency resolution&quot;
+</span>111 <span style=''></span><span style='background: #F0ADAD'>        logger.error(msg)
+</span>112 <span style=''></span><span style='background: #F0ADAD'>      }</span><span style=''>
+</span>113 <span style=''>      </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>114 <span style=''>    case r: Respond =&gt;
+</span>115 <span style=''>      </span><span style='background: #AEF1AE'>handleInstruction(currentPlan, Nonrespondable(r), instructionResult)</span><span style=''>
+</span>116 <span style=''>    case p: Plan =&gt;
+</span>117 <span style=''>      val planResult = </span><span style='background: #AEF1AE'>runNestedPlan(p, instructionResult)</span><span style=''>
+</span>118 <span style=''>      </span><span style='background: #AEF1AE'>Seq(NestedPlanRun(p, planResult))</span><span style=''>
+</span>119 <span style=''>  }
+</span>120 <span style=''>
+</span>121 <span style=''>  private def runNestedPlan(plan: Plan, input: Option[Response] = None) = {
+</span>122 <span style=''>    val planRunner = </span><span style='background: #AEF1AE'>nestedPlanRunner.getOrElse(new LocalPlanRunner(messageDeliverer, instructionRunner, nestedPlanRunner, loggerOption))</span><span style=''>
+</span>123 <span style=''>    </span><span style='background: #AEF1AE'>planRunner.run(plan, input)</span><span style=''>
+</span>124 <span style=''>  }
+</span>125 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          4778
+        </td>
+        <td>
+          786
+          -
+          826
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.LoggerFactory.getLogger
+        </td>
+        <td style="background: #AEF1AE">
+          org.slf4j.LoggerFactory.getLogger(LocalPlanRunner.this.getClass().getName())
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          4777
+        </td>
+        <td>
+          810
+          -
+          826
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getName
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.getClass().getName()
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          4779
+        </td>
+        <td>
+          763
+          -
+          827
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.loggerOption.getOrElse[org.slf4j.Logger](org.slf4j.LoggerFactory.getLogger(LocalPlanRunner.this.getClass().getName()))
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          4781
+        </td>
+        <td>
+          954
+          -
+          954
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.Message with Product with Serializable]
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          4780
+        </td>
+        <td>
+          957
+          -
+          967
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Plan.local
+        </td>
+        <td style="background: #AEF1AE">
+          plan.local
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          4782
+        </td>
+        <td>
+          939
+          -
+          967
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          plan.lifecycle.++[com.atomist.rug.spi.Handlers.Message with Product with Serializable, Seq[com.atomist.rug.spi.Handlers.Message with Product with Serializable]](plan.local)(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.Message with Product with Serializable])
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          4814
+        </td>
+        <td>
+          1016
+          -
+          1750
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          allMessages.flatMap[com.atomist.rug.spi.Handlers.MessageDeliveryError, Seq[com.atomist.rug.spi.Handlers.MessageDeliveryError]](((message: com.atomist.rug.spi.Handlers.Message with Product with Serializable) =&gt; if (plan.returningRug.nonEmpty)
+  scala.util.Try.apply[Unit](LocalPlanRunner.this.messageDeliverer.deliver(plan.returningRug.get, message, callbackInput)) match {
+    case (exception: Throwable)scala.util.Failure[Unit]((error @ _)) =&gt; {
+      val msg: String = scala.StringContext.apply(&quot;Failed to deliver message &quot;, &quot; - &quot;, &quot;&quot;).s(message.toDisplay, error.getMessage());
+      LocalPlanRunner.this.logger.error(msg, error);
+      scala.this.Option.option2Iterable[com.atomist.rug.spi.Handlers.MessageDeliveryError](scala.Some.apply[com.atomist.rug.spi.Handlers.MessageDeliveryError](com.atomist.rug.spi.Handlers.MessageDeliveryError.apply(message, error)))
+    }
+    case (value: Unit)scala.util.Success[Unit](_) =&gt; {
+      val msg: String = scala.StringContext.apply(&quot;Delivered message &quot;, &quot;&quot;).s(message.toDisplay);
+      LocalPlanRunner.this.logger.debug(msg);
+      scala.this.Option.option2Iterable[Nothing](scala.None)
+    }
+  }
+else
+  {
+    val msg: String = scala.StringContext.apply(&quot;Failed to deliver message &quot;, &quot; - current Rug not available for dependency resolution&quot;).s(message.toDisplay);
+    LocalPlanRunner.this.logger.error(msg);
+    scala.this.Option.option2Iterable[Nothing](scala.None)
+  }))(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.MessageDeliveryError])
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          4813
+        </td>
+        <td>
+          1036
+          -
+          1036
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.MessageDeliveryError]
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          4783
+        </td>
+        <td>
+          1059
+          -
+          1085
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          plan.returningRug.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          4784
+        </td>
+        <td>
+          1126
+          -
+          1147
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #AEF1AE">
+          plan.returningRug.get
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          4786
+        </td>
+        <td>
+          1097
+          -
+          1173
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.Try.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Try.apply[Unit](LocalPlanRunner.this.messageDeliverer.deliver(plan.returningRug.get, message, callbackInput))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          4804
+        </td>
+        <td>
+          1097
+          -
+          1560
+        </td>
+        <td>
+          Match
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Try.apply[Unit](LocalPlanRunner.this.messageDeliverer.deliver(plan.returningRug.get, message, callbackInput)) match {
+  case (exception: Throwable)scala.util.Failure[Unit]((error @ _)) =&gt; {
+    val msg: String = scala.StringContext.apply(&quot;Failed to deliver message &quot;, &quot; - &quot;, &quot;&quot;).s(message.toDisplay, error.getMessage());
+    LocalPlanRunner.this.logger.error(msg, error);
+    scala.this.Option.option2Iterable[com.atomist.rug.spi.Handlers.MessageDeliveryError](scala.Some.apply[com.atomist.rug.spi.Handlers.MessageDeliveryError](com.atomist.rug.spi.Handlers.MessageDeliveryError.apply(message, error)))
+  }
+  case (value: Unit)scala.util.Success[Unit](_) =&gt; {
+    val msg: String = scala.StringContext.apply(&quot;Delivered message &quot;, &quot;&quot;).s(message.toDisplay);
+    LocalPlanRunner.this.logger.debug(msg);
+    scala.this.Option.option2Iterable[Nothing](scala.None)
+  }
+}
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          4785
+        </td>
+        <td>
+          1101
+          -
+          1172
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.MessageDeliverer.deliver
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.messageDeliverer.deliver(plan.returningRug.get, message, callbackInput)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          4790
+        </td>
+        <td>
+          1272
+          -
+          1289
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Callback.toDisplay
+        </td>
+        <td style="background: #AEF1AE">
+          message.toDisplay
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          4787
+        </td>
+        <td>
+          1244
+          -
+          1271
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Failed to deliver message &quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          4789
+        </td>
+        <td>
+          1312
+          -
+          1313
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          4792
+        </td>
+        <td>
+          1242
+          -
+          1313
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Failed to deliver message &quot;, &quot; - &quot;, &quot;&quot;).s(message.toDisplay, error.getMessage())
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          4791
+        </td>
+        <td>
+          1295
+          -
+          1311
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Throwable.getMessage
+        </td>
+        <td style="background: #AEF1AE">
+          error.getMessage()
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          4788
+        </td>
+        <td>
+          1290
+          -
+          1294
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; - &quot;
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          4793
+        </td>
+        <td>
+          1326
+          -
+          1350
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.error
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.logger.error(msg, error)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          4796
+        </td>
+        <td>
+          1363
+          -
+          1405
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[com.atomist.rug.spi.Handlers.MessageDeliveryError](scala.Some.apply[com.atomist.rug.spi.Handlers.MessageDeliveryError](com.atomist.rug.spi.Handlers.MessageDeliveryError.apply(message, error)))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          4795
+        </td>
+        <td>
+          1363
+          -
+          1405
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.spi.Handlers.MessageDeliveryError](com.atomist.rug.spi.Handlers.MessageDeliveryError.apply(message, error))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          4794
+        </td>
+        <td>
+          1368
+          -
+          1404
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.MessageDeliveryError.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.MessageDeliveryError.apply(message, error)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4799
+        </td>
+        <td>
+          1484
+          -
+          1501
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Callback.toDisplay
+        </td>
+        <td style="background: #AEF1AE">
+          message.toDisplay
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4798
+        </td>
+        <td>
+          1502
+          -
+          1503
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4800
+        </td>
+        <td>
+          1462
+          -
+          1503
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Delivered message &quot;, &quot;&quot;).s(message.toDisplay)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4797
+        </td>
+        <td>
+          1464
+          -
+          1483
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Delivered message &quot;
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          4801
+        </td>
+        <td>
+          1516
+          -
+          1533
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.debug
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.logger.debug(msg)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          4802
+        </td>
+        <td>
+          1546
+          -
+          1550
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          4803
+        </td>
+        <td>
+          1546
+          -
+          1550
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[Nothing](scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4812
+        </td>
+        <td>
+          1574
+          -
+          1744
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  val msg: String = scala.StringContext.apply(&quot;Failed to deliver message &quot;, &quot; - current Rug not available for dependency resolution&quot;).s(message.toDisplay);
+  LocalPlanRunner.this.logger.error(msg);
+  scala.this.Option.option2Iterable[Nothing](scala.None)
+}
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          4805
+        </td>
+        <td>
+          1596
+          -
+          1623
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Failed to deliver message &quot;
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          4808
+        </td>
+        <td>
+          1594
+          -
+          1697
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Failed to deliver message &quot;, &quot; - current Rug not available for dependency resolution&quot;).s(message.toDisplay)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          4807
+        </td>
+        <td>
+          1624
+          -
+          1641
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Callback.toDisplay
+        </td>
+        <td style="background: #F0ADAD">
+          message.toDisplay
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          4806
+        </td>
+        <td>
+          1642
+          -
+          1697
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; - current Rug not available for dependency resolution&quot;
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          4809
+        </td>
+        <td>
+          1706
+          -
+          1723
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.error
+        </td>
+        <td style="background: #F0ADAD">
+          LocalPlanRunner.this.logger.error(msg)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          4811
+        </td>
+        <td>
+          1732
+          -
+          1736
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Option.option2Iterable[Nothing](scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          4810
+        </td>
+        <td>
+          1732
+          -
+          1736
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          4817
+        </td>
+        <td>
+          1847
+          -
+          1847
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[scala.concurrent.Future[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]]]
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          4818
+        </td>
+        <td>
+          1825
+          -
+          1988
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          plan.instructions.map[scala.concurrent.Future[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]], Seq[scala.concurrent.Future[Iterable[com.atomist.rug.spi.Handlers.PlanLogEvent]]]](((respondable: com.atomist.rug.spi.Handlers.Plannable) =&gt; {
+  val instruction: Seq[com.atomist.rug.spi.Handlers.PlanLogEvent] = LocalPlanRunner.this.handleInstruction(plan, respondable, callbackInput);
+  scala.concurrent.Future.apply[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](instruction)(scala.concurrent.ExecutionContext.Implicits.global)
+}))(collection.this.Seq.canBuildFrom[scala.concurrent.Future[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]]])
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          4815
+        </td>
+        <td>
+          1888
+          -
+          1939
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.LocalPlanRunner.handleInstruction
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.handleInstruction(plan, respondable, callbackInput)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          4816
+        </td>
+        <td>
+          1946
+          -
+          1982
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Future.apply[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](instruction)(scala.concurrent.ExecutionContext.Implicits.global)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          4820
+        </td>
+        <td>
+          2110
+          -
+          2110
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.PlanLogEvent]
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          4819
+        </td>
+        <td>
+          2087
+          -
+          2106
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.spi.Handlers.PlanLogEvent]()
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          4822
+        </td>
+        <td>
+          2047
+          -
+          2115
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.fold
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Future.fold[Iterable[com.atomist.rug.spi.Handlers.PlanLogEvent], Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](instructionResponseFutures)(collection.this.Seq.apply[com.atomist.rug.spi.Handlers.PlanLogEvent]())(((x$1: Seq[com.atomist.rug.spi.Handlers.PlanLogEvent], x$2: Iterable[com.atomist.rug.spi.Handlers.PlanLogEvent]) =&gt; x$1.++[com.atomist.rug.spi.Handlers.PlanLogEvent, Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](x$2)(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.PlanLogEvent])))(scala.concurrent.ExecutionContext.Implicits.global)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          4821
+        </td>
+        <td>
+          2108
+          -
+          2114
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.++[com.atomist.rug.spi.Handlers.PlanLogEvent, Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](x$2)(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.PlanLogEvent])
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          4823
+        </td>
+        <td>
+          2191
+          -
+          2191
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.PlanLogEvent]
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          4826
+        </td>
+        <td>
+          2120
+          -
+          2216
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #AEF1AE">
+          futureInstructionLog.map[com.atomist.rug.spi.Handlers.PlanResult](((instructionLogEvents: Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]) =&gt; com.atomist.rug.spi.Handlers.PlanResult.apply(messageLog.++[com.atomist.rug.spi.Handlers.PlanLogEvent, Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](instructionLogEvents)(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.PlanLogEvent]))))(scala.concurrent.ExecutionContext.Implicits.global)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          4825
+        </td>
+        <td>
+          2169
+          -
+          2215
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.PlanResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.PlanResult.apply(messageLog.++[com.atomist.rug.spi.Handlers.PlanLogEvent, Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](instructionLogEvents)(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.PlanLogEvent]))
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          4824
+        </td>
+        <td>
+          2180
+          -
+          2214
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          messageLog.++[com.atomist.rug.spi.Handlers.PlanLogEvent, Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](instructionLogEvents)(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.PlanLogEvent])
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          4829
+        </td>
+        <td>
+          2355
+          -
+          2432
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.Try.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Try.apply[com.atomist.rug.spi.Handlers.Response](LocalPlanRunner.this.instructionRunner.run(plannable.instruction, callbackInput))
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          4828
+        </td>
+        <td>
+          2367
+          -
+          2426
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.InstructionRunner.run
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.instructionRunner.run(plannable.instruction, callbackInput)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          4827
+        </td>
+        <td>
+          2389
+          -
+          2410
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Plannable.instruction
+        </td>
+        <td style="background: #AEF1AE">
+          plannable.instruction
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          4832
+        </td>
+        <td>
+          2553
+          -
+          2554
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          4835
+        </td>
+        <td>
+          2493
+          -
+          2554
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Failed to run &quot;, &quot; - &quot;, &quot;&quot;).s(plannable.toDisplay, error.getMessage())
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          4831
+        </td>
+        <td>
+          2531
+          -
+          2535
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; - &quot;
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          4834
+        </td>
+        <td>
+          2536
+          -
+          2552
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Throwable.getMessage
+        </td>
+        <td style="background: #AEF1AE">
+          error.getMessage()
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          4830
+        </td>
+        <td>
+          2495
+          -
+          2510
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Failed to run &quot;
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          4833
+        </td>
+        <td>
+          2511
+          -
+          2530
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Plannable.toDisplay
+        </td>
+        <td style="background: #AEF1AE">
+          plannable.toDisplay
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          4836
+        </td>
+        <td>
+          2563
+          -
+          2587
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.error
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.logger.error(msg, error)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          4838
+        </td>
+        <td>
+          2600
+          -
+          2646
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.InstructionError.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.InstructionError.apply(plannable.instruction, error)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          4837
+        </td>
+        <td>
+          2617
+          -
+          2638
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Plannable.instruction
+        </td>
+        <td style="background: #AEF1AE">
+          plannable.instruction
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          4839
+        </td>
+        <td>
+          2596
+          -
+          2647
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.spi.Handlers.InstructionError](com.atomist.rug.spi.Handlers.InstructionError.apply(plannable.instruction, error))
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4841
+        </td>
+        <td>
+          2731
+          -
+          2742
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; and then &quot;
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4844
+        </td>
+        <td>
+          2743
+          -
+          2761
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.toDisplay
+        </td>
+        <td style="background: #AEF1AE">
+          response.toDisplay
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4840
+        </td>
+        <td>
+          2705
+          -
+          2710
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Ran &quot;
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4843
+        </td>
+        <td>
+          2711
+          -
+          2730
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Plannable.toDisplay
+        </td>
+        <td style="background: #AEF1AE">
+          plannable.toDisplay
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4842
+        </td>
+        <td>
+          2762
+          -
+          2763
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4845
+        </td>
+        <td>
+          2703
+          -
+          2763
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Ran &quot;, &quot; and then &quot;, &quot;&quot;).s(plannable.toDisplay, response.toDisplay)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          4846
+        </td>
+        <td>
+          2772
+          -
+          2789
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.debug
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.logger.debug(msg)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          4847
+        </td>
+        <td>
+          2984
+          -
+          2994
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.spi.Handlers.Plan](plan)
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          4848
+        </td>
+        <td>
+          3019
+          -
+          3023
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          4849
+        </td>
+        <td>
+          3159
+          -
+          3180
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Respondable.onSuccess
+        </td>
+        <td style="background: #AEF1AE">
+          respondable.onSuccess
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          4850
+        </td>
+        <td>
+          3230
+          -
+          3251
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Respondable.onFailure
+        </td>
+        <td style="background: #AEF1AE">
+          respondable.onFailure
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          4872
+        </td>
+        <td>
+          3333
+          -
+          3928
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.map
+        </td>
+        <td style="background: #AEF1AE">
+          callbackOption.map[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](((callback: com.atomist.rug.spi.Handlers.Callback) =&gt; scala.util.Try.apply[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](LocalPlanRunner.this.handleCallback(currentPlan, callback, scala.Some.apply[com.atomist.rug.spi.Handlers.Response](response))) match {
+  case (exception: Throwable)scala.util.Failure[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]]((error @ _)) =&gt; {
+    val msg: String = scala.StringContext.apply(&quot;Failed to invoke &quot;, &quot; after &quot;, &quot; - &quot;, &quot;&quot;).s(callback.toDisplay, plannable.toDisplay, error.getMessage());
+    LocalPlanRunner.this.logger.error(msg, error);
+    collection.this.Seq.apply[com.atomist.rug.spi.Handlers.CallbackError](com.atomist.rug.spi.Handlers.CallbackError.apply(callback, error))
+  }
+  case (value: Seq[com.atomist.rug.spi.Handlers.PlanLogEvent])scala.util.Success[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]]((nestedPlanExecutionOption @ _)) =&gt; {
+    val msg: String = scala.StringContext.apply(&quot;Invoked &quot;, &quot; after &quot;, &quot;&quot;).s(callback.toDisplay, plannable.toDisplay);
+    LocalPlanRunner.this.logger.debug(msg);
+    nestedPlanExecutionOption
+  }
+}))
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          4853
+        </td>
+        <td>
+          3376
+          -
+          3434
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.Try.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Try.apply[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](LocalPlanRunner.this.handleCallback(currentPlan, callback, scala.Some.apply[com.atomist.rug.spi.Handlers.Response](response)))
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          4852
+        </td>
+        <td>
+          3380
+          -
+          3433
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.LocalPlanRunner.handleCallback
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.handleCallback(currentPlan, callback, scala.Some.apply[com.atomist.rug.spi.Handlers.Response](response))
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          4851
+        </td>
+        <td>
+          3418
+          -
+          3432
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.spi.Handlers.Response](response)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          4859
+        </td>
+        <td>
+          3556
+          -
+          3575
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Plannable.toDisplay
+        </td>
+        <td style="background: #AEF1AE">
+          plannable.toDisplay
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          4856
+        </td>
+        <td>
+          3576
+          -
+          3580
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; - &quot;
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          4855
+        </td>
+        <td>
+          3547
+          -
+          3555
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; after &quot;
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          4858
+        </td>
+        <td>
+          3528
+          -
+          3546
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Callback.toDisplay
+        </td>
+        <td style="background: #AEF1AE">
+          callback.toDisplay
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          4861
+        </td>
+        <td>
+          3507
+          -
+          3599
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Failed to invoke &quot;, &quot; after &quot;, &quot; - &quot;, &quot;&quot;).s(callback.toDisplay, plannable.toDisplay, error.getMessage())
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          4860
+        </td>
+        <td>
+          3581
+          -
+          3597
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Throwable.getMessage
+        </td>
+        <td style="background: #AEF1AE">
+          error.getMessage()
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          4854
+        </td>
+        <td>
+          3509
+          -
+          3527
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Failed to invoke &quot;
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          4857
+        </td>
+        <td>
+          3598
+          -
+          3599
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          4862
+        </td>
+        <td>
+          3614
+          -
+          3638
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.error
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.logger.error(msg, error)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          4864
+        </td>
+        <td>
+          3653
+          -
+          3688
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.spi.Handlers.CallbackError](com.atomist.rug.spi.Handlers.CallbackError.apply(callback, error))
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          4863
+        </td>
+        <td>
+          3657
+          -
+          3687
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.CallbackError.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.CallbackError.apply(callback, error)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          4865
+        </td>
+        <td>
+          3775
+          -
+          3784
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Invoked &quot;
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          4868
+        </td>
+        <td>
+          3785
+          -
+          3803
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Callback.toDisplay
+        </td>
+        <td style="background: #AEF1AE">
+          callback.toDisplay
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          4867
+        </td>
+        <td>
+          3833
+          -
+          3834
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          4870
+        </td>
+        <td>
+          3773
+          -
+          3834
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Invoked &quot;, &quot; after &quot;, &quot;&quot;).s(callback.toDisplay, plannable.toDisplay)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          4869
+        </td>
+        <td>
+          3813
+          -
+          3832
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Plannable.toDisplay
+        </td>
+        <td style="background: #AEF1AE">
+          plannable.toDisplay
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          4866
+        </td>
+        <td>
+          3804
+          -
+          3812
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; after &quot;
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          4871
+        </td>
+        <td>
+          3849
+          -
+          3866
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.debug
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.logger.debug(msg)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          4874
+        </td>
+        <td>
+          4159
+          -
+          4235
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          PlanResultInterpreter.hasLogFailure(logs).unary_!.&amp;&amp;(callback.isInstanceOf[com.atomist.rug.spi.Handlers.Instruction.Respond])
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          4873
+        </td>
+        <td>
+          4205
+          -
+          4235
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.isInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          callback.isInstanceOf[com.atomist.rug.spi.Handlers.Instruction.Respond]
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          4877
+        </td>
+        <td>
+          4304
+          -
+          4317
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.code
+        </td>
+        <td style="background: #AEF1AE">
+          response.code
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          4879
+        </td>
+        <td>
+          4265
+          -
+          4333
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Handled, response.msg, response.code, response.body)
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          4876
+        </td>
+        <td>
+          4290
+          -
+          4302
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.msg
+        </td>
+        <td style="background: #AEF1AE">
+          response.msg
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          4878
+        </td>
+        <td>
+          4319
+          -
+          4332
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.body
+        </td>
+        <td style="background: #AEF1AE">
+          response.body
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          4875
+        </td>
+        <td>
+          4274
+          -
+          4288
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Status.Handled
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Status.Handled
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          4883
+        </td>
+        <td>
+          4367
+          -
+          4427
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Seq[com.atomist.rug.spi.Handlers.InstructionResult]](collection.this.Seq.apply[com.atomist.rug.spi.Handlers.InstructionResult](com.atomist.rug.spi.Handlers.InstructionResult.apply(plannable.instruction, handled)))
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          4886
+        </td>
+        <td>
+          4346
+          -
+          4444
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.generic.GenericTraversableTemplate.flatten
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[Option[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]]](callbackResults, scala.Some.apply[Seq[com.atomist.rug.spi.Handlers.InstructionResult]](collection.this.Seq.apply[com.atomist.rug.spi.Handlers.InstructionResult](com.atomist.rug.spi.Handlers.InstructionResult.apply(plannable.instruction, handled)))).flatten[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]]({
+  ((xo: Option[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]]) =&gt; scala.this.Option.option2Iterable[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](xo))
+}).flatten[com.atomist.rug.spi.Handlers.PlanLogEvent](scala.this.Predef.$conforms[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]])
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          4880
+        </td>
+        <td>
+          4394
+          -
+          4415
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Plannable.instruction
+        </td>
+        <td style="background: #AEF1AE">
+          plannable.instruction
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          4882
+        </td>
+        <td>
+          4372
+          -
+          4426
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.spi.Handlers.InstructionResult](com.atomist.rug.spi.Handlers.InstructionResult.apply(plannable.instruction, handled))
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          4885
+        </td>
+        <td>
+          4437
+          -
+          4437
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.$conforms[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]]
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          4881
+        </td>
+        <td>
+          4376
+          -
+          4425
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.InstructionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.InstructionResult.apply(plannable.instruction, handled)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          4884
+        </td>
+        <td>
+          4429
+          -
+          4429
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](xo)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          4892
+        </td>
+        <td>
+          4569
+          -
+          4569
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.$conforms[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]]
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          4889
+        </td>
+        <td>
+          4503
+          -
+          4558
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.spi.Handlers.InstructionResult](com.atomist.rug.spi.Handlers.InstructionResult.apply(plannable.instruction, response))
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          4888
+        </td>
+        <td>
+          4507
+          -
+          4557
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.InstructionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.InstructionResult.apply(plannable.instruction, response)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          4891
+        </td>
+        <td>
+          4561
+          -
+          4561
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](xo)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          4887
+        </td>
+        <td>
+          4525
+          -
+          4546
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Plannable.instruction
+        </td>
+        <td style="background: #AEF1AE">
+          plannable.instruction
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          4890
+        </td>
+        <td>
+          4498
+          -
+          4559
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Seq[com.atomist.rug.spi.Handlers.InstructionResult]](collection.this.Seq.apply[com.atomist.rug.spi.Handlers.InstructionResult](com.atomist.rug.spi.Handlers.InstructionResult.apply(plannable.instruction, response)))
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          4893
+        </td>
+        <td>
+          4477
+          -
+          4576
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.generic.GenericTraversableTemplate.flatten
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[Option[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]]](callbackResults, scala.Some.apply[Seq[com.atomist.rug.spi.Handlers.InstructionResult]](collection.this.Seq.apply[com.atomist.rug.spi.Handlers.InstructionResult](com.atomist.rug.spi.Handlers.InstructionResult.apply(plannable.instruction, response)))).flatten[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]]({
+  ((xo: Option[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]]) =&gt; scala.this.Option.option2Iterable[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]](xo))
+}).flatten[com.atomist.rug.spi.Handlers.PlanLogEvent](scala.this.Predef.$conforms[Seq[com.atomist.rug.spi.Handlers.PlanLogEvent]])
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          4894
+        </td>
+        <td>
+          4774
+          -
+          4807
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          currentPlan.returningRug.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          4910
+        </td>
+        <td>
+          4819
+          -
+          5203
+        </td>
+        <td>
+          Match
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Try.apply[Unit](LocalPlanRunner.this.messageDeliverer.deliver(currentPlan.returningRug.get, m, instructionResult)) match {
+  case (exception: Throwable)scala.util.Failure[Unit]((error @ _)) =&gt; {
+    val msg: String = scala.StringContext.apply(&quot;Failed to deliver message &quot;, &quot; - &quot;, &quot;&quot;).s(m.toDisplay, error.getMessage());
+    LocalPlanRunner.this.logger.error(msg, error)
+  }
+  case (value: Unit)scala.util.Success[Unit](_) =&gt; {
+    val msg: String = scala.StringContext.apply(&quot;Delivered message &quot;, &quot;&quot;).s(m.toDisplay);
+    LocalPlanRunner.this.logger.debug(msg)
+  }
+}
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          4895
+        </td>
+        <td>
+          4848
+          -
+          4876
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #AEF1AE">
+          currentPlan.returningRug.get
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          4897
+        </td>
+        <td>
+          4819
+          -
+          4900
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.Try.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Try.apply[Unit](LocalPlanRunner.this.messageDeliverer.deliver(currentPlan.returningRug.get, m, instructionResult))
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          4896
+        </td>
+        <td>
+          4823
+          -
+          4899
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.MessageDeliverer.deliver
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.messageDeliverer.deliver(currentPlan.returningRug.get, m, instructionResult)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          4901
+        </td>
+        <td>
+          4999
+          -
+          5010
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Callback.toDisplay
+        </td>
+        <td style="background: #AEF1AE">
+          m.toDisplay
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          4898
+        </td>
+        <td>
+          4971
+          -
+          4998
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Failed to deliver message &quot;
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          4900
+        </td>
+        <td>
+          5033
+          -
+          5034
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          4903
+        </td>
+        <td>
+          4969
+          -
+          5034
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Failed to deliver message &quot;, &quot; - &quot;, &quot;&quot;).s(m.toDisplay, error.getMessage())
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          4902
+        </td>
+        <td>
+          5016
+          -
+          5032
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Throwable.getMessage
+        </td>
+        <td style="background: #AEF1AE">
+          error.getMessage()
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          4899
+        </td>
+        <td>
+          5011
+          -
+          5015
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; - &quot;
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          4904
+        </td>
+        <td>
+          5047
+          -
+          5071
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.error
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.logger.error(msg, error)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          4907
+        </td>
+        <td>
+          5150
+          -
+          5161
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Callback.toDisplay
+        </td>
+        <td style="background: #AEF1AE">
+          m.toDisplay
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          4906
+        </td>
+        <td>
+          5162
+          -
+          5163
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          4905
+        </td>
+        <td>
+          5130
+          -
+          5149
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Delivered message &quot;
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          4908
+        </td>
+        <td>
+          5128
+          -
+          5163
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Delivered message &quot;, &quot;&quot;).s(m.toDisplay)
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          4909
+        </td>
+        <td>
+          5176
+          -
+          5193
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.debug
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.logger.debug(msg)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          4916
+        </td>
+        <td>
+          5217
+          -
+          5368
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  val msg: String = scala.StringContext.apply(&quot;Failed to deliver message &quot;, &quot; - current Rug not available for dependency resolution&quot;).s(m.toDisplay);
+  LocalPlanRunner.this.logger.error(msg)
+}
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          4913
+        </td>
+        <td>
+          5267
+          -
+          5278
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Callback.toDisplay
+        </td>
+        <td style="background: #F0ADAD">
+          m.toDisplay
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          4912
+        </td>
+        <td>
+          5279
+          -
+          5334
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; - current Rug not available for dependency resolution&quot;
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          4911
+        </td>
+        <td>
+          5239
+          -
+          5266
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Failed to deliver message &quot;
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          4914
+        </td>
+        <td>
+          5237
+          -
+          5334
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Failed to deliver message &quot;, &quot; - current Rug not available for dependency resolution&quot;).s(m.toDisplay)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          4915
+        </td>
+        <td>
+          5343
+          -
+          5360
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.error
+        </td>
+        <td style="background: #F0ADAD">
+          LocalPlanRunner.this.logger.error(msg)
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          4917
+        </td>
+        <td>
+          5375
+          -
+          5378
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          4919
+        </td>
+        <td>
+          5408
+          -
+          5476
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.LocalPlanRunner.handleInstruction
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.handleInstruction(currentPlan, com.atomist.rug.spi.Handlers.Nonrespondable.apply(r), instructionResult)
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          4918
+        </td>
+        <td>
+          5439
+          -
+          5456
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Nonrespondable.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Nonrespondable.apply(r)
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          4920
+        </td>
+        <td>
+          5520
+          -
+          5555
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.LocalPlanRunner.runNestedPlan
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.runNestedPlan(p, instructionResult)
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          4922
+        </td>
+        <td>
+          5562
+          -
+          5595
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.spi.Handlers.NestedPlanRun](com.atomist.rug.spi.Handlers.NestedPlanRun.apply(p, planResult))
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          4921
+        </td>
+        <td>
+          5566
+          -
+          5594
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.NestedPlanRun.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.NestedPlanRun.apply(p, planResult)
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          4928
+        </td>
+        <td>
+          5698
+          -
+          5814
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.nestedPlanRunner.getOrElse[com.atomist.rug.runtime.plans.PlanRunner](new LocalPlanRunner(LocalPlanRunner.this.messageDeliverer, LocalPlanRunner.this.instructionRunner, LocalPlanRunner.this.nestedPlanRunner, LocalPlanRunner.this.loggerOption))
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          4924
+        </td>
+        <td>
+          5763
+          -
+          5780
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.LocalPlanRunner.instructionRunner
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.instructionRunner
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          4927
+        </td>
+        <td>
+          5725
+          -
+          5813
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.LocalPlanRunner.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new LocalPlanRunner(LocalPlanRunner.this.messageDeliverer, LocalPlanRunner.this.instructionRunner, LocalPlanRunner.this.nestedPlanRunner, LocalPlanRunner.this.loggerOption)
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          4923
+        </td>
+        <td>
+          5745
+          -
+          5761
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.LocalPlanRunner.messageDeliverer
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.messageDeliverer
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          4926
+        </td>
+        <td>
+          5800
+          -
+          5812
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.LocalPlanRunner.loggerOption
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.loggerOption
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          4925
+        </td>
+        <td>
+          5782
+          -
+          5798
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.LocalPlanRunner.nestedPlanRunner
+        </td>
+        <td style="background: #AEF1AE">
+          LocalPlanRunner.this.nestedPlanRunner
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          4929
+        </td>
+        <td>
+          5819
+          -
+          5846
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.PlanRunner.run
+        </td>
+        <td style="background: #AEF1AE">
+          planRunner.run(plan, input)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

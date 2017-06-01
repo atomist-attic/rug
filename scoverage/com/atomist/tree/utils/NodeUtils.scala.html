@@ -1,0 +1,889 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/utils/NodeUtils.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.utils
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.kind.grammar.ParsedNode
+</span>5 <span style=''>import com.atomist.tree.TreeNode
+</span>6 <span style=''>import com.atomist.tree.content.text.PositionedTreeNode
+</span>7 <span style=''>import org.springframework.util.ReflectionUtils
+</span>8 <span style=''>
+</span>9 <span style=''>import scala.reflect.ClassTag
+</span>10 <span style=''>
+</span>11 <span style=''>/**
+</span>12 <span style=''>  * Convenience methods on GraphNode
+</span>13 <span style=''>  */
+</span>14 <span style=''>object NodeUtils {
+</span>15 <span style=''>
+</span>16 <span style=''>  /**
+</span>17 <span style=''>    * Value of the related node if available, else None
+</span>18 <span style=''>    */
+</span>19 <span style=''>  def keyValue(gn: GraphNode, key: String): Option[String] = {
+</span>20 <span style=''>    </span><span style='background: #AEF1AE'>gn.relatedNodesNamed(key).headOption</span><span style=''> match {
+</span>21 <span style=''>      case Some(tn: TreeNode) =&gt; </span><span style='background: #AEF1AE'>Some(tn.value)</span><span style=''>
+</span>22 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>23 <span style=''>    }
+</span>24 <span style=''>  }
+</span>25 <span style=''>
+</span>26 <span style=''>  /**
+</span>27 <span style=''>    * Throw an exception if this key value cannot be extracted as a string
+</span>28 <span style=''>    * @param customMessage error message to use if desired
+</span>29 <span style=''>    */
+</span>30 <span style=''>  def requiredKeyValue(gn: GraphNode, key: String, customMessage: Option[String] = None): String = {
+</span>31 <span style=''>    </span><span style='background: #AEF1AE'>requiredKey(gn, key, customMessage)</span><span style=''> match {
+</span>32 <span style=''>      case tn: TreeNode =&gt; </span><span style='background: #AEF1AE'>tn.value</span><span style=''>
+</span>33 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(
+</span>34 <span style=''></span><span style='background: #F0ADAD'>        customMessage.getOrElse(s&quot;No key named [$key] on $gn&quot;)
+</span>35 <span style=''></span><span style='background: #F0ADAD'>      )</span><span style=''>
+</span>36 <span style=''>    }
+</span>37 <span style=''>  }
+</span>38 <span style=''>
+</span>39 <span style=''>  def requiredKey(gn: GraphNode, key: String, customMessage: Option[String] = None): GraphNode = {
+</span>40 <span style=''>    </span><span style='background: #AEF1AE'>gn.relatedNodesNamed(key).headOption</span><span style=''> match {
+</span>41 <span style=''>      case Some(gn: GraphNode) =&gt; gn
+</span>42 <span style=''>      case _ =&gt;
+</span>43 <span style=''>        </span><span style='background: #AEF1AE'>gn.followEdge(key).toList</span><span style=''> match {
+</span>44 <span style=''>          case List(n: GraphNode) =&gt; n
+</span>45 <span style=''>          case l =&gt;
+</span>46 <span style=''>            </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(
+</span>47 <span style=''></span><span style='background: #F0ADAD'>              customMessage.getOrElse(s&quot;No single key value named [$key] on $gn: Found $l&quot;)
+</span>48 <span style=''></span><span style='background: #F0ADAD'>            )</span><span style=''>
+</span>49 <span style=''>        }
+</span>50 <span style=''>    }
+</span>51 <span style=''>  }
+</span>52 <span style=''>
+</span>53 <span style=''>  def requiredNodeOfType(gn: GraphNode, tag: String, customMessage: Option[String] = None): GraphNode = {
+</span>54 <span style=''>    </span><span style='background: #AEF1AE'>gn.relatedNodes.find(_.hasTag(tag))</span><span style=''> match {
+</span>55 <span style=''>      case Some(gn: GraphNode) =&gt; gn
+</span>56 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>throw new IllegalArgumentException(
+</span>57 <span style=''></span><span style='background: #AEF1AE'>        customMessage.getOrElse(s&quot;No key with tag [$tag] on $gn&quot;))</span><span style=''>
+</span>58 <span style=''>    }
+</span>59 <span style=''>  }
+</span>60 <span style=''>
+</span>61 <span style=''>  def value(gn: GraphNode): String = gn match {
+</span>62 <span style=''>    case tn: TreeNode =&gt; </span><span style='background: #AEF1AE'>tn.value</span><span style=''>
+</span>63 <span style=''>    case _ =&gt; </span><span style='background: #F0ADAD'>&quot;&quot;</span><span style=''>
+</span>64 <span style=''>  }
+</span>65 <span style=''>
+</span>66 <span style=''>  def positionedValue(gn: Object, in: String): String = gn match {
+</span>67 <span style=''>    case pn: ParsedNode =&gt; </span><span style='background: #AEF1AE'>in.substring(pn.startOffset, pn.endOffset)</span><span style=''>
+</span>68 <span style=''>    case _ =&gt; </span><span style='background: #F0ADAD'>???</span><span style=''>
+</span>69 <span style=''>  }
+</span>70 <span style=''>
+</span>71 <span style=''>  /**
+</span>72 <span style=''>    * Invoke the given method if it exists and returns the appropriate type
+</span>73 <span style=''>    */
+</span>74 <span style=''>  def invokeMethodIfPresent[T](n: GraphNode, methodName: String, args: Seq[String] = Nil)
+</span>75 <span style=''>                              (implicit tag: ClassTag[T]): Option[T] = {
+</span>76 <span style=''>    </span><span style='background: #AEF1AE'>ReflectionUtils.getAllDeclaredMethods(n.getClass).find(
+</span>77 <span style=''></span><span style='background: #AEF1AE'>      m =&gt; m.getName == methodName &amp;&amp; m.getParameterCount == args.size &amp;&amp; {
+</span>78 <span style=''></span><span style='background: #AEF1AE'>        m.getReturnType.isPrimitive || // Let boxing do its magic
+</span>79 <span style=''></span><span style='background: #AEF1AE'>          tag.runtimeClass.isAssignableFrom(m.getReturnType)
+</span>80 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>81 <span style=''></span><span style='background: #AEF1AE'>    )
+</span>82 <span style=''></span><span style='background: #AEF1AE'>      .map(m =&gt; m.invoke(n, args: _*).asInstanceOf[T])</span><span style=''>
+</span>83 <span style=''>  }
+</span>84 <span style=''>
+</span>85 <span style=''>  def hasNoArgMethod[T](n: GraphNode, methodName: String)
+</span>86 <span style=''>                       (implicit tag: ClassTag[T]): Boolean = {
+</span>87 <span style=''>    </span><span style='background: #AEF1AE'>ReflectionUtils.getAllDeclaredMethods(n.getClass).exists(
+</span>88 <span style=''></span><span style='background: #AEF1AE'>      m =&gt; m.getName == methodName &amp;&amp; m.getParameterCount == 0 &amp;&amp; {
+</span>89 <span style=''></span><span style='background: #AEF1AE'>        tag.runtimeClass.isAssignableFrom(m.getReturnType)
+</span>90 <span style=''></span><span style='background: #AEF1AE'>      })</span><span style=''>
+</span>91 <span style=''>  }
+</span>92 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          8643
+        </td>
+        <td>
+          485
+          -
+          521
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #AEF1AE">
+          gn.relatedNodesNamed(key).headOption
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          8645
+        </td>
+        <td>
+          563
+          -
+          577
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](tn.value)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          8644
+        </td>
+        <td>
+          568
+          -
+          576
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.value
+        </td>
+        <td style="background: #AEF1AE">
+          tn.value
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          8646
+        </td>
+        <td>
+          594
+          -
+          598
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          8647
+        </td>
+        <td>
+          862
+          -
+          897
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.NodeUtils.requiredKey
+        </td>
+        <td style="background: #AEF1AE">
+          NodeUtils.this.requiredKey(gn, key, customMessage)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          8648
+        </td>
+        <td>
+          933
+          -
+          941
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.value
+        </td>
+        <td style="background: #AEF1AE">
+          tn.value
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          8649
+        </td>
+        <td>
+          958
+          -
+          1064
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(customMessage.getOrElse[String](scala.StringContext.apply(&quot;No key named [&quot;, &quot;] on &quot;, &quot;&quot;).s(key, gn)))
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          8650
+        </td>
+        <td>
+          1179
+          -
+          1215
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #AEF1AE">
+          gn.relatedNodesNamed(key).headOption
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          8651
+        </td>
+        <td>
+          1285
+          -
+          1310
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toList
+        </td>
+        <td style="background: #AEF1AE">
+          gn.followEdge(key).toList
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          8652
+        </td>
+        <td>
+          1390
+          -
+          1531
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(customMessage.getOrElse[String](scala.StringContext.apply(&quot;No single key value named [&quot;, &quot;] on &quot;, &quot;: Found &quot;, &quot;&quot;).s(key, gn, l)))
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          8654
+        </td>
+        <td>
+          1663
+          -
+          1698
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #AEF1AE">
+          gn.relatedNodes.find(((x$1: com.atomist.graph.GraphNode) =&gt; x$1.hasTag(tag)))
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          8653
+        </td>
+        <td>
+          1684
+          -
+          1697
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.hasTag
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.hasTag(tag)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          8655
+        </td>
+        <td>
+          1760
+          -
+          1862
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new scala.`package`.IllegalArgumentException(customMessage.getOrElse[String](scala.StringContext.apply(&quot;No key with tag [&quot;, &quot;] on &quot;, &quot;&quot;).s(tag, gn)))
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          8656
+        </td>
+        <td>
+          1947
+          -
+          1955
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.value
+        </td>
+        <td style="background: #AEF1AE">
+          tn.value
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          8657
+        </td>
+        <td>
+          1970
+          -
+          1972
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          8660
+        </td>
+        <td>
+          2072
+          -
+          2114
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.substring
+        </td>
+        <td style="background: #AEF1AE">
+          in.substring(pn.startOffset, pn.endOffset)
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          8659
+        </td>
+        <td>
+          2101
+          -
+          2113
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.ParsedNode.endOffset
+        </td>
+        <td style="background: #AEF1AE">
+          pn.endOffset
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          8658
+        </td>
+        <td>
+          2085
+          -
+          2099
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.ParsedNode.startOffset
+        </td>
+        <td style="background: #AEF1AE">
+          pn.startOffset
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          8661
+        </td>
+        <td>
+          2129
+          -
+          2132
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          8663
+        </td>
+        <td>
+          2394
+          -
+          2443
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.springframework.util.ReflectionUtils.getAllDeclaredMethods
+        </td>
+        <td style="background: #AEF1AE">
+          org.springframework.util.ReflectionUtils.getAllDeclaredMethods(n.getClass())
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          8662
+        </td>
+        <td>
+          2432
+          -
+          2442
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.getClass
+        </td>
+        <td style="background: #AEF1AE">
+          n.getClass()
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          8669
+        </td>
+        <td>
+          2461
+          -
+          2652
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          m.getName().==(methodName).&amp;&amp;(m.getParameterCount().==(args.size)).&amp;&amp;(m.getReturnType().isPrimitive().||(tag.runtimeClass.isAssignableFrom(m.getReturnType())))
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          8665
+        </td>
+        <td>
+          2488
+          -
+          2520
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          m.getParameterCount().==(args.size)
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          8664
+        </td>
+        <td>
+          2511
+          -
+          2520
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #AEF1AE">
+          args.size
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          8668
+        </td>
+        <td>
+          2534
+          -
+          2652
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          m.getReturnType().isPrimitive().||(tag.runtimeClass.isAssignableFrom(m.getReturnType()))
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          8666
+        </td>
+        <td>
+          2636
+          -
+          2651
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Method.getReturnType
+        </td>
+        <td style="background: #AEF1AE">
+          m.getReturnType()
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          8667
+        </td>
+        <td>
+          2602
+          -
+          2652
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.isAssignableFrom
+        </td>
+        <td style="background: #AEF1AE">
+          tag.runtimeClass.isAssignableFrom(m.getReturnType())
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          8671
+        </td>
+        <td>
+          2394
+          -
+          2721
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[java.lang.reflect.Method](org.springframework.util.ReflectionUtils.getAllDeclaredMethods(n.getClass())).find(((m: java.lang.reflect.Method) =&gt; m.getName().==(methodName).&amp;&amp;(m.getParameterCount().==(args.size)).&amp;&amp;(m.getReturnType().isPrimitive().||(tag.runtimeClass.isAssignableFrom(m.getReturnType()))))).map[T](((m: java.lang.reflect.Method) =&gt; m.invoke(n, (args: _*)).asInstanceOf[T]))
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          8670
+        </td>
+        <td>
+          2683
+          -
+          2720
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          m.invoke(n, (args: _*)).asInstanceOf[T]
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          8672
+        </td>
+        <td>
+          2891
+          -
+          2901
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.getClass
+        </td>
+        <td style="background: #AEF1AE">
+          n.getClass()
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          8678
+        </td>
+        <td>
+          2853
+          -
+          3046
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.exists
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[java.lang.reflect.Method](org.springframework.util.ReflectionUtils.getAllDeclaredMethods(n.getClass())).exists(((m: java.lang.reflect.Method) =&gt; m.getName().==(methodName).&amp;&amp;(m.getParameterCount().==(0)).&amp;&amp;(tag.runtimeClass.isAssignableFrom(m.getReturnType()))))
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          8673
+        </td>
+        <td>
+          2853
+          -
+          2902
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.springframework.util.ReflectionUtils.getAllDeclaredMethods
+        </td>
+        <td style="background: #AEF1AE">
+          org.springframework.util.ReflectionUtils.getAllDeclaredMethods(n.getClass())
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          8677
+        </td>
+        <td>
+          2922
+          -
+          3037
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          m.getName().==(methodName).&amp;&amp;(m.getParameterCount().==(0)).&amp;&amp;(tag.runtimeClass.isAssignableFrom(m.getReturnType()))
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          8674
+        </td>
+        <td>
+          2949
+          -
+          2973
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          m.getParameterCount().==(0)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          8675
+        </td>
+        <td>
+          3021
+          -
+          3036
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Method.getReturnType
+        </td>
+        <td style="background: #AEF1AE">
+          m.getReturnType()
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          8676
+        </td>
+        <td>
+          2987
+          -
+          3037
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.isAssignableFrom
+        </td>
+        <td style="background: #AEF1AE">
+          tag.runtimeClass.isAssignableFrom(m.getReturnType())
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

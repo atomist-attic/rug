@@ -1,0 +1,2590 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/js/interop/NashornMapBackedGraphNode.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.js.interop
+</span>2 <span style=''>
+</span>3 <span style=''>import java.util.Objects
+</span>4 <span style=''>
+</span>5 <span style=''>import com.atomist.graph.{AddressableGraphNode, GraphNode}
+</span>6 <span style=''>import com.atomist.tree.SimpleTerminalTreeNode
+</span>7 <span style=''>import jdk.nashorn.api.scripting.ScriptObjectMirror
+</span>8 <span style=''>import jdk.nashorn.internal.runtime.ScriptRuntime
+</span>9 <span style=''>
+</span>10 <span style=''>import scala.collection.JavaConverters._
+</span>11 <span style=''>
+</span>12 <span style=''>
+</span>13 <span style=''>object NashornMapBackedGraphNode {
+</span>14 <span style=''>
+</span>15 <span style=''>  /**
+</span>16 <span style=''>    * Convert this object returned from Nashorn to a GraphNode if possible.
+</span>17 <span style=''>    * Will return AddressedGraphNode if address is known.
+</span>18 <span style=''>    */
+</span>19 <span style=''>  def toGraphNode(nashornReturn: Object, nodeRegistry: NodeRegistry = new NodeRegistry): Option[GraphNode] = nashornReturn match {
+</span>20 <span style=''>    case som: ScriptObjectMirror if </span><span style='background: #AEF1AE'>nodeRegistry.alreadyWrapped(som).isDefined</span><span style=''> =&gt;
+</span>21 <span style=''>      </span><span style='background: #AEF1AE'>nodeRegistry.alreadyWrapped(som)</span><span style=''>
+</span>22 <span style=''>    case som: ScriptObjectMirror =&gt;
+</span>23 <span style=''>      val relevantPropertiesAndValues: Map[String, Object] =
+</span>24 <span style=''>        </span><span style='background: #AEF1AE'>relevantPropertyValues(som)</span><span style=''>
+</span>25 <span style=''>      //println(som.hashCode() + &quot;: &quot; + relevantPropertiesAndValues)
+</span>26 <span style=''>      </span><span style='background: #AEF1AE'>relevantPropertiesAndValues.get(NodeAddressField)</span><span style=''> match {
+</span>27 <span style=''>        case None =&gt;
+</span>28 <span style=''>          </span><span style='background: #AEF1AE'>Some(new NashornMapBackedGraphNode(som, nodeRegistry))</span><span style=''>
+</span>29 <span style=''>        case Some(address: String) =&gt;
+</span>30 <span style=''>          </span><span style='background: #AEF1AE'>Some(new NashornMapBackedAddressableGraphNode(som, nodeRegistry, address))</span><span style=''>
+</span>31 <span style=''>        case x =&gt;
+</span>32 <span style=''>          val address = </span><span style='background: #F0ADAD'>Objects.toString(x)</span><span style=''>
+</span>33 <span style=''>          </span><span style='background: #F0ADAD'>Some(new NashornMapBackedAddressableGraphNode(som, nodeRegistry, address))</span><span style=''>
+</span>34 <span style=''>      }
+</span>35 <span style=''>    case _ =&gt;
+</span>36 <span style=''>      </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>37 <span style=''>  }
+</span>38 <span style=''>
+</span>39 <span style=''>  private[interop] def relevantPropertyValues(som: ScriptObjectMirror): Map[String, Object] = {
+</span>40 <span style=''>    (</span><span style='background: #AEF1AE'>NashornUtils.extractProperties(som) ++
+</span>41 <span style=''></span><span style='background: #AEF1AE'>      NashornUtils.extractNoArgFunctionValues(som))
+</span>42 <span style=''></span><span style='background: #AEF1AE'>      // Null properties don't match path expressions, so suppress them
+</span>43 <span style=''></span><span style='background: #AEF1AE'>      .filter(_._2 != null)</span><span style=''>
+</span>44 <span style=''>  }
+</span>45 <span style=''>
+</span>46 <span style=''>  val NodeIdField = </span><span style='background: #AEF1AE'>&quot;nodeId&quot;</span><span style=''>
+</span>47 <span style=''>  val NodeNameField = </span><span style='background: #AEF1AE'>&quot;nodeName&quot;</span><span style=''>
+</span>48 <span style=''>  val NodeAddressField = </span><span style='background: #AEF1AE'>&quot;address&quot;</span><span style=''>
+</span>49 <span style=''>  val NodeTagsField = </span><span style='background: #AEF1AE'>&quot;nodeTag&quot;</span><span style=''>
+</span>50 <span style=''>  val NodeRefField = </span><span style='background: #AEF1AE'>&quot;nodeRef&quot;</span><span style=''>
+</span>51 <span style=''>
+</span>52 <span style=''>}
+</span>53 <span style=''>
+</span>54 <span style=''>/**
+</span>55 <span style=''>  * Mutable registry of nodes we've seen. We keep track of them by ID
+</span>56 <span style=''>  * and by ScriptObjectMirror backing object, to avoid duplication.
+</span>57 <span style=''>  */
+</span>58 <span style=''>private[interop] class NodeRegistry {
+</span>59 <span style=''>
+</span>60 <span style=''>  private var reg: Map[String, NashornMapBackedGraphNode] = </span><span style='background: #AEF1AE'>Map()</span><span style=''>
+</span>61 <span style=''>  private var somReg: Map[ScriptObjectMirror, NashornMapBackedGraphNode] = </span><span style='background: #AEF1AE'>Map()</span><span style=''>
+</span>62 <span style=''>
+</span>63 <span style=''>  def register(gn: NashornMapBackedGraphNode): Unit = {
+</span>64 <span style=''>    </span><span style='background: #AEF1AE'>gn.nodeId.foreach(id =&gt; {
+</span>65 <span style=''></span><span style='background: #AEF1AE'>      reg = reg ++ Map(id -&gt; gn)
+</span>66 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
+</span>67 <span style=''>    </span><span style='background: #AEF1AE'>somReg = somReg ++ Map(gn.scriptObject -&gt; gn)</span><span style=''>
+</span>68 <span style=''>  }
+</span>69 <span style=''>
+</span>70 <span style=''>  def get(id: String): Option[NashornMapBackedGraphNode] = </span><span style='background: #AEF1AE'>reg.get(id)</span><span style=''>
+</span>71 <span style=''>
+</span>72 <span style=''>  def alreadyWrapped(som: ScriptObjectMirror): Option[NashornMapBackedGraphNode] = </span><span style='background: #AEF1AE'>somReg.get(som)</span><span style=''>
+</span>73 <span style=''>
+</span>74 <span style=''>  override def toString: String = </span><span style='background: #F0ADAD'>s&quot;NodeRegistry ${hashCode()}: Known ids=[${reg.keySet.mkString(&quot;,&quot;)}]&quot;</span><span style=''>
+</span>75 <span style=''>
+</span>76 <span style=''>}
+</span>77 <span style=''>
+</span>78 <span style=''>import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode._
+</span>79 <span style=''>
+</span>80 <span style=''>/**
+</span>81 <span style=''>  * Object used within the JVM whose implementation of the GraphNode interface is based on
+</span>82 <span style=''>  * navigation of a graph defined in JavaScript object or data structure.
+</span>83 <span style=''>  * Backed by a Map that can include simple properties or Nashorn ScriptObjectMirror in the event of nesting.
+</span>84 <span style=''>  * Handles cycles if references are provided.
+</span>85 <span style=''>  */
+</span>86 <span style=''>class NashornMapBackedGraphNode(val scriptObject: ScriptObjectMirror,
+</span>87 <span style=''>                                nodeRegistry: NodeRegistry)
+</span>88 <span style=''>  extends GraphNode
+</span>89 <span style=''>    with JsonableProxy {
+</span>90 <span style=''>
+</span>91 <span style=''>  protected val relevantPropertiesAndValues: Map[String, AnyRef] = </span><span style='background: #AEF1AE'>relevantPropertyValues(scriptObject)</span><span style=''>
+</span>92 <span style=''>
+</span>93 <span style=''>  val nodeId: Option[String] = </span><span style='background: #AEF1AE'>relevantPropertiesAndValues.get(NodeIdField).map(id =&gt; &quot;&quot; + id)</span><span style=''>
+</span>94 <span style=''>  </span><span style='background: #AEF1AE'>nodeRegistry.register(this)</span><span style=''>
+</span>95 <span style=''>
+</span>96 <span style=''>  private val traversableEdges: Map[String, Seq[GraphNode]] =
+</span>97 <span style=''>    </span><span style='background: #AEF1AE'>relevantPropertiesAndValues.keys
+</span>98 <span style=''></span><span style='background: #AEF1AE'>      .map(key =&gt; (key, toNode(key)))
+</span>99 <span style=''></span><span style='background: #AEF1AE'>      .toMap</span><span style=''>
+</span>100 <span style=''>
+</span>101 <span style=''>  override def nodeName: String = </span><span style='background: #AEF1AE'>relevantPropertiesAndValues.get(NodeNameField)</span><span style=''> match {
+</span>102 <span style=''>    case None =&gt; </span><span style='background: #F0ADAD'>&quot;&quot;</span><span style=''>
+</span>103 <span style=''>    case Some(s: String) =&gt; s
+</span>104 <span style=''>    case x =&gt; </span><span style='background: #F0ADAD'>Objects.toString(x)</span><span style=''>
+</span>105 <span style=''>  }
+</span>106 <span style=''>
+</span>107 <span style=''>  override def nodeTags: Set[String] = {
+</span>108 <span style=''>    </span><span style='background: #AEF1AE'>relevantPropertiesAndValues(&quot;nodeTags&quot;)</span><span style=''> match {
+</span>109 <span style=''>      case som: ScriptObjectMirror if </span><span style='background: #AEF1AE'>som.isArray</span><span style=''> =&gt;
+</span>110 <span style=''>        </span><span style='background: #AEF1AE'>som.values().asScala.map(Objects.toString(_)).toSet</span><span style=''>
+</span>111 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>Set()</span><span style=''>
+</span>112 <span style=''>    }
+</span>113 <span style=''>  }
+</span>114 <span style=''>
+</span>115 <span style=''>  override protected def propertyMap: Map[String, Any] = </span><span style='background: #AEF1AE'>relevantPropertiesAndValues</span><span style=''>
+</span>116 <span style=''>
+</span>117 <span style=''>  override lazy val relatedNodes: Seq[GraphNode] =
+</span>118 <span style=''>    </span><span style='background: #AEF1AE'>relevantPropertiesAndValues.keySet.diff(Set(NodeNameField, NodeTagsField, NodeIdField))
+</span>119 <span style=''></span><span style='background: #AEF1AE'>      .flatMap(toNode)
+</span>120 <span style=''></span><span style='background: #AEF1AE'>      .toSeq</span><span style=''>
+</span>121 <span style=''>
+</span>122 <span style=''>  override lazy val relatedNodeNames: Set[String] = </span><span style='background: #AEF1AE'>relatedNodes.map(_.nodeName).toSet</span><span style=''>
+</span>123 <span style=''>
+</span>124 <span style=''>  override def relatedNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>relatedNodes.flatMap(_.nodeTags).toSet</span><span style=''>
+</span>125 <span style=''>
+</span>126 <span style=''>  override def relatedNodesNamed(name: String): Seq[GraphNode] =
+</span>127 <span style=''>    (</span><span style='background: #AEF1AE'>relatedNodes.filter(_.nodeName == name) ++ followEdge(name)).distinct</span><span style=''>
+</span>128 <span style=''>
+</span>129 <span style=''>  override def followEdge(name: String): Seq[GraphNode] =
+</span>130 <span style=''>    </span><span style='background: #AEF1AE'>traversableEdges.getOrElse(name, Nil)</span><span style=''>
+</span>131 <span style=''>
+</span>132 <span style=''>  private def toNode(key: String): Seq[GraphNode] = {
+</span>133 <span style=''>    def nodify(som: ScriptObjectMirror): GraphNode = {
+</span>134 <span style=''>      if (</span><span style='background: #AEF1AE'>NashornUtils.hasDefinedProperties(som, NodeRefField)</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>135 <span style=''></span><span style='background: #AEF1AE'>        // It's a ref to an existing node. We must have seen that node before
+</span>136 <span style=''></span><span style='background: #AEF1AE'>        val id = NashornUtils.stringProperty(som, NodeRefField)
+</span>137 <span style=''></span><span style='background: #AEF1AE'>        nodeRegistry.get(id) match {
+</span>138 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt; </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;No node found with referenced id [$id] in $nodeRegistry&quot;)</span><span style='background: #AEF1AE'>
+</span>139 <span style=''></span><span style='background: #AEF1AE'>          case Some(n) =&gt; n
+</span>140 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>141 <span style=''></span><span style='background: #AEF1AE'>      }</span><span style=''>
+</span>142 <span style=''>      else {
+</span>143 <span style=''>        </span><span style='background: #AEF1AE'>toGraphNode(som, nodeRegistry).getOrElse(
+</span>144 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Cannot make graph node from $som&quot;)</span><span style='background: #AEF1AE'>
+</span>145 <span style=''></span><span style='background: #AEF1AE'>        )</span><span style=''>
+</span>146 <span style=''>      }
+</span>147 <span style=''>    }
+</span>148 <span style=''>
+</span>149 <span style=''>    </span><span style='background: #AEF1AE'>relevantPropertiesAndValues.get(key)</span><span style=''> match {
+</span>150 <span style=''>      case None =&gt; </span><span style='background: #F0ADAD'>Nil</span><span style=''>
+</span>151 <span style=''>      case Some(s: String) =&gt; </span><span style='background: #AEF1AE'>Seq(SimpleTerminalTreeNode(key, s, Set()))</span><span style=''>
+</span>152 <span style=''>      case Some(som: ScriptObjectMirror) if </span><span style='background: #AEF1AE'>som.isArray</span><span style=''> =&gt;
+</span>153 <span style=''>        </span><span style='background: #AEF1AE'>som.values().asScala.collect {
+</span>154 <span style=''></span><span style='background: #AEF1AE'>          case s: ScriptObjectMirror =&gt; nodify(s)
+</span>155 <span style=''></span><span style='background: #AEF1AE'>        }.toSeq</span><span style=''>
+</span>156 <span style=''>      case Some(som: ScriptObjectMirror) =&gt;
+</span>157 <span style=''>        </span><span style='background: #AEF1AE'>Seq(nodify(som))</span><span style=''>
+</span>158 <span style=''>      case Some(ScriptRuntime.UNDEFINED) =&gt;
+</span>159 <span style=''>        </span><span style='background: #F0ADAD'>Nil</span><span style=''>
+</span>160 <span style=''>      case Some(x) =&gt;
+</span>161 <span style=''>        val v = </span><span style='background: #AEF1AE'>Objects.toString(x)</span><span style=''>
+</span>162 <span style=''>        </span><span style='background: #AEF1AE'>Seq(SimpleTerminalTreeNode(key, v, Set()))</span><span style=''>
+</span>163 <span style=''>    }
+</span>164 <span style=''>  }
+</span>165 <span style=''>
+</span>166 <span style=''>}
+</span>167 <span style=''>
+</span>168 <span style=''>private class NashornMapBackedAddressableGraphNode(
+</span>169 <span style=''>                                                    som: ScriptObjectMirror,
+</span>170 <span style=''>                                                    nodeRegistry: NodeRegistry,
+</span>171 <span style=''>                                                    val address: String)
+</span>172 <span style=''>  extends NashornMapBackedGraphNode(som, nodeRegistry)
+</span>173 <span style=''>    with AddressableGraphNode
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          4111
+        </td>
+        <td>
+          672
+          -
+          714
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #AEF1AE">
+          nodeRegistry.alreadyWrapped(som).isDefined
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          4112
+        </td>
+        <td>
+          724
+          -
+          756
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NodeRegistry.alreadyWrapped
+        </td>
+        <td style="background: #AEF1AE">
+          nodeRegistry.alreadyWrapped(som)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          4113
+        </td>
+        <td>
+          862
+          -
+          889
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.relevantPropertyValues
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.relevantPropertyValues(som)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          4114
+        </td>
+        <td>
+          997
+          -
+          1013
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeAddressField
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.NodeAddressField
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          4115
+        </td>
+        <td>
+          965
+          -
+          1014
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.get
+        </td>
+        <td style="background: #AEF1AE">
+          relevantPropertiesAndValues.get(NashornMapBackedGraphNode.this.NodeAddressField)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          4117
+        </td>
+        <td>
+          1054
+          -
+          1108
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](new NashornMapBackedGraphNode(som, nodeRegistry))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          4116
+        </td>
+        <td>
+          1059
+          -
+          1107
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new NashornMapBackedGraphNode(som, nodeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          4119
+        </td>
+        <td>
+          1157
+          -
+          1231
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.runtime.js.interop.NashornMapBackedAddressableGraphNode](new NashornMapBackedAddressableGraphNode(som, nodeRegistry, address))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          4118
+        </td>
+        <td>
+          1162
+          -
+          1230
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedAddressableGraphNode.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new NashornMapBackedAddressableGraphNode(som, nodeRegistry, address)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          4120
+        </td>
+        <td>
+          1274
+          -
+          1293
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Objects.toString
+        </td>
+        <td style="background: #F0ADAD">
+          java.util.Objects.toString(x)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          4122
+        </td>
+        <td>
+          1304
+          -
+          1378
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[com.atomist.rug.runtime.js.interop.NashornMapBackedAddressableGraphNode](new NashornMapBackedAddressableGraphNode(som, nodeRegistry, address))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          4121
+        </td>
+        <td>
+          1309
+          -
+          1377
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedAddressableGraphNode.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new NashornMapBackedAddressableGraphNode(som, nodeRegistry, address)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4123
+        </td>
+        <td>
+          1407
+          -
+          1411
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          4124
+        </td>
+        <td>
+          1563
+          -
+          1607
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.extractNoArgFunctionValues
+        </td>
+        <td style="background: #AEF1AE">
+          NashornUtils.extractNoArgFunctionValues(som)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          4126
+        </td>
+        <td>
+          1518
+          -
+          1708
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          NashornUtils.extractProperties(som).++[AnyRef](NashornUtils.extractNoArgFunctionValues(som)).filter(((x$1: (String, AnyRef)) =&gt; x$1._2.!=(null)))
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          4125
+        </td>
+        <td>
+          1695
+          -
+          1707
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          x$1._2.!=(null)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          4127
+        </td>
+        <td>
+          1734
+          -
+          1742
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;nodeId&quot;
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          4128
+        </td>
+        <td>
+          1765
+          -
+          1775
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;nodeName&quot;
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          4129
+        </td>
+        <td>
+          1801
+          -
+          1810
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;address&quot;
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          4130
+        </td>
+        <td>
+          1833
+          -
+          1842
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;nodeTag&quot;
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          4131
+        </td>
+        <td>
+          1864
+          -
+          1873
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;nodeRef&quot;
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          4132
+        </td>
+        <td>
+          2124
+          -
+          2129
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenMapFactory.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Map.apply[String, Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4133
+        </td>
+        <td>
+          2205
+          -
+          2210
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenMapFactory.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Map.apply[jdk.nashorn.api.scripting.ScriptObjectMirror, Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          4138
+        </td>
+        <td>
+          2272
+          -
+          2337
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          gn.nodeId.foreach[Unit](((id: String) =&gt; NodeRegistry.this.reg_=(NodeRegistry.this.reg.++[com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](scala.this.Predef.Map.apply[String, com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](scala.this.Predef.ArrowAssoc[String](id).-&gt;[com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](gn))))))
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          4135
+        </td>
+        <td>
+          2317
+          -
+          2330
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenMapFactory.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Map.apply[String, com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](scala.this.Predef.ArrowAssoc[String](id).-&gt;[com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](gn))
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          4134
+        </td>
+        <td>
+          2321
+          -
+          2329
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.ArrowAssoc[String](id).-&gt;[com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](gn)
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          4137
+        </td>
+        <td>
+          2304
+          -
+          2330
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NodeRegistry.reg_=
+        </td>
+        <td style="background: #AEF1AE">
+          NodeRegistry.this.reg_=(NodeRegistry.this.reg.++[com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](scala.this.Predef.Map.apply[String, com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](scala.this.Predef.ArrowAssoc[String](id).-&gt;[com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](gn))))
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          4136
+        </td>
+        <td>
+          2310
+          -
+          2330
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.MapLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          NodeRegistry.this.reg.++[com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](scala.this.Predef.Map.apply[String, com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](scala.this.Predef.ArrowAssoc[String](id).-&gt;[com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](gn)))
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          4141
+        </td>
+        <td>
+          2351
+          -
+          2387
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.MapLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          NodeRegistry.this.somReg.++[com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](scala.this.Predef.Map.apply[jdk.nashorn.api.scripting.ScriptObjectMirror, com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](scala.this.Predef.ArrowAssoc[jdk.nashorn.api.scripting.ScriptObjectMirror](gn.scriptObject).-&gt;[com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](gn)))
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          4140
+        </td>
+        <td>
+          2361
+          -
+          2387
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenMapFactory.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Map.apply[jdk.nashorn.api.scripting.ScriptObjectMirror, com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](scala.this.Predef.ArrowAssoc[jdk.nashorn.api.scripting.ScriptObjectMirror](gn.scriptObject).-&gt;[com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](gn))
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          4139
+        </td>
+        <td>
+          2365
+          -
+          2386
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.ArrowAssoc[jdk.nashorn.api.scripting.ScriptObjectMirror](gn.scriptObject).-&gt;[com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](gn)
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          4142
+        </td>
+        <td>
+          2342
+          -
+          2387
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NodeRegistry.somReg_=
+        </td>
+        <td style="background: #AEF1AE">
+          NodeRegistry.this.somReg_=(NodeRegistry.this.somReg.++[com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](scala.this.Predef.Map.apply[jdk.nashorn.api.scripting.ScriptObjectMirror, com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](scala.this.Predef.ArrowAssoc[jdk.nashorn.api.scripting.ScriptObjectMirror](gn.scriptObject).-&gt;[com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode](gn))))
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          4143
+        </td>
+        <td>
+          2452
+          -
+          2463
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.get
+        </td>
+        <td style="background: #AEF1AE">
+          NodeRegistry.this.reg.get(id)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          4144
+        </td>
+        <td>
+          2548
+          -
+          2563
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.get
+        </td>
+        <td style="background: #AEF1AE">
+          NodeRegistry.this.somReg.get(som)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4147
+        </td>
+        <td>
+          2667
+          -
+          2669
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4150
+        </td>
+        <td>
+          2599
+          -
+          2669
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;NodeRegistry &quot;, &quot;: Known ids=[&quot;, &quot;]&quot;).s(NodeRegistry.this.hashCode(), NodeRegistry.this.reg.keySet.mkString(&quot;,&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4149
+        </td>
+        <td>
+          2642
+          -
+          2666
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          NodeRegistry.this.reg.keySet.mkString(&quot;,&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4146
+        </td>
+        <td>
+          2627
+          -
+          2641
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;: Known ids=[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4145
+        </td>
+        <td>
+          2601
+          -
+          2615
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;NodeRegistry &quot;
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          4148
+        </td>
+        <td>
+          2616
+          -
+          2626
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.hashCode
+        </td>
+        <td style="background: #F0ADAD">
+          NodeRegistry.this.hashCode()
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          4152
+        </td>
+        <td>
+          3319
+          -
+          3355
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.relevantPropertyValues
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.relevantPropertyValues(NashornMapBackedGraphNode.this.scriptObject)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          4151
+        </td>
+        <td>
+          3342
+          -
+          3354
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.scriptObject
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.scriptObject
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          4153
+        </td>
+        <td>
+          3420
+          -
+          3431
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeIdField
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeIdField
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          4155
+        </td>
+        <td>
+          3388
+          -
+          3451
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.map
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.relevantPropertiesAndValues.get(com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeIdField).map[String](((id: AnyRef) =&gt; &quot;&quot;.+(id)))
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          4154
+        </td>
+        <td>
+          3443
+          -
+          3450
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;.+(id)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          4156
+        </td>
+        <td>
+          3454
+          -
+          3481
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NodeRegistry.register
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.nodeRegistry.register(this)
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          4159
+        </td>
+        <td>
+          3592
+          -
+          3592
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Iterable.canBuildFrom[(String, Seq[com.atomist.graph.GraphNode])]
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          4158
+        </td>
+        <td>
+          3600
+          -
+          3618
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple2.apply[String, Seq[com.atomist.graph.GraphNode]](key, NashornMapBackedGraphNode.this.toNode(key))
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          4157
+        </td>
+        <td>
+          3606
+          -
+          3617
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.toNode
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.toNode(key)
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          4161
+        </td>
+        <td>
+          3549
+          -
+          3632
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toMap
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.relevantPropertiesAndValues.keys.map[(String, Seq[com.atomist.graph.GraphNode]), Iterable[(String, Seq[com.atomist.graph.GraphNode])]](((key: String) =&gt; scala.Tuple2.apply[String, Seq[com.atomist.graph.GraphNode]](key, NashornMapBackedGraphNode.this.toNode(key))))(collection.this.Iterable.canBuildFrom[(String, Seq[com.atomist.graph.GraphNode])]).toMap[String, Seq[com.atomist.graph.GraphNode]](scala.this.Predef.$conforms[(String, Seq[com.atomist.graph.GraphNode])])
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          4160
+        </td>
+        <td>
+          3627
+          -
+          3627
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.$conforms[(String, Seq[com.atomist.graph.GraphNode])]
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          4162
+        </td>
+        <td>
+          3700
+          -
+          3713
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeNameField
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeNameField
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          4163
+        </td>
+        <td>
+          3668
+          -
+          3714
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.get
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.relevantPropertiesAndValues.get(com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeNameField)
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          4164
+        </td>
+        <td>
+          3740
+          -
+          3742
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          4165
+        </td>
+        <td>
+          3787
+          -
+          3806
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Objects.toString
+        </td>
+        <td style="background: #F0ADAD">
+          java.util.Objects.toString(x)
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          4166
+        </td>
+        <td>
+          3857
+          -
+          3896
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.apply
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.relevantPropertiesAndValues.apply(&quot;nodeTags&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          4167
+        </td>
+        <td>
+          3943
+          -
+          3954
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.isArray
+        </td>
+        <td style="background: #AEF1AE">
+          som.isArray()
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          4168
+        </td>
+        <td>
+          3966
+          -
+          3978
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.values
+        </td>
+        <td style="background: #AEF1AE">
+          som.values()
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          4171
+        </td>
+        <td>
+          3966
+          -
+          4017
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.collectionAsScalaIterableConverter[Object](som.values()).asScala.map[String, Iterable[String]](((x$2: Object) =&gt; java.util.Objects.toString(x$2)))(collection.this.Iterable.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          4170
+        </td>
+        <td>
+          3990
+          -
+          3990
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Iterable.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          4169
+        </td>
+        <td>
+          3991
+          -
+          4010
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Objects.toString
+        </td>
+        <td style="background: #AEF1AE">
+          java.util.Objects.toString(x$2)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          4172
+        </td>
+        <td>
+          4034
+          -
+          4039
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.Set.apply[String]()
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          4173
+        </td>
+        <td>
+          4108
+          -
+          4135
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.relevantPropertiesAndValues
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.relevantPropertiesAndValues
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          4177
+        </td>
+        <td>
+          4232
+          -
+          4278
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeNameField, com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeTagsField, com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeIdField)
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          4174
+        </td>
+        <td>
+          4236
+          -
+          4249
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeNameField
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeNameField
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          4176
+        </td>
+        <td>
+          4266
+          -
+          4277
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeIdField
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeIdField
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          4175
+        </td>
+        <td>
+          4251
+          -
+          4264
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeTagsField
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeTagsField
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          4179
+        </td>
+        <td>
+          4294
+          -
+          4294
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Set.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Set.canBuildFrom[com.atomist.graph.GraphNode]
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          4178
+        </td>
+        <td>
+          4295
+          -
+          4301
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.toNode
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.toNode(key)
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          4180
+        </td>
+        <td>
+          4192
+          -
+          4315
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SetLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.relevantPropertiesAndValues.keySet.diff(scala.this.Predef.Set.apply[String](com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeNameField, com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeTagsField, com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeIdField)).flatMap[com.atomist.graph.GraphNode, scala.collection.immutable.Set[com.atomist.graph.GraphNode]]({
+  ((key: String) =&gt; NashornMapBackedGraphNode.this.toNode(key))
+})(immutable.this.Set.canBuildFrom[com.atomist.graph.GraphNode]).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          4183
+        </td>
+        <td>
+          4369
+          -
+          4403
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.relatedNodes.map[String, Seq[String]](((x$3: com.atomist.graph.GraphNode) =&gt; x$3.nodeName))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          4182
+        </td>
+        <td>
+          4385
+          -
+          4385
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          4181
+        </td>
+        <td>
+          4386
+          -
+          4396
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          x$3.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          4186
+        </td>
+        <td>
+          4452
+          -
+          4490
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #F0ADAD">
+          NashornMapBackedGraphNode.this.relatedNodes.flatMap[String, Seq[String]](((x$4: com.atomist.graph.GraphNode) =&gt; x$4.nodeTags))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          4185
+        </td>
+        <td>
+          4472
+          -
+          4472
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          4184
+        </td>
+        <td>
+          4473
+          -
+          4483
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeTags
+        </td>
+        <td style="background: #F0ADAD">
+          x$4.nodeTags
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          4189
+        </td>
+        <td>
+          4602
+          -
+          4602
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.graph.GraphNode]
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          4188
+        </td>
+        <td>
+          4605
+          -
+          4621
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.followEdge
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.followEdge(name)
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          4190
+        </td>
+        <td>
+          4562
+          -
+          4631
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.distinct
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.relatedNodes.filter(((x$5: com.atomist.graph.GraphNode) =&gt; x$5.nodeName.==(name))).++[com.atomist.graph.GraphNode, Seq[com.atomist.graph.GraphNode]](NashornMapBackedGraphNode.this.followEdge(name))(collection.this.Seq.canBuildFrom[com.atomist.graph.GraphNode]).distinct
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          4187
+        </td>
+        <td>
+          4582
+          -
+          4600
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$5.nodeName.==(name)
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          4192
+        </td>
+        <td>
+          4695
+          -
+          4732
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.traversableEdges.getOrElse[Seq[com.atomist.graph.GraphNode]](name, immutable.this.Nil)
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          4191
+        </td>
+        <td>
+          4728
+          -
+          4731
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          4200
+        </td>
+        <td>
+          4907
+          -
+          5251
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val id: String = NashornUtils.stringProperty(som, com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeRefField, NashornUtils.stringProperty$default$3);
+  NashornMapBackedGraphNode.this.nodeRegistry.get(id) match {
+    case scala.None =&gt; throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;No node found with referenced id [&quot;, &quot;] in &quot;, &quot;&quot;).s(id, NashornMapBackedGraphNode.this.nodeRegistry))
+    case (x: com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode)Some[com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode]((n @ _)) =&gt; n
+  }
+}
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          4194
+        </td>
+        <td>
+          4853
+          -
+          4905
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.hasDefinedProperties
+        </td>
+        <td style="background: #AEF1AE">
+          NashornUtils.hasDefinedProperties(som, com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeRefField)
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          4193
+        </td>
+        <td>
+          4892
+          -
+          4904
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeRefField
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeRefField
+        </td>
+      </tr><tr>
+        <td>
+          136
+        </td>
+        <td>
+          4195
+        </td>
+        <td>
+          5037
+          -
+          5049
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeRefField
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeRefField
+        </td>
+      </tr><tr>
+        <td>
+          136
+        </td>
+        <td>
+          4197
+        </td>
+        <td>
+          5004
+          -
+          5050
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty
+        </td>
+        <td style="background: #AEF1AE">
+          NashornUtils.stringProperty(som, com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.NodeRefField, NashornUtils.stringProperty$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          136
+        </td>
+        <td>
+          4196
+        </td>
+        <td>
+          5017
+          -
+          5017
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornUtils.stringProperty$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          NashornUtils.stringProperty$default$3
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          4198
+        </td>
+        <td>
+          5059
+          -
+          5079
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NodeRegistry.get
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.nodeRegistry.get(id)
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          4199
+        </td>
+        <td>
+          5111
+          -
+          5205
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;No node found with referenced id [&quot;, &quot;] in &quot;, &quot;&quot;).s(id, NashornMapBackedGraphNode.this.nodeRegistry))
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          4204
+        </td>
+        <td>
+          5273
+          -
+          5406
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.toGraphNode(som, NashornMapBackedGraphNode.this.nodeRegistry).getOrElse[com.atomist.graph.GraphNode](throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Cannot make graph node from &quot;, &quot;&quot;).s(som)))
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          4201
+        </td>
+        <td>
+          5290
+          -
+          5302
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.nodeRegistry
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.nodeRegistry
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          4203
+        </td>
+        <td>
+          5273
+          -
+          5406
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.toGraphNode(som, NashornMapBackedGraphNode.this.nodeRegistry).getOrElse[com.atomist.graph.GraphNode](throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Cannot make graph node from &quot;, &quot;&quot;).s(som)))
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          4202
+        </td>
+        <td>
+          5325
+          -
+          5396
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Cannot make graph node from &quot;, &quot;&quot;).s(som))
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          4205
+        </td>
+        <td>
+          5426
+          -
+          5462
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.get
+        </td>
+        <td style="background: #AEF1AE">
+          NashornMapBackedGraphNode.this.relevantPropertiesAndValues.get(key)
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          4206
+        </td>
+        <td>
+          5490
+          -
+          5493
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          4207
+        </td>
+        <td>
+          5559
+          -
+          5564
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String]()
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          4209
+        </td>
+        <td>
+          5524
+          -
+          5566
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.tree.SimpleTerminalTreeNode](com.atomist.tree.SimpleTerminalTreeNode.apply(key, s, scala.this.Predef.Set.apply[String]()))
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          4208
+        </td>
+        <td>
+          5528
+          -
+          5565
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.SimpleTerminalTreeNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.SimpleTerminalTreeNode.apply(key, s, scala.this.Predef.Set.apply[String]())
+        </td>
+      </tr><tr>
+        <td>
+          152
+        </td>
+        <td>
+          4210
+        </td>
+        <td>
+          5611
+          -
+          5622
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.isArray
+        </td>
+        <td style="background: #AEF1AE">
+          som.isArray()
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          4213
+        </td>
+        <td>
+          5663
+          -
+          5663
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          4214
+        </td>
+        <td>
+          5663
+          -
+          5663
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Iterable.canBuildFrom[com.atomist.graph.GraphNode]
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          4211
+        </td>
+        <td>
+          5634
+          -
+          5646
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.values
+        </td>
+        <td style="background: #AEF1AE">
+          som.values()
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          4212
+        </td>
+        <td>
+          5705
+          -
+          5714
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.nodify
+        </td>
+        <td style="background: #AEF1AE">
+          nodify(s)
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          4215
+        </td>
+        <td>
+          5634
+          -
+          5730
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.collectionAsScalaIterableConverter[Object](som.values()).asScala.collect[com.atomist.graph.GraphNode, Iterable[com.atomist.graph.GraphNode]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[Object,com.atomist.graph.GraphNode] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: Object =&gt; com.atomist.graph.GraphNode&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: Object, B1 &gt;: com.atomist.graph.GraphNode](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[Object]: Object): Object @unchecked) match {
+      case (s @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror)) =&gt; nodify(s)
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: Object): Boolean = ((x1.asInstanceOf[Object]: Object): Object @unchecked) match {
+      case (s @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[Object,com.atomist.graph.GraphNode]))(collection.this.Iterable.canBuildFrom[com.atomist.graph.GraphNode]).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          4216
+        </td>
+        <td>
+          5787
+          -
+          5798
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.nodify
+        </td>
+        <td style="background: #AEF1AE">
+          nodify(som)
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          4217
+        </td>
+        <td>
+          5783
+          -
+          5799
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.graph.GraphNode](nodify(som))
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          4218
+        </td>
+        <td>
+          5852
+          -
+          5855
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          4219
+        </td>
+        <td>
+          5894
+          -
+          5913
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Objects.toString
+        </td>
+        <td style="background: #AEF1AE">
+          java.util.Objects.toString(x)
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          4222
+        </td>
+        <td>
+          5922
+          -
+          5964
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.tree.SimpleTerminalTreeNode](com.atomist.tree.SimpleTerminalTreeNode.apply(key, v, scala.this.Predef.Set.apply[String]()))
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          4221
+        </td>
+        <td>
+          5926
+          -
+          5963
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.SimpleTerminalTreeNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.SimpleTerminalTreeNode.apply(key, v, scala.this.Predef.Set.apply[String]())
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          4220
+        </td>
+        <td>
+          5957
+          -
+          5962
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String]()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

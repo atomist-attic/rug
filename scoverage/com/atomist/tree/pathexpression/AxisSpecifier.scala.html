@@ -1,0 +1,436 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/pathexpression/AxisSpecifier.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.pathexpression
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.tree.TreeNode
+</span>5 <span style=''>import com.atomist.util.{Visitable, Visitor}
+</span>6 <span style=''>import com.fasterxml.jackson.annotation.JsonProperty
+</span>7 <span style=''>
+</span>8 <span style=''>import scala.collection.mutable.ListBuffer
+</span>9 <span style=''>
+</span>10 <span style=''>/**
+</span>11 <span style=''>  * Inspire by XPath axis specifier concept. Represents a direction
+</span>12 <span style=''>  * of navigation from a node.
+</span>13 <span style=''>  */
+</span>14 <span style=''>trait AxisSpecifier {
+</span>15 <span style=''>
+</span>16 <span style=''>  @JsonProperty
+</span>17 <span style=''>  def name: String = {
+</span>18 <span style=''>    // Get rid of the trailing $ from an object
+</span>19 <span style=''>    </span><span style='background: #AEF1AE'>getClass.getSimpleName.replace(&quot;$&quot;, &quot;&quot;)</span><span style=''>
+</span>20 <span style=''>  }
+</span>21 <span style=''>
+</span>22 <span style=''>  override def toString: String = </span><span style='background: #AEF1AE'>name</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>}
+</span>25 <span style=''>
+</span>26 <span style=''>/**
+</span>27 <span style=''>  * The current node
+</span>28 <span style=''>  */
+</span>29 <span style=''>object Self extends AxisSpecifier
+</span>30 <span style=''>
+</span>31 <span style=''>/**
+</span>32 <span style=''>  * Any child of the current node
+</span>33 <span style=''>  */
+</span>34 <span style=''>object Child extends AxisSpecifier
+</span>35 <span style=''>
+</span>36 <span style=''>/**
+</span>37 <span style=''>  * Any descendant of the current node.
+</span>38 <span style=''>  */
+</span>39 <span style=''>object Descendant extends AxisSpecifier {
+</span>40 <span style=''>
+</span>41 <span style=''>  // TODO this is very inefficient and needs to be optimized.
+</span>42 <span style=''>  // Subclasses can help, or knowing a plan
+</span>43 <span style=''>  def allDescendants(tn: GraphNode): Seq[GraphNode] = {
+</span>44 <span style=''>    // Remove this node
+</span>45 <span style=''>    </span><span style='background: #AEF1AE'>selfAndAllDescendants(tn).diff(Seq(tn))</span><span style=''>
+</span>46 <span style=''>  }
+</span>47 <span style=''>
+</span>48 <span style=''>  def selfAndAllDescendants(tn: GraphNode): Seq[GraphNode] = {
+</span>49 <span style=''>    val v = </span><span style='background: #AEF1AE'>new SaveAllDescendantsVisitor</span><span style=''>
+</span>50 <span style=''>    </span><span style='background: #AEF1AE'>tn.accept(v, 0)</span><span style=''>
+</span>51 <span style=''>    </span><span style='background: #AEF1AE'>v.nodes</span><span style=''>
+</span>52 <span style=''>  }
+</span>53 <span style=''>
+</span>54 <span style=''>  private class SaveAllDescendantsVisitor extends Visitor {
+</span>55 <span style=''>
+</span>56 <span style=''>    private val _nodes = </span><span style='background: #AEF1AE'>ListBuffer.empty[TreeNode]</span><span style=''>
+</span>57 <span style=''>
+</span>58 <span style=''>    override def visit(v: Visitable, depth: Int): Boolean = v match {
+</span>59 <span style=''>      case tn: TreeNode =&gt;
+</span>60 <span style=''>        </span><span style='background: #AEF1AE'>_nodes.append(tn)</span><span style=''>
+</span>61 <span style=''>        </span><span style='background: #AEF1AE'>true</span><span style=''>
+</span>62 <span style=''>    }
+</span>63 <span style=''>
+</span>64 <span style=''>    def nodes: Seq[TreeNode] = </span><span style='background: #AEF1AE'>_nodes.distinct</span><span style=''>
+</span>65 <span style=''>  }
+</span>66 <span style=''>
+</span>67 <span style=''>}
+</span>68 <span style=''>
+</span>69 <span style=''>object Attribute extends AxisSpecifier
+</span>70 <span style=''>
+</span>71 <span style=''>/**
+</span>72 <span style=''>  * Navigation via the node property with the given name.
+</span>73 <span style=''>  *
+</span>74 <span style=''>  * @param propertyName name to navigate into
+</span>75 <span style=''>  */
+</span>76 <span style=''>case class NavigationAxis(propertyName: String)
+</span>77 <span style=''>  extends AxisSpecifier {
+</span>78 <span style=''>
+</span>79 <span style=''>  override def toString = </span><span style='background: #AEF1AE'>s&quot;NavigationAxis-&gt;$propertyName&quot;</span><span style=''>
+</span>80 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          8008
+        </td>
+        <td>
+          474
+          -
+          513
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          AxisSpecifier.this.getClass().getSimpleName().replace(&quot;$&quot;, &quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          8009
+        </td>
+        <td>
+          553
+          -
+          557
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.AxisSpecifier.name
+        </td>
+        <td style="background: #AEF1AE">
+          AxisSpecifier.this.name
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          8011
+        </td>
+        <td>
+          988
+          -
+          1027
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.diff
+        </td>
+        <td style="background: #AEF1AE">
+          Descendant.this.selfAndAllDescendants(tn).diff[com.atomist.graph.GraphNode](collection.this.Seq.apply[com.atomist.graph.GraphNode](tn))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          8010
+        </td>
+        <td>
+          1019
+          -
+          1026
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.graph.GraphNode](tn)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          8012
+        </td>
+        <td>
+          1108
+          -
+          1137
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.Descendant.SaveAllDescendantsVisitor.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new Descendant.this.SaveAllDescendantsVisitor()
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          8013
+        </td>
+        <td>
+          1142
+          -
+          1157
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.accept
+        </td>
+        <td style="background: #AEF1AE">
+          tn.accept(v, 0)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          8014
+        </td>
+        <td>
+          1162
+          -
+          1169
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.Descendant.SaveAllDescendantsVisitor.nodes
+        </td>
+        <td style="background: #AEF1AE">
+          v.nodes
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          8015
+        </td>
+        <td>
+          1261
+          -
+          1287
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.empty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.mutable.ListBuffer.empty[com.atomist.tree.TreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          8016
+        </td>
+        <td>
+          1394
+          -
+          1411
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.BufferLike.append
+        </td>
+        <td style="background: #AEF1AE">
+          SaveAllDescendantsVisitor.this._nodes.append(tn)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          8017
+        </td>
+        <td>
+          1420
+          -
+          1424
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          8018
+        </td>
+        <td>
+          1463
+          -
+          1478
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.distinct
+        </td>
+        <td style="background: #AEF1AE">
+          SaveAllDescendantsVisitor.this._nodes.distinct
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          8020
+        </td>
+        <td>
+          1776
+          -
+          1777
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          8022
+        </td>
+        <td>
+          1745
+          -
+          1777
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;NavigationAxis-&gt;&quot;, &quot;&quot;).s(NavigationAxis.this.propertyName)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          8019
+        </td>
+        <td>
+          1747
+          -
+          1764
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;NavigationAxis-&gt;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          8021
+        </td>
+        <td>
+          1764
+          -
+          1776
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NavigationAxis.propertyName
+        </td>
+        <td style="background: #AEF1AE">
+          NavigationAxis.this.propertyName
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

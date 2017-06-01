@@ -1,0 +1,278 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>archive - rug 1.0.0-m.4 API - com.atomist.project.archive</title>
+          <meta name="description" content="archive - rug 1.0.0 - m.4 API - com.atomist.project.archive" />
+          <meta name="keywords" content="archive rug 1.0.0 m.4 API com.atomist.project.archive" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.atomist.project.archive.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.atomist">atomist</a>.<a href="../package.html" class="extype" name="com.atomist.project">project</a></p>
+        <h1>archive</h1><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.archive.package" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">archive</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="com.atomist.project.archive.ArchiveRugResolver" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ArchiveRugResolverextendsRugResolver"></a>
+      <a id="ArchiveRugResolver:ArchiveRugResolver"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ArchiveRugResolver.html"><span class="name">ArchiveRugResolver</span></a><span class="result"> extends <a href="RugResolver.html" class="extype" name="com.atomist.project.archive.RugResolver">RugResolver</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.archive.package@ArchiveRugResolverextendsRugResolver" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Used by PlanRunner and Project Operations to find Rugs</p><div class="fullcomment"><div class="comment cmt"><p>Used by PlanRunner and Project Operations to find Rugs</p><p>We explicitly do _not_ support loading a Rug that is not a direct dependency
+i.e. you cannot load a Rug that is brought in transitively</p><p>A None means no resolution!
+</p></div></div>
+    </li><li name="com.atomist.project.archive.AtomistConfig" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="AtomistConfigextendsAnyRef"></a>
+      <a id="AtomistConfig:AtomistConfig"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="AtomistConfig.html"><span class="name">AtomistConfig</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.archive.package@AtomistConfigextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Holds all configuration related to Rug archive project structure, such
+as required paths for different kinds of artifacts.</p>
+    </li><li name="com.atomist.project.archive.Coordinate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="CoordinateextendsProductwithSerializable"></a>
+      <a id="Coordinate:Coordinate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Coordinate.html"><span class="name">Coordinate</span></a><span class="params">(<span name="group">group: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="artifact">artifact: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="version">version: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.archive.package@CoordinateextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.project.archive.Dependency" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DependencyextendsRugDependency[com.atomist.project.archive.Dependency]withProductwithSerializable"></a>
+      <a id="Dependency:Dependency"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Dependency.html"><span class="name">Dependency</span></a><span class="params">(<span name="source">source: <span class="extype" name="com.atomist.source.ArtifactSource">ArtifactSource</span></span>, <span name="address">address: <span class="extype" name="scala.Option">Option</span>[<a href="Coordinate.html" class="extype" name="com.atomist.project.archive.Coordinate">Coordinate</a>] = <span class="symbol"><span class="name"><a href="../../../../scala/package.html">None</a></span></span></span>, <span name="dependencies">dependencies: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="Dependency.html" class="extype" name="com.atomist.project.archive.Dependency">Dependency</a>] = <span class="symbol">Nil</span></span>)</span><span class="result"> extends <a href="RugDependency.html" class="extype" name="com.atomist.project.archive.RugDependency">RugDependency</a>[<a href="Dependency.html" class="extype" name="com.atomist.project.archive.Dependency">Dependency</a>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.archive.package@DependencyextendsRugDependency[com.atomist.project.archive.Dependency]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.project.archive.ResolvedDependency" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ResolvedDependencyextendsRugDependency[com.atomist.project.archive.ResolvedDependency]withProductwithSerializable"></a>
+      <a id="ResolvedDependency:ResolvedDependency"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ResolvedDependency.html"><span class="name">ResolvedDependency</span></a><span class="params">(<span name="source">source: <span class="extype" name="com.atomist.source.ArtifactSource">ArtifactSource</span></span>, <span name="address">address: <span class="extype" name="scala.Option">Option</span>[<a href="Coordinate.html" class="extype" name="com.atomist.project.archive.Coordinate">Coordinate</a>] = <span class="symbol"><span class="name"><a href="../../../../scala/package.html">None</a></span></span></span>, <span name="dependencies">dependencies: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="ResolvedDependency.html" class="extype" name="com.atomist.project.archive.ResolvedDependency">ResolvedDependency</a>]</span>, <span name="resolvedRugs">resolvedRugs: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="../../rug/runtime/Rug.html" class="extype" name="com.atomist.rug.runtime.Rug">Rug</a>]</span>)</span><span class="result"> extends <a href="RugDependency.html" class="extype" name="com.atomist.project.archive.RugDependency">RugDependency</a>[<a href="ResolvedDependency.html" class="extype" name="com.atomist.project.archive.ResolvedDependency">ResolvedDependency</a>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.archive.package@ResolvedDependencyextendsRugDependency[com.atomist.project.archive.ResolvedDependency]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.project.archive.RugDependency" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="RugDependency[T&lt;:com.atomist.project.archive.RugDependency[T]]extendsAnyRef"></a>
+      <a id="RugDependency[T&lt;:RugDependency[T]]:RugDependency[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="RugDependency.html"><span class="name">RugDependency</span></a><span class="tparams">[<span name="T">T &lt;: <a href="RugDependency.html" class="extype" name="com.atomist.project.archive.RugDependency">RugDependency</a>[<span class="extype" name="com.atomist.project.archive.RugDependency.T">T</span>]</span>]</span><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.archive.package@RugDependency[T&lt;:com.atomist.project.archive.RugDependency[T]]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.project.archive.RugResolver" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="RugResolverextendsAnyRef"></a>
+      <a id="RugResolver:RugResolver"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="RugResolver.html"><span class="name">RugResolver</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.archive.package@RugResolverextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.project.archive.Rugs" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RugsextendsProductwithSerializable"></a>
+      <a id="Rugs:Rugs"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Rugs.html"><span class="name">Rugs</span></a><span class="params">(<span name="_editors">_editors: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="../edit/ProjectEditor.html" class="extype" name="com.atomist.project.edit.ProjectEditor">ProjectEditor</a>]</span>, <span name="_generators">_generators: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="../generate/ProjectGenerator.html" class="extype" name="com.atomist.project.generate.ProjectGenerator">ProjectGenerator</a>]</span>, <span name="_commandHandlers">_commandHandlers: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="../../rug/runtime/CommandHandler.html" class="extype" name="com.atomist.rug.runtime.CommandHandler">CommandHandler</a>]</span>, <span name="_eventHandlers">_eventHandlers: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="../../rug/runtime/EventHandler.html" class="extype" name="com.atomist.rug.runtime.EventHandler">EventHandler</a>]</span>, <span name="_responseHandlers">_responseHandlers: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="../../rug/runtime/ResponseHandler.html" class="extype" name="com.atomist.rug.runtime.ResponseHandler">ResponseHandler</a>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.archive.package@RugsextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="com.atomist.project.archive.DefaultAtomistConfig" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DefaultAtomistConfig"></a>
+      <a id="DefaultAtomistConfig:DefaultAtomistConfig"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DefaultAtomistConfig$.html"><span class="name">DefaultAtomistConfig</span></a><span class="result"> extends <a href="AtomistConfig.html" class="extype" name="com.atomist.project.archive.AtomistConfig">AtomistConfig</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.archive.package@DefaultAtomistConfig" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.project.archive.Rugs" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Rugs"></a>
+      <a id="Rugs:Rugs"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Rugs$.html"><span class="name">Rugs</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.project.archive.package@Rugs" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Convenience wrapper to hold the different Rug types
+</p>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

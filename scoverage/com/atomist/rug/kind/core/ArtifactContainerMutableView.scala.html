@@ -1,0 +1,809 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/core/ArtifactContainerMutableView.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.core
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.spi._
+</span>4 <span style=''>import com.atomist.source.{ArtifactContainer, DirectoryArtifact, FileArtifact}
+</span>5 <span style=''>import com.atomist.tree.TreeNode
+</span>6 <span style=''>
+</span>7 <span style=''>trait ArtifactContainerView[T &lt;: ArtifactContainer] extends TreeNode {
+</span>8 <span style=''>
+</span>9 <span style=''>  @ExportFunction(readOnly = true,
+</span>10 <span style=''>    exposeAsProperty = true,
+</span>11 <span style=''>    description = &quot;The total number of files in this project or directory&quot;)
+</span>12 <span style=''>  def totalFileCount: Int
+</span>13 <span style=''>
+</span>14 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Find file with the given path. Return null if not found.&quot;)
+</span>15 <span style=''>  def findFile(@ExportFunctionParameterDescription(name = &quot;path&quot;,
+</span>16 <span style=''>    description = &quot;Path of the file we want&quot;)
+</span>17 <span style=''>               path: String): FileMutableView
+</span>18 <span style=''>
+</span>19 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Does a file with the given path exist?&quot;)
+</span>20 <span style=''>  def fileExists(@ExportFunctionParameterDescription(name = &quot;path&quot;,
+</span>21 <span style=''>    description = &quot;The path to use&quot;)
+</span>22 <span style=''>                 path: String): Boolean
+</span>23 <span style=''>
+</span>24 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Does a directory with the given path exist?&quot;)
+</span>25 <span style=''>  def directoryExists(@ExportFunctionParameterDescription(name = &quot;path&quot;,
+</span>26 <span style=''>    description = &quot;The path to use&quot;)
+</span>27 <span style=''>                      path: String): Boolean
+</span>28 <span style=''>}
+</span>29 <span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>/**
+</span>32 <span style=''>  * Extended by project and directory views
+</span>33 <span style=''>  */
+</span>34 <span style=''>abstract class ArtifactContainerMutableView[T &lt;: ArtifactContainer](
+</span>35 <span style=''>                                                                     originalBackingObject: T,
+</span>36 <span style=''>                                                                     parent: MutableView[_])
+</span>37 <span style=''>  extends ViewSupport[T](originalBackingObject, parent)
+</span>38 <span style=''>    with ArtifactContainerView[T] {
+</span>39 <span style=''>
+</span>40 <span style=''>  val FileTypeName: String = </span><span style='background: #AEF1AE'>Typed.typeToTypeName(classOf[FileMutableView])</span><span style=''>
+</span>41 <span style=''>
+</span>42 <span style=''>  val DirectoryTypeName: String = </span><span style='background: #AEF1AE'>Typed.typeToTypeName(classOf[DirectoryMutableView])</span><span style=''>
+</span>43 <span style=''>
+</span>44 <span style=''>  override def childNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>Set(FileTypeName, DirectoryTypeName)</span><span style=''>
+</span>45 <span style=''>
+</span>46 <span style=''>  override def childNodeNames: Set[String] = </span><span style='background: #AEF1AE'>currentBackingObject.artifacts.map(_.name).toSet</span><span style=''>
+</span>47 <span style=''>
+</span>48 <span style=''>  override def nodeName: String = </span><span style='background: #AEF1AE'>name</span><span style=''>
+</span>49 <span style=''>
+</span>50 <span style=''>  def name: String
+</span>51 <span style=''>
+</span>52 <span style=''>  protected def kids(fieldName: String, parent: ProjectMutableView): Seq[MutableView[_]] = fieldName match {
+</span>53 <span style=''>    case FileTypeName =&gt;
+</span>54 <span style=''>      </span><span style='background: #F0ADAD'>currentBackingObject.allFiles.view.map(f =&gt; new FileMutableView(f, parent))</span><span style=''>
+</span>55 <span style=''>    case DirectoryTypeName =&gt;
+</span>56 <span style=''>      </span><span style='background: #F0ADAD'>currentBackingObject.allDirectories.view.map(d =&gt; new DirectoryMutableView(d, parent))</span><span style=''>
+</span>57 <span style=''>    case maybeContainedArtifactName =&gt;
+</span>58 <span style=''>      val arts = </span><span style='background: #AEF1AE'>currentBackingObject.artifacts.filter(_.name == maybeContainedArtifactName)</span><span style=''>
+</span>59 <span style=''>      </span><span style='background: #AEF1AE'>arts.map {
+</span>60 <span style=''></span><span style='background: #AEF1AE'>        case d: DirectoryArtifact =&gt; new DirectoryMutableView(d, parent)
+</span>61 <span style=''></span><span style='background: #AEF1AE'>        case f: FileArtifact =&gt; new FileMutableView(f, parent)
+</span>62 <span style=''></span><span style='background: #AEF1AE'>      }</span><span style=''>
+</span>63 <span style=''>  }
+</span>64 <span style=''>
+</span>65 <span style=''>  @ExportFunction(readOnly = true,
+</span>66 <span style=''>    exposeAsProperty = true,
+</span>67 <span style=''>    description = &quot;The total number of files in this project or directory&quot;)
+</span>68 <span style=''>  def totalFileCount: Int = </span><span style='background: #AEF1AE'>currentBackingObject.totalFileCount</span><span style=''>
+</span>69 <span style=''>
+</span>70 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Find file with the given path. Return null if not found.&quot;)
+</span>71 <span style=''>  def findFile(@ExportFunctionParameterDescription(name = &quot;path&quot;,
+</span>72 <span style=''>    description = &quot;Path of the file we want&quot;)
+</span>73 <span style=''>               path: String): FileMutableView = {
+</span>74 <span style=''>    val parent: ProjectMutableView = this match {
+</span>75 <span style=''>      case pmv: ProjectMutableView =&gt; pmv
+</span>76 <span style=''>      case dmv: DirectoryMutableView =&gt; </span><span style='background: #F0ADAD'>dmv.parent</span><span style=''>
+</span>77 <span style=''>    }
+</span>78 <span style=''>    </span><span style='background: #AEF1AE'>currentBackingObject.findFile(path)</span><span style=''> match {
+</span>79 <span style=''>      case None =&gt; </span><span style='background: #AEF1AE'>null</span><span style=''>
+</span>80 <span style=''>      case Some(f) =&gt; </span><span style='background: #AEF1AE'>new FileMutableView(f, parent)</span><span style=''>
+</span>81 <span style=''>    }
+</span>82 <span style=''>  }
+</span>83 <span style=''>
+</span>84 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Does a file with the given path exist?&quot;)
+</span>85 <span style=''>  def fileExists(@ExportFunctionParameterDescription(name = &quot;path&quot;,
+</span>86 <span style=''>    description = &quot;The path to use&quot;)
+</span>87 <span style=''>                 path: String): Boolean = </span><span style='background: #AEF1AE'>currentBackingObject.findFile(path).isDefined</span><span style=''>
+</span>88 <span style=''>
+</span>89 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Does a directory with the given path exist?&quot;)
+</span>90 <span style=''>  def directoryExists(@ExportFunctionParameterDescription(name = &quot;path&quot;,
+</span>91 <span style=''>    description = &quot;The path to use&quot;)
+</span>92 <span style=''>                      path: String): Boolean = </span><span style='background: #AEF1AE'>currentBackingObject.findDirectory(path).isDefined</span><span style=''>
+</span>93 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          711
+        </td>
+        <td>
+          1629
+          -
+          1653
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.rug.kind.core.FileMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          713
+        </td>
+        <td>
+          1608
+          -
+          1654
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName(classOf[com.atomist.rug.kind.core.FileMutableView], com.atomist.rug.spi.Typed.typeToTypeName$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          712
+        </td>
+        <td>
+          1614
+          -
+          1614
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          714
+        </td>
+        <td>
+          1711
+          -
+          1740
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.rug.kind.core.DirectoryMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          716
+        </td>
+        <td>
+          1690
+          -
+          1741
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName(classOf[com.atomist.rug.kind.core.DirectoryMutableView], com.atomist.rug.spi.Typed.typeToTypeName$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          715
+        </td>
+        <td>
+          1696
+          -
+          1696
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          717
+        </td>
+        <td>
+          1792
+          -
+          1804
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ArtifactContainerMutableView.FileTypeName
+        </td>
+        <td style="background: #F0ADAD">
+          ArtifactContainerMutableView.this.FileTypeName
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          719
+        </td>
+        <td>
+          1788
+          -
+          1824
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.Set.apply[String](ArtifactContainerMutableView.this.FileTypeName, ArtifactContainerMutableView.this.DirectoryTypeName)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          718
+        </td>
+        <td>
+          1806
+          -
+          1823
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ArtifactContainerMutableView.DirectoryTypeName
+        </td>
+        <td style="background: #F0ADAD">
+          ArtifactContainerMutableView.this.DirectoryTypeName
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          720
+        </td>
+        <td>
+          1906
+          -
+          1912
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.Artifact.name
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.name
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          722
+        </td>
+        <td>
+          1871
+          -
+          1919
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          ArtifactContainerMutableView.this.currentBackingObject.artifacts.map[String, Seq[String]](((x$1: com.atomist.source.Artifact) =&gt; x$1.name))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          721
+        </td>
+        <td>
+          1905
+          -
+          1905
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          723
+        </td>
+        <td>
+          1955
+          -
+          1959
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ArtifactContainerMutableView.name
+        </td>
+        <td style="background: #AEF1AE">
+          ArtifactContainerMutableView.this.name
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          726
+        </td>
+        <td>
+          2121
+          -
+          2196
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableViewLike.map
+        </td>
+        <td style="background: #F0ADAD">
+          ArtifactContainerMutableView.this.currentBackingObject.allFiles.view.map[com.atomist.rug.kind.core.FileMutableView, Seq[com.atomist.rug.spi.MutableView[_]]](((f: com.atomist.source.FileArtifact) =&gt; new FileMutableView(f, parent)))(collection.this.SeqView.canBuildFrom[com.atomist.rug.kind.core.FileMutableView])
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          725
+        </td>
+        <td>
+          2159
+          -
+          2159
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.SeqView.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.SeqView.canBuildFrom[com.atomist.rug.kind.core.FileMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          724
+        </td>
+        <td>
+          2165
+          -
+          2195
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new FileMutableView(f, parent)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          729
+        </td>
+        <td>
+          2233
+          -
+          2319
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableViewLike.map
+        </td>
+        <td style="background: #F0ADAD">
+          ArtifactContainerMutableView.this.currentBackingObject.allDirectories.view.map[com.atomist.rug.kind.core.DirectoryMutableView, Seq[com.atomist.rug.spi.MutableView[_]]](((d: com.atomist.source.DirectoryArtifact) =&gt; new DirectoryMutableView(d, parent)))(collection.this.SeqView.canBuildFrom[com.atomist.rug.kind.core.DirectoryMutableView])
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          728
+        </td>
+        <td>
+          2277
+          -
+          2277
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.SeqView.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.SeqView.canBuildFrom[com.atomist.rug.kind.core.DirectoryMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          727
+        </td>
+        <td>
+          2283
+          -
+          2318
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.DirectoryMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new DirectoryMutableView(d, parent)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          731
+        </td>
+        <td>
+          2376
+          -
+          2451
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          ArtifactContainerMutableView.this.currentBackingObject.artifacts.filter(((x$2: com.atomist.source.Artifact) =&gt; x$2.name.==(maybeContainedArtifactName)))
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          730
+        </td>
+        <td>
+          2414
+          -
+          2450
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.name.==(maybeContainedArtifactName)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          735
+        </td>
+        <td>
+          2458
+          -
+          2612
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          arts.map[com.atomist.rug.spi.ViewSupport[_ &gt;: com.atomist.source.DirectoryArtifact with com.atomist.source.FileArtifact &lt;: com.atomist.source.Artifact]{val parent: com.atomist.rug.kind.core.ProjectMutableView}, Seq[com.atomist.rug.spi.MutableView[_]]](((x0$1: com.atomist.source.Artifact) =&gt; x0$1 match {
+  case (d @ (_: com.atomist.source.DirectoryArtifact)) =&gt; new DirectoryMutableView(d, parent)
+  case (f @ (_: com.atomist.source.FileArtifact)) =&gt; new FileMutableView(f, parent)
+}))(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.ViewSupport[_ &gt;: com.atomist.source.DirectoryArtifact with com.atomist.source.FileArtifact &lt;: com.atomist.source.Artifact]{val parent: com.atomist.rug.kind.core.ProjectMutableView}])
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          734
+        </td>
+        <td>
+          2467
+          -
+          2467
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.ViewSupport[_ &gt;: com.atomist.source.DirectoryArtifact with com.atomist.source.FileArtifact &lt;: com.atomist.source.Artifact]{val parent: com.atomist.rug.kind.core.ProjectMutableView}]
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          732
+        </td>
+        <td>
+          2506
+          -
+          2541
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.DirectoryMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new DirectoryMutableView(d, parent)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          733
+        </td>
+        <td>
+          2574
+          -
+          2604
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new FileMutableView(f, parent)
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          736
+        </td>
+        <td>
+          2786
+          -
+          2821
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.ArtifactContainer.totalFileCount
+        </td>
+        <td style="background: #AEF1AE">
+          ArtifactContainerMutableView.this.currentBackingObject.totalFileCount
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          737
+        </td>
+        <td>
+          3226
+          -
+          3236
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.DirectoryMutableView.parent
+        </td>
+        <td style="background: #F0ADAD">
+          dmv.parent
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          738
+        </td>
+        <td>
+          3247
+          -
+          3282
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactContainer.findFile
+        </td>
+        <td style="background: #AEF1AE">
+          ArtifactContainerMutableView.this.currentBackingObject.findFile(path)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          739
+        </td>
+        <td>
+          3310
+          -
+          3314
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          740
+        </td>
+        <td>
+          3337
+          -
+          3367
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new FileMutableView(f, parent)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          741
+        </td>
+        <td>
+          3617
+          -
+          3662
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #AEF1AE">
+          ArtifactContainerMutableView.this.currentBackingObject.findFile(path).isDefined
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          742
+        </td>
+        <td>
+          3917
+          -
+          3967
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #AEF1AE">
+          ArtifactContainerMutableView.this.currentBackingObject.findDirectory(path).isDefined
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

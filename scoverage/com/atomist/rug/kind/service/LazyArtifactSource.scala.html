@@ -1,0 +1,330 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/service/LazyArtifactSource.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.service
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.source._
+</span>4 <span style=''>
+</span>5 <span style=''>/**
+</span>6 <span style=''>  * Lazy ArtifactSource to pass into ProjectMutableViews.
+</span>7 <span style=''>  * We don't read the actual content unless we need to.
+</span>8 <span style=''>  * Not threadsafe.
+</span>9 <span style=''>  *
+</span>10 <span style=''>  * @param loc locator that enables us to load this ArtifactSource
+</span>11 <span style=''>  * @param materialize function
+</span>12 <span style=''>  */
+</span>13 <span style=''>class LazyArtifactSource(
+</span>14 <span style=''>                          loc: ArtifactSourceLocator,
+</span>15 <span style=''>                          materialize: () =&gt; ArtifactSource)
+</span>16 <span style=''>  extends ArtifactSource {
+</span>17 <span style=''>
+</span>18 <span style=''>  private var underlying: ArtifactSource = _
+</span>19 <span style=''>
+</span>20 <span style=''>  private def delegate(): ArtifactSource = {
+</span>21 <span style=''>    if (</span><span style='background: #F0ADAD'>underlying == null</span><span style=''>)
+</span>22 <span style=''>      </span><span style='background: #F0ADAD'>underlying = materialize()</span><span style=''>
+</span>23 <span style=''>    </span><span style='background: #F0ADAD'>underlying</span><span style=''>
+</span>24 <span style=''>  }
+</span>25 <span style=''>
+</span>26 <span style=''>  override lazy val id: ArtifactSourceIdentifier = </span><span style='background: #F0ADAD'>loc</span><span style=''> match {
+</span>27 <span style=''>    case i: ArtifactSourceIdentifier =&gt; i
+</span>28 <span style=''>    case x =&gt; </span><span style='background: #F0ADAD'>delegate().id</span><span style=''>
+</span>29 <span style=''>  }
+</span>30 <span style=''>
+</span>31 <span style=''>  override def allDirectories: Seq[DirectoryArtifact] = </span><span style='background: #F0ADAD'>delegate().allDirectories</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>  override def allFiles: Seq[FileArtifact] = </span><span style='background: #F0ADAD'>delegate().allFiles</span><span style=''>
+</span>34 <span style=''>
+</span>35 <span style=''>  override def artifacts: Seq[Artifact] = </span><span style='background: #F0ADAD'>delegate().artifacts</span><span style=''>
+</span>36 <span style=''>
+</span>37 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          2915
+        </td>
+        <td>
+          577
+          -
+          577
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          2914
+        </td>
+        <td>
+          577
+          -
+          577
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          2910
+        </td>
+        <td>
+          581
+          -
+          599
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          LazyArtifactSource.this.underlying.==(null)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          2912
+        </td>
+        <td>
+          607
+          -
+          633
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.service.LazyArtifactSource.underlying_=
+        </td>
+        <td style="background: #F0ADAD">
+          LazyArtifactSource.this.underlying_=(LazyArtifactSource.this.materialize.apply())
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          2911
+        </td>
+        <td>
+          620
+          -
+          633
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function0.apply
+        </td>
+        <td style="background: #F0ADAD">
+          LazyArtifactSource.this.materialize.apply()
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          2913
+        </td>
+        <td>
+          607
+          -
+          633
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.kind.service.LazyArtifactSource.underlying_=
+        </td>
+        <td style="background: #F0ADAD">
+          LazyArtifactSource.this.underlying_=(LazyArtifactSource.this.materialize.apply())
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2916
+        </td>
+        <td>
+          638
+          -
+          648
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.service.LazyArtifactSource.underlying
+        </td>
+        <td style="background: #F0ADAD">
+          LazyArtifactSource.this.underlying
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2917
+        </td>
+        <td>
+          705
+          -
+          708
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.service.LazyArtifactSource.loc
+        </td>
+        <td style="background: #F0ADAD">
+          LazyArtifactSource.this.loc
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2918
+        </td>
+        <td>
+          773
+          -
+          786
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.id
+        </td>
+        <td style="background: #F0ADAD">
+          LazyArtifactSource.this.delegate().id
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          2919
+        </td>
+        <td>
+          848
+          -
+          873
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.ArtifactContainer.allDirectories
+        </td>
+        <td style="background: #F0ADAD">
+          LazyArtifactSource.this.delegate().allDirectories
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          2920
+        </td>
+        <td>
+          920
+          -
+          939
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.ArtifactContainer.allFiles
+        </td>
+        <td style="background: #F0ADAD">
+          LazyArtifactSource.this.delegate().allFiles
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          2921
+        </td>
+        <td>
+          983
+          -
+          1003
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.ArtifactContainer.artifacts
+        </td>
+        <td style="background: #F0ADAD">
+          LazyArtifactSource.this.delegate().artifacts
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

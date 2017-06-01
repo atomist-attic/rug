@@ -1,0 +1,583 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/test/gherkin/TestReport.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.test.gherkin
+</span>2 <span style=''>
+</span>3 <span style=''>/**
+</span>4 <span style=''>  * Convenient class exposing a report
+</span>5 <span style=''>  */
+</span>6 <span style=''>class TestReport(archiveTestResult: ArchiveTestResult) {
+</span>7 <span style=''>
+</span>8 <span style=''>  def passed: Boolean = </span><span style='background: #F0ADAD'>archiveTestResult.result == Passed</span><span style=''>
+</span>9 <span style=''>
+</span>10 <span style=''>  def passedTests: Seq[FeatureResult] = </span><span style='background: #F0ADAD'>archiveTestResult.featureResults
+</span>11 <span style=''></span><span style='background: #F0ADAD'>    .filter(_.passed)</span><span style=''>
+</span>12 <span style=''>
+</span>13 <span style=''>  def failures: Seq[FeatureResult] = </span><span style='background: #F0ADAD'>archiveTestResult.featureResults
+</span>14 <span style=''></span><span style='background: #F0ADAD'>      .filter(_.result.isInstanceOf[Failed])</span><span style=''>
+</span>15 <span style=''>
+</span>16 <span style=''>  def notYetImplemented: Seq[FeatureResult] = </span><span style='background: #F0ADAD'>archiveTestResult.featureResults
+</span>17 <span style=''></span><span style='background: #F0ADAD'>    .filter(_.result.isInstanceOf[NotYetImplemented])</span><span style=''>
+</span>18 <span style=''>
+</span>19 <span style=''>  def testSummary: String = </span><span style='background: #F0ADAD'>s&quot;Test report: &quot; +
+</span>20 <span style=''></span><span style='background: #F0ADAD'>    s&quot;${passedTests.size} of ${archiveTestResult.testCount} tests passed\n&quot; +
+</span>21 <span style=''></span><span style='background: #F0ADAD'>    &quot;\t&quot; + failures.map(f =&gt; f.feature.getName + s&quot;: FAILED (${f.result.message})&quot;).mkString(&quot;\n\t&quot;) +
+</span>22 <span style=''></span><span style='background: #F0ADAD'>    &quot;\t&quot; + notYetImplemented.map(f =&gt; f.feature.getName + &quot;: Not yet implemented&quot;).mkString(&quot;\n\t&quot;) +
+</span>23 <span style=''></span><span style='background: #F0ADAD'>    (archiveTestResult.result match {
+</span>24 <span style=''></span><span style='background: #F0ADAD'>      case Passed =&gt;
+</span>25 <span style=''></span><span style='background: #F0ADAD'>        &quot;\nTest SUCCESS\n&quot;
+</span>26 <span style=''></span><span style='background: #F0ADAD'>      case Failed(_) =&gt;
+</span>27 <span style=''></span><span style='background: #F0ADAD'>        &quot;\nTest FAILURE\n&quot;
+</span>28 <span style=''></span><span style='background: #F0ADAD'>      case NotYetImplemented(s) =&gt;
+</span>29 <span style=''></span><span style='background: #F0ADAD'>        s&quot;\nTest NOT YET IMPLEMENTED: $s\n&quot;
+</span>30 <span style=''></span><span style='background: #F0ADAD'>    })</span><span style=''>
+</span>31 <span style=''>
+</span>32 <span style=''>  override def toString: String = </span><span style='background: #F0ADAD'>testSummary</span><span style=''>
+</span>33 <span style=''>
+</span>34 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          8
+        </td>
+        <td>
+          5887
+        </td>
+        <td>
+          168
+          -
+          202
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          TestReport.this.archiveTestResult.result.==(Passed)
+        </td>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          5888
+        </td>
+        <td>
+          289
+          -
+          297
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.TestRun.passed
+        </td>
+        <td style="background: #F0ADAD">
+          x$1.passed
+        </td>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          5889
+        </td>
+        <td>
+          244
+          -
+          298
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #F0ADAD">
+          TestReport.this.archiveTestResult.featureResults.filter(((x$1: com.atomist.rug.test.gherkin.FeatureResult) =&gt; x$1.passed))
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          5891
+        </td>
+        <td>
+          337
+          -
+          414
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #F0ADAD">
+          TestReport.this.archiveTestResult.featureResults.filter(((x$2: com.atomist.rug.test.gherkin.FeatureResult) =&gt; x$2.result.isInstanceOf[com.atomist.rug.test.gherkin.Failed]))
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          5890
+        </td>
+        <td>
+          384
+          -
+          413
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.isInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          x$2.result.isInstanceOf[com.atomist.rug.test.gherkin.Failed]
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          5893
+        </td>
+        <td>
+          462
+          -
+          548
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #F0ADAD">
+          TestReport.this.archiveTestResult.featureResults.filter(((x$3: com.atomist.rug.test.gherkin.FeatureResult) =&gt; x$3.result.isInstanceOf[com.atomist.rug.test.gherkin.NotYetImplemented]))
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          5892
+        </td>
+        <td>
+          507
+          -
+          547
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.isInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          x$3.result.isInstanceOf[com.atomist.rug.test.gherkin.NotYetImplemented]
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          5894
+        </td>
+        <td>
+          580
+          -
+          594
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Test report: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          5897
+        </td>
+        <td>
+          656
+          -
+          672
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; tests passed\\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          5900
+        </td>
+        <td>
+          601
+          -
+          672
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot; of &quot;, &quot; tests passed\\n&quot;).s(TestReport.this.passedTests.size, TestReport.this.archiveTestResult.testCount)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          5899
+        </td>
+        <td>
+          628
+          -
+          655
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.MultiTestRun.testCount
+        </td>
+        <td style="background: #F0ADAD">
+          TestReport.this.archiveTestResult.testCount
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          5896
+        </td>
+        <td>
+          622
+          -
+          627
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; of &quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          5898
+        </td>
+        <td>
+          605
+          -
+          621
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #F0ADAD">
+          TestReport.this.passedTests.size
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          5895
+        </td>
+        <td>
+          603
+          -
+          604
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          5902
+        </td>
+        <td>
+          686
+          -
+          775
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          TestReport.this.failures.map[String, Seq[String]](((f: com.atomist.rug.test.gherkin.FeatureResult) =&gt; f.feature.getName().+(scala.StringContext.apply(&quot;: FAILED (&quot;, &quot;)&quot;).s(f.result.message))))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;\n\t&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          5901
+        </td>
+        <td>
+          679
+          -
+          683
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;\t&quot;
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5909
+        </td>
+        <td>
+          578
+          -
+          1102
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Test report: &quot;).s().+(scala.StringContext.apply(&quot;&quot;, &quot; of &quot;, &quot; tests passed\\n&quot;).s(TestReport.this.passedTests.size, TestReport.this.archiveTestResult.testCount)).+(&quot;\t&quot;).+(TestReport.this.failures.map[String, Seq[String]](((f: com.atomist.rug.test.gherkin.FeatureResult) =&gt; f.feature.getName().+(scala.StringContext.apply(&quot;: FAILED (&quot;, &quot;)&quot;).s(f.result.message))))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;\n\t&quot;)).+(&quot;\t&quot;).+(TestReport.this.notYetImplemented.map[String, Seq[String]](((f: com.atomist.rug.test.gherkin.FeatureResult) =&gt; f.feature.getName().+(&quot;: Not yet implemented&quot;)))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;\n\t&quot;)).+(TestReport.this.archiveTestResult.result match {
+  case Passed =&gt; &quot;\nTest SUCCESS\n&quot;
+  case (message: String)com.atomist.rug.test.gherkin.Failed(_) =&gt; &quot;\nTest FAILURE\n&quot;
+  case (name: String)com.atomist.rug.test.gherkin.NotYetImplemented((s @ _)) =&gt; scala.StringContext.apply(&quot;\\nTest NOT YET IMPLEMENTED: &quot;, &quot;\\n&quot;).s(s)
+})
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5904
+        </td>
+        <td>
+          789
+          -
+          877
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          TestReport.this.notYetImplemented.map[String, Seq[String]](((f: com.atomist.rug.test.gherkin.FeatureResult) =&gt; f.feature.getName().+(&quot;: Not yet implemented&quot;)))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;\n\t&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5903
+        </td>
+        <td>
+          782
+          -
+          786
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;\t&quot;
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          5905
+        </td>
+        <td>
+          885
+          -
+          909
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.MultiTestRun.result
+        </td>
+        <td style="background: #F0ADAD">
+          TestReport.this.archiveTestResult.result
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          5906
+        </td>
+        <td>
+          947
+          -
+          965
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;\nTest SUCCESS\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          5907
+        </td>
+        <td>
+          998
+          -
+          1016
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;\nTest FAILURE\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          5908
+        </td>
+        <td>
+          1060
+          -
+          1095
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;\\nTest NOT YET IMPLEMENTED: &quot;, &quot;\\n&quot;).s(s)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          5910
+        </td>
+        <td>
+          1138
+          -
+          1149
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.TestReport.testSummary
+        </td>
+        <td style="background: #F0ADAD">
+          TestReport.this.testSummary
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,217 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/MutableTreeNode.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree
+</span>2 <span style=''>
+</span>3 <span style=''>/**
+</span>4 <span style=''>  * Extended by TreeNode implementations with
+</span>5 <span style=''>  * the ability to add additional types to nodes.
+</span>6 <span style=''>  */
+</span>7 <span style=''>trait AnnotatableTreeNode extends TreeNode {
+</span>8 <span style=''>
+</span>9 <span style=''>  private var types: Set[String] = </span><span style='background: #AEF1AE'>Set()</span><span style=''>
+</span>10 <span style=''>
+</span>11 <span style=''>  override def nodeTags: Set[String] = </span><span style='background: #F0ADAD'>types</span><span style=''>
+</span>12 <span style=''>
+</span>13 <span style=''>  /**
+</span>14 <span style=''>    * Add an additional type to this node. It's impossible to remove a type.
+</span>15 <span style=''>    *
+</span>16 <span style=''>    * @param t type to add
+</span>17 <span style=''>    */
+</span>18 <span style=''>  def addType(t: String): Unit = {
+</span>19 <span style=''>    </span><span style='background: #F0ADAD'>types = types + t</span><span style=''>
+</span>20 <span style=''>  }
+</span>21 <span style=''>
+</span>22 <span style=''>  /**
+</span>23 <span style=''>    * Add multiple types to this node.
+</span>24 <span style=''>    *
+</span>25 <span style=''>    * @param s set of node types
+</span>26 <span style=''>    */
+</span>27 <span style=''>  def addTypes(s: Set[String]): Unit = {
+</span>28 <span style=''>    </span><span style='background: #AEF1AE'>types = types ++ s</span><span style=''>
+</span>29 <span style=''>  }
+</span>30 <span style=''>}
+</span>31 <span style=''>
+</span>32 <span style=''>/**
+</span>33 <span style=''>  * Extended by TreeNode implementations that allow updates from a string value.
+</span>34 <span style=''>  * Terminal nodes will have their value changed: container nodes
+</span>35 <span style=''>  * will overwrite their child structure.
+</span>36 <span style=''>  * Also adds the ability to add additional types to nodes.
+</span>37 <span style=''>  */
+</span>38 <span style=''>trait MutableTreeNode extends AnnotatableTreeNode with UpdatableTreeNode {
+</span>39 <span style=''>
+</span>40 <span style=''>  def dirty: Boolean
+</span>41 <span style=''>}
+</span>42 <span style=''>
+</span>43 <span style=''>trait UpdatableTreeNode extends TreeNode {
+</span>44 <span style=''>
+</span>45 <span style=''>  /**
+</span>46 <span style=''>    * Update String contents to this content. May
+</span>47 <span style=''>    * involve updating an entire structure.
+</span>48 <span style=''>    */
+</span>49 <span style=''>  def update(to: String): Unit
+</span>50 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          7068
+        </td>
+        <td>
+          212
+          -
+          217
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String]()
+        </td>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          7069
+        </td>
+        <td>
+          258
+          -
+          263
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.AnnotatableTreeNode.types
+        </td>
+        <td style="background: #F0ADAD">
+          AnnotatableTreeNode.this.types
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          7071
+        </td>
+        <td>
+          427
+          -
+          444
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.AnnotatableTreeNode.types_=
+        </td>
+        <td style="background: #F0ADAD">
+          AnnotatableTreeNode.this.types_=(AnnotatableTreeNode.this.types.+(t))
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          7070
+        </td>
+        <td>
+          435
+          -
+          444
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.+
+        </td>
+        <td style="background: #F0ADAD">
+          AnnotatableTreeNode.this.types.+(t)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7072
+        </td>
+        <td>
+          594
+          -
+          604
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          AnnotatableTreeNode.this.types.++(s)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7073
+        </td>
+        <td>
+          586
+          -
+          604
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.AnnotatableTreeNode.types_=
+        </td>
+        <td style="background: #AEF1AE">
+          AnnotatableTreeNode.this.types_=(AnnotatableTreeNode.this.types.++(s))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

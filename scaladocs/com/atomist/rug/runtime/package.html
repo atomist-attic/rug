@@ -1,0 +1,300 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>runtime - rug 1.0.0-m.4 API - com.atomist.rug.runtime</title>
+          <meta name="description" content="runtime - rug 1.0.0 - m.4 API - com.atomist.rug.runtime" />
+          <meta name="keywords" content="runtime rug 1.0.0 m.4 API com.atomist.rug.runtime" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.atomist.rug.runtime.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.atomist">atomist</a>.<a href="../package.html" class="extype" name="com.atomist.rug">rug</a></p>
+        <h1>runtime</h1><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.runtime.package" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">runtime</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="com.atomist.rug.runtime.CommandHandler" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="CommandHandlerextendsSecretAwareRugwithMappedParameterizedRug"></a>
+      <a id="CommandHandler:CommandHandler"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="CommandHandler.html"><span class="name">CommandHandler</span></a><span class="result"> extends <a href="../spi/SecretAwareRug.html" class="extype" name="com.atomist.rug.spi.SecretAwareRug">SecretAwareRug</a> with <a href="../spi/MappedParameterizedRug.html" class="extype" name="com.atomist.rug.spi.MappedParameterizedRug">MappedParameterizedRug</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.runtime.package@CommandHandlerextendsSecretAwareRugwithMappedParameterizedRug" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">For bot commands
+</p>
+    </li><li name="com.atomist.rug.runtime.EventHandler" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="EventHandlerextendsSecretAwareRug"></a>
+      <a id="EventHandler:EventHandler"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="EventHandler.html"><span class="name">EventHandler</span></a><span class="result"> extends <a href="../spi/SecretAwareRug.html" class="extype" name="com.atomist.rug.spi.SecretAwareRug">SecretAwareRug</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.runtime.package@EventHandlerextendsSecretAwareRug" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Event implemented by EventHandlers
+</p>
+    </li><li name="com.atomist.rug.runtime.ParameterizedRug" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ParameterizedRugextendsRugwithParameterizedSupport"></a>
+      <a id="ParameterizedRug:ParameterizedRug"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ParameterizedRug.html"><span class="name">ParameterizedRug</span></a><span class="result"> extends <a href="Rug.html" class="extype" name="com.atomist.rug.runtime.Rug">Rug</a> with <a href="../../param/ParameterizedSupport.html" class="extype" name="com.atomist.param.ParameterizedSupport">ParameterizedSupport</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.runtime.package@ParameterizedRugextendsRugwithParameterizedSupport" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.runtime.ResponseHandler" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ResponseHandlerextendsParameterizedRugwithScopedRug"></a>
+      <a id="ResponseHandler:ResponseHandler"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ResponseHandler.html"><span class="name">ResponseHandler</span></a><span class="result"> extends <a href="ParameterizedRug.html" class="extype" name="com.atomist.rug.runtime.ParameterizedRug">ParameterizedRug</a> with <a href="ScopedRug.html" class="extype" name="com.atomist.rug.runtime.ScopedRug">ScopedRug</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.runtime.package@ResponseHandlerextendsParameterizedRugwithScopedRug" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Handles responses from other Rugs &amp; Executions
+</p>
+    </li><li name="com.atomist.rug.runtime.Rug" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="RugextendsAnyRef"></a>
+      <a id="Rug:Rug"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Rug.html"><span class="name">Rug</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.runtime.package@RugextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">For things common to _all_ Rugs
+</p>
+    </li><li name="com.atomist.rug.runtime.ScopedRug" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ScopedRugextendsAnyRef"></a>
+      <a id="ScopedRug:ScopedRug"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ScopedRug.html"><span class="name">ScopedRug</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.runtime.package@ScopedRugextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Used to describe the visibility of a Rug
+</p>
+    </li><li name="com.atomist.rug.runtime.SystemEvent" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="SystemEventextendsProductwithSerializable"></a>
+      <a id="SystemEvent:SystemEvent"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SystemEvent.html"><span class="name">SystemEvent</span></a><span class="params">(<span name="teamId">teamId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="rootNodeName">rootNodeName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="id">id: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.runtime.package@SystemEventextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">System event, such as a new issue
+</p><div class="fullcomment"><div class="comment cmt"><p>System event, such as a new issue
+</p></div><dl class="paramcmts block"><dt class="param">teamId</dt><dd class="cmt"><p>id of the team this event is destined for</p></dd><dt class="param">rootNodeName</dt><dd class="cmt"><p>name of the root name. Such as Issue</p></dd><dt class="param">id</dt><dd class="cmt"><p>unique id of the given root node, within the present
+                    ServiceSource.</p></dd></dl></div>
+    </li><li name="com.atomist.rug.runtime.TestDescriptor" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="TestDescriptorextendsProductwithSerializable"></a>
+      <a id="TestDescriptor:TestDescriptor"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="TestDescriptor.html"><span class="name">TestDescriptor</span></a><span class="params">(<span name="kind">kind: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="description">description: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.runtime.package@TestDescriptorextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Used to describe tests on a Rug.</p><div class="fullcomment"><div class="comment cmt"><p>Used to describe tests on a Rug.
+</p></div><dl class="paramcmts block"><dt class="param">kind</dt><dd class="cmt"><p>what kind of test. Currently only &quot;integration&quot; exists and we don't yet make use of it.</p></dd><dt class="param">description</dt><dd class="cmt"><p>the description</p></dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="com.atomist.rug.runtime.RugScopes" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RugScopes"></a>
+      <a id="RugScopes:RugScopes"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="RugScopes$.html"><span class="name">RugScopes</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.runtime.package@RugScopes" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.runtime.js" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="js"></a>
+      <a id="js:js"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="js/package.html"><span class="name">js</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.runtime.package@js" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.runtime.plans" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="plans"></a>
+      <a id="plans:plans"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="plans/package.html"><span class="name">plans</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.atomist.rug.runtime.package@plans" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

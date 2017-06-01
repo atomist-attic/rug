@@ -1,0 +1,994 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/test/gherkin/GherkinRunner.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.test.gherkin
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.project.archive.Rugs
+</span>4 <span style=''>import com.atomist.rug.runtime.js.JavaScriptContext
+</span>5 <span style=''>import com.typesafe.scalalogging.LazyLogging
+</span>6 <span style=''>
+</span>7 <span style=''>/**
+</span>8 <span style=''>  * Config to use when running tests. Tokens etc.
+</span>9 <span style=''>  *
+</span>10 <span style=''>  * @param oAuthToken token to use for Git cloning
+</span>11 <span style=''>  */
+</span>12 <span style=''>case class GherkinRunnerConfig(oAuthToken: Option[String] = None)
+</span>13 <span style=''>
+</span>14 <span style=''>/**
+</span>15 <span style=''>  * Combine Gherkin DSL BDD definitions with JavaScript backing code
+</span>16 <span style=''>  * and provide the ability to execute the tests
+</span>17 <span style=''>  *
+</span>18 <span style=''>  * @param jsc       JavaScript backed by a Rug archive
+</span>19 <span style=''>  * @param rugs      other Rugs from the archive
+</span>20 <span style=''>  * @param listeners optional execution listeners
+</span>21 <span style=''>  * @param config    config to use for test running
+</span>22 <span style=''>  */
+</span>23 <span style=''>class GherkinRunner(jsc: JavaScriptContext,
+</span>24 <span style=''>                    rugs: Option[Rugs] = None,
+</span>25 <span style=''>                    listeners: Seq[GherkinExecutionListener] = Nil,
+</span>26 <span style=''>                    config: GherkinRunnerConfig = GherkinRunnerConfig())
+</span>27 <span style=''>  extends LazyLogging {
+</span>28 <span style=''>
+</span>29 <span style=''>  import GherkinRunner._
+</span>30 <span style=''>
+</span>31 <span style=''>  private val featureFactory: ExecutableFeatureFactory = DefaultExecutableFeatureFactory
+</span>32 <span style=''>
+</span>33 <span style=''>  private val definitions = </span><span style='background: #AEF1AE'>new Definitions(jsc)</span><span style=''>
+</span>34 <span style=''>
+</span>35 <span style=''>  </span><span style='background: #AEF1AE'>jsc.engine.put(DefinitionsObjectName, definitions)</span><span style=''>
+</span>36 <span style=''>  </span><span style='background: #AEF1AE'>jsc.atomistContent
+</span>37 <span style=''></span><span style='background: #AEF1AE'>    .filter(_ =&gt; true, jsc.atomistConfig.isJsTest)
+</span>38 <span style=''></span><span style='background: #AEF1AE'>    .allFiles
+</span>39 <span style=''></span><span style='background: #AEF1AE'>    .foreach(f =&gt; {
+</span>40 <span style=''></span><span style='background: #AEF1AE'>      jsc.evaluate(f)
+</span>41 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
+</span>42 <span style=''>
+</span>43 <span style=''>  /**
+</span>44 <span style=''>    * Features found in this archive
+</span>45 <span style=''>    */
+</span>46 <span style=''>  val features: Seq[FeatureDefinition] = </span><span style='background: #AEF1AE'>GherkinReader.findFeatures(jsc.rugAs)</span><span style=''>
+</span>47 <span style=''>
+</span>48 <span style=''>  private val executableFeatures = </span><span style='background: #AEF1AE'>features.map(f =&gt;
+</span>49 <span style=''></span><span style='background: #AEF1AE'>    featureFactory.executableFeatureFor(f, definitions, jsc.rugAs, rugs, listeners, config))</span><span style=''>
+</span>50 <span style=''>
+</span>51 <span style=''>  /**
+</span>52 <span style=''>    * Execute all the tests in this archive that pass provided filter
+</span>53 <span style=''>    *
+</span>54 <span style=''>    * @param filter callback to filter features that should execute
+</span>55 <span style=''>    */
+</span>56 <span style=''>  def execute(filter: (FeatureDefinition) =&gt; Boolean = _ =&gt; true): ArchiveTestResult = {
+</span>57 <span style=''>    logger.info(s&quot;Execute on $this&quot;)
+</span>58 <span style=''>    </span><span style='background: #AEF1AE'>ArchiveTestResult(executableFeatures.filter(pmf =&gt; filter(pmf.definition)).map(ef =&gt; jsc.withEnhancedExceptions {
+</span>59 <span style=''></span><span style='background: #AEF1AE'>      listeners.foreach(_.featureStarting(ef.definition))
+</span>60 <span style=''></span><span style='background: #AEF1AE'>      val result = ef.execute()
+</span>61 <span style=''></span><span style='background: #AEF1AE'>      listeners.foreach(_.featureCompleted(ef.definition, result))
+</span>62 <span style=''></span><span style='background: #AEF1AE'>      result
+</span>63 <span style=''></span><span style='background: #AEF1AE'>    }))</span><span style=''>
+</span>64 <span style=''>  }
+</span>65 <span style=''>
+</span>66 <span style=''>  override def toString: String =
+</span>67 <span style=''>    </span><span style='background: #AEF1AE'>s&quot;${getClass.getSimpleName}: Features [$features] found in $jsc&quot;</span><span style=''>
+</span>68 <span style=''>
+</span>69 <span style=''>}
+</span>70 <span style=''>
+</span>71 <span style=''>object GherkinRunner {
+</span>72 <span style=''>
+</span>73 <span style=''>  val DefinitionsObjectName: String = (</span><span style='background: #AEF1AE'>getClass.getName + &quot;_definitions&quot;).replace(&quot;.&quot;, &quot;_&quot;)</span><span style=''>
+</span>74 <span style=''>
+</span>75 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          5758
+        </td>
+        <td>
+          1096
+          -
+          1116
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.Definitions.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new Definitions(GherkinRunner.this.jsc)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          5757
+        </td>
+        <td>
+          1112
+          -
+          1115
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinRunner.jsc
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.jsc
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          5759
+        </td>
+        <td>
+          1135
+          -
+          1156
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinRunner.DefinitionsObjectName
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.DefinitionsObjectName
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          5761
+        </td>
+        <td>
+          1120
+          -
+          1170
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.script.AbstractScriptEngine.put
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.jsc.engine.put(GherkinRunner.DefinitionsObjectName, GherkinRunner.this.definitions)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          5760
+        </td>
+        <td>
+          1158
+          -
+          1169
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinRunner.definitions
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.definitions
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          5762
+        </td>
+        <td>
+          1209
+          -
+          1213
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          5763
+        </td>
+        <td>
+          1215
+          -
+          1241
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.AtomistConfig.isJsTest
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.jsc.atomistConfig.isJsTest(f)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          5765
+        </td>
+        <td>
+          1173
+          -
+          1305
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.jsc.atomistContent.filter(((x$1: com.atomist.source.DirectoryArtifact) =&gt; true), {
+  ((f: com.atomist.source.FileArtifact) =&gt; GherkinRunner.this.jsc.atomistConfig.isJsTest(f))
+}).allFiles.foreach[Unit](((f: com.atomist.source.FileArtifact) =&gt; GherkinRunner.this.jsc.evaluate(f)))
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          5764
+        </td>
+        <td>
+          1283
+          -
+          1298
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptContext.evaluate
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.jsc.evaluate(f)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          5767
+        </td>
+        <td>
+          1398
+          -
+          1435
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinReader.findFeatures
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinReader.findFeatures(GherkinRunner.this.jsc.rugAs)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          5766
+        </td>
+        <td>
+          1425
+          -
+          1434
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptContext.rugAs
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.jsc.rugAs
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          5774
+        </td>
+        <td>
+          1484
+          -
+          1484
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.test.gherkin.AbstractExecutableFeature[_]]
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          5775
+        </td>
+        <td>
+          1472
+          -
+          1582
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.features.map[com.atomist.rug.test.gherkin.AbstractExecutableFeature[_], Seq[com.atomist.rug.test.gherkin.AbstractExecutableFeature[_]]](((f: com.atomist.rug.test.gherkin.FeatureDefinition) =&gt; GherkinRunner.this.featureFactory.executableFeatureFor(f, GherkinRunner.this.definitions, GherkinRunner.this.jsc.rugAs, GherkinRunner.this.rugs, GherkinRunner.this.listeners, GherkinRunner.this.config)))(collection.this.Seq.canBuildFrom[com.atomist.rug.test.gherkin.AbstractExecutableFeature[_]])
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5768
+        </td>
+        <td>
+          1533
+          -
+          1544
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinRunner.definitions
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.definitions
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5771
+        </td>
+        <td>
+          1563
+          -
+          1572
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinRunner.listeners
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.listeners
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5773
+        </td>
+        <td>
+          1494
+          -
+          1581
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ExecutableFeatureFactory.executableFeatureFor
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.featureFactory.executableFeatureFor(f, GherkinRunner.this.definitions, GherkinRunner.this.jsc.rugAs, GherkinRunner.this.rugs, GherkinRunner.this.listeners, GherkinRunner.this.config)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5770
+        </td>
+        <td>
+          1557
+          -
+          1561
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinRunner.rugs
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.rugs
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5769
+        </td>
+        <td>
+          1546
+          -
+          1555
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptContext.rugAs
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.jsc.rugAs
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          5772
+        </td>
+        <td>
+          1574
+          -
+          1580
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinRunner.config
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.config
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          5777
+        </td>
+        <td>
+          1922
+          -
+          1944
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #AEF1AE">
+          filter.apply(pmf.definition)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          5786
+        </td>
+        <td>
+          1949
+          -
+          1949
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.test.gherkin.FeatureResult]
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          5788
+        </td>
+        <td>
+          1871
+          -
+          2162
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.ArchiveTestResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ArchiveTestResult.apply(GherkinRunner.this.executableFeatures.filter(((pmf: com.atomist.rug.test.gherkin.AbstractExecutableFeature[_]) =&gt; filter.apply(pmf.definition))).map[com.atomist.rug.test.gherkin.FeatureResult, Seq[com.atomist.rug.test.gherkin.FeatureResult]](((ef: com.atomist.rug.test.gherkin.AbstractExecutableFeature[_]) =&gt; GherkinRunner.this.jsc.withEnhancedExceptions[com.atomist.rug.test.gherkin.FeatureResult]({
+  GherkinRunner.this.listeners.foreach[Unit](((x$3: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$3.featureStarting(ef.definition)));
+  val result: com.atomist.rug.test.gherkin.FeatureResult = ef.execute();
+  GherkinRunner.this.listeners.foreach[Unit](((x$4: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$4.featureCompleted(ef.definition, result)));
+  result
+})))(collection.this.Seq.canBuildFrom[com.atomist.rug.test.gherkin.FeatureResult]))
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          5776
+        </td>
+        <td>
+          1929
+          -
+          1943
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AbstractExecutableFeature.definition
+        </td>
+        <td style="background: #AEF1AE">
+          pmf.definition
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          5785
+        </td>
+        <td>
+          1956
+          -
+          2160
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptContext.withEnhancedExceptions
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.jsc.withEnhancedExceptions[com.atomist.rug.test.gherkin.FeatureResult]({
+  GherkinRunner.this.listeners.foreach[Unit](((x$3: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$3.featureStarting(ef.definition)));
+  val result: com.atomist.rug.test.gherkin.FeatureResult = ef.execute();
+  GherkinRunner.this.listeners.foreach[Unit](((x$4: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$4.featureCompleted(ef.definition, result)));
+  result
+})
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          5787
+        </td>
+        <td>
+          1889
+          -
+          2161
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.executableFeatures.filter(((pmf: com.atomist.rug.test.gherkin.AbstractExecutableFeature[_]) =&gt; filter.apply(pmf.definition))).map[com.atomist.rug.test.gherkin.FeatureResult, Seq[com.atomist.rug.test.gherkin.FeatureResult]](((ef: com.atomist.rug.test.gherkin.AbstractExecutableFeature[_]) =&gt; GherkinRunner.this.jsc.withEnhancedExceptions[com.atomist.rug.test.gherkin.FeatureResult]({
+  GherkinRunner.this.listeners.foreach[Unit](((x$3: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$3.featureStarting(ef.definition)));
+  val result: com.atomist.rug.test.gherkin.FeatureResult = ef.execute();
+  GherkinRunner.this.listeners.foreach[Unit](((x$4: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$4.featureCompleted(ef.definition, result)));
+  result
+})))(collection.this.Seq.canBuildFrom[com.atomist.rug.test.gherkin.FeatureResult])
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          5780
+        </td>
+        <td>
+          1991
+          -
+          2042
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.listeners.foreach[Unit](((x$3: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$3.featureStarting(ef.definition)))
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          5779
+        </td>
+        <td>
+          2009
+          -
+          2041
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinExecutionListener.featureStarting
+        </td>
+        <td style="background: #AEF1AE">
+          x$3.featureStarting(ef.definition)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          5778
+        </td>
+        <td>
+          2027
+          -
+          2040
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AbstractExecutableFeature.definition
+        </td>
+        <td style="background: #AEF1AE">
+          ef.definition
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          5781
+        </td>
+        <td>
+          2062
+          -
+          2074
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AbstractExecutableFeature.execute
+        </td>
+        <td style="background: #AEF1AE">
+          ef.execute()
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          5783
+        </td>
+        <td>
+          2099
+          -
+          2140
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinExecutionListener.featureCompleted
+        </td>
+        <td style="background: #AEF1AE">
+          x$4.featureCompleted(ef.definition, result)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          5782
+        </td>
+        <td>
+          2118
+          -
+          2131
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.AbstractExecutableFeature.definition
+        </td>
+        <td style="background: #AEF1AE">
+          ef.definition
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          5784
+        </td>
+        <td>
+          2081
+          -
+          2141
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.listeners.foreach[Unit](((x$4: com.atomist.rug.test.gherkin.GherkinExecutionListener) =&gt; x$4.featureCompleted(ef.definition, result)))
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          5792
+        </td>
+        <td>
+          2269
+          -
+          2270
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          5795
+        </td>
+        <td>
+          2266
+          -
+          2269
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinRunner.jsc
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.jsc
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          5789
+        </td>
+        <td>
+          2208
+          -
+          2209
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          5791
+        </td>
+        <td>
+          2254
+          -
+          2266
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;] found in &quot;
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          5794
+        </td>
+        <td>
+          2246
+          -
+          2254
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinRunner.features
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.features
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          5796
+        </td>
+        <td>
+          2206
+          -
+          2270
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;: Features [&quot;, &quot;] found in &quot;, &quot;&quot;).s(GherkinRunner.this.getClass().getSimpleName(), GherkinRunner.this.features, GherkinRunner.this.jsc)
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          5790
+        </td>
+        <td>
+          2233
+          -
+          2246
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;: Features [&quot;
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          5793
+        </td>
+        <td>
+          2210
+          -
+          2232
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getSimpleName
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.getClass().getSimpleName()
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          5797
+        </td>
+        <td>
+          2338
+          -
+          2390
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinRunner.this.getClass().getName().+(&quot;_definitions&quot;).replace(&quot;.&quot;, &quot;_&quot;)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

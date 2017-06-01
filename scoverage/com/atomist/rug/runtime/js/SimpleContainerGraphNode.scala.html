@@ -1,0 +1,834 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/js/SimpleContainerGraphNode.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.js
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>
+</span>5 <span style=''>object SimpleContainerGraphNode {
+</span>6 <span style=''>
+</span>7 <span style=''>  def apply(nodeName: String, child: GraphNode, tags: String*): SimpleContainerGraphNode =
+</span>8 <span style=''>    </span><span style='background: #AEF1AE'>SimpleContainerGraphNode(nodeName, Seq(child), tags.toSet)</span><span style=''>
+</span>9 <span style=''>
+</span>10 <span style=''>  def empty(nodeName: String, tags: String*): SimpleContainerGraphNode =
+</span>11 <span style=''>    </span><span style='background: #AEF1AE'>SimpleContainerGraphNode(nodeName, Nil, tags.toSet)</span><span style=''>
+</span>12 <span style=''>}
+</span>13 <span style=''>
+</span>14 <span style=''>case class SimpleContainerGraphNode(nodeName: String,
+</span>15 <span style=''>                                    relatedNodes: Seq[GraphNode],
+</span>16 <span style=''>                                    override val nodeTags: Set[String],
+</span>17 <span style=''>                                    edges: Map[String, Seq[GraphNode]] = Map.empty)
+</span>18 <span style=''>  extends GraphNode {
+</span>19 <span style=''>
+</span>20 <span style=''>  override def relatedNodeNames: Set[String] = </span><span style='background: #AEF1AE'>relatedNodes.map(_.nodeName).toSet</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>  override def relatedNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>relatedNodes.flatMap(_.nodeTags).toSet</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>  override def relatedNodesNamed(key: String): Seq[GraphNode] =
+</span>25 <span style=''>    </span><span style='background: #AEF1AE'>relatedNodes.filter(n =&gt; n.nodeName == key)</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>  override def followEdge(name: String): Seq[GraphNode] =
+</span>28 <span style=''>    </span><span style='background: #AEF1AE'>edges.getOrElse(name, Nil)</span><span style=''>
+</span>29 <span style=''>
+</span>30 <span style=''>  def addRelatedNode(relatedNode: GraphNode): SimpleContainerGraphNode =
+</span>31 <span style=''>    </span><span style='background: #AEF1AE'>this.copy(relatedNodes = relatedNodes :+ relatedNode)</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>  def addEdge(edgeName: String, relatedNodes: Seq[GraphNode]): SimpleContainerGraphNode =
+</span>34 <span style=''>    </span><span style='background: #AEF1AE'>this.copy(edges = edges + (edgeName -&gt; relatedNodes))</span><span style=''>
+</span>35 <span style=''>
+</span>36 <span style=''>  def withTag(tag: String): SimpleContainerGraphNode = </span><span style='background: #AEF1AE'>copy(nodeTags = nodeTags ++ Set(tag))</span><span style=''>
+</span>37 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          8
+        </td>
+        <td>
+          4004
+        </td>
+        <td>
+          202
+          -
+          202
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.apply$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleContainerGraphNode.apply$default$4
+        </td>
+      </tr><tr>
+        <td>
+          8
+        </td>
+        <td>
+          4003
+        </td>
+        <td>
+          249
+          -
+          259
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          tags.toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          8
+        </td>
+        <td>
+          4002
+        </td>
+        <td>
+          237
+          -
+          247
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.graph.GraphNode](child)
+        </td>
+      </tr><tr>
+        <td>
+          8
+        </td>
+        <td>
+          4005
+        </td>
+        <td>
+          202
+          -
+          260
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleContainerGraphNode.apply(nodeName, collection.this.Seq.apply[com.atomist.graph.GraphNode](child), tags.toSet[String], SimpleContainerGraphNode.apply$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          4007
+        </td>
+        <td>
+          379
+          -
+          389
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          tags.toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          4006
+        </td>
+        <td>
+          374
+          -
+          377
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          4009
+        </td>
+        <td>
+          339
+          -
+          390
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleContainerGraphNode.apply(nodeName, immutable.this.Nil, tags.toSet[String], SimpleContainerGraphNode.apply$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          4008
+        </td>
+        <td>
+          339
+          -
+          339
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.apply$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleContainerGraphNode.apply$default$4
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          4012
+        </td>
+        <td>
+          740
+          -
+          774
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleContainerGraphNode.this.relatedNodes.map[String, Seq[String]](((x$1: com.atomist.graph.GraphNode) =&gt; x$1.nodeName))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          4011
+        </td>
+        <td>
+          756
+          -
+          756
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          4010
+        </td>
+        <td>
+          757
+          -
+          767
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          4013
+        </td>
+        <td>
+          844
+          -
+          854
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeTags
+        </td>
+        <td style="background: #F0ADAD">
+          x$2.nodeTags
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          4015
+        </td>
+        <td>
+          823
+          -
+          861
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #F0ADAD">
+          SimpleContainerGraphNode.this.relatedNodes.flatMap[String, Seq[String]](((x$2: com.atomist.graph.GraphNode) =&gt; x$2.nodeTags))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          4014
+        </td>
+        <td>
+          843
+          -
+          843
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          4016
+        </td>
+        <td>
+          956
+          -
+          973
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          n.nodeName.==(key)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          4017
+        </td>
+        <td>
+          931
+          -
+          974
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleContainerGraphNode.this.relatedNodes.filter(((n: com.atomist.graph.GraphNode) =&gt; n.nodeName.==(key)))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          4018
+        </td>
+        <td>
+          1060
+          -
+          1063
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          4019
+        </td>
+        <td>
+          1038
+          -
+          1064
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleContainerGraphNode.this.edges.getOrElse[Seq[com.atomist.graph.GraphNode]](name, immutable.this.Nil)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          4022
+        </td>
+        <td>
+          1148
+          -
+          1148
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.copy$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          this.copy$default$1
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          4024
+        </td>
+        <td>
+          1148
+          -
+          1148
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.copy$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          this.copy$default$4
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          4021
+        </td>
+        <td>
+          1168
+          -
+          1195
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleContainerGraphNode.this.relatedNodes.:+[com.atomist.graph.GraphNode, Seq[com.atomist.graph.GraphNode]](relatedNode)(collection.this.Seq.canBuildFrom[com.atomist.graph.GraphNode])
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          4020
+        </td>
+        <td>
+          1181
+          -
+          1181
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.graph.GraphNode]
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          4023
+        </td>
+        <td>
+          1148
+          -
+          1148
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.copy$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          this.copy$default$3
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          4025
+        </td>
+        <td>
+          1143
+          -
+          1196
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.copy
+        </td>
+        <td style="background: #AEF1AE">
+          this.copy(x$4, x$3, x$5, x$6)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          4031
+        </td>
+        <td>
+          1292
+          -
+          1345
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.copy
+        </td>
+        <td style="background: #AEF1AE">
+          this.copy(x$8, x$9, x$10, x$7)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          4027
+        </td>
+        <td>
+          1310
+          -
+          1344
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Map.+
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleContainerGraphNode.this.edges.+[Seq[com.atomist.graph.GraphNode]](scala.this.Predef.ArrowAssoc[String](edgeName).-&gt;[Seq[com.atomist.graph.GraphNode]](relatedNodes))
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          4030
+        </td>
+        <td>
+          1297
+          -
+          1297
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.copy$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          this.copy$default$3
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          4029
+        </td>
+        <td>
+          1297
+          -
+          1297
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.copy$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          this.copy$default$2
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          4026
+        </td>
+        <td>
+          1319
+          -
+          1343
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.ArrowAssoc[String](edgeName).-&gt;[Seq[com.atomist.graph.GraphNode]](relatedNodes)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          4028
+        </td>
+        <td>
+          1297
+          -
+          1297
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.copy$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          this.copy$default$1
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4033
+        </td>
+        <td>
+          1418
+          -
+          1438
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleContainerGraphNode.this.nodeTags.++(scala.this.Predef.Set.apply[String](tag))
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4036
+        </td>
+        <td>
+          1402
+          -
+          1402
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.copy$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleContainerGraphNode.this.copy$default$4
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4032
+        </td>
+        <td>
+          1430
+          -
+          1438
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](tag)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4035
+        </td>
+        <td>
+          1402
+          -
+          1402
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.copy$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleContainerGraphNode.this.copy$default$2
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4034
+        </td>
+        <td>
+          1402
+          -
+          1402
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.copy$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleContainerGraphNode.this.copy$default$1
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4037
+        </td>
+        <td>
+          1402
+          -
+          1439
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.SimpleContainerGraphNode.copy
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleContainerGraphNode.this.copy(x$12, x$13, x$11, x$14)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

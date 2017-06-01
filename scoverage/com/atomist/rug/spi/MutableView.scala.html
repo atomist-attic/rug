@@ -1,0 +1,149 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/spi/MutableView.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.spi
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.tree.{ContainerTreeNode, PathAwareTreeNode}
+</span>4 <span style=''>
+</span>5 <span style=''>/**
+</span>6 <span style=''>  * Exposed to Rug &quot;with&quot; and &quot;from&quot; blocks, and access from JavaScript.
+</span>7 <span style=''>  * Typically backed by an object from another hierarchy.
+</span>8 <span style=''>  * View implementations will create their own methods for updates.
+</span>9 <span style=''>  *
+</span>10 <span style=''>  * Methods annotated with @ExportFunction are exposed via views. Predicates
+</span>11 <span style=''>  * should return Boolean, transform functions the view type.
+</span>12 <span style=''>  * Methods can declare whatever parameters they need from local arguments in the
+</span>13 <span style=''>  * rug script. An optional additional argument if declared will be populated with the
+</span>14 <span style=''>  * Rug FunctionInvocationContext.
+</span>15 <span style=''>  *
+</span>16 <span style=''>  * Return types should be Java, rather than Scala, as they may
+</span>17 <span style=''>  * be invoked from JavaScript via Nashorn.
+</span>18 <span style=''>  *
+</span>19 <span style=''>  * @tparam T type of the underlying object
+</span>20 <span style=''>  */
+</span>21 <span style=''>trait MutableView[T] extends PathAwareTreeNode with ContainerTreeNode {
+</span>22 <span style=''>
+</span>23 <span style=''>  def originalBackingObject: T
+</span>24 <span style=''>
+</span>25 <span style=''>  def addressableBackingObject: Any = </span><span style='background: #F0ADAD'>originalBackingObject</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>  def dirty: Boolean
+</span>28 <span style=''>
+</span>29 <span style=''>  def currentBackingObject: T
+</span>30 <span style=''>
+</span>31 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Node content&quot;)
+</span>32 <span style=''>  override def value: String = </span><span style='background: #F0ADAD'>currentBackingObject.toString</span><span style=''>
+</span>33 <span style=''>
+</span>34 <span style=''>  override def parent: MutableView[_]
+</span>35 <span style=''>
+</span>36 <span style=''>  /**
+</span>37 <span style=''>    * Subclasses can call this to update the state of this object.
+</span>38 <span style=''>    *
+</span>39 <span style=''>    * @param newBackingObject type of the underlying object
+</span>40 <span style=''>    */
+</span>41 <span style=''>  def updateTo(newBackingObject: T): Unit
+</span>42 <span style=''>
+</span>43 <span style=''>  /**
+</span>44 <span style=''>    * Register an updater that will be invoked before a call to currentObject.
+</span>45 <span style=''>    */
+</span>46 <span style=''>  def registerUpdater(u: Updater[T])
+</span>47 <span style=''>
+</span>48 <span style=''>  /**
+</span>49 <span style=''>    * Commit all changes, invoking updaters and calling parent if necessary.
+</span>50 <span style=''>    */
+</span>51 <span style=''>  def commit(): Unit
+</span>52 <span style=''>}
+</span>53 <span style=''>
+</span>54 <span style=''>/**
+</span>55 <span style=''>  * Used when we need to update a MutableView from a number of objects,
+</span>56 <span style=''>  * in a particular order.
+</span>57 <span style=''>  *
+</span>58 <span style=''>  * @tparam T type of the underlying object
+</span>59 <span style=''>  */
+</span>60 <span style=''>trait Updater[T] {
+</span>61 <span style=''>
+</span>62 <span style=''>  /**
+</span>63 <span style=''>    * Make updates to V.
+</span>64 <span style=''>    */
+</span>65 <span style=''>  def update(v: MutableView[T]): Unit
+</span>66 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          5277
+        </td>
+        <td>
+          951
+          -
+          972
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.MutableView.originalBackingObject
+        </td>
+        <td style="background: #F0ADAD">
+          MutableView.this.originalBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          5278
+        </td>
+        <td>
+          1123
+          -
+          1152
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Any.toString
+        </td>
+        <td style="background: #F0ADAD">
+          MutableView.this.currentBackingObject.toString()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

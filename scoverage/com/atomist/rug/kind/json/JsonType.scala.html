@@ -1,0 +1,3189 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/json/JsonType.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.json
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.kind.core._
+</span>4 <span style=''>import com.atomist.rug.kind.grammar.AntlrRawFileType
+</span>5 <span style=''>import com.atomist.rug.spi.{ExportFunction, _}
+</span>6 <span style=''>import com.atomist.source.FileArtifact
+</span>7 <span style=''>import com.atomist.tree._
+</span>8 <span style=''>import com.atomist.tree.content.text.grammar.antlr.FromGrammarAstNodeCreationStrategy
+</span>9 <span style=''>import com.atomist.tree.pathexpression.PathExpressionEngine
+</span>10 <span style=''>import com.atomist.tree.utils.TreeNodeFinders._
+</span>11 <span style=''>import com.atomist.tree.utils.TreeNodeUtils
+</span>12 <span style=''>
+</span>13 <span style=''>/**
+</span>14 <span style=''>  * Type for JSON files
+</span>15 <span style=''>  */
+</span>16 <span style=''>class JsonType
+</span>17 <span style=''>  extends AntlrRawFileType(topLevelProduction = &quot;json&quot;,
+</span>18 <span style=''>    FromGrammarAstNodeCreationStrategy,
+</span>19 <span style=''>    &quot;classpath:grammars/antlr/JSON.g4&quot;
+</span>20 <span style=''>  ) {
+</span>21 <span style=''>
+</span>22 <span style=''>  import JsonType._
+</span>23 <span style=''>
+</span>24 <span style=''>  override def runtimeClass = </span><span style='background: #AEF1AE'>classOf[JsonMutableView]</span><span style=''>
+</span>25 <span style=''>
+</span>26 <span style=''>  override def isOfType(f: FileArtifact): Boolean = </span><span style='background: #AEF1AE'>f.name.endsWith(Extension)</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>  override protected def createView(n: UpdatableTreeNode, f: FileArtifactBackedMutableView): MutableView[_] = {
+</span>29 <span style=''>    </span><span style='background: #AEF1AE'>new JsonMutableView(f.currentBackingObject, f.parent, n)</span><span style=''>
+</span>30 <span style=''>  }
+</span>31 <span style=''>
+</span>32 <span style=''>  override def description: String = </span><span style='background: #F0ADAD'>&quot;json&quot;</span><span style=''>
+</span>33 <span style=''>}
+</span>34 <span style=''>
+</span>35 <span style=''>object JsonType {
+</span>36 <span style=''>
+</span>37 <span style=''>  val Extension = </span><span style='background: #AEF1AE'>&quot;.json&quot;</span><span style=''>
+</span>38 <span style=''>
+</span>39 <span style=''>  val pe = </span><span style='background: #AEF1AE'>new PathExpressionEngine</span><span style=''>
+</span>40 <span style=''>
+</span>41 <span style=''>  /*
+</span>42 <span style=''>  value
+</span>43 <span style=''>   : STRING
+</span>44 <span style=''>   | NUMBER
+</span>45 <span style=''>   | object
+</span>46 <span style=''>   | array
+</span>47 <span style=''>   | 'true'
+</span>48 <span style=''>   | 'false'
+</span>49 <span style=''>   | 'null'
+</span>50 <span style=''>   ;
+</span>51 <span style=''>   */
+</span>52 <span style=''>  private[json] def findPairsInValueNode(parent: MutableView[_], n: TreeNode): Seq[PairMutableView] = n match {
+</span>53 <span style=''>    case mtn: TreeNode /*if &quot;value&quot;.equals(mtn.nodeName)*/ =&gt;
+</span>54 <span style=''>      </span><span style='background: #AEF1AE'>mtn.childNodes.collect {
+</span>55 <span style=''></span><span style='background: #AEF1AE'>        case p: UpdatableTreeNode if &quot;pair&quot;.equals(p.nodeName) =&gt;
+</span>56 <span style=''></span><span style='background: #AEF1AE'>          Seq(new PairMutableView(p, parent))
+</span>57 <span style=''></span><span style='background: #AEF1AE'>        case o: UpdatableTreeNode if &quot;object&quot;.equals(o.nodeName) =&gt;
+</span>58 <span style=''></span><span style='background: #AEF1AE'>          val nodes: Seq[PairMutableView] = o.childrenNamed(&quot;pair&quot;).map(p =&gt; new PairMutableView(p.asInstanceOf[UpdatableTreeNode], parent))
+</span>59 <span style=''></span><span style='background: #AEF1AE'>          nodes
+</span>60 <span style=''></span><span style='background: #AEF1AE'>      }.flatten</span><span style=''>
+</span>61 <span style=''>    case x =&gt; </span><span style='background: #F0ADAD'>Nil</span><span style=''>
+</span>62 <span style=''>  }
+</span>63 <span style=''>
+</span>64 <span style=''>  // Get rid of &quot;&quot;
+</span>65 <span style=''>  private[json] def deJsonize(s: String) = </span><span style='background: #AEF1AE'>s.substring(1).dropRight(1)</span><span style=''>
+</span>66 <span style=''>
+</span>67 <span style=''>  private[json] def jsonize(s: String) = </span><span style='background: #AEF1AE'>&quot;\&quot;&quot; + s + &quot;\&quot;&quot;</span><span style=''>
+</span>68 <span style=''>}
+</span>69 <span style=''>
+</span>70 <span style=''>import com.atomist.rug.kind.json.JsonType._
+</span>71 <span style=''>
+</span>72 <span style=''>class JsonMutableView(
+</span>73 <span style=''>                       originalBackingObject: FileArtifact,
+</span>74 <span style=''>                       parent: ProjectMutableView,
+</span>75 <span style=''>                       originalParsed: UpdatableTreeNode
+</span>76 <span style=''>                     )
+</span>77 <span style=''>  extends LazyFileArtifactBackedMutableView(originalBackingObject, parent) {
+</span>78 <span style=''>
+</span>79 <span style=''>  val currentParsed: TreeNode = </span><span style='background: #AEF1AE'>originalParsed</span><span style=''> // todo: make private again
+</span>80 <span style=''>
+</span>81 <span style=''>  override def dirty = </span><span style='background: #AEF1AE'>true</span><span style=''>
+</span>82 <span style=''>
+</span>83 <span style=''>  override def value: String = </span><span style='background: #F0ADAD'>currentParsed.value</span><span style=''>
+</span>84 <span style=''>
+</span>85 <span style=''>  // There's just one value
+</span>86 <span style=''>  /*
+</span>87 <span style=''> json
+</span>88 <span style=''>  : value
+</span>89 <span style=''>  ;
+</span>90 <span style=''>  */
+</span>91 <span style=''>  private val soleKid: TreeNode = </span><span style='background: #AEF1AE'>currentParsed.childrenNamed(&quot;value&quot;).head</span><span style=''>
+</span>92 <span style=''>
+</span>93 <span style=''>  override protected def currentContent: String = </span><span style='background: #AEF1AE'>currentParsed.value</span><span style=''>
+</span>94 <span style=''>
+</span>95 <span style=''>  override def childNodeNames: Set[String] =
+</span>96 <span style=''>    </span><span style='background: #AEF1AE'>findPairsInValueNode(this, soleKid).map(_.nodeName).toSet</span><span style=''>
+</span>97 <span style=''>
+</span>98 <span style=''>  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = {
+</span>99 <span style=''>    </span><span style='background: #AEF1AE'>findPairsInValueNode(this, soleKid)
+</span>100 <span style=''></span><span style='background: #AEF1AE'>      .filter(n =&gt; fieldName.equals(n.nodeName))</span><span style=''>
+</span>101 <span style=''>  }
+</span>102 <span style=''>}
+</span>103 <span style=''>
+</span>104 <span style=''>class PairTypeProvider extends TypeProvider(classOf[PairMutableView]) {
+</span>105 <span style=''>
+</span>106 <span style=''>  override def description: String = </span><span style='background: #AEF1AE'>&quot;JSON pair&quot;</span><span style=''>
+</span>107 <span style=''>}
+</span>108 <span style=''>
+</span>109 <span style=''>/*
+</span>110 <span style=''>  pair
+</span>111 <span style=''>   : STRING ':' value
+</span>112 <span style=''>   ;
+</span>113 <span style=''>   */
+</span>114 <span style=''>private class PairMutableView(
+</span>115 <span style=''>                               originalBackingObject: UpdatableTreeNode,
+</span>116 <span style=''>                               parent: MutableView[_])
+</span>117 <span style=''>  extends ViewSupport[UpdatableTreeNode](originalBackingObject, parent) {
+</span>118 <span style=''>
+</span>119 <span style=''>  // The backing node has a different name, as the Antlr
+</span>120 <span style=''>  // grammar doesn't adhere to our capitalization rules
+</span>121 <span style=''>  </span><span style='background: #AEF1AE'>require(currentBackingObject.nodeName.equals(&quot;pair&quot;))</span><span style=''>
+</span>122 <span style=''>
+</span>123 <span style=''>  private val kids: Seq[MutableView[_]] =
+</span>124 <span style=''>    </span><span style='background: #AEF1AE'>singleChild(currentBackingObject, &quot;value&quot;)</span><span style=''> match {
+</span>125 <span style=''>      case Some(value: UpdatableTreeNode) =&gt;
+</span>126 <span style=''>        </span><span style='background: #AEF1AE'>value.childNodes</span><span style=''> match {
+</span>127 <span style=''>          case Seq(_: PaddingTreeNode) =&gt;
+</span>128 <span style=''>            </span><span style='background: #F0ADAD'>Seq(new JsonStringView(value, this))</span><span style=''>
+</span>129 <span style=''>          case Seq(s: UpdatableTreeNode) if </span><span style='background: #AEF1AE'>&quot;STRING&quot;.equals(s.nodeName)</span><span style=''> =&gt;
+</span>130 <span style=''>            </span><span style='background: #AEF1AE'>Seq(new JsonStringView(s, this))</span><span style=''>
+</span>131 <span style=''>          case Seq(mv) if </span><span style='background: #AEF1AE'>&quot;object&quot; equals mv.nodeName</span><span style=''> =&gt;
+</span>132 <span style=''>            </span><span style='background: #AEF1AE'>findPairsInValueNode(this, mv)</span><span style=''>
+</span>133 <span style=''>          case Seq(arr) if </span><span style='background: #AEF1AE'>&quot;array&quot;.equals(arr.nodeName)</span><span style=''> =&gt;
+</span>134 <span style=''>            </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>135 <span style=''>          case empty if </span><span style='background: #AEF1AE'>empty.isEmpty</span><span style=''> =&gt; </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>136 <span style=''>          case tooMany if </span><span style='background: #F0ADAD'>tooMany.size &gt; 1</span><span style=''> =&gt;
+</span>137 <span style=''>            </span><span style='background: #F0ADAD'>tooMany.foreach(f =&gt; println(TreeNodeUtils.toShortString(f)))</span><span style=''>
+</span>138 <span style=''>            </span><span style='background: #F0ADAD'>throw new RuntimeException(s&quot;Look, I found too many nodes. There are ${tooMany.size} and ${tooMany.collect{ case p: PaddingTreeNode =&gt; p}.size} of them are padding&quot;)</span><span style=''>
+</span>139 <span style=''>        }
+</span>140 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>requiredSingleChild(currentBackingObject, &quot;STRING&quot;)</span><span style=''> match {
+</span>141 <span style=''>        case s: UpdatableTreeNode if </span><span style='background: #F0ADAD'>&quot;STRING&quot;.equals(s.nodeName)</span><span style=''> =&gt;
+</span>142 <span style=''>          </span><span style='background: #F0ADAD'>Seq(new JsonStringView(s, this))</span><span style=''>
+</span>143 <span style=''>      }
+</span>144 <span style=''>    }
+</span>145 <span style=''>
+</span>146 <span style=''>  override def nodeName: String = </span><span style='background: #AEF1AE'>nodeNameFromValue(currentBackingObject)</span><span style=''>
+</span>147 <span style=''>
+</span>148 <span style=''>  private def nodeNameFromValue(tn: TreeNode): String = </span><span style='background: #AEF1AE'>deJsonize(requiredSingleFieldValue(tn, &quot;STRING&quot;))</span><span style=''>
+</span>149 <span style=''>
+</span>150 <span style=''>  override val childNodeTypes: Set[String] = </span><span style='background: #AEF1AE'>Set(&quot;value&quot;)</span><span style=''>
+</span>151 <span style=''>
+</span>152 <span style=''>  override def value: String = </span><span style='background: #F0ADAD'>currentBackingObject.value</span><span style=''>
+</span>153 <span style=''>
+</span>154 <span style=''>  override def childNodeNames: Set[String] = </span><span style='background: #AEF1AE'>kids.map(k =&gt; k.nodeName).toSet</span><span style=''>
+</span>155 <span style=''>
+</span>156 <span style=''>  override def childrenNamed(fieldName: String): Seq[MutableView[_]] =
+</span>157 <span style=''>    </span><span style='background: #AEF1AE'>kids.filter(_.nodeName.equals(fieldName))</span><span style=''>
+</span>158 <span style=''>
+</span>159 <span style=''>  @ExportFunction(readOnly = false, description = &quot;setValue&quot;)
+</span>160 <span style=''>  def setValue(newValue: String): Unit = {
+</span>161 <span style=''>    </span><span style='background: #AEF1AE'>requiredSingleChild(currentBackingObject, &quot;value&quot;)</span><span style=''> match {
+</span>162 <span style=''>      case mtn: UpdatableTreeNode =&gt; </span><span style='background: #AEF1AE'>mtn.update(jsonize(newValue))</span><span style=''>
+</span>163 <span style=''>    }
+</span>164 <span style=''>  }
+</span>165 <span style=''>
+</span>166 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add a key value&quot;)
+</span>167 <span style=''>  def addKeyValue(k: String, v: String): Unit = {
+</span>168 <span style=''>    </span><span style='background: #AEF1AE'>requiredSingleChild(currentBackingObject, &quot;value&quot;)</span><span style=''> match {
+</span>169 <span style=''>      case vm: UpdatableTreeNode =&gt;
+</span>170 <span style=''>        val index = </span><span style='background: #AEF1AE'>vm.value.lastIndexOf(&quot;\&quot;&quot;)</span><span style=''>
+</span>171 <span style=''>        val split = </span><span style='background: #AEF1AE'>vm.value.splitAt(index)</span><span style=''>
+</span>172 <span style=''>        val newContent = </span><span style='background: #AEF1AE'>s&quot;${jsonize(k)}: ${jsonize(v)}&quot;</span><span style=''>
+</span>173 <span style=''>        // TODO how many tabs do we have? could get from previous line
+</span>174 <span style=''>        </span><span style='background: #AEF1AE'>vm.update(split._1 + &quot;\&quot;,\n\t&quot; + newContent + split._2.substring(1))</span><span style=''>
+</span>175 <span style=''>    }
+</span>176 <span style=''>  }
+</span>177 <span style=''>
+</span>178 <span style=''>  override def toString = </span><span style='background: #F0ADAD'>s&quot;${currentBackingObject.nodeName}:${currentBackingObject.nodeTags}:[${currentBackingObject.value}]&quot;</span><span style=''>
+</span>179 <span style=''>}
+</span>180 <span style=''>
+</span>181 <span style=''>/**
+</span>182 <span style=''>  * Handle &quot; surrounding JSON strings.
+</span>183 <span style=''>  */
+</span>184 <span style=''>private class JsonStringView(
+</span>185 <span style=''>                              originalBackingObject: UpdatableTreeNode,
+</span>186 <span style=''>                              parent: MutableView[_])
+</span>187 <span style=''>  extends ViewSupport[UpdatableTreeNode](originalBackingObject, parent)
+</span>188 <span style=''>    with MutableTreeNode {
+</span>189 <span style=''>
+</span>190 <span style=''>  </span><span style='background: #AEF1AE'>addTypes(currentBackingObject.nodeTags)</span><span style=''>
+</span>191 <span style=''>
+</span>192 <span style=''>  override def nodeName: String = </span><span style='background: #AEF1AE'>originalBackingObject.nodeName</span><span style=''>
+</span>193 <span style=''>
+</span>194 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Value of the content&quot;)
+</span>195 <span style=''>  override def value: String = </span><span style='background: #AEF1AE'>deJsonize(originalBackingObject.value)</span><span style=''>
+</span>196 <span style=''>
+</span>197 <span style=''>  override def update(to: String): Unit = </span><span style='background: #AEF1AE'>setValue(to)</span><span style=''>
+</span>198 <span style=''>
+</span>199 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Return the value of the sole key&quot;)
+</span>200 <span style=''>  def valueOf: String = </span><span style='background: #F0ADAD'>originalBackingObject.value</span><span style=''>
+</span>201 <span style=''>
+</span>202 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Update the value of the sole key&quot;)
+</span>203 <span style=''>  def setValue(@ExportFunctionParameterDescription(name = &quot;name&quot;, description = &quot;The new value&quot;) newValue: String): Unit =
+</span>204 <span style=''>    </span><span style='background: #AEF1AE'>originalBackingObject.update(&quot;\&quot;&quot; + newValue + &quot;\&quot;&quot;)</span><span style=''>
+</span>205 <span style=''>
+</span>206 <span style=''>  override val childNodeNames: Set[String] = </span><span style='background: #AEF1AE'>Set(originalBackingObject.nodeName)</span><span style=''>
+</span>207 <span style=''>
+</span>208 <span style=''>  override def childNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>Set()</span><span style=''>
+</span>209 <span style=''>
+</span>210 <span style=''>  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>211 <span style=''>
+</span>212 <span style=''>  override def toString = </span><span style='background: #F0ADAD'>s&quot;${getClass.getSimpleName} wrapping $currentBackingObject&quot;</span><span style=''>
+</span>213 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          2261
+        </td>
+        <td>
+          715
+          -
+          739
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.rug.kind.json.JsonMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2263
+        </td>
+        <td>
+          793
+          -
+          819
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          f.name.endsWith(JsonType.Extension)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2262
+        </td>
+        <td>
+          809
+          -
+          818
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.json.JsonType.Extension
+        </td>
+        <td style="background: #AEF1AE">
+          JsonType.Extension
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          2266
+        </td>
+        <td>
+          937
+          -
+          993
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.json.JsonMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new JsonMutableView(f.currentBackingObject, f.parent, n)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          2265
+        </td>
+        <td>
+          981
+          -
+          989
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.parent
+        </td>
+        <td style="background: #AEF1AE">
+          f.parent
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          2264
+        </td>
+        <td>
+          957
+          -
+          979
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          f.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          2267
+        </td>
+        <td>
+          1036
+          -
+          1042
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;json&quot;
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          2268
+        </td>
+        <td>
+          1083
+          -
+          1090
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;.json&quot;
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          2269
+        </td>
+        <td>
+          1103
+          -
+          1127
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionEngine.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.tree.pathexpression.PathExpressionEngine()
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          2284
+        </td>
+        <td>
+          1440
+          -
+          1440
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Seq[com.atomist.rug.kind.json.PairMutableView]]
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          2283
+        </td>
+        <td>
+          1440
+          -
+          1440
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.json.JsonType.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          2272
+        </td>
+        <td>
+          1479
+          -
+          1504
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;pair&quot;.equals(p.nodeName)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          2271
+        </td>
+        <td>
+          1493
+          -
+          1503
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          p.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          2270
+        </td>
+        <td>
+          1479
+          -
+          1485
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;pair&quot;
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          2274
+        </td>
+        <td>
+          1518
+          -
+          1553
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.kind.json.PairMutableView](new PairMutableView(p, parent))
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          2273
+        </td>
+        <td>
+          1522
+          -
+          1552
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.json.PairMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new PairMutableView(p, parent)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          2275
+        </td>
+        <td>
+          1591
+          -
+          1599
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;object&quot;
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          2277
+        </td>
+        <td>
+          1591
+          -
+          1618
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;object&quot;.equals(o.nodeName)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          2276
+        </td>
+        <td>
+          1607
+          -
+          1617
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          o.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          2278
+        </td>
+        <td>
+          1682
+          -
+          1688
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;pair&quot;
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          2281
+        </td>
+        <td>
+          1693
+          -
+          1693
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.kind.json.PairMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          2280
+        </td>
+        <td>
+          1699
+          -
+          1761
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.json.PairMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new PairMutableView(p.asInstanceOf[com.atomist.tree.UpdatableTreeNode], parent)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          2279
+        </td>
+        <td>
+          1719
+          -
+          1752
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          p.asInstanceOf[com.atomist.tree.UpdatableTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          2282
+        </td>
+        <td>
+          1666
+          -
+          1762
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          o.childrenNamed(&quot;pair&quot;).map[com.atomist.rug.kind.json.PairMutableView, Seq[com.atomist.rug.kind.json.PairMutableView]](((p: com.atomist.tree.TreeNode) =&gt; new PairMutableView(p.asInstanceOf[com.atomist.tree.UpdatableTreeNode], parent)))(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.json.PairMutableView])
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          2286
+        </td>
+        <td>
+          1417
+          -
+          1794
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.generic.GenericTraversableTemplate.flatten
+        </td>
+        <td style="background: #AEF1AE">
+          mtn.childNodes.collect[Seq[com.atomist.rug.kind.json.PairMutableView], Seq[Seq[com.atomist.rug.kind.json.PairMutableView]]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.tree.TreeNode,Seq[com.atomist.rug.kind.json.PairMutableView]] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.tree.TreeNode =&gt; Seq[com.atomist.rug.kind.json.PairMutableView]&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.tree.TreeNode, B1 &gt;: Seq[com.atomist.rug.kind.json.PairMutableView]](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[com.atomist.tree.TreeNode]: com.atomist.tree.TreeNode): com.atomist.tree.TreeNode @unchecked) match {
+      case (p @ (_: com.atomist.tree.UpdatableTreeNode)) if &quot;pair&quot;.equals(p.nodeName) =&gt; collection.this.Seq.apply[com.atomist.rug.kind.json.PairMutableView](new PairMutableView(p, parent))
+      case (o @ (_: com.atomist.tree.UpdatableTreeNode)) if &quot;object&quot;.equals(o.nodeName) =&gt; {
+        val nodes: Seq[com.atomist.rug.kind.json.PairMutableView] = o.childrenNamed(&quot;pair&quot;).map[com.atomist.rug.kind.json.PairMutableView, Seq[com.atomist.rug.kind.json.PairMutableView]](((p: com.atomist.tree.TreeNode) =&gt; new PairMutableView(p.asInstanceOf[com.atomist.tree.UpdatableTreeNode], parent)))(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.json.PairMutableView]);
+        nodes
+      }
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: com.atomist.tree.TreeNode): Boolean = ((x1.asInstanceOf[com.atomist.tree.TreeNode]: com.atomist.tree.TreeNode): com.atomist.tree.TreeNode @unchecked) match {
+      case (p @ (_: com.atomist.tree.UpdatableTreeNode)) if &quot;pair&quot;.equals(p.nodeName) =&gt; true
+      case (o @ (_: com.atomist.tree.UpdatableTreeNode)) if &quot;object&quot;.equals(o.nodeName) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.tree.TreeNode,Seq[com.atomist.rug.kind.json.PairMutableView]]))(collection.this.Seq.canBuildFrom[Seq[com.atomist.rug.kind.json.PairMutableView]]).flatten[com.atomist.rug.kind.json.PairMutableView](scala.this.Predef.$conforms[Seq[com.atomist.rug.kind.json.PairMutableView]])
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          2285
+        </td>
+        <td>
+          1787
+          -
+          1787
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.$conforms[Seq[com.atomist.rug.kind.json.PairMutableView]]
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          2287
+        </td>
+        <td>
+          1809
+          -
+          1812
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          2288
+        </td>
+        <td>
+          1880
+          -
+          1907
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.dropRight
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(s.substring(1)).dropRight(1)
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          2289
+        </td>
+        <td>
+          1950
+          -
+          1965
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\&quot;&quot;.+(s).+(&quot;\&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2290
+        </td>
+        <td>
+          2338
+          -
+          2352
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.json.JsonMutableView.originalParsed
+        </td>
+        <td style="background: #AEF1AE">
+          JsonMutableView.this.originalParsed
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          2291
+        </td>
+        <td>
+          2405
+          -
+          2409
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          2292
+        </td>
+        <td>
+          2442
+          -
+          2461
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.value
+        </td>
+        <td style="background: #F0ADAD">
+          JsonMutableView.this.currentParsed.value
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          2293
+        </td>
+        <td>
+          2583
+          -
+          2590
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;value&quot;
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          2294
+        </td>
+        <td>
+          2555
+          -
+          2596
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          JsonMutableView.this.currentParsed.childrenNamed(&quot;value&quot;).head
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          2295
+        </td>
+        <td>
+          2648
+          -
+          2667
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.value
+        </td>
+        <td style="background: #AEF1AE">
+          JsonMutableView.this.currentParsed.value
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          2296
+        </td>
+        <td>
+          2745
+          -
+          2752
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.json.JsonMutableView.soleKid
+        </td>
+        <td style="background: #AEF1AE">
+          JsonMutableView.this.soleKid
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          2299
+        </td>
+        <td>
+          2718
+          -
+          2775
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.json.JsonType.findPairsInValueNode(this, JsonMutableView.this.soleKid).map[String, Seq[String]](((x$1: com.atomist.rug.kind.json.PairMutableView) =&gt; x$1.nodeName))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          2298
+        </td>
+        <td>
+          2757
+          -
+          2757
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          2297
+        </td>
+        <td>
+          2758
+          -
+          2768
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.json.PairMutableView.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          2300
+        </td>
+        <td>
+          2881
+          -
+          2888
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.json.JsonMutableView.soleKid
+        </td>
+        <td style="background: #AEF1AE">
+          JsonMutableView.this.soleKid
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          2302
+        </td>
+        <td>
+          2909
+          -
+          2937
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          fieldName.equals(n.nodeName)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          2301
+        </td>
+        <td>
+          2926
+          -
+          2936
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.json.PairMutableView.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          n.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          2303
+        </td>
+        <td>
+          2854
+          -
+          2938
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.json.JsonType.findPairsInValueNode(this, JsonMutableView.this.soleKid).filter(((n: com.atomist.rug.kind.json.PairMutableView) =&gt; fieldName.equals(n.nodeName)))
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          2304
+        </td>
+        <td>
+          3056
+          -
+          3067
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;JSON pair&quot;
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          2305
+        </td>
+        <td>
+          3471
+          -
+          3515
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          PairMutableView.this.currentBackingObject.nodeName.equals(&quot;pair&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          2306
+        </td>
+        <td>
+          3463
+          -
+          3516
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.require
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.require(PairMutableView.this.currentBackingObject.nodeName.equals(&quot;pair&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          2308
+        </td>
+        <td>
+          3598
+          -
+          3605
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;value&quot;
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          2307
+        </td>
+        <td>
+          3576
+          -
+          3596
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          PairMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          2309
+        </td>
+        <td>
+          3564
+          -
+          3606
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodeFinders.singleChild
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.TreeNodeFinders.singleChild(PairMutableView.this.currentBackingObject, &quot;value&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          2310
+        </td>
+        <td>
+          3668
+          -
+          3684
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.childNodes
+        </td>
+        <td style="background: #AEF1AE">
+          value.childNodes
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          2311
+        </td>
+        <td>
+          3751
+          -
+          3782
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.json.JsonStringView.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new JsonStringView(value, this)
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          2312
+        </td>
+        <td>
+          3747
+          -
+          3783
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[com.atomist.rug.kind.json.JsonStringView](new JsonStringView(value, this))
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          2314
+        </td>
+        <td>
+          3844
+          -
+          3854
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          s.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          2313
+        </td>
+        <td>
+          3828
+          -
+          3836
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;STRING&quot;
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          2315
+        </td>
+        <td>
+          3828
+          -
+          3855
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;STRING&quot;.equals(s.nodeName)
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          2317
+        </td>
+        <td>
+          3871
+          -
+          3903
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.kind.json.JsonStringView](new JsonStringView(s, this))
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          2316
+        </td>
+        <td>
+          3875
+          -
+          3902
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.json.JsonStringView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new JsonStringView(s, this)
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          2320
+        </td>
+        <td>
+          3930
+          -
+          3957
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;object&quot;.equals(mv.nodeName)
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          2319
+        </td>
+        <td>
+          3946
+          -
+          3957
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          mv.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          2318
+        </td>
+        <td>
+          3930
+          -
+          3938
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;object&quot;
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          2321
+        </td>
+        <td>
+          3973
+          -
+          4003
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.json.JsonType.findPairsInValueNode
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.json.JsonType.findPairsInValueNode(this, mv)
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          2323
+        </td>
+        <td>
+          4046
+          -
+          4058
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          arr.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          2322
+        </td>
+        <td>
+          4031
+          -
+          4038
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;array&quot;
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          2324
+        </td>
+        <td>
+          4031
+          -
+          4059
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;array&quot;.equals(arr.nodeName)
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          2325
+        </td>
+        <td>
+          4075
+          -
+          4078
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          2326
+        </td>
+        <td>
+          4103
+          -
+          4116
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          empty.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          2327
+        </td>
+        <td>
+          4120
+          -
+          4123
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          136
+        </td>
+        <td>
+          2328
+        </td>
+        <td>
+          4150
+          -
+          4166
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          tooMany.size.&gt;(1)
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          2329
+        </td>
+        <td>
+          4211
+          -
+          4241
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodeUtils.toShortString
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodeUtils.toShortString(f)
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          2331
+        </td>
+        <td>
+          4182
+          -
+          4243
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          tooMany.foreach[Unit](((f: com.atomist.tree.TreeNode) =&gt; PairMutableView.this.println(com.atomist.tree.utils.TreeNodeUtils.toShortString(f))))
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          2330
+        </td>
+        <td>
+          4203
+          -
+          4242
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.CommonViewOperations.println
+        </td>
+        <td style="background: #F0ADAD">
+          PairMutableView.this.println(com.atomist.tree.utils.TreeNodeUtils.toShortString(f))
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          2332
+        </td>
+        <td>
+          4256
+          -
+          4421
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.RuntimeException(scala.StringContext.apply(&quot;Look, I found too many nodes. There are &quot;, &quot; and &quot;, &quot; of them are padding&quot;).s(tooMany.size, tooMany.collect[com.atomist.tree.PaddingTreeNode, Seq[com.atomist.tree.PaddingTreeNode]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.tree.TreeNode,com.atomist.tree.PaddingTreeNode] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.tree.TreeNode =&gt; com.atomist.tree.PaddingTreeNode&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.tree.TreeNode, B1 &gt;: com.atomist.tree.PaddingTreeNode](x2: A1, default: A1 =&gt; B1): B1 = ((x2.asInstanceOf[com.atomist.tree.TreeNode]: com.atomist.tree.TreeNode): com.atomist.tree.TreeNode @unchecked) match {
+      case (p @ (_: com.atomist.tree.PaddingTreeNode)) =&gt; p
+      case (defaultCase$ @ _) =&gt; default.apply(x2)
+    };
+    final def isDefinedAt(x2: com.atomist.tree.TreeNode): Boolean = ((x2.asInstanceOf[com.atomist.tree.TreeNode]: com.atomist.tree.TreeNode): com.atomist.tree.TreeNode @unchecked) match {
+      case (p @ (_: com.atomist.tree.PaddingTreeNode)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.tree.TreeNode,com.atomist.tree.PaddingTreeNode]))(collection.this.Seq.canBuildFrom[com.atomist.tree.PaddingTreeNode]).size))
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          2335
+        </td>
+        <td>
+          4448
+          -
+          4499
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodeFinders.requiredSingleChild
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.utils.TreeNodeFinders.requiredSingleChild(PairMutableView.this.currentBackingObject, &quot;STRING&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          2334
+        </td>
+        <td>
+          4490
+          -
+          4498
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;STRING&quot;
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          2333
+        </td>
+        <td>
+          4468
+          -
+          4488
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #F0ADAD">
+          PairMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          2338
+        </td>
+        <td>
+          4545
+          -
+          4572
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;STRING&quot;.equals(s.nodeName)
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          2337
+        </td>
+        <td>
+          4561
+          -
+          4571
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #F0ADAD">
+          s.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          2336
+        </td>
+        <td>
+          4545
+          -
+          4553
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;STRING&quot;
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          2340
+        </td>
+        <td>
+          4586
+          -
+          4618
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[com.atomist.rug.kind.json.JsonStringView](new JsonStringView(s, this))
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          2339
+        </td>
+        <td>
+          4590
+          -
+          4617
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.json.JsonStringView.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new JsonStringView(s, this)
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          2341
+        </td>
+        <td>
+          4686
+          -
+          4706
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          PairMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          2342
+        </td>
+        <td>
+          4668
+          -
+          4707
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.json.PairMutableView.nodeNameFromValue
+        </td>
+        <td style="background: #AEF1AE">
+          PairMutableView.this.nodeNameFromValue(PairMutableView.this.currentBackingObject)
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          2344
+        </td>
+        <td>
+          4765
+          -
+          4814
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.json.JsonType.deJsonize
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.json.JsonType.deJsonize(com.atomist.tree.utils.TreeNodeFinders.requiredSingleFieldValue(tn, &quot;STRING&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          2343
+        </td>
+        <td>
+          4775
+          -
+          4813
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodeFinders.requiredSingleFieldValue
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.TreeNodeFinders.requiredSingleFieldValue(tn, &quot;STRING&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          2345
+        </td>
+        <td>
+          4861
+          -
+          4873
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](&quot;value&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          152
+        </td>
+        <td>
+          2346
+        </td>
+        <td>
+          4906
+          -
+          4932
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.value
+        </td>
+        <td style="background: #F0ADAD">
+          PairMutableView.this.currentBackingObject.value
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          2347
+        </td>
+        <td>
+          4993
+          -
+          5003
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          k.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          2349
+        </td>
+        <td>
+          4979
+          -
+          5010
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          PairMutableView.this.kids.map[String, Seq[String]](((k: com.atomist.rug.spi.MutableView[_]) =&gt; k.nodeName))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          2348
+        </td>
+        <td>
+          4987
+          -
+          4987
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          2350
+        </td>
+        <td>
+          5099
+          -
+          5127
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.nodeName.equals(fieldName)
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          2351
+        </td>
+        <td>
+          5087
+          -
+          5128
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          PairMutableView.this.kids.filter(((x$2: com.atomist.rug.spi.MutableView[_]) =&gt; x$2.nodeName.equals(fieldName)))
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          2353
+        </td>
+        <td>
+          5281
+          -
+          5288
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;value&quot;
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          2352
+        </td>
+        <td>
+          5259
+          -
+          5279
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          PairMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          2354
+        </td>
+        <td>
+          5239
+          -
+          5289
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodeFinders.requiredSingleChild
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.TreeNodeFinders.requiredSingleChild(PairMutableView.this.currentBackingObject, &quot;value&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          2356
+        </td>
+        <td>
+          5335
+          -
+          5364
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.UpdatableTreeNode.update
+        </td>
+        <td style="background: #AEF1AE">
+          mtn.update(com.atomist.rug.kind.json.JsonType.jsonize(newValue))
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          2355
+        </td>
+        <td>
+          5346
+          -
+          5363
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.json.JsonType.jsonize
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.json.JsonType.jsonize(newValue)
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          2359
+        </td>
+        <td>
+          5499
+          -
+          5549
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodeFinders.requiredSingleChild
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.TreeNodeFinders.requiredSingleChild(PairMutableView.this.currentBackingObject, &quot;value&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          2358
+        </td>
+        <td>
+          5541
+          -
+          5548
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;value&quot;
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          2357
+        </td>
+        <td>
+          5519
+          -
+          5539
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          PairMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          2360
+        </td>
+        <td>
+          5614
+          -
+          5640
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.lastIndexOf
+        </td>
+        <td style="background: #AEF1AE">
+          vm.value.lastIndexOf(&quot;\&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          2361
+        </td>
+        <td>
+          5661
+          -
+          5684
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.splitAt
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(vm.value).splitAt(index)
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          2362
+        </td>
+        <td>
+          5712
+          -
+          5713
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          2365
+        </td>
+        <td>
+          5714
+          -
+          5724
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.json.JsonType.jsonize
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.json.JsonType.jsonize(k)
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          2367
+        </td>
+        <td>
+          5710
+          -
+          5741
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;: &quot;, &quot;&quot;).s(com.atomist.rug.kind.json.JsonType.jsonize(k), com.atomist.rug.kind.json.JsonType.jsonize(v))
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          2364
+        </td>
+        <td>
+          5740
+          -
+          5741
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          2363
+        </td>
+        <td>
+          5725
+          -
+          5728
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          2366
+        </td>
+        <td>
+          5729
+          -
+          5739
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.json.JsonType.jsonize
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.json.JsonType.jsonize(v)
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          2371
+        </td>
+        <td>
+          5821
+          -
+          5889
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.UpdatableTreeNode.update
+        </td>
+        <td style="background: #AEF1AE">
+          vm.update(split._1.+(&quot;\&quot;,\n\t&quot;).+(newContent).+(split._2.substring(1)))
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          2368
+        </td>
+        <td>
+          5842
+          -
+          5851
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\&quot;,\n\t&quot;
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          2370
+        </td>
+        <td>
+          5831
+          -
+          5888
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          split._1.+(&quot;\&quot;,\n\t&quot;).+(newContent).+(split._2.substring(1))
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          2369
+        </td>
+        <td>
+          5867
+          -
+          5888
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.substring
+        </td>
+        <td style="background: #AEF1AE">
+          split._2.substring(1)
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          2374
+        </td>
+        <td>
+          5994
+          -
+          5997
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;:[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          2376
+        </td>
+        <td>
+          5931
+          -
+          5960
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #F0ADAD">
+          PairMutableView.this.currentBackingObject.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          2379
+        </td>
+        <td>
+          5927
+          -
+          6027
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;:&quot;, &quot;:[&quot;, &quot;]&quot;).s(PairMutableView.this.currentBackingObject.nodeName, PairMutableView.this.currentBackingObject.nodeTags, PairMutableView.this.currentBackingObject.value)
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          2373
+        </td>
+        <td>
+          5961
+          -
+          5963
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;:&quot;
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          2372
+        </td>
+        <td>
+          5929
+          -
+          5930
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          2375
+        </td>
+        <td>
+          6025
+          -
+          6027
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          2378
+        </td>
+        <td>
+          5998
+          -
+          6024
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.value
+        </td>
+        <td style="background: #F0ADAD">
+          PairMutableView.this.currentBackingObject.value
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          2377
+        </td>
+        <td>
+          5964
+          -
+          5993
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeTags
+        </td>
+        <td style="background: #F0ADAD">
+          PairMutableView.this.currentBackingObject.nodeTags
+        </td>
+      </tr><tr>
+        <td>
+          190
+        </td>
+        <td>
+          2380
+        </td>
+        <td>
+          6346
+          -
+          6375
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeTags
+        </td>
+        <td style="background: #AEF1AE">
+          JsonStringView.this.currentBackingObject.nodeTags
+        </td>
+      </tr><tr>
+        <td>
+          190
+        </td>
+        <td>
+          2381
+        </td>
+        <td>
+          6337
+          -
+          6376
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.AnnotatableTreeNode.addTypes
+        </td>
+        <td style="background: #AEF1AE">
+          JsonStringView.this.addTypes(JsonStringView.this.currentBackingObject.nodeTags)
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          2382
+        </td>
+        <td>
+          6412
+          -
+          6442
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          JsonStringView.this.originalBackingObject.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          2383
+        </td>
+        <td>
+          6558
+          -
+          6585
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.value
+        </td>
+        <td style="background: #AEF1AE">
+          JsonStringView.this.originalBackingObject.value
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          2384
+        </td>
+        <td>
+          6548
+          -
+          6586
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.json.JsonType.deJsonize
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.json.JsonType.deJsonize(JsonStringView.this.originalBackingObject.value)
+        </td>
+      </tr><tr>
+        <td>
+          197
+        </td>
+        <td>
+          2385
+        </td>
+        <td>
+          6630
+          -
+          6642
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.json.JsonStringView.setValue
+        </td>
+        <td style="background: #AEF1AE">
+          JsonStringView.this.setValue(to)
+        </td>
+      </tr><tr>
+        <td>
+          200
+        </td>
+        <td>
+          2386
+        </td>
+        <td>
+          6753
+          -
+          6780
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.value
+        </td>
+        <td style="background: #F0ADAD">
+          JsonStringView.this.originalBackingObject.value
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          2388
+        </td>
+        <td>
+          6995
+          -
+          7047
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.UpdatableTreeNode.update
+        </td>
+        <td style="background: #AEF1AE">
+          JsonStringView.this.originalBackingObject.update(&quot;\&quot;&quot;.+(newValue).+(&quot;\&quot;&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          2387
+        </td>
+        <td>
+          7024
+          -
+          7046
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\&quot;&quot;.+(newValue).+(&quot;\&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          206
+        </td>
+        <td>
+          2389
+        </td>
+        <td>
+          7098
+          -
+          7128
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          JsonStringView.this.originalBackingObject.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          206
+        </td>
+        <td>
+          2390
+        </td>
+        <td>
+          7094
+          -
+          7129
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](JsonStringView.this.originalBackingObject.nodeName)
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          2391
+        </td>
+        <td>
+          7176
+          -
+          7181
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.Set.apply[String]()
+        </td>
+      </tr><tr>
+        <td>
+          210
+        </td>
+        <td>
+          2392
+        </td>
+        <td>
+          7254
+          -
+          7257
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          212
+        </td>
+        <td>
+          2398
+        </td>
+        <td>
+          7285
+          -
+          7344
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot; wrapping &quot;, &quot;&quot;).s(JsonStringView.this.getClass().getSimpleName(), JsonStringView.this.currentBackingObject)
+        </td>
+      </tr><tr>
+        <td>
+          212
+        </td>
+        <td>
+          2394
+        </td>
+        <td>
+          7312
+          -
+          7323
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; wrapping &quot;
+        </td>
+      </tr><tr>
+        <td>
+          212
+        </td>
+        <td>
+          2397
+        </td>
+        <td>
+          7323
+          -
+          7343
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #F0ADAD">
+          JsonStringView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          212
+        </td>
+        <td>
+          2393
+        </td>
+        <td>
+          7287
+          -
+          7288
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          212
+        </td>
+        <td>
+          2396
+        </td>
+        <td>
+          7289
+          -
+          7311
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getSimpleName
+        </td>
+        <td style="background: #F0ADAD">
+          JsonStringView.this.getClass().getSimpleName()
+        </td>
+      </tr><tr>
+        <td>
+          212
+        </td>
+        <td>
+          2395
+        </td>
+        <td>
+          7343
+          -
+          7344
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

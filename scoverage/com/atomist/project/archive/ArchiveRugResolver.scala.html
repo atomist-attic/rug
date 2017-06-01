@@ -1,0 +1,2074 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/project/archive/ArchiveRugResolver.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.project.archive
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.{BadRugSyntaxException, DuplicateRugException}
+</span>4 <span style=''>import com.atomist.rug.runtime._
+</span>5 <span style=''>import com.atomist.rug.runtime.js.JavaScriptContext.{EngineInitializer, redirectConsoleToSysOut}
+</span>6 <span style=''>import com.atomist.rug.runtime.js._
+</span>7 <span style=''>import com.atomist.source.ArtifactSource
+</span>8 <span style=''>
+</span>9 <span style=''>/**
+</span>10 <span style=''>  * Used by PlanRunner and Project Operations to find Rugs
+</span>11 <span style=''>  *
+</span>12 <span style=''>  * We explicitly do _not_ support loading a Rug that is not a direct dependency
+</span>13 <span style=''>  * i.e. you cannot load a Rug that is brought in transitively
+</span>14 <span style=''>  *
+</span>15 <span style=''>  * A None means no resolution!
+</span>16 <span style=''>  */
+</span>17 <span style=''>class ArchiveRugResolver(graph: Dependency,
+</span>18 <span style=''>                         engineInitializer: EngineInitializer = redirectConsoleToSysOut) extends RugResolver {
+</span>19 <span style=''>
+</span>20 <span style=''>  private val finders: Seq[JavaScriptRugFinder[_ &lt;: Rug]] = </span><span style='background: #AEF1AE'>Seq(
+</span>21 <span style=''></span><span style='background: #AEF1AE'>    new JavaScriptCommandHandlerFinder(),
+</span>22 <span style=''></span><span style='background: #AEF1AE'>    new JavaScriptResponseHandlerFinder(),
+</span>23 <span style=''></span><span style='background: #AEF1AE'>    new JavaScriptEventHandlerFinder(),
+</span>24 <span style=''></span><span style='background: #AEF1AE'>    new JavaScriptProjectGeneratorFinder(),
+</span>25 <span style=''></span><span style='background: #AEF1AE'>    new JavaScriptProjectEditorFinder())</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>  /**
+</span>28 <span style=''>    * Find Rugs of all known kinds in the artifact.
+</span>29 <span style=''>    */
+</span>30 <span style=''>  private def find(as: ArtifactSource, resolver: RugResolver): Seq[Rug] = {
+</span>31 <span style=''>    val jsc = </span><span style='background: #AEF1AE'>new JavaScriptContext(as, initializer = engineInitializer)</span><span style=''>
+</span>32 <span style=''>    val found = </span><span style='background: #AEF1AE'>finders.flatMap(finder =&gt; finder.find(jsc, Some(resolver)))</span><span style=''>
+</span>33 <span style=''>    val grouped = </span><span style='background: #AEF1AE'>found.groupBy(_.name).collect{case x if x._2.size &gt; 1 =&gt; x._1}</span><span style=''>
+</span>34 <span style=''>    if(</span><span style='background: #AEF1AE'>grouped.nonEmpty</span><span style=''>){
+</span>35 <span style=''>      </span><span style='background: #AEF1AE'>throw new DuplicateRugException(s&quot;The following rugs have duplicates in the archive: ${grouped.mkString(&quot;, &quot;)}&quot;, found)</span><span style=''>
+</span>36 <span style=''>    }else{
+</span>37 <span style=''>      </span><span style='background: #AEF1AE'>found</span><span style=''>
+</span>38 <span style=''>    }
+</span>39 <span style=''>  }
+</span>40 <span style=''>
+</span>41 <span style=''>  //group:artifact:name
+</span>42 <span style=''>  private def fqRex = </span><span style='background: #AEF1AE'>&quot;^(.*?):(.*?):(.*?)$&quot;.r</span><span style=''>
+</span>43 <span style=''>
+</span>44 <span style=''>  /**
+</span>45 <span style=''>    * Top of the dep graph.
+</span>46 <span style=''>    */
+</span>47 <span style=''>  override val resolvedDependencies: ResolvedDependency = {
+</span>48 <span style=''>    val rugs = </span><span style='background: #AEF1AE'>find(graph.source, this)</span><span style=''>
+</span>49 <span style=''>    </span><span style='background: #AEF1AE'>ResolvedDependency(graph.source, graph.address, dependencies(graph.dependencies), rugs)</span><span style=''>
+</span>50 <span style=''>  }
+</span>51 <span style=''>
+</span>52 <span style=''>  /**
+</span>53 <span style=''>    * Recursively resolve all the rugs.
+</span>54 <span style=''>    */
+</span>55 <span style=''>  private def dependencies(deps: Seq[Dependency]): Seq[ResolvedDependency] = {
+</span>56 <span style=''>    </span><span style='background: #AEF1AE'>deps.map(dep =&gt;
+</span>57 <span style=''></span><span style='background: #AEF1AE'>      if (dep.dependencies.nonEmpty) {
+</span>58 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>ResolvedDependency(dep.source, dep.address, dependencies(dep.dependencies), find(dep.source, this))</span><span style='background: #AEF1AE'>
+</span>59 <span style=''></span><span style='background: #AEF1AE'>      } else {
+</span>60 <span style=''></span><span style='background: #AEF1AE'>        ResolvedDependency(dep.source, dep.address, Nil, find(dep.source, this))
+</span>61 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>62 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>63 <span style=''>  }
+</span>64 <span style=''>
+</span>65 <span style=''>  /**
+</span>66 <span style=''>    * Search direct dependencies of root for a rug.
+</span>67 <span style=''>    */
+</span>68 <span style=''>  override def resolve(root: Rug, nameOrFqName: String): Option[Rug] = {
+</span>69 <span style=''>    </span><span style='background: #AEF1AE'>findResolvedDependency(root)</span><span style=''> match {
+</span>70 <span style=''>      case Some(rootDep) =&gt;
+</span>71 <span style=''>        val local = </span><span style='background: #AEF1AE'>rootDep.resolvedRugs.find(p =&gt; rugMatches(p, rootDep, nameOrFqName))</span><span style=''>
+</span>72 <span style=''>        if (</span><span style='background: #AEF1AE'>local.nonEmpty</span><span style=''>) {
+</span>73 <span style=''>          </span><span style='background: #AEF1AE'>local</span><span style=''>
+</span>74 <span style=''>        } else {
+</span>75 <span style=''>          (</span><span style='background: #AEF1AE'>for {
+</span>76 <span style=''></span><span style='background: #AEF1AE'>            dep &lt;- rootDep.dependencies
+</span>77 <span style=''></span><span style='background: #AEF1AE'>            rug &lt;- dep.resolvedRugs
+</span>78 <span style=''></span><span style='background: #AEF1AE'>            if rugMatches(rug, dep, nameOrFqName)
+</span>79 <span style=''></span><span style='background: #AEF1AE'>          } yield rug).headOption</span><span style=''>
+</span>80 <span style=''>        }
+</span>81 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>82 <span style=''>    }
+</span>83 <span style=''>  }
+</span>84 <span style=''>
+</span>85 <span style=''>  /**
+</span>86 <span style=''>    * Does the current rug/dep match the name?
+</span>87 <span style=''>    */
+</span>88 <span style=''>  private def rugMatches(rug: Rug, rootDep: ResolvedDependency, name: String): Boolean = {
+</span>89 <span style=''>    name match {
+</span>90 <span style=''>      case simple: String if </span><span style='background: #AEF1AE'>!simple.contains(&quot;:&quot;)</span><span style=''> =&gt; </span><span style='background: #AEF1AE'>simple == rug.name</span><span style=''>
+</span>91 <span style=''>      case fq: String =&gt; (fqRex.findFirstMatchIn(fq), rootDep.address) match {
+</span>92 <span style=''>        case (Some(m), Some(address)) =&gt;
+</span>93 <span style=''>          </span><span style='background: #AEF1AE'>m.group(1) == address.group &amp;&amp;
+</span>94 <span style=''></span><span style='background: #AEF1AE'>            m.group(2) == address.artifact &amp;&amp;
+</span>95 <span style=''></span><span style='background: #AEF1AE'>            m.group(3) == rug.name</span><span style=''>
+</span>96 <span style=''>        case _ =&gt; </span><span style='background: #AEF1AE'>false</span><span style=''>
+</span>97 <span style=''>      }
+</span>98 <span style=''>    }
+</span>99 <span style=''>  }
+</span>100 <span style=''>
+</span>101 <span style=''>  /**
+</span>102 <span style=''>    * Find the node in the dependency graph for a given Rug instance.
+</span>103 <span style=''>    */
+</span>104 <span style=''>  override def findResolvedDependency(rug: Rug): Option[ResolvedDependency] = {
+</span>105 <span style=''>    </span><span style='background: #AEF1AE'>findRug(rug, resolvedDependencies)</span><span style=''>
+</span>106 <span style=''>  }
+</span>107 <span style=''>
+</span>108 <span style=''>  /**
+</span>109 <span style=''>    * Find the root rug in the graph.
+</span>110 <span style=''>    */
+</span>111 <span style=''>  private def findRug(root: Rug, resolved: ResolvedDependency): Option[ResolvedDependency] = {
+</span>112 <span style=''>    </span><span style='background: #AEF1AE'>resolved.resolvedRugs.find(r =&gt; r == root)</span><span style=''> match {
+</span>113 <span style=''>      case Some(_) =&gt; </span><span style='background: #AEF1AE'>Some(resolved)</span><span style=''>
+</span>114 <span style=''>      case _ =&gt;
+</span>115 <span style=''>        val matched = </span><span style='background: #F0ADAD'>resolved.dependencies.map(findRug(root, _))</span><span style=''>
+</span>116 <span style=''>        if (</span><span style='background: #F0ADAD'>matched.isEmpty</span><span style=''>) {
+</span>117 <span style=''>          </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>118 <span style=''>        }
+</span>119 <span style=''>        else {
+</span>120 <span style=''>          </span><span style='background: #F0ADAD'>matched.head</span><span style=''>
+</span>121 <span style=''>        }
+</span>122 <span style=''>    }
+</span>123 <span style=''>  }
+</span>124 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          259
+        </td>
+        <td>
+          783
+          -
+          997
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.runtime.js.JavaScriptRugFinder[_ &gt;: com.atomist.rug.runtime.js.JavaScriptProjectEditor with com.atomist.rug.runtime.js.JavaScriptProjectGenerator with com.atomist.rug.runtime.js.JavaScriptEventHandler with com.atomist.rug.runtime.js.JavaScriptResponseHandler with com.atomist.rug.runtime.js.JavaScriptCommandHandler &lt;: com.atomist.rug.runtime.ParameterizedRug with com.atomist.rug.runtime.js.JavaScriptUtils]](new com.atomist.rug.runtime.js.JavaScriptCommandHandlerFinder(), new com.atomist.rug.runtime.js.JavaScriptResponseHandlerFinder(), new com.atomist.rug.runtime.js.JavaScriptEventHandlerFinder(), new com.atomist.rug.runtime.js.JavaScriptProjectGeneratorFinder(), new com.atomist.rug.runtime.js.JavaScriptProjectEditorFinder())
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          254
+        </td>
+        <td>
+          792
+          -
+          828
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptCommandHandlerFinder.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.runtime.js.JavaScriptCommandHandlerFinder()
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          255
+        </td>
+        <td>
+          834
+          -
+          871
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptResponseHandlerFinder.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.runtime.js.JavaScriptResponseHandlerFinder()
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          256
+        </td>
+        <td>
+          877
+          -
+          911
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptEventHandlerFinder.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.runtime.js.JavaScriptEventHandlerFinder()
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          257
+        </td>
+        <td>
+          917
+          -
+          955
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptProjectGeneratorFinder.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.runtime.js.JavaScriptProjectGeneratorFinder()
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          258
+        </td>
+        <td>
+          961
+          -
+          996
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptProjectEditorFinder.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.runtime.js.JavaScriptProjectEditorFinder()
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          262
+        </td>
+        <td>
+          1154
+          -
+          1154
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptContext.&lt;init&gt;$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          js.this.JavaScriptContext.&lt;init&gt;$default$3
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          261
+        </td>
+        <td>
+          1154
+          -
+          1154
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptContext.&lt;init&gt;$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          js.this.JavaScriptContext.&lt;init&gt;$default$2
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          263
+        </td>
+        <td>
+          1154
+          -
+          1212
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptContext.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.runtime.js.JavaScriptContext(x$3, x$5, x$6, x$4)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          260
+        </td>
+        <td>
+          1194
+          -
+          1211
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.ArchiveRugResolver.engineInitializer
+        </td>
+        <td style="background: #AEF1AE">
+          ArchiveRugResolver.this.engineInitializer
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          265
+        </td>
+        <td>
+          1255
+          -
+          1287
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptRugFinder.find
+        </td>
+        <td style="background: #AEF1AE">
+          finder.find(jsc, scala.Some.apply[com.atomist.project.archive.RugResolver](resolver))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          267
+        </td>
+        <td>
+          1229
+          -
+          1288
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          ArchiveRugResolver.this.finders.flatMap[com.atomist.rug.runtime.Rug, Seq[com.atomist.rug.runtime.Rug]](((finder: com.atomist.rug.runtime.js.JavaScriptRugFinder[_ &lt;: com.atomist.rug.runtime.Rug]) =&gt; finder.find(jsc, scala.Some.apply[com.atomist.project.archive.RugResolver](resolver))))(collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.Rug])
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          264
+        </td>
+        <td>
+          1272
+          -
+          1286
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.project.archive.RugResolver](resolver)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          266
+        </td>
+        <td>
+          1244
+          -
+          1244
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.Rug]
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          271
+        </td>
+        <td>
+          1336
+          -
+          1336
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ArchiveRugResolver.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          268
+        </td>
+        <td>
+          1321
+          -
+          1327
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.Rug.name
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.name
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          270
+        </td>
+        <td>
+          1364
+          -
+          1368
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x._1
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          273
+        </td>
+        <td>
+          1307
+          -
+          1369
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          found.groupBy[String](((x$1: com.atomist.rug.runtime.Rug) =&gt; x$1.name)).collect[String, scala.collection.immutable.Iterable[String]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[(String, Seq[com.atomist.rug.runtime.Rug]),String] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: ((String, Seq[com.atomist.rug.runtime.Rug])) =&gt; String&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: (String, Seq[com.atomist.rug.runtime.Rug]), B1 &gt;: String](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[(String, Seq[com.atomist.rug.runtime.Rug])]: (String, Seq[com.atomist.rug.runtime.Rug])): (String, Seq[com.atomist.rug.runtime.Rug]) @unchecked) match {
+      case (x @ _) if x._2.size.&gt;(1) =&gt; x._1
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: (String, Seq[com.atomist.rug.runtime.Rug])): Boolean = ((x1.asInstanceOf[(String, Seq[com.atomist.rug.runtime.Rug])]: (String, Seq[com.atomist.rug.runtime.Rug])): (String, Seq[com.atomist.rug.runtime.Rug]) @unchecked) match {
+      case (x @ _) if x._2.size.&gt;(1) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[(String, Seq[com.atomist.rug.runtime.Rug]),String]))(immutable.this.Iterable.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          272
+        </td>
+        <td>
+          1336
+          -
+          1336
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Iterable.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          269
+        </td>
+        <td>
+          1347
+          -
+          1360
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          x._2.size.&gt;(1)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          274
+        </td>
+        <td>
+          1377
+          -
+          1393
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          grouped.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          276
+        </td>
+        <td>
+          1402
+          -
+          1521
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new com.atomist.rug.DuplicateRugException(scala.StringContext.apply(&quot;The following rugs have duplicates in the archive: &quot;, &quot;&quot;).s(grouped.mkString(&quot;, &quot;)), found)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          275
+        </td>
+        <td>
+          1402
+          -
+          1521
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new com.atomist.rug.DuplicateRugException(scala.StringContext.apply(&quot;The following rugs have duplicates in the archive: &quot;, &quot;&quot;).s(grouped.mkString(&quot;, &quot;)), found)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          277
+        </td>
+        <td>
+          1539
+          -
+          1544
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.project.archive.ArchiveRugResolver.found
+        </td>
+        <td style="background: #AEF1AE">
+          found
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          279
+        </td>
+        <td>
+          1602
+          -
+          1625
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.r
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(&quot;^(.*?):(.*?):(.*?)$&quot;).r
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          278
+        </td>
+        <td>
+          1602
+          -
+          1623
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;^(.*?):(.*?):(.*?)$&quot;
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          280
+        </td>
+        <td>
+          1748
+          -
+          1760
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.Dependency.source
+        </td>
+        <td style="background: #AEF1AE">
+          ArchiveRugResolver.this.graph.source
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          281
+        </td>
+        <td>
+          1743
+          -
+          1767
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ArchiveRugResolver.find
+        </td>
+        <td style="background: #AEF1AE">
+          ArchiveRugResolver.this.find(ArchiveRugResolver.this.graph.source, this)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          286
+        </td>
+        <td>
+          1772
+          -
+          1859
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ResolvedDependency.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ResolvedDependency.apply(ArchiveRugResolver.this.graph.source, ArchiveRugResolver.this.graph.address, ArchiveRugResolver.this.dependencies(ArchiveRugResolver.this.graph.dependencies), rugs)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          283
+        </td>
+        <td>
+          1805
+          -
+          1818
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.Dependency.address
+        </td>
+        <td style="background: #AEF1AE">
+          ArchiveRugResolver.this.graph.address
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          285
+        </td>
+        <td>
+          1820
+          -
+          1852
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ArchiveRugResolver.dependencies
+        </td>
+        <td style="background: #AEF1AE">
+          ArchiveRugResolver.this.dependencies(ArchiveRugResolver.this.graph.dependencies)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          282
+        </td>
+        <td>
+          1791
+          -
+          1803
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.Dependency.source
+        </td>
+        <td style="background: #AEF1AE">
+          ArchiveRugResolver.this.graph.source
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          284
+        </td>
+        <td>
+          1833
+          -
+          1851
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.Dependency.dependencies
+        </td>
+        <td style="background: #AEF1AE">
+          ArchiveRugResolver.this.graph.dependencies
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          304
+        </td>
+        <td>
+          2001
+          -
+          2273
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          deps.map[com.atomist.project.archive.ResolvedDependency, Seq[com.atomist.project.archive.ResolvedDependency]](((dep: com.atomist.project.archive.Dependency) =&gt; if (dep.dependencies.nonEmpty)
+  ResolvedDependency.apply(dep.source, dep.address, ArchiveRugResolver.this.dependencies(dep.dependencies), ArchiveRugResolver.this.find(dep.source, this))
+else
+  ResolvedDependency.apply(dep.source, dep.address, immutable.this.Nil, ArchiveRugResolver.this.find(dep.source, this))))(collection.this.Seq.canBuildFrom[com.atomist.project.archive.ResolvedDependency])
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          303
+        </td>
+        <td>
+          2009
+          -
+          2009
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.project.archive.ResolvedDependency]
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          287
+        </td>
+        <td>
+          2027
+          -
+          2052
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          dep.dependencies.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          295
+        </td>
+        <td>
+          2064
+          -
+          2163
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.project.archive.ResolvedDependency.apply
+        </td>
+        <td style="background: #F0ADAD">
+          ResolvedDependency.apply(dep.source, dep.address, ArchiveRugResolver.this.dependencies(dep.dependencies), ArchiveRugResolver.this.find(dep.source, this))
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          289
+        </td>
+        <td>
+          2095
+          -
+          2106
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.Dependency.address
+        </td>
+        <td style="background: #F0ADAD">
+          dep.address
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          292
+        </td>
+        <td>
+          2145
+          -
+          2155
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.Dependency.source
+        </td>
+        <td style="background: #F0ADAD">
+          dep.source
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          294
+        </td>
+        <td>
+          2064
+          -
+          2163
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ResolvedDependency.apply
+        </td>
+        <td style="background: #F0ADAD">
+          ResolvedDependency.apply(dep.source, dep.address, ArchiveRugResolver.this.dependencies(dep.dependencies), ArchiveRugResolver.this.find(dep.source, this))
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          288
+        </td>
+        <td>
+          2083
+          -
+          2093
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.Dependency.source
+        </td>
+        <td style="background: #F0ADAD">
+          dep.source
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          291
+        </td>
+        <td>
+          2108
+          -
+          2138
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ArchiveRugResolver.dependencies
+        </td>
+        <td style="background: #F0ADAD">
+          ArchiveRugResolver.this.dependencies(dep.dependencies)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          290
+        </td>
+        <td>
+          2121
+          -
+          2137
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.Dependency.dependencies
+        </td>
+        <td style="background: #F0ADAD">
+          dep.dependencies
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          293
+        </td>
+        <td>
+          2140
+          -
+          2162
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ArchiveRugResolver.find
+        </td>
+        <td style="background: #F0ADAD">
+          ArchiveRugResolver.this.find(dep.source, this)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          298
+        </td>
+        <td>
+          2231
+          -
+          2234
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          301
+        </td>
+        <td>
+          2187
+          -
+          2259
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ResolvedDependency.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ResolvedDependency.apply(dep.source, dep.address, immutable.this.Nil, ArchiveRugResolver.this.find(dep.source, this))
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          300
+        </td>
+        <td>
+          2236
+          -
+          2258
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ArchiveRugResolver.find
+        </td>
+        <td style="background: #AEF1AE">
+          ArchiveRugResolver.this.find(dep.source, this)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          297
+        </td>
+        <td>
+          2218
+          -
+          2229
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.Dependency.address
+        </td>
+        <td style="background: #AEF1AE">
+          dep.address
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          299
+        </td>
+        <td>
+          2241
+          -
+          2251
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.Dependency.source
+        </td>
+        <td style="background: #AEF1AE">
+          dep.source
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          302
+        </td>
+        <td>
+          2187
+          -
+          2259
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.project.archive.ResolvedDependency.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ResolvedDependency.apply(dep.source, dep.address, immutable.this.Nil, ArchiveRugResolver.this.find(dep.source, this))
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          296
+        </td>
+        <td>
+          2206
+          -
+          2216
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.Dependency.source
+        </td>
+        <td style="background: #AEF1AE">
+          dep.source
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          305
+        </td>
+        <td>
+          2421
+          -
+          2449
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ArchiveRugResolver.findResolvedDependency
+        </td>
+        <td style="background: #AEF1AE">
+          ArchiveRugResolver.this.findResolvedDependency(root)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          307
+        </td>
+        <td>
+          2506
+          -
+          2574
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #AEF1AE">
+          rootDep.resolvedRugs.find(((p: com.atomist.rug.runtime.Rug) =&gt; ArchiveRugResolver.this.rugMatches(p, rootDep, nameOrFqName)))
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          306
+        </td>
+        <td>
+          2537
+          -
+          2573
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ArchiveRugResolver.rugMatches
+        </td>
+        <td style="background: #AEF1AE">
+          ArchiveRugResolver.this.rugMatches(p, rootDep, nameOrFqName)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          308
+        </td>
+        <td>
+          2587
+          -
+          2601
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          local.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          309
+        </td>
+        <td>
+          2615
+          -
+          2620
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.project.archive.ArchiveRugResolver.local
+        </td>
+        <td style="background: #AEF1AE">
+          local
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          313
+        </td>
+        <td>
+          2671
+          -
+          2671
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.Rug]
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          312
+        </td>
+        <td>
+          2707
+          -
+          2802
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.generic.FilterMonadic.map
+        </td>
+        <td style="background: #AEF1AE">
+          dep.resolvedRugs.withFilter(((rug: com.atomist.rug.runtime.Rug) =&gt; ArchiveRugResolver.this.rugMatches(rug, dep, nameOrFqName))).map[com.atomist.rug.runtime.Rug, Seq[com.atomist.rug.runtime.Rug]](((rug: com.atomist.rug.runtime.Rug) =&gt; rug))(collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.Rug])
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          311
+        </td>
+        <td>
+          2711
+          -
+          2711
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.Rug]
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          310
+        </td>
+        <td>
+          2746
+          -
+          2780
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ArchiveRugResolver.rugMatches
+        </td>
+        <td style="background: #AEF1AE">
+          ArchiveRugResolver.this.rugMatches(rug, dep, nameOrFqName)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          315
+        </td>
+        <td>
+          2649
+          -
+          2814
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #AEF1AE">
+          rootDep.dependencies.flatMap[com.atomist.rug.runtime.Rug, Seq[com.atomist.rug.runtime.Rug]](((dep: com.atomist.project.archive.ResolvedDependency) =&gt; dep.resolvedRugs.withFilter(((rug: com.atomist.rug.runtime.Rug) =&gt; ArchiveRugResolver.this.rugMatches(rug, dep, nameOrFqName))).map[com.atomist.rug.runtime.Rug, Seq[com.atomist.rug.runtime.Rug]](((rug: com.atomist.rug.runtime.Rug) =&gt; rug))(collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.Rug])))(collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.Rug]).headOption
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          314
+        </td>
+        <td>
+          2649
+          -
+          2814
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #AEF1AE">
+          rootDep.dependencies.flatMap[com.atomist.rug.runtime.Rug, Seq[com.atomist.rug.runtime.Rug]](((dep: com.atomist.project.archive.ResolvedDependency) =&gt; dep.resolvedRugs.withFilter(((rug: com.atomist.rug.runtime.Rug) =&gt; ArchiveRugResolver.this.rugMatches(rug, dep, nameOrFqName))).map[com.atomist.rug.runtime.Rug, Seq[com.atomist.rug.runtime.Rug]](((rug: com.atomist.rug.runtime.Rug) =&gt; rug))(collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.Rug])))(collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.Rug]).headOption
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          316
+        </td>
+        <td>
+          2841
+          -
+          2845
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          319
+        </td>
+        <td>
+          3089
+          -
+          3097
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.Rug.name
+        </td>
+        <td style="background: #AEF1AE">
+          rug.name
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          318
+        </td>
+        <td>
+          3054
+          -
+          3075
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          simple.contains(&quot;:&quot;).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          317
+        </td>
+        <td>
+          3071
+          -
+          3074
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;:&quot;
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          320
+        </td>
+        <td>
+          3079
+          -
+          3097
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          simple.==(rug.name)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          322
+        </td>
+        <td>
+          3242
+          -
+          3255
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.Coordinate.group
+        </td>
+        <td style="background: #AEF1AE">
+          address.group
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          321
+        </td>
+        <td>
+          3236
+          -
+          3237
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          325
+        </td>
+        <td>
+          3271
+          -
+          3301
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          m.group(2).==(address.artifact)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          324
+        </td>
+        <td>
+          3285
+          -
+          3301
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.Coordinate.artifact
+        </td>
+        <td style="background: #AEF1AE">
+          address.artifact
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          323
+        </td>
+        <td>
+          3279
+          -
+          3280
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          2
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          329
+        </td>
+        <td>
+          3228
+          -
+          3339
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          m.group(1).==(address.group).&amp;&amp;(m.group(2).==(address.artifact)).&amp;&amp;(m.group(3).==(rug.name))
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          328
+        </td>
+        <td>
+          3317
+          -
+          3339
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          m.group(3).==(rug.name)
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          327
+        </td>
+        <td>
+          3331
+          -
+          3339
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.Rug.name
+        </td>
+        <td style="background: #AEF1AE">
+          rug.name
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          326
+        </td>
+        <td>
+          3325
+          -
+          3326
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          3
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          330
+        </td>
+        <td>
+          3358
+          -
+          3363
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          331
+        </td>
+        <td>
+          3563
+          -
+          3583
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.ArchiveRugResolver.resolvedDependencies
+        </td>
+        <td style="background: #AEF1AE">
+          ArchiveRugResolver.this.resolvedDependencies
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          332
+        </td>
+        <td>
+          3550
+          -
+          3584
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ArchiveRugResolver.findRug
+        </td>
+        <td style="background: #AEF1AE">
+          ArchiveRugResolver.this.findRug(rug, ArchiveRugResolver.this.resolvedDependencies)
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          334
+        </td>
+        <td>
+          3740
+          -
+          3782
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #AEF1AE">
+          resolved.resolvedRugs.find(((r: com.atomist.rug.runtime.Rug) =&gt; r.==(root)))
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          333
+        </td>
+        <td>
+          3772
+          -
+          3781
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          r.==(root)
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          335
+        </td>
+        <td>
+          3813
+          -
+          3827
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.project.archive.ResolvedDependency](resolved)
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          337
+        </td>
+        <td>
+          3891
+          -
+          3891
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[Option[com.atomist.project.archive.ResolvedDependency]]
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          336
+        </td>
+        <td>
+          3892
+          -
+          3908
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ArchiveRugResolver.findRug
+        </td>
+        <td style="background: #F0ADAD">
+          ArchiveRugResolver.this.findRug(root, x$2)
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          338
+        </td>
+        <td>
+          3866
+          -
+          3909
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #F0ADAD">
+          resolved.dependencies.map[Option[com.atomist.project.archive.ResolvedDependency], Seq[Option[com.atomist.project.archive.ResolvedDependency]]](((x$2: com.atomist.project.archive.ResolvedDependency) =&gt; ArchiveRugResolver.this.findRug(root, x$2)))(collection.this.Seq.canBuildFrom[Option[com.atomist.project.archive.ResolvedDependency]])
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          339
+        </td>
+        <td>
+          3922
+          -
+          3937
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #F0ADAD">
+          matched.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          340
+        </td>
+        <td>
+          3951
+          -
+          3955
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          341
+        </td>
+        <td>
+          3951
+          -
+          3955
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          343
+        </td>
+        <td>
+          3991
+          -
+          4003
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #F0ADAD">
+          matched.head
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          342
+        </td>
+        <td>
+          3991
+          -
+          4003
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #F0ADAD">
+          matched.head
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

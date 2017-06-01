@@ -1,0 +1,948 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/properties/PropertiesMutableView.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.properties
+</span>2 <span style=''>
+</span>3 <span style=''>import java.io.StringReader
+</span>4 <span style=''>import java.util.Properties
+</span>5 <span style=''>
+</span>6 <span style=''>import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
+</span>7 <span style=''>import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, TerminalView}
+</span>8 <span style=''>import com.atomist.source.FileArtifact
+</span>9 <span style=''>
+</span>10 <span style=''>import scala.collection.JavaConverters._
+</span>11 <span style=''>
+</span>12 <span style=''>class PropertiesMutableView(
+</span>13 <span style=''>                             originalBackingObject: FileArtifact,
+</span>14 <span style=''>                             parent: ProjectMutableView)
+</span>15 <span style=''>  extends LazyFileArtifactBackedMutableView(originalBackingObject, parent)
+</span>16 <span style=''>    with TerminalView[FileArtifact] {
+</span>17 <span style=''>
+</span>18 <span style=''>  private var properties = </span><span style='background: #AEF1AE'>originalBackingObject.content</span><span style=''>
+</span>19 <span style=''>
+</span>20 <span style=''>  override protected def currentContent: String = </span><span style='background: #AEF1AE'>properties</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Return the content of this property&quot;)
+</span>23 <span style=''>  def getValue(@ExportFunctionParameterDescription(name = &quot;key&quot;,
+</span>24 <span style=''>    description = &quot;The name of the simple node&quot;)
+</span>25 <span style=''>               key: String): String = {
+</span>26 <span style=''>    val regexp = </span><span style='background: #AEF1AE'>s&quot;$key=(.*)&quot;.r</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>    val matched = </span><span style='background: #AEF1AE'>regexp.findFirstMatchIn(properties)</span><span style=''>
+</span>29 <span style=''>    if (</span><span style='background: #AEF1AE'>matched.isDefined</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>30 <span style=''></span><span style='background: #AEF1AE'>      val rm = regexp.findFirstMatchIn(properties).get
+</span>31 <span style=''></span><span style='background: #AEF1AE'>      rm.group(1)
+</span>32 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''> else {
+</span>33 <span style=''>      </span><span style='background: #AEF1AE'>&quot;&quot;</span><span style=''>
+</span>34 <span style=''>    }
+</span>35 <span style=''>  }
+</span>36 <span style=''>
+</span>37 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Set the value of the specified property, creating a property if not present&quot;)
+</span>38 <span style=''>  def setProperty(@ExportFunctionParameterDescription(name = &quot;key&quot;,
+</span>39 <span style=''>    description = &quot;The key of the property being set&quot;)
+</span>40 <span style=''>                  key: String,
+</span>41 <span style=''>                  @ExportFunctionParameterDescription(name = &quot;value&quot;,
+</span>42 <span style=''>                    description = &quot;The value of the property&quot;)
+</span>43 <span style=''>                  newValue: String
+</span>44 <span style=''>                 ): Unit = {
+</span>45 <span style=''>
+</span>46 <span style=''>    if (</span><span style='background: #AEF1AE'>content.contains(key)</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>47 <span style=''></span><span style='background: #AEF1AE'>      val regexp = s&quot;$key=(.*)&quot;
+</span>48 <span style=''></span><span style='background: #AEF1AE'>      this.properties = content.replaceFirst(regexp, s&quot;$key=$newValue&quot;)
+</span>49 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''> else </span><span style='background: #AEF1AE'>{
+</span>50 <span style=''></span><span style='background: #AEF1AE'>      val newPropertyString = s&quot;$key=$newValue\n&quot;
+</span>51 <span style=''></span><span style='background: #AEF1AE'>      this.properties = content.concat(newPropertyString)
+</span>52 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>53 <span style=''>  }
+</span>54 <span style=''>
+</span>55 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Return whether a property key exists in this file or not&quot;)
+</span>56 <span style=''>  def containsKey(@ExportFunctionParameterDescription(name = &quot;key&quot;,
+</span>57 <span style=''>    description = &quot;The key of the property being searched for&quot;)
+</span>58 <span style=''>                  key: String): Boolean = {
+</span>59 <span style=''>    val properties = </span><span style='background: #AEF1AE'>new Properties()</span><span style=''>
+</span>60 <span style=''>    </span><span style='background: #AEF1AE'>properties.load(new StringReader(content))</span><span style=''>
+</span>61 <span style=''>    </span><span style='background: #AEF1AE'>properties.containsKey(key)</span><span style=''>
+</span>62 <span style=''>  }
+</span>63 <span style=''>
+</span>64 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Return whether a property value exists in this file or not&quot;)
+</span>65 <span style=''>  def containsValue(@ExportFunctionParameterDescription(name = &quot;value&quot;,
+</span>66 <span style=''>    description = &quot;The value being searched for&quot;)
+</span>67 <span style=''>                    value: String): Boolean = {
+</span>68 <span style=''>    val properties = </span><span style='background: #AEF1AE'>new Properties()</span><span style=''>
+</span>69 <span style=''>    </span><span style='background: #AEF1AE'>properties.load(new StringReader(content))</span><span style=''>
+</span>70 <span style=''>    </span><span style='background: #AEF1AE'>properties.containsValue(value)</span><span style=''>
+</span>71 <span style=''>  }
+</span>72 <span style=''>
+</span>73 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Return a list of the supported keys&quot;)
+</span>74 <span style=''>  def keys: List[Any] = {
+</span>75 <span style=''>    val properties = </span><span style='background: #AEF1AE'>new Properties()</span><span style=''>
+</span>76 <span style=''>    </span><span style='background: #AEF1AE'>properties.load(new StringReader(content))</span><span style=''>
+</span>77 <span style=''>    </span><span style='background: #AEF1AE'>properties.propertyNames().asScala.toList</span><span style=''>
+</span>78 <span style=''>  }
+</span>79 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          2805
+        </td>
+        <td>
+          656
+          -
+          685
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          PropertiesMutableView.this.originalBackingObject.content
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          2806
+        </td>
+        <td>
+          737
+          -
+          747
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.properties.PropertiesMutableView.properties
+        </td>
+        <td style="background: #AEF1AE">
+          PropertiesMutableView.this.properties
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2807
+        </td>
+        <td>
+          1008
+          -
+          1020
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;=(.*)&quot;).s(key)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2808
+        </td>
+        <td>
+          1008
+          -
+          1022
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.r
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(scala.StringContext.apply(&quot;&quot;, &quot;=(.*)&quot;).s(key)).r
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2810
+        </td>
+        <td>
+          1042
+          -
+          1077
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.matching.Regex.findFirstMatchIn
+        </td>
+        <td style="background: #AEF1AE">
+          regexp.findFirstMatchIn(PropertiesMutableView.this.properties)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2809
+        </td>
+        <td>
+          1066
+          -
+          1076
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.properties.PropertiesMutableView.properties
+        </td>
+        <td style="background: #AEF1AE">
+          PropertiesMutableView.this.properties
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          2815
+        </td>
+        <td>
+          1105
+          -
+          1185
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val rm: scala.util.matching.Regex.Match = regexp.findFirstMatchIn(PropertiesMutableView.this.properties).get;
+  rm.group(1)
+}
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          2811
+        </td>
+        <td>
+          1086
+          -
+          1103
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #AEF1AE">
+          matched.isDefined
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2813
+        </td>
+        <td>
+          1122
+          -
+          1161
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #AEF1AE">
+          regexp.findFirstMatchIn(PropertiesMutableView.this.properties).get
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2812
+        </td>
+        <td>
+          1146
+          -
+          1156
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.properties.PropertiesMutableView.properties
+        </td>
+        <td style="background: #AEF1AE">
+          PropertiesMutableView.this.properties
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          2814
+        </td>
+        <td>
+          1168
+          -
+          1179
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.matching.Regex.MatchData.group
+        </td>
+        <td style="background: #AEF1AE">
+          rm.group(1)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          2816
+        </td>
+        <td>
+          1199
+          -
+          1201
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          2817
+        </td>
+        <td>
+          1199
+          -
+          1201
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          2818
+        </td>
+        <td>
+          1702
+          -
+          1723
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.contains
+        </td>
+        <td style="background: #AEF1AE">
+          PropertiesMutableView.this.content.contains(key)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          2823
+        </td>
+        <td>
+          1725
+          -
+          1836
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val regexp: String = scala.StringContext.apply(&quot;&quot;, &quot;=(.*)&quot;).s(key);
+  this.properties_=(PropertiesMutableView.this.content.replaceFirst(regexp, scala.StringContext.apply(&quot;&quot;, &quot;=&quot;, &quot;&quot;).s(key, newValue)))
+}
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          2819
+        </td>
+        <td>
+          1746
+          -
+          1758
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;=(.*)&quot;).s(key)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          2822
+        </td>
+        <td>
+          1765
+          -
+          1830
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.properties.PropertiesMutableView.properties_=
+        </td>
+        <td style="background: #AEF1AE">
+          this.properties_=(PropertiesMutableView.this.content.replaceFirst(regexp, scala.StringContext.apply(&quot;&quot;, &quot;=&quot;, &quot;&quot;).s(key, newValue)))
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          2821
+        </td>
+        <td>
+          1783
+          -
+          1830
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replaceFirst
+        </td>
+        <td style="background: #AEF1AE">
+          PropertiesMutableView.this.content.replaceFirst(regexp, scala.StringContext.apply(&quot;&quot;, &quot;=&quot;, &quot;&quot;).s(key, newValue))
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          2820
+        </td>
+        <td>
+          1812
+          -
+          1829
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;=&quot;, &quot;&quot;).s(key, newValue)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          2827
+        </td>
+        <td>
+          1842
+          -
+          1957
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val newPropertyString: String = scala.StringContext.apply(&quot;&quot;, &quot;=&quot;, &quot;\\n&quot;).s(key, newValue);
+  this.properties_=(PropertiesMutableView.this.content.concat(newPropertyString))
+}
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2824
+        </td>
+        <td>
+          1874
+          -
+          1893
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;=&quot;, &quot;\\n&quot;).s(key, newValue)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          2825
+        </td>
+        <td>
+          1918
+          -
+          1951
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.concat
+        </td>
+        <td style="background: #AEF1AE">
+          PropertiesMutableView.this.content.concat(newPropertyString)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          2826
+        </td>
+        <td>
+          1900
+          -
+          1951
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.properties.PropertiesMutableView.properties_=
+        </td>
+        <td style="background: #AEF1AE">
+          this.properties_=(PropertiesMutableView.this.content.concat(newPropertyString))
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          2828
+        </td>
+        <td>
+          2269
+          -
+          2285
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Properties.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.util.Properties()
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          2831
+        </td>
+        <td>
+          2290
+          -
+          2332
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Properties.load
+        </td>
+        <td style="background: #AEF1AE">
+          properties.load(new java.io.StringReader(PropertiesMutableView.this.content))
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          2830
+        </td>
+        <td>
+          2306
+          -
+          2331
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.StringReader.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.io.StringReader(PropertiesMutableView.this.content)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          2829
+        </td>
+        <td>
+          2323
+          -
+          2330
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.content
+        </td>
+        <td style="background: #AEF1AE">
+          PropertiesMutableView.this.content
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          2832
+        </td>
+        <td>
+          2337
+          -
+          2364
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Hashtable.containsKey
+        </td>
+        <td style="background: #AEF1AE">
+          properties.containsKey(key)
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          2833
+        </td>
+        <td>
+          2672
+          -
+          2688
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Properties.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.util.Properties()
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          2834
+        </td>
+        <td>
+          2726
+          -
+          2733
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.content
+        </td>
+        <td style="background: #AEF1AE">
+          PropertiesMutableView.this.content
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          2836
+        </td>
+        <td>
+          2693
+          -
+          2735
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Properties.load
+        </td>
+        <td style="background: #AEF1AE">
+          properties.load(new java.io.StringReader(PropertiesMutableView.this.content))
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          2835
+        </td>
+        <td>
+          2709
+          -
+          2734
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.StringReader.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.io.StringReader(PropertiesMutableView.this.content)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          2837
+        </td>
+        <td>
+          2740
+          -
+          2771
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Hashtable.containsValue
+        </td>
+        <td style="background: #AEF1AE">
+          properties.containsValue(value)
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          2838
+        </td>
+        <td>
+          2912
+          -
+          2928
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Properties.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.util.Properties()
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          2840
+        </td>
+        <td>
+          2949
+          -
+          2974
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.StringReader.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.io.StringReader(PropertiesMutableView.this.content)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          2839
+        </td>
+        <td>
+          2966
+          -
+          2973
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.content
+        </td>
+        <td style="background: #AEF1AE">
+          PropertiesMutableView.this.content
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          2841
+        </td>
+        <td>
+          2933
+          -
+          2975
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Properties.load
+        </td>
+        <td style="background: #AEF1AE">
+          properties.load(new java.io.StringReader(PropertiesMutableView.this.content))
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          2843
+        </td>
+        <td>
+          2980
+          -
+          3021
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toList
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.enumerationAsScalaIteratorConverter[?0](properties.propertyNames()).asScala.toList
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          2842
+        </td>
+        <td>
+          2980
+          -
+          3006
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Properties.propertyNames
+        </td>
+        <td style="background: #AEF1AE">
+          properties.propertyNames()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

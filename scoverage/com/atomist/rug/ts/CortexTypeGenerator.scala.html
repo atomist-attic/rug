@@ -1,0 +1,3051 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/ts/CortexTypeGenerator.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.ts
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.param.SimpleParameterValues
+</span>4 <span style=''>import com.atomist.rug.spi._
+</span>5 <span style=''>import com.atomist.source.ArtifactSource
+</span>6 <span style=''>import com.atomist.util.lang.JavaHelpers._
+</span>7 <span style=''>import com.fasterxml.jackson.databind.ObjectMapper
+</span>8 <span style=''>import com.fasterxml.jackson.module.scala.DefaultScalaModule
+</span>9 <span style=''>import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+</span>10 <span style=''>
+</span>11 <span style=''>object CortexTypeGenerator {
+</span>12 <span style=''>
+</span>13 <span style=''>  val DefaultCortexDir = </span><span style='background: #AEF1AE'>&quot;cortex&quot;</span><span style=''>
+</span>14 <span style=''>
+</span>15 <span style=''>  val DefaultCortexStubDir = </span><span style='background: #AEF1AE'>&quot;cortex/stub&quot;</span><span style=''>
+</span>16 <span style=''>
+</span>17 <span style=''>  def extendedTypes(cortexJson: String): TypeRegistry = {
+</span>18 <span style=''>    val types = </span><span style='background: #AEF1AE'>new CortexTypeGenerator(DefaultCortexDir, DefaultCortexDir).extract(cortexJson)</span><span style=''>
+</span>19 <span style=''>    </span><span style='background: #AEF1AE'>new SimpleTypeRegistry(types)</span><span style=''>
+</span>20 <span style=''>  }
+</span>21 <span style=''>
+</span>22 <span style=''>}
+</span>23 <span style=''>
+</span>24 <span style=''>/**
+</span>25 <span style=''>  * Take endpoints reported in JSON from a materializer service and generate types
+</span>26 <span style=''>  */
+</span>27 <span style=''>class CortexTypeGenerator(basePackage: String, baseClassPackage: String) {
+</span>28 <span style=''>
+</span>29 <span style=''>  import AbstractTypeScriptGenerator._
+</span>30 <span style=''>
+</span>31 <span style=''>  private val mapper = </span><span style='background: #AEF1AE'>new</span><span style=''> ObjectMapper() with ScalaObjectMapper
+</span>32 <span style=''>  </span><span style='background: #AEF1AE'>mapper.registerModule(DefaultScalaModule)</span><span style=''>
+</span>33 <span style=''>
+</span>34 <span style=''>  private def toTypeScriptFiles(json: String): ArtifactSource = {
+</span>35 <span style=''>    val types = </span><span style='background: #AEF1AE'>extract(json)</span><span style=''>
+</span>36 <span style=''>    val typeRegistry = </span><span style='background: #AEF1AE'>new SimpleTypeRegistry(types)</span><span style=''>
+</span>37 <span style=''>    //types.foreach(println(_))
+</span>38 <span style=''>    val tig = </span><span style='background: #AEF1AE'>new TypeScriptInterfaceGenerator(typeRegistry, root = &quot;GraphNode&quot;)</span><span style=''>
+</span>39 <span style=''>    val tcg = </span><span style='background: #AEF1AE'>new TypeScriptStubClassGenerator(typeRegistry)</span><span style=''>
+</span>40 <span style=''>    </span><span style='background: #AEF1AE'>tig.generate(&quot;cortex-interfaces&quot;, SimpleParameterValues(OutputPathParam, &quot;Types.ts&quot;)).withPathAbove(basePackage) +
+</span>41 <span style=''></span><span style='background: #AEF1AE'>      tcg.generate(&quot;cortex-class-stubs&quot;, SimpleParameterValues(OutputPathParam, &quot;Types.ts&quot;)).withPathAbove(baseClassPackage)</span><span style=''>
+</span>42 <span style=''>  }
+</span>43 <span style=''>
+</span>44 <span style=''>  /**
+</span>45 <span style=''>    * Return a valid node module with these files in it, under base package
+</span>46 <span style=''>    */
+</span>47 <span style=''>  def toNodeModule(json: String): ArtifactSource = {
+</span>48 <span style=''>    </span><span style='background: #AEF1AE'>toTypeScriptFiles(json)</span><span style=''>
+</span>49 <span style=''>  }
+</span>50 <span style=''>
+</span>51 <span style=''>  /**
+</span>52 <span style=''>    * Extract the types described in this document and output a valid node module
+</span>53 <span style=''>    */
+</span>54 <span style=''>  def extract(json: String): Set[Typed] = {
+</span>55 <span style=''>    </span><span style='background: #AEF1AE'>require(json != null)</span><span style=''>
+</span>56 <span style=''>    val doc: Map[String, List[_]] = </span><span style='background: #AEF1AE'>mapper.readValue(json, classOf[Map[String, List[_]]])</span><span style=''>
+</span>57 <span style=''>
+</span>58 <span style=''>    def defineProperty(propName: String, typ: String): Prop = {
+</span>59 <span style=''>      val genTyp = typ match {
+</span>60 <span style=''>        case &quot;string&quot; =&gt; </span><span style='background: #AEF1AE'>&quot;String&quot;</span><span style=''>
+</span>61 <span style=''>        case &quot;number&quot; =&gt; </span><span style='background: #AEF1AE'>&quot;long&quot;</span><span style=''>
+</span>62 <span style=''>        case &quot;url&quot; =&gt; </span><span style='background: #AEF1AE'>&quot;String&quot;</span><span style=''> // TODO we should somehow use helpers for this and construct in the proxy from a string
+</span>63 <span style=''>        case &quot;timestamp&quot; =&gt; </span><span style='background: #AEF1AE'>&quot;String&quot;</span><span style=''>
+</span>64 <span style=''>        case x =&gt; x
+</span>65 <span style=''>      }
+</span>66 <span style=''>      </span><span style='background: #AEF1AE'>SimpleProp(propName, genTyp)</span><span style=''>
+</span>67 <span style=''>    }
+</span>68 <span style=''>
+</span>69 <span style=''>    /*
+</span>70 <span style=''>    {&quot;nodes&quot;:
+</span>71 <span style=''>    {&quot;labels&quot;:[&quot;Push&quot;],
+</span>72 <span style=''>    &quot;properties&quot;:
+</span>73 <span style=''>    [[&quot;before&quot;, &quot;string&quot;], [&quot;after&quot;, &quot;string&quot;],
+</span>74 <span style=''>    [&quot;timestamp&quot;, &quot;timestamp&quot;], [&quot;branch&quot;, &quot;string&quot;]],
+</span>75 <span style=''>    &quot;unique&quot;:[&quot;branch&quot;, &quot;after&quot;]},
+</span>76 <span style=''>     */
+</span>77 <span style=''>    val propertyNodes: Traversable[PropertyNode] =
+</span>78 <span style=''>      </span><span style='background: #AEF1AE'>doc(&quot;nodes&quot;).map(node =&gt; {
+</span>79 <span style=''></span><span style='background: #AEF1AE'>        // A node is of form labels, properties, unique?
+</span>80 <span style=''></span><span style='background: #AEF1AE'>        val n = node.asInstanceOf[Map[String, _]]
+</span>81 <span style=''></span><span style='background: #AEF1AE'>        val props: Seq[Prop] = n(&quot;properties&quot;) match {
+</span>82 <span style=''></span><span style='background: #AEF1AE'>          case l: List[_] =&gt;
+</span>83 <span style=''></span><span style='background: #AEF1AE'>            l.map {
+</span>84 <span style=''></span><span style='background: #AEF1AE'>              case List(id: String, typ: String) =&gt;
+</span>85 <span style=''></span><span style='background: #AEF1AE'>                defineProperty(id, typ)
+</span>86 <span style=''></span><span style='background: #AEF1AE'>              case List(id: String, legalValues: List[String]@unchecked) =&gt;
+</span>87 <span style=''></span><span style='background: #AEF1AE'>                EnumProp(id, legalValues)
+</span>88 <span style=''></span><span style='background: #AEF1AE'>            }
+</span>89 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>90 <span style=''></span><span style='background: #AEF1AE'>
+</span>91 <span style=''></span><span style='background: #AEF1AE'>        val pn = PropertyNode(
+</span>92 <span style=''></span><span style='background: #AEF1AE'>          n(&quot;labels&quot;).asInstanceOf[List[String]].toSet,
+</span>93 <span style=''></span><span style='background: #AEF1AE'>          props
+</span>94 <span style=''></span><span style='background: #AEF1AE'>        )
+</span>95 <span style=''></span><span style='background: #AEF1AE'>        pn
+</span>96 <span style=''></span><span style='background: #AEF1AE'>      })</span><span style=''>
+</span>97 <span style=''>
+</span>98 <span style=''>    // These are normally a - [right,cardinality] - right
+</span>99 <span style=''>    // [&quot;Org&quot;, [&quot;HAS&quot;, [&quot;repo&quot;, &quot;1:M&quot;], [&quot;org&quot;, &quot;1:1&quot;]], &quot;Repo&quot;]
+</span>100 <span style=''>    // List(ChatTeam, List(OWNS, List(orgs, 1:M), List(chatTeam, 1:1)), Org)
+</span>101 <span style=''>    val allRelationships: Traversable[Relationship] =
+</span>102 <span style=''>    </span><span style='background: #AEF1AE'>doc.getOrElse(&quot;relationships&quot;, Nil) flatMap {
+</span>103 <span style=''></span><span style='background: #AEF1AE'>      case List(leftEntity: String, List(_: String, List(lrName: String, lrCard: String), List(rlName: String, rlCard: String)), rightEntity: String) =&gt;
+</span>104 <span style=''></span><span style='background: #AEF1AE'>        Seq(
+</span>105 <span style=''></span><span style='background: #AEF1AE'>          Relationship(leftEntity, lrName, Cardinality(lrCard), rightEntity),
+</span>106 <span style=''></span><span style='background: #AEF1AE'>          Relationship(rightEntity, rlName, Cardinality(rlCard), leftEntity)
+</span>107 <span style=''></span><span style='background: #AEF1AE'>        )
+</span>108 <span style=''></span><span style='background: #AEF1AE'>      case List(leftEntity: String, List(discard: String, List(lrName: String, lrCard: String)), rightEntity: String) =&gt;
+</span>109 <span style=''></span><span style='background: #AEF1AE'>        Seq(
+</span>110 <span style=''></span><span style='background: #AEF1AE'>          Relationship(leftEntity, lrName, Cardinality(lrCard), rightEntity)
+</span>111 <span style=''></span><span style='background: #AEF1AE'>        )
+</span>112 <span style=''></span><span style='background: #AEF1AE'>      case x =&gt;
+</span>113 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Illegal list, not able to destructure, $x&quot;)</span><span style='background: #AEF1AE'>
+</span>114 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>115 <span style=''>
+</span>116 <span style=''>    </span><span style='background: #AEF1AE'>propertyNodes.map(pn =&gt; new JsonBackedTyped(pn, allRelationships)).toSet</span><span style=''>
+</span>117 <span style=''>  }
+</span>118 <span style=''>
+</span>119 <span style=''>}
+</span>120 <span style=''>
+</span>121 <span style=''>private trait Prop {
+</span>122 <span style=''>
+</span>123 <span style=''>  def name: String
+</span>124 <span style=''>
+</span>125 <span style=''>  def description: String = </span><span style='background: #AEF1AE'>name</span><span style=''>
+</span>126 <span style=''>
+</span>127 <span style=''>  def toType: ParameterOrReturnType
+</span>128 <span style=''>}
+</span>129 <span style=''>
+</span>130 <span style=''>private case class SimpleProp(name: String, typ: String) extends Prop {
+</span>131 <span style=''>
+</span>132 <span style=''>  def toType: ParameterOrReturnType = </span><span style='background: #AEF1AE'>SimpleParameterOrReturnType(typ, isArray = false)</span><span style=''>
+</span>133 <span style=''>}
+</span>134 <span style=''>
+</span>135 <span style=''>private case class EnumProp(name: String, legalValues: Seq[String]) extends Prop {
+</span>136 <span style=''>
+</span>137 <span style=''>  def toType: ParameterOrReturnType = </span><span style='background: #AEF1AE'>EnumParameterOrReturnType(name, legalValues)</span><span style=''>
+</span>138 <span style=''>}
+</span>139 <span style=''>
+</span>140 <span style=''>private case class PropertyNode(labels: Set[String], properties: Seq[Prop])
+</span>141 <span style=''>
+</span>142 <span style=''>private case class Relationship(left: String, name: String, cardinality: Cardinality, right: String)
+</span>143 <span style=''>
+</span>144 <span style=''>private class JsonBackedTyped(
+</span>145 <span style=''>                               properties: PropertyNode,
+</span>146 <span style=''>                               allRelationships: Traversable[Relationship]
+</span>147 <span style=''>                             ) extends Typed {
+</span>148 <span style=''>
+</span>149 <span style=''>  override val name: String = </span><span style='background: #AEF1AE'>properties.labels.head</span><span style=''>
+</span>150 <span style=''>
+</span>151 <span style=''>  override def description: String = </span><span style='background: #AEF1AE'>s&quot;Type $name&quot;</span><span style=''>
+</span>152 <span style=''>
+</span>153 <span style=''>  // TODO should come from parent?
+</span>154 <span style=''>  override def allOperations: Seq[TypeOperation] = </span><span style='background: #AEF1AE'>operations</span><span style=''>
+</span>155 <span style=''>
+</span>156 <span style=''>  override def operations: Seq[TypeOperation] = {
+</span>157 <span style=''>    val relOps: Seq[TypeOperation] =
+</span>158 <span style=''>      </span><span style='background: #AEF1AE'>allRelationships
+</span>159 <span style=''></span><span style='background: #AEF1AE'>        .filter(_.left == name)
+</span>160 <span style=''></span><span style='background: #AEF1AE'>        .map(rel =&gt; TypeOperation(
+</span>161 <span style=''></span><span style='background: #AEF1AE'>          name = rel.name,
+</span>162 <span style=''></span><span style='background: #AEF1AE'>          description = s&quot;${rel.name} - ${rel.left} -&gt; ${rel.right}&quot;,
+</span>163 <span style=''></span><span style='background: #AEF1AE'>          readOnly = false,
+</span>164 <span style=''></span><span style='background: #AEF1AE'>          parameters = Nil,
+</span>165 <span style=''></span><span style='background: #AEF1AE'>          returnType = rel.cardinality match {
+</span>166 <span style=''></span><span style='background: #AEF1AE'>            case OneToOne =&gt; SimpleParameterOrReturnType(rel.right, isArray = false)
+</span>167 <span style=''></span><span style='background: #AEF1AE'>            case OneToM =&gt; SimpleParameterOrReturnType(rel.right, isArray = true)
+</span>168 <span style=''></span><span style='background: #AEF1AE'>          },
+</span>169 <span style=''></span><span style='background: #AEF1AE'>          definedOn = null,
+</span>170 <span style=''></span><span style='background: #AEF1AE'>          example = None,
+</span>171 <span style=''></span><span style='background: #AEF1AE'>          exposeAsProperty = true
+</span>172 <span style=''></span><span style='background: #AEF1AE'>        )).toSeq</span><span style=''>
+</span>173 <span style=''>    val propsOps: Seq[TypeOperation] =
+</span>174 <span style=''>      </span><span style='background: #AEF1AE'>properties.properties
+</span>175 <span style=''></span><span style='background: #AEF1AE'>        // Filter out properties that have the same name as a relationship, that takes precedence
+</span>176 <span style=''></span><span style='background: #AEF1AE'>        .filterNot(p =&gt; relOps.exists(_.name == p.name))
+</span>177 <span style=''></span><span style='background: #AEF1AE'>        .map(prop =&gt;
+</span>178 <span style=''></span><span style='background: #AEF1AE'>          TypeOperation(
+</span>179 <span style=''></span><span style='background: #AEF1AE'>            name = prop.name,
+</span>180 <span style=''></span><span style='background: #AEF1AE'>            description = prop.description,
+</span>181 <span style=''></span><span style='background: #AEF1AE'>            readOnly = false,
+</span>182 <span style=''></span><span style='background: #AEF1AE'>            parameters = Nil,
+</span>183 <span style=''></span><span style='background: #AEF1AE'>            returnType = prop.toType,
+</span>184 <span style=''></span><span style='background: #AEF1AE'>            definedOn = null,
+</span>185 <span style=''></span><span style='background: #AEF1AE'>            example = None,
+</span>186 <span style=''></span><span style='background: #AEF1AE'>            exposeAsProperty = true
+</span>187 <span style=''></span><span style='background: #AEF1AE'>          ))</span><span style=''>
+</span>188 <span style=''>
+</span>189 <span style=''>    </span><span style='background: #AEF1AE'>propsOps ++ relOps</span><span style=''>
+</span>190 <span style=''>  }
+</span>191 <span style=''>
+</span>192 <span style=''>  override def toString: String =
+</span>193 <span style=''>    </span><span style='background: #F0ADAD'>s&quot;$name: ops=[${operations.mkString(&quot;,&quot;)}]&quot;</span><span style=''>
+</span>194 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          6410
+        </td>
+        <td>
+          429
+          -
+          437
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;cortex&quot;
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          6411
+        </td>
+        <td>
+          468
+          -
+          481
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;cortex/stub&quot;
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          6412
+        </td>
+        <td>
+          557
+          -
+          636
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.CortexTypeGenerator.extract
+        </td>
+        <td style="background: #AEF1AE">
+          new CortexTypeGenerator(CortexTypeGenerator.this.DefaultCortexDir, CortexTypeGenerator.this.DefaultCortexDir).extract(cortexJson)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          6413
+        </td>
+        <td>
+          641
+          -
+          670
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.SimpleTypeRegistry.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.spi.SimpleTypeRegistry(types)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          6414
+        </td>
+        <td>
+          910
+          -
+          913
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.CortexTypeGenerator.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          6416
+        </td>
+        <td>
+          954
+          -
+          995
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.databind.ObjectMapper.registerModule
+        </td>
+        <td style="background: #AEF1AE">
+          CortexTypeGenerator.this.mapper.registerModule(com.fasterxml.jackson.module.scala.DefaultScalaModule)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          6415
+        </td>
+        <td>
+          976
+          -
+          994
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.fasterxml.jackson.module.scala.DefaultScalaModule
+        </td>
+        <td style="background: #AEF1AE">
+          com.fasterxml.jackson.module.scala.DefaultScalaModule
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          6417
+        </td>
+        <td>
+          1079
+          -
+          1092
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.CortexTypeGenerator.extract
+        </td>
+        <td style="background: #AEF1AE">
+          CortexTypeGenerator.this.extract(json)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          6418
+        </td>
+        <td>
+          1116
+          -
+          1145
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.SimpleTypeRegistry.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.spi.SimpleTypeRegistry(types)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          6420
+        </td>
+        <td>
+          1192
+          -
+          1192
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.&lt;init&gt;$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          ts.this.TypeScriptInterfaceGenerator.&lt;init&gt;$default$2
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          6419
+        </td>
+        <td>
+          1246
+          -
+          1257
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;GraphNode&quot;
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          6422
+        </td>
+        <td>
+          1192
+          -
+          1258
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new TypeScriptInterfaceGenerator(x$3, x$5, x$6, x$4)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          6421
+        </td>
+        <td>
+          1192
+          -
+          1192
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.&lt;init&gt;$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          ts.this.TypeScriptInterfaceGenerator.&lt;init&gt;$default$3
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          6423
+        </td>
+        <td>
+          1273
+          -
+          1273
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptStubClassGenerator.&lt;init&gt;$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          ts.this.TypeScriptStubClassGenerator.&lt;init&gt;$default$2
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          6426
+        </td>
+        <td>
+          1273
+          -
+          1319
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptStubClassGenerator.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new TypeScriptStubClassGenerator(typeRegistry, ts.this.TypeScriptStubClassGenerator.&lt;init&gt;$default$2, ts.this.TypeScriptStubClassGenerator.&lt;init&gt;$default$3, ts.this.TypeScriptStubClassGenerator.&lt;init&gt;$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          6425
+        </td>
+        <td>
+          1273
+          -
+          1273
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptStubClassGenerator.&lt;init&gt;$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          ts.this.TypeScriptStubClassGenerator.&lt;init&gt;$default$4
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          6424
+        </td>
+        <td>
+          1273
+          -
+          1273
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptStubClassGenerator.&lt;init&gt;$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          ts.this.TypeScriptStubClassGenerator.&lt;init&gt;$default$3
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          6429
+        </td>
+        <td>
+          1397
+          -
+          1407
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Types.ts&quot;
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          6432
+        </td>
+        <td>
+          1424
+          -
+          1435
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.CortexTypeGenerator.basePackage
+        </td>
+        <td style="background: #AEF1AE">
+          CortexTypeGenerator.this.basePackage
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          6428
+        </td>
+        <td>
+          1380
+          -
+          1395
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.OutputPathParam
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.OutputPathParam
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          6440
+        </td>
+        <td>
+          1324
+          -
+          1563
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.+
+        </td>
+        <td style="background: #AEF1AE">
+          tig.generate(&quot;cortex-interfaces&quot;, com.atomist.param.SimpleParameterValues.apply(AbstractTypeScriptGenerator.OutputPathParam, &quot;Types.ts&quot;), tig.generate$default$3).withPathAbove(CortexTypeGenerator.this.basePackage).+(tcg.generate(&quot;cortex-class-stubs&quot;, com.atomist.param.SimpleParameterValues.apply(AbstractTypeScriptGenerator.OutputPathParam, &quot;Types.ts&quot;), tcg.generate$default$3).withPathAbove(CortexTypeGenerator.this.baseClassPackage))
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          6431
+        </td>
+        <td>
+          1328
+          -
+          1328
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.generate.ProjectGenerator.generate$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          tig.generate$default$3
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          6427
+        </td>
+        <td>
+          1337
+          -
+          1356
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;cortex-interfaces&quot;
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          6430
+        </td>
+        <td>
+          1358
+          -
+          1408
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValues.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.param.SimpleParameterValues.apply(AbstractTypeScriptGenerator.OutputPathParam, &quot;Types.ts&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          6438
+        </td>
+        <td>
+          1546
+          -
+          1562
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.CortexTypeGenerator.baseClassPackage
+        </td>
+        <td style="background: #AEF1AE">
+          CortexTypeGenerator.this.baseClassPackage
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          6435
+        </td>
+        <td>
+          1519
+          -
+          1529
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Types.ts&quot;
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          6434
+        </td>
+        <td>
+          1502
+          -
+          1517
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.OutputPathParam
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.OutputPathParam
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          6437
+        </td>
+        <td>
+          1449
+          -
+          1449
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.generate.ProjectGenerator.generate$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          tcg.generate$default$3
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          6439
+        </td>
+        <td>
+          1445
+          -
+          1563
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.withPathAbove
+        </td>
+        <td style="background: #AEF1AE">
+          tcg.generate(&quot;cortex-class-stubs&quot;, com.atomist.param.SimpleParameterValues.apply(AbstractTypeScriptGenerator.OutputPathParam, &quot;Types.ts&quot;), tcg.generate$default$3).withPathAbove(CortexTypeGenerator.this.baseClassPackage)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          6433
+        </td>
+        <td>
+          1458
+          -
+          1478
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;cortex-class-stubs&quot;
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          6436
+        </td>
+        <td>
+          1480
+          -
+          1530
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValues.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.param.SimpleParameterValues.apply(AbstractTypeScriptGenerator.OutputPathParam, &quot;Types.ts&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          6441
+        </td>
+        <td>
+          1715
+          -
+          1738
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.CortexTypeGenerator.toTypeScriptFiles
+        </td>
+        <td style="background: #AEF1AE">
+          CortexTypeGenerator.this.toTypeScriptFiles(json)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          6443
+        </td>
+        <td>
+          1887
+          -
+          1908
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.require
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.require(json.!=(null))
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          6442
+        </td>
+        <td>
+          1895
+          -
+          1907
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          json.!=(null)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          6444
+        </td>
+        <td>
+          1945
+          -
+          1998
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.databind.ObjectMapper.readValue
+        </td>
+        <td style="background: #AEF1AE">
+          CortexTypeGenerator.this.mapper.readValue[Map[String,List[_]]](json, classOf[scala.collection.immutable.Map])
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          6445
+        </td>
+        <td>
+          2120
+          -
+          2128
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;String&quot;
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          6446
+        </td>
+        <td>
+          2154
+          -
+          2160
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;long&quot;
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          6447
+        </td>
+        <td>
+          2183
+          -
+          2191
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;String&quot;
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          6448
+        </td>
+        <td>
+          2308
+          -
+          2316
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;String&quot;
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          6449
+        </td>
+        <td>
+          2351
+          -
+          2379
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.SimpleProp.apply
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleProp.apply(propName, genTyp)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          6450
+        </td>
+        <td>
+          2657
+          -
+          2664
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;nodes&quot;
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          6461
+        </td>
+        <td>
+          2653
+          -
+          3258
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.immutable.List.map
+        </td>
+        <td style="background: #AEF1AE">
+          doc.apply(&quot;nodes&quot;).map[com.atomist.rug.ts.PropertyNode, Traversable[com.atomist.rug.ts.PropertyNode]](((node: _$1) =&gt; {
+  val n: scala.collection.immutable.Map[String,Any] = node.asInstanceOf[Map[String, _]];
+  val props: Seq[com.atomist.rug.ts.Prop] = n.apply(&quot;properties&quot;) match {
+    case (l @ (_: List[_])) =&gt; l.map[com.atomist.rug.ts.Prop, Seq[com.atomist.rug.ts.Prop]](((x0$1: _) =&gt; x0$1 match {
+      case immutable.this.List.unapplySeq[A](&lt;unapply-selector&gt;) &lt;unapply&gt; ((id @ (_: String)), (typ @ (_: String))) =&gt; defineProperty(id, typ)
+      case immutable.this.List.unapplySeq[A](&lt;unapply-selector&gt;) &lt;unapply&gt; ((id @ (_: String)), (legalValues @ (_: List[String] @unchecked))) =&gt; EnumProp.apply(id, legalValues)
+    }))(immutable.this.List.canBuildFrom[com.atomist.rug.ts.Prop])
+  };
+  val pn: com.atomist.rug.ts.PropertyNode = PropertyNode.apply(n.apply(&quot;labels&quot;).asInstanceOf[List[String]].toSet[String], props);
+  pn
+}))(immutable.this.List.canBuildFrom[com.atomist.rug.ts.PropertyNode])
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          6460
+        </td>
+        <td>
+          2669
+          -
+          2669
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[com.atomist.rug.ts.PropertyNode]
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          6451
+        </td>
+        <td>
+          2753
+          -
+          2786
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          node.asInstanceOf[Map[String, _]]
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          6452
+        </td>
+        <td>
+          2818
+          -
+          2833
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.apply
+        </td>
+        <td style="background: #AEF1AE">
+          n.apply(&quot;properties&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          6456
+        </td>
+        <td>
+          2883
+          -
+          3114
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.immutable.List.map
+        </td>
+        <td style="background: #AEF1AE">
+          l.map[com.atomist.rug.ts.Prop, Seq[com.atomist.rug.ts.Prop]](((x0$1: _) =&gt; x0$1 match {
+  case immutable.this.List.unapplySeq[A](&lt;unapply-selector&gt;) &lt;unapply&gt; ((id @ (_: String)), (typ @ (_: String))) =&gt; defineProperty(id, typ)
+  case immutable.this.List.unapplySeq[A](&lt;unapply-selector&gt;) &lt;unapply&gt; ((id @ (_: String)), (legalValues @ (_: List[String] @unchecked))) =&gt; EnumProp.apply(id, legalValues)
+}))(immutable.this.List.canBuildFrom[com.atomist.rug.ts.Prop])
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          6455
+        </td>
+        <td>
+          2889
+          -
+          2889
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[com.atomist.rug.ts.Prop]
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          6453
+        </td>
+        <td>
+          2959
+          -
+          2982
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.CortexTypeGenerator.defineProperty
+        </td>
+        <td style="background: #AEF1AE">
+          defineProperty(id, typ)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          6454
+        </td>
+        <td>
+          3075
+          -
+          3100
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.EnumProp.apply
+        </td>
+        <td style="background: #AEF1AE">
+          EnumProp.apply(id, legalValues)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          6459
+        </td>
+        <td>
+          3143
+          -
+          3238
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.PropertyNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          PropertyNode.apply(n.apply(&quot;labels&quot;).asInstanceOf[List[String]].toSet[String], props)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          6458
+        </td>
+        <td>
+          3167
+          -
+          3211
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          n.apply(&quot;labels&quot;).asInstanceOf[List[String]].toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          6457
+        </td>
+        <td>
+          3169
+          -
+          3177
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;labels&quot;
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          6462
+        </td>
+        <td>
+          3532
+          -
+          3547
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;relationships&quot;
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          6474
+        </td>
+        <td>
+          3518
+          -
+          4226
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.immutable.List.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          doc.getOrElse[List[_]](&quot;relationships&quot;, immutable.this.Nil).flatMap[com.atomist.rug.ts.Relationship, Traversable[com.atomist.rug.ts.Relationship]](((x0$2: _$1) =&gt; x0$2 match {
+  case immutable.this.List.unapplySeq[A](&lt;unapply-selector&gt;) &lt;unapply&gt; ((leftEntity @ (_: String)), immutable.this.List.unapplySeq[A](&lt;unapply-selector&gt;) &lt;unapply&gt; ((_: String), immutable.this.List.unapplySeq[A](&lt;unapply-selector&gt;) &lt;unapply&gt; ((lrName @ (_: String)), (lrCard @ (_: String))), immutable.this.List.unapplySeq[A](&lt;unapply-selector&gt;) &lt;unapply&gt; ((rlName @ (_: String)), (rlCard @ (_: String)))), (rightEntity @ (_: String))) =&gt; collection.this.Seq.apply[com.atomist.rug.ts.Relationship](Relationship.apply(leftEntity, lrName, Cardinality.apply(lrCard), rightEntity), Relationship.apply(rightEntity, rlName, Cardinality.apply(rlCard), leftEntity))
+  case immutable.this.List.unapplySeq[A](&lt;unapply-selector&gt;) &lt;unapply&gt; ((leftEntity @ (_: String)), immutable.this.List.unapplySeq[A](&lt;unapply-selector&gt;) &lt;unapply&gt; ((discard @ (_: String)), immutable.this.List.unapplySeq[A](&lt;unapply-selector&gt;) &lt;unapply&gt; ((lrName @ (_: String)), (lrCard @ (_: String)))), (rightEntity @ (_: String))) =&gt; collection.this.Seq.apply[com.atomist.rug.ts.Relationship](Relationship.apply(leftEntity, lrName, Cardinality.apply(lrCard), rightEntity))
+  case (x @ _) =&gt; throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Illegal list, not able to destructure, &quot;, &quot;&quot;).s(x))
+}))(immutable.this.List.canBuildFrom[com.atomist.rug.ts.Relationship])
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          6473
+        </td>
+        <td>
+          3554
+          -
+          3554
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[com.atomist.rug.ts.Relationship]
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          6463
+        </td>
+        <td>
+          3549
+          -
+          3552
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          6468
+        </td>
+        <td>
+          3725
+          -
+          3894
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.ts.Relationship](Relationship.apply(leftEntity, lrName, Cardinality.apply(lrCard), rightEntity), Relationship.apply(rightEntity, rlName, Cardinality.apply(rlCard), leftEntity))
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          6465
+        </td>
+        <td>
+          3740
+          -
+          3806
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.Relationship.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Relationship.apply(leftEntity, lrName, Cardinality.apply(lrCard), rightEntity)
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          6464
+        </td>
+        <td>
+          3773
+          -
+          3792
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.Cardinality.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Cardinality.apply(lrCard)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          6467
+        </td>
+        <td>
+          3818
+          -
+          3884
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.Relationship.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Relationship.apply(rightEntity, rlName, Cardinality.apply(rlCard), leftEntity)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          6466
+        </td>
+        <td>
+          3852
+          -
+          3871
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.Cardinality.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Cardinality.apply(rlCard)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          6471
+        </td>
+        <td>
+          4024
+          -
+          4115
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.ts.Relationship](Relationship.apply(leftEntity, lrName, Cardinality.apply(lrCard), rightEntity))
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          6470
+        </td>
+        <td>
+          4039
+          -
+          4105
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.Relationship.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Relationship.apply(leftEntity, lrName, Cardinality.apply(lrCard), rightEntity)
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          6469
+        </td>
+        <td>
+          4072
+          -
+          4091
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.Cardinality.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Cardinality.apply(lrCard)
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          6472
+        </td>
+        <td>
+          4140
+          -
+          4220
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Illegal list, not able to destructure, &quot;, &quot;&quot;).s(x))
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          6477
+        </td>
+        <td>
+          4232
+          -
+          4304
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          propertyNodes.map[com.atomist.rug.ts.JsonBackedTyped, Traversable[com.atomist.rug.ts.JsonBackedTyped]](((pn: com.atomist.rug.ts.PropertyNode) =&gt; new JsonBackedTyped(pn, allRelationships)))(collection.this.Traversable.canBuildFrom[com.atomist.rug.ts.JsonBackedTyped]).toSet[com.atomist.rug.spi.Typed]
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          6476
+        </td>
+        <td>
+          4249
+          -
+          4249
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Traversable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Traversable.canBuildFrom[com.atomist.rug.ts.JsonBackedTyped]
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          6475
+        </td>
+        <td>
+          4256
+          -
+          4297
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.JsonBackedTyped.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new JsonBackedTyped(pn, allRelationships)
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          6478
+        </td>
+        <td>
+          4383
+          -
+          4387
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.Prop.name
+        </td>
+        <td style="background: #AEF1AE">
+          Prop.this.name
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          6480
+        </td>
+        <td>
+          4582
+          -
+          4587
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          6479
+        </td>
+        <td>
+          4567
+          -
+          4570
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.SimpleProp.typ
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleProp.this.typ
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          6481
+        </td>
+        <td>
+          4539
+          -
+          4588
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.SimpleParameterOrReturnType.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.SimpleParameterOrReturnType.apply(SimpleProp.this.typ, false)
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          6483
+        </td>
+        <td>
+          4746
+          -
+          4757
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.EnumProp.legalValues
+        </td>
+        <td style="background: #AEF1AE">
+          EnumProp.this.legalValues
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          6482
+        </td>
+        <td>
+          4740
+          -
+          4744
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.EnumProp.name
+        </td>
+        <td style="background: #AEF1AE">
+          EnumProp.this.name
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          6484
+        </td>
+        <td>
+          4714
+          -
+          4758
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.EnumParameterOrReturnType.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.EnumParameterOrReturnType.apply(EnumProp.this.name, EnumProp.this.legalValues)
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          6485
+        </td>
+        <td>
+          5182
+          -
+          5204
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          JsonBackedTyped.this.properties.labels.head
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          6489
+        </td>
+        <td>
+          5243
+          -
+          5256
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Type &quot;, &quot;&quot;).s(JsonBackedTyped.this.name)
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          6486
+        </td>
+        <td>
+          5245
+          -
+          5251
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Type &quot;
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          6488
+        </td>
+        <td>
+          5251
+          -
+          5255
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.JsonBackedTyped.name
+        </td>
+        <td style="background: #AEF1AE">
+          JsonBackedTyped.this.name
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          6487
+        </td>
+        <td>
+          5255
+          -
+          5256
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          6490
+        </td>
+        <td>
+          5344
+          -
+          5354
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.JsonBackedTyped.operations
+        </td>
+        <td style="background: #AEF1AE">
+          JsonBackedTyped.this.operations
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          6492
+        </td>
+        <td>
+          5482
+          -
+          5496
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.left.==(JsonBackedTyped.this.name)
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          6491
+        </td>
+        <td>
+          5492
+          -
+          5496
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.JsonBackedTyped.name
+        </td>
+        <td style="background: #AEF1AE">
+          JsonBackedTyped.this.name
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          6516
+        </td>
+        <td>
+          5518
+          -
+          6010
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.TypeOperation.apply(rel.name, scala.StringContext.apply(&quot;&quot;, &quot; - &quot;, &quot; -&gt; &quot;, &quot;&quot;).s(rel.name, rel.left, rel.right), false, immutable.this.Nil, rel.cardinality match {
+  case OneToOne =&gt; com.atomist.rug.spi.SimpleParameterOrReturnType.apply(rel.right, false)
+  case OneToM =&gt; com.atomist.rug.spi.SimpleParameterOrReturnType.apply(rel.right, true)
+}, null, scala.None, true, com.atomist.rug.spi.TypeOperation.apply$default$9, com.atomist.rug.spi.TypeOperation.apply$default$10)
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          6515
+        </td>
+        <td>
+          5518
+          -
+          5518
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.apply$default$10
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.TypeOperation.apply$default$10
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          6517
+        </td>
+        <td>
+          5510
+          -
+          5510
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Traversable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Traversable.canBuildFrom[com.atomist.rug.spi.TypeOperation]
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          6514
+        </td>
+        <td>
+          5518
+          -
+          5518
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.apply$default$9
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.TypeOperation.apply$default$9
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          6493
+        </td>
+        <td>
+          5550
+          -
+          5558
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.Relationship.name
+        </td>
+        <td style="background: #AEF1AE">
+          rel.name
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          6498
+        </td>
+        <td>
+          5588
+          -
+          5596
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.Relationship.name
+        </td>
+        <td style="background: #AEF1AE">
+          rel.name
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          6501
+        </td>
+        <td>
+          5584
+          -
+          5628
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot; - &quot;, &quot; -&gt; &quot;, &quot;&quot;).s(rel.name, rel.left, rel.right)
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          6495
+        </td>
+        <td>
+          5597
+          -
+          5601
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; - &quot;
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          6494
+        </td>
+        <td>
+          5586
+          -
+          5587
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          6497
+        </td>
+        <td>
+          5627
+          -
+          5628
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          6500
+        </td>
+        <td>
+          5617
+          -
+          5626
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.Relationship.right
+        </td>
+        <td style="background: #AEF1AE">
+          rel.right
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          6499
+        </td>
+        <td>
+          5602
+          -
+          5610
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.Relationship.left
+        </td>
+        <td style="background: #AEF1AE">
+          rel.left
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          6496
+        </td>
+        <td>
+          5611
+          -
+          5616
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; -&gt; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          6502
+        </td>
+        <td>
+          5651
+          -
+          5656
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          6503
+        </td>
+        <td>
+          5681
+          -
+          5684
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          6504
+        </td>
+        <td>
+          5709
+          -
+          5724
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.Relationship.cardinality
+        </td>
+        <td style="background: #AEF1AE">
+          rel.cardinality
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          6507
+        </td>
+        <td>
+          5762
+          -
+          5817
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.SimpleParameterOrReturnType.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.SimpleParameterOrReturnType.apply(rel.right, false)
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          6506
+        </td>
+        <td>
+          5811
+          -
+          5816
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          6505
+        </td>
+        <td>
+          5790
+          -
+          5799
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.Relationship.right
+        </td>
+        <td style="background: #AEF1AE">
+          rel.right
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          6510
+        </td>
+        <td>
+          5845
+          -
+          5899
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.SimpleParameterOrReturnType.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.SimpleParameterOrReturnType.apply(rel.right, true)
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          6509
+        </td>
+        <td>
+          5894
+          -
+          5898
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          6508
+        </td>
+        <td>
+          5873
+          -
+          5882
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.Relationship.right
+        </td>
+        <td style="background: #AEF1AE">
+          rel.right
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          6511
+        </td>
+        <td>
+          5935
+          -
+          5939
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          6512
+        </td>
+        <td>
+          5961
+          -
+          5965
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          6513
+        </td>
+        <td>
+          5996
+          -
+          6000
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          6518
+        </td>
+        <td>
+          5449
+          -
+          6017
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          JsonBackedTyped.this.allRelationships.filter(((x$1: com.atomist.rug.ts.Relationship) =&gt; x$1.left.==(JsonBackedTyped.this.name))).map[com.atomist.rug.spi.TypeOperation, Traversable[com.atomist.rug.spi.TypeOperation]](((rel: com.atomist.rug.ts.Relationship) =&gt; com.atomist.rug.spi.TypeOperation.apply(rel.name, scala.StringContext.apply(&quot;&quot;, &quot; - &quot;, &quot; -&gt; &quot;, &quot;&quot;).s(rel.name, rel.left, rel.right), false, immutable.this.Nil, rel.cardinality match {
+  case OneToOne =&gt; com.atomist.rug.spi.SimpleParameterOrReturnType.apply(rel.right, false)
+  case OneToM =&gt; com.atomist.rug.spi.SimpleParameterOrReturnType.apply(rel.right, true)
+}, null, scala.None, true, com.atomist.rug.spi.TypeOperation.apply$default$9, com.atomist.rug.spi.TypeOperation.apply$default$10)))(collection.this.Traversable.canBuildFrom[com.atomist.rug.spi.TypeOperation]).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          176
+        </td>
+        <td>
+          6519
+        </td>
+        <td>
+          6231
+          -
+          6237
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.Prop.name
+        </td>
+        <td style="background: #AEF1AE">
+          p.name
+        </td>
+      </tr><tr>
+        <td>
+          176
+        </td>
+        <td>
+          6521
+        </td>
+        <td>
+          6207
+          -
+          6238
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #AEF1AE">
+          relOps.exists(((x$2: com.atomist.rug.spi.TypeOperation) =&gt; x$2.name.==(p.name)))
+        </td>
+      </tr><tr>
+        <td>
+          176
+        </td>
+        <td>
+          6520
+        </td>
+        <td>
+          6221
+          -
+          6237
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.name.==(p.name)
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          6534
+        </td>
+        <td>
+          6063
+          -
+          6564
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          JsonBackedTyped.this.properties.properties.filterNot(((p: com.atomist.rug.ts.Prop) =&gt; relOps.exists(((x$2: com.atomist.rug.spi.TypeOperation) =&gt; x$2.name.==(p.name))))).map[com.atomist.rug.spi.TypeOperation, Seq[com.atomist.rug.spi.TypeOperation]](((prop: com.atomist.rug.ts.Prop) =&gt; com.atomist.rug.spi.TypeOperation.apply(prop.name, prop.description, false, immutable.this.Nil, prop.toType, null, scala.None, true, com.atomist.rug.spi.TypeOperation.apply$default$9, com.atomist.rug.spi.TypeOperation.apply$default$10)))(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.TypeOperation])
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          6533
+        </td>
+        <td>
+          6252
+          -
+          6252
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.TypeOperation]
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          6530
+        </td>
+        <td>
+          6271
+          -
+          6271
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.apply$default$9
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.TypeOperation.apply$default$9
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          6532
+        </td>
+        <td>
+          6271
+          -
+          6563
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.TypeOperation.apply(prop.name, prop.description, false, immutable.this.Nil, prop.toType, null, scala.None, true, com.atomist.rug.spi.TypeOperation.apply$default$9, com.atomist.rug.spi.TypeOperation.apply$default$10)
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          6531
+        </td>
+        <td>
+          6271
+          -
+          6271
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.apply$default$10
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.TypeOperation.apply$default$10
+        </td>
+      </tr><tr>
+        <td>
+          179
+        </td>
+        <td>
+          6522
+        </td>
+        <td>
+          6305
+          -
+          6314
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.Prop.name
+        </td>
+        <td style="background: #AEF1AE">
+          prop.name
+        </td>
+      </tr><tr>
+        <td>
+          180
+        </td>
+        <td>
+          6523
+        </td>
+        <td>
+          6342
+          -
+          6358
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.Prop.description
+        </td>
+        <td style="background: #AEF1AE">
+          prop.description
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          6524
+        </td>
+        <td>
+          6383
+          -
+          6388
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          6525
+        </td>
+        <td>
+          6415
+          -
+          6418
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          6526
+        </td>
+        <td>
+          6445
+          -
+          6456
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.Prop.toType
+        </td>
+        <td style="background: #AEF1AE">
+          prop.toType
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          6527
+        </td>
+        <td>
+          6482
+          -
+          6486
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          6528
+        </td>
+        <td>
+          6510
+          -
+          6514
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          6529
+        </td>
+        <td>
+          6547
+          -
+          6551
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          189
+        </td>
+        <td>
+          6536
+        </td>
+        <td>
+          6570
+          -
+          6588
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          propsOps.++[com.atomist.rug.spi.TypeOperation, Seq[com.atomist.rug.spi.TypeOperation]](relOps)(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.TypeOperation])
+        </td>
+      </tr><tr>
+        <td>
+          189
+        </td>
+        <td>
+          6535
+        </td>
+        <td>
+          6579
+          -
+          6579
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.TypeOperation]
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          6537
+        </td>
+        <td>
+          6634
+          -
+          6635
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          6539
+        </td>
+        <td>
+          6673
+          -
+          6675
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          6542
+        </td>
+        <td>
+          6632
+          -
+          6675
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;: ops=[&quot;, &quot;]&quot;).s(JsonBackedTyped.this.name, JsonBackedTyped.this.operations.mkString(&quot;,&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          6538
+        </td>
+        <td>
+          6639
+          -
+          6647
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;: ops=[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          6541
+        </td>
+        <td>
+          6648
+          -
+          6672
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          JsonBackedTyped.this.operations.mkString(&quot;,&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          6540
+        </td>
+        <td>
+          6635
+          -
+          6639
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.JsonBackedTyped.name
+        </td>
+        <td style="background: #F0ADAD">
+          JsonBackedTyped.this.name
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

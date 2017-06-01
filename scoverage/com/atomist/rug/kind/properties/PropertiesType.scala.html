@@ -1,0 +1,492 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/properties/PropertiesType.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.properties
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.kind.core.{DirectoryMutableView, FileMutableView, ProjectMutableView}
+</span>5 <span style=''>import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
+</span>6 <span style=''>
+</span>7 <span style=''>class PropertiesType
+</span>8 <span style=''>  extends Type
+</span>9 <span style=''>    with ReflectivelyTypedType {
+</span>10 <span style=''>
+</span>11 <span style=''>  override def description = </span><span style='background: #AEF1AE'>&quot;Java properties file&quot;</span><span style=''>
+</span>12 <span style=''>
+</span>13 <span style=''>  override def runtimeClass: Class[PropertiesMutableView] = </span><span style='background: #AEF1AE'>classOf[PropertiesMutableView]</span><span style=''>
+</span>14 <span style=''>
+</span>15 <span style=''>  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = {
+</span>16 <span style=''>    context match {
+</span>17 <span style=''>      case fmv: FileMutableView =&gt;
+</span>18 <span style=''>        </span><span style='background: #AEF1AE'>Some(Seq(fmv.originalBackingObject)
+</span>19 <span style=''></span><span style='background: #AEF1AE'>          .filter(f =&gt; f.name.endsWith(&quot;.properties&quot;))
+</span>20 <span style=''></span><span style='background: #AEF1AE'>          .map(f =&gt; new PropertiesMutableView(f, fmv.parent)))</span><span style=''>
+</span>21 <span style=''>      case dmv: DirectoryMutableView =&gt;
+</span>22 <span style=''>        </span><span style='background: #AEF1AE'>Some(dmv.originalBackingObject.files
+</span>23 <span style=''></span><span style='background: #AEF1AE'>          .filter(f =&gt; f.name.endsWith(&quot;.properties&quot;))
+</span>24 <span style=''></span><span style='background: #AEF1AE'>          .map(f =&gt; new PropertiesMutableView(f, dmv.parent)))</span><span style=''>
+</span>25 <span style=''>      case pmv: ProjectMutableView =&gt;
+</span>26 <span style=''>        </span><span style='background: #AEF1AE'>Some(pmv.originalBackingObject.allFiles
+</span>27 <span style=''></span><span style='background: #AEF1AE'>          .filter(f =&gt; f.name.endsWith(&quot;.properties&quot;))
+</span>28 <span style=''></span><span style='background: #AEF1AE'>          .map(f =&gt; new PropertiesMutableView(f, pmv)))</span><span style=''>
+</span>29 <span style=''>    }
+</span>30 <span style=''>  }
+</span>31 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          2844
+        </td>
+        <td>
+          339
+          -
+          361
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Java properties file&quot;
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          2845
+        </td>
+        <td>
+          423
+          -
+          453
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.rug.kind.properties.PropertiesMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          2852
+        </td>
+        <td>
+          596
+          -
+          749
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Seq[com.atomist.rug.spi.MutableView[_]]](collection.this.Seq.apply[com.atomist.source.FileArtifact](fmv.originalBackingObject).filter(((f: com.atomist.source.FileArtifact) =&gt; f.name.endsWith(&quot;.properties&quot;))).map[com.atomist.rug.kind.properties.PropertiesMutableView, Seq[com.atomist.rug.spi.MutableView[_]]](((f: com.atomist.source.FileArtifact) =&gt; new PropertiesMutableView(f, fmv.parent)))(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.properties.PropertiesMutableView]))
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          2846
+        </td>
+        <td>
+          605
+          -
+          630
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.originalBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          fmv.originalBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          2847
+        </td>
+        <td>
+          655
+          -
+          685
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          f.name.endsWith(&quot;.properties&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          2849
+        </td>
+        <td>
+          707
+          -
+          747
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.properties.PropertiesMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new PropertiesMutableView(f, fmv.parent)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          2848
+        </td>
+        <td>
+          736
+          -
+          746
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileMutableView.parent
+        </td>
+        <td style="background: #AEF1AE">
+          fmv.parent
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          2851
+        </td>
+        <td>
+          601
+          -
+          748
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.source.FileArtifact](fmv.originalBackingObject).filter(((f: com.atomist.source.FileArtifact) =&gt; f.name.endsWith(&quot;.properties&quot;))).map[com.atomist.rug.kind.properties.PropertiesMutableView, Seq[com.atomist.rug.spi.MutableView[_]]](((f: com.atomist.source.FileArtifact) =&gt; new PropertiesMutableView(f, fmv.parent)))(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.properties.PropertiesMutableView])
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          2850
+        </td>
+        <td>
+          701
+          -
+          701
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.kind.properties.PropertiesMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          2858
+        </td>
+        <td>
+          798
+          -
+          952
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Seq[com.atomist.rug.spi.MutableView[_]]](dmv.originalBackingObject.files.filter(((f: com.atomist.source.FileArtifact) =&gt; f.name.endsWith(&quot;.properties&quot;))).map[com.atomist.rug.kind.properties.PropertiesMutableView, Seq[com.atomist.rug.spi.MutableView[_]]](((f: com.atomist.source.FileArtifact) =&gt; new PropertiesMutableView(f, dmv.parent)))(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.properties.PropertiesMutableView]))
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2853
+        </td>
+        <td>
+          858
+          -
+          888
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          f.name.endsWith(&quot;.properties&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          2855
+        </td>
+        <td>
+          910
+          -
+          950
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.properties.PropertiesMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new PropertiesMutableView(f, dmv.parent)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          2857
+        </td>
+        <td>
+          803
+          -
+          951
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          dmv.originalBackingObject.files.filter(((f: com.atomist.source.FileArtifact) =&gt; f.name.endsWith(&quot;.properties&quot;))).map[com.atomist.rug.kind.properties.PropertiesMutableView, Seq[com.atomist.rug.spi.MutableView[_]]](((f: com.atomist.source.FileArtifact) =&gt; new PropertiesMutableView(f, dmv.parent)))(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.properties.PropertiesMutableView])
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          2854
+        </td>
+        <td>
+          939
+          -
+          949
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.DirectoryMutableView.parent
+        </td>
+        <td style="background: #AEF1AE">
+          dmv.parent
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          2856
+        </td>
+        <td>
+          904
+          -
+          904
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.kind.properties.PropertiesMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2863
+        </td>
+        <td>
+          999
+          -
+          1149
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Seq[com.atomist.rug.spi.MutableView[_]]](pmv.originalBackingObject.allFiles.filter(((f: com.atomist.source.FileArtifact) =&gt; f.name.endsWith(&quot;.properties&quot;))).map[com.atomist.rug.kind.properties.PropertiesMutableView, Seq[com.atomist.rug.spi.MutableView[_]]](((f: com.atomist.source.FileArtifact) =&gt; new PropertiesMutableView(f, pmv)))(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.properties.PropertiesMutableView]))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          2859
+        </td>
+        <td>
+          1062
+          -
+          1092
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          f.name.endsWith(&quot;.properties&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2861
+        </td>
+        <td>
+          1108
+          -
+          1108
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.kind.properties.PropertiesMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2860
+        </td>
+        <td>
+          1114
+          -
+          1147
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.properties.PropertiesMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new PropertiesMutableView(f, pmv)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2862
+        </td>
+        <td>
+          1004
+          -
+          1148
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          pmv.originalBackingObject.allFiles.filter(((f: com.atomist.source.FileArtifact) =&gt; f.name.endsWith(&quot;.properties&quot;))).map[com.atomist.rug.kind.properties.PropertiesMutableView, Seq[com.atomist.rug.spi.MutableView[_]]](((f: com.atomist.source.FileArtifact) =&gt; new PropertiesMutableView(f, pmv)))(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.properties.PropertiesMutableView])
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

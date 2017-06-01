@@ -1,0 +1,694 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/docker/DockerfileParser.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.docker
+</span>2 <span style=''>
+</span>3 <span style=''>import _root_.java.util
+</span>4 <span style=''>import java.io.InputStreamReader
+</span>5 <span style=''>import javax.script.{Invocable, ScriptEngineManager}
+</span>6 <span style=''>
+</span>7 <span style=''>import com.atomist.util.Utils.withCloseable
+</span>8 <span style=''>import com.fasterxml.jackson.databind.ObjectMapper
+</span>9 <span style=''>import com.fasterxml.jackson.module.scala.DefaultScalaModule
+</span>10 <span style=''>import org.springframework.core.io.ClassPathResource
+</span>11 <span style=''>
+</span>12 <span style=''>import scala.collection.JavaConverters._
+</span>13 <span style=''>
+</span>14 <span style=''>object DockerfileParser {
+</span>15 <span style=''>
+</span>16 <span style=''>  val mapper = </span><span style='background: #AEF1AE'>new ObjectMapper().registerModule(DefaultScalaModule)</span><span style=''>
+</span>17 <span style=''>  val consoleJs =
+</span>18 <span style=''>    </span><span style='background: #AEF1AE'>&quot;&quot;&quot;
+</span>19 <span style=''></span><span style='background: #AEF1AE'>      |console = {
+</span>20 <span style=''></span><span style='background: #AEF1AE'>      |   log: print,
+</span>21 <span style=''></span><span style='background: #AEF1AE'>      |   warn: print,
+</span>22 <span style=''></span><span style='background: #AEF1AE'>      |   error: print
+</span>23 <span style=''></span><span style='background: #AEF1AE'>      |};
+</span>24 <span style=''></span><span style='background: #AEF1AE'>    &quot;&quot;&quot;.stripMargin</span><span style=''>
+</span>25 <span style=''>  def parse(content: String): Dockerfile = {
+</span>26 <span style=''>    val param = </span><span style='background: #AEF1AE'>Option(content).getOrElse(&quot;&quot;)</span><span style=''>
+</span>27 <span style=''>    val content1 = </span><span style='background: #AEF1AE'>param.replace(&quot;\r\n&quot;, &quot;\n&quot;).replace(&quot;\r&quot;, &quot;\n&quot;)</span><span style=''>
+</span>28 <span style=''>    </span><span style='background: #AEF1AE'>withCloseable(new ClassPathResource(&quot;docker/parser.js&quot;).getInputStream)(is =&gt; {
+</span>29 <span style=''></span><span style='background: #AEF1AE'>      withCloseable(new InputStreamReader(is))(reader =&gt; {
+</span>30 <span style=''></span><span style='background: #AEF1AE'>        try {
+</span>31 <span style=''></span><span style='background: #AEF1AE'>          val engine = new ScriptEngineManager(null).getEngineByName(&quot;nashorn&quot;)
+</span>32 <span style=''></span><span style='background: #AEF1AE'>          engine.eval(consoleJs)
+</span>33 <span style=''></span><span style='background: #AEF1AE'>          engine.eval(reader)
+</span>34 <span style=''></span><span style='background: #AEF1AE'>          val invocable = engine.asInstanceOf[Invocable]
+</span>35 <span style=''></span><span style='background: #AEF1AE'>          val result = invocable.invokeFunction(&quot;parse&quot;, content1, Map(&quot;includeComments&quot; -&gt; &quot;true&quot;).asJava)
+</span>36 <span style=''></span><span style='background: #AEF1AE'>          val lines = result match {
+</span>37 <span style=''></span><span style='background: #AEF1AE'>            case map: util.Map[AnyRef @unchecked, AnyRef @unchecked] =&gt;
+</span>38 <span style=''></span><span style='background: #AEF1AE'>              map.asScala.values.map(c =&gt; mapper.convertValue(c, classOf[DockerfileLine])).toSeq
+</span>39 <span style=''></span><span style='background: #AEF1AE'>            case _ =&gt; </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(&quot;Failed to parse content&quot;)</span><span style='background: #AEF1AE'>
+</span>40 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>41 <span style=''></span><span style='background: #AEF1AE'>          new Dockerfile(lines)
+</span>42 <span style=''></span><span style='background: #AEF1AE'>        } catch {
+</span>43 <span style=''></span><span style='background: #AEF1AE'>          case e: Exception =&gt;
+</span>44 <span style=''></span><span style='background: #AEF1AE'>            </span><span style='background: #F0ADAD'>throw DockerfileException(&quot;Failed to parse Dockerfile&quot;, e)</span><span style='background: #AEF1AE'>
+</span>45 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>46 <span style=''></span><span style='background: #AEF1AE'>      })
+</span>47 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
+</span>48 <span style=''>  }
+</span>49 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          1505
+        </td>
+        <td>
+          442
+          -
+          495
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.databind.ObjectMapper.registerModule
+        </td>
+        <td style="background: #AEF1AE">
+          new com.fasterxml.jackson.databind.ObjectMapper().registerModule(com.fasterxml.jackson.module.scala.DefaultScalaModule)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          1504
+        </td>
+        <td>
+          476
+          -
+          494
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.fasterxml.jackson.module.scala.DefaultScalaModule
+        </td>
+        <td style="background: #AEF1AE">
+          com.fasterxml.jackson.module.scala.DefaultScalaModule
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1506
+        </td>
+        <td>
+          518
+          -
+          626
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\n      |console = {\n      |   log: print,\n      |   warn: print,\n      |   error: print\n      |};\n    &quot;
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1507
+        </td>
+        <td>
+          518
+          -
+          638
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.stripMargin
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(&quot;\n      |console = {\n      |   log: print,\n      |   warn: print,\n      |   error: print\n      |};\n    &quot;).stripMargin
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1508
+        </td>
+        <td>
+          700
+          -
+          729
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Option.apply[String](content).getOrElse[String](&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1509
+        </td>
+        <td>
+          749
+          -
+          796
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          param.replace(&quot;\r\n&quot;, &quot;\n&quot;).replace(&quot;\r&quot;, &quot;\n&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1510
+        </td>
+        <td>
+          815
+          -
+          871
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.springframework.core.io.ClassPathResource.getInputStream
+        </td>
+        <td style="background: #AEF1AE">
+          new org.springframework.core.io.ClassPathResource(&quot;docker/parser.js&quot;).getInputStream()
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1530
+        </td>
+        <td>
+          801
+          -
+          1741
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.Utils.withCloseable
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.Utils.withCloseable[java.io.InputStream, com.atomist.rug.kind.docker.Dockerfile](new org.springframework.core.io.ClassPathResource(&quot;docker/parser.js&quot;).getInputStream())(((is: java.io.InputStream) =&gt; com.atomist.util.Utils.withCloseable[java.io.InputStreamReader, com.atomist.rug.kind.docker.Dockerfile](new java.io.InputStreamReader(is))(((reader: java.io.InputStreamReader) =&gt; try {
+  val engine: javax.script.ScriptEngine = new javax.script.ScriptEngineManager(null).getEngineByName(&quot;nashorn&quot;);
+  engine.eval(DockerfileParser.this.consoleJs);
+  engine.eval(reader);
+  val invocable: javax.script.Invocable = engine.asInstanceOf[javax.script.Invocable];
+  val result: Object = invocable.invokeFunction(&quot;parse&quot;, content1, scala.collection.JavaConverters.mapAsJavaMapConverter[String, String](scala.this.Predef.Map.apply[String, String](scala.this.Predef.ArrowAssoc[String](&quot;includeComments&quot;).-&gt;[String](&quot;true&quot;))).asJava);
+  val lines: Seq[com.atomist.rug.kind.docker.DockerfileLine] = result match {
+    case (map @ (_: java.util.Map[AnyRef @unchecked,AnyRef @unchecked])) =&gt; scala.collection.JavaConverters.mapAsScalaMapConverter[AnyRef, AnyRef](map).asScala.values.map[com.atomist.rug.kind.docker.DockerfileLine, Iterable[com.atomist.rug.kind.docker.DockerfileLine]](((c: AnyRef) =&gt; DockerfileParser.this.mapper.convertValue[com.atomist.rug.kind.docker.DockerfileLine](c, classOf[com.atomist.rug.kind.docker.DockerfileLine])))(collection.this.Iterable.canBuildFrom[com.atomist.rug.kind.docker.DockerfileLine]).toSeq
+    case _ =&gt; throw new scala.`package`.IllegalArgumentException(&quot;Failed to parse content&quot;)
+  };
+  new Dockerfile(lines)
+} catch {
+  case (e @ (_: Exception)) =&gt; throw DockerfileException.apply(&quot;Failed to parse Dockerfile&quot;, e)
+}))))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1529
+        </td>
+        <td>
+          887
+          -
+          1734
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.Utils.withCloseable
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.Utils.withCloseable[java.io.InputStreamReader, com.atomist.rug.kind.docker.Dockerfile](new java.io.InputStreamReader(is))(((reader: java.io.InputStreamReader) =&gt; try {
+  val engine: javax.script.ScriptEngine = new javax.script.ScriptEngineManager(null).getEngineByName(&quot;nashorn&quot;);
+  engine.eval(DockerfileParser.this.consoleJs);
+  engine.eval(reader);
+  val invocable: javax.script.Invocable = engine.asInstanceOf[javax.script.Invocable];
+  val result: Object = invocable.invokeFunction(&quot;parse&quot;, content1, scala.collection.JavaConverters.mapAsJavaMapConverter[String, String](scala.this.Predef.Map.apply[String, String](scala.this.Predef.ArrowAssoc[String](&quot;includeComments&quot;).-&gt;[String](&quot;true&quot;))).asJava);
+  val lines: Seq[com.atomist.rug.kind.docker.DockerfileLine] = result match {
+    case (map @ (_: java.util.Map[AnyRef @unchecked,AnyRef @unchecked])) =&gt; scala.collection.JavaConverters.mapAsScalaMapConverter[AnyRef, AnyRef](map).asScala.values.map[com.atomist.rug.kind.docker.DockerfileLine, Iterable[com.atomist.rug.kind.docker.DockerfileLine]](((c: AnyRef) =&gt; DockerfileParser.this.mapper.convertValue[com.atomist.rug.kind.docker.DockerfileLine](c, classOf[com.atomist.rug.kind.docker.DockerfileLine])))(collection.this.Iterable.canBuildFrom[com.atomist.rug.kind.docker.DockerfileLine]).toSeq
+    case _ =&gt; throw new scala.`package`.IllegalArgumentException(&quot;Failed to parse content&quot;)
+  };
+  new Dockerfile(lines)
+} catch {
+  case (e @ (_: Exception)) =&gt; throw DockerfileException.apply(&quot;Failed to parse Dockerfile&quot;, e)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1511
+        </td>
+        <td>
+          901
+          -
+          926
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.InputStreamReader.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.io.InputStreamReader(is)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1527
+        </td>
+        <td>
+          964
+          -
+          1595
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val engine: javax.script.ScriptEngine = new javax.script.ScriptEngineManager(null).getEngineByName(&quot;nashorn&quot;);
+  engine.eval(DockerfileParser.this.consoleJs);
+  engine.eval(reader);
+  val invocable: javax.script.Invocable = engine.asInstanceOf[javax.script.Invocable];
+  val result: Object = invocable.invokeFunction(&quot;parse&quot;, content1, scala.collection.JavaConverters.mapAsJavaMapConverter[String, String](scala.this.Predef.Map.apply[String, String](scala.this.Predef.ArrowAssoc[String](&quot;includeComments&quot;).-&gt;[String](&quot;true&quot;))).asJava);
+  val lines: Seq[com.atomist.rug.kind.docker.DockerfileLine] = result match {
+    case (map @ (_: java.util.Map[AnyRef @unchecked,AnyRef @unchecked])) =&gt; scala.collection.JavaConverters.mapAsScalaMapConverter[AnyRef, AnyRef](map).asScala.values.map[com.atomist.rug.kind.docker.DockerfileLine, Iterable[com.atomist.rug.kind.docker.DockerfileLine]](((c: AnyRef) =&gt; DockerfileParser.this.mapper.convertValue[com.atomist.rug.kind.docker.DockerfileLine](c, classOf[com.atomist.rug.kind.docker.DockerfileLine])))(collection.this.Iterable.canBuildFrom[com.atomist.rug.kind.docker.DockerfileLine]).toSeq
+    case _ =&gt; throw new scala.`package`.IllegalArgumentException(&quot;Failed to parse content&quot;)
+  };
+  new Dockerfile(lines)
+}
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1512
+        </td>
+        <td>
+          977
+          -
+          1033
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.script.ScriptEngineManager.getEngineByName
+        </td>
+        <td style="background: #AEF1AE">
+          new javax.script.ScriptEngineManager(null).getEngineByName(&quot;nashorn&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1514
+        </td>
+        <td>
+          1044
+          -
+          1066
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.script.ScriptEngine.eval
+        </td>
+        <td style="background: #AEF1AE">
+          engine.eval(DockerfileParser.this.consoleJs)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1513
+        </td>
+        <td>
+          1056
+          -
+          1065
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileParser.consoleJs
+        </td>
+        <td style="background: #AEF1AE">
+          DockerfileParser.this.consoleJs
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1515
+        </td>
+        <td>
+          1077
+          -
+          1096
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.script.ScriptEngine.eval
+        </td>
+        <td style="background: #AEF1AE">
+          engine.eval(reader)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          1516
+        </td>
+        <td>
+          1123
+          -
+          1153
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          engine.asInstanceOf[javax.script.Invocable]
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1519
+        </td>
+        <td>
+          1221
+          -
+          1253
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenMapFactory.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Map.apply[String, String](scala.this.Predef.ArrowAssoc[String](&quot;includeComments&quot;).-&gt;[String](&quot;true&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1518
+        </td>
+        <td>
+          1225
+          -
+          1252
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.ArrowAssoc[String](&quot;includeComments&quot;).-&gt;[String](&quot;true&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1521
+        </td>
+        <td>
+          1177
+          -
+          1261
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.script.Invocable.invokeFunction
+        </td>
+        <td style="background: #AEF1AE">
+          invocable.invokeFunction(&quot;parse&quot;, content1, scala.collection.JavaConverters.mapAsJavaMapConverter[String, String](scala.this.Predef.Map.apply[String, String](scala.this.Predef.ArrowAssoc[String](&quot;includeComments&quot;).-&gt;[String](&quot;true&quot;))).asJava)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1517
+        </td>
+        <td>
+          1202
+          -
+          1209
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;parse&quot;
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1520
+        </td>
+        <td>
+          1221
+          -
+          1260
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsJava.asJava
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.mapAsJavaMapConverter[String, String](scala.this.Predef.Map.apply[String, String](scala.this.Predef.ArrowAssoc[String](&quot;includeComments&quot;).-&gt;[String](&quot;true&quot;))).asJava
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1524
+        </td>
+        <td>
+          1385
+          -
+          1467
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.mapAsScalaMapConverter[AnyRef, AnyRef](map).asScala.values.map[com.atomist.rug.kind.docker.DockerfileLine, Iterable[com.atomist.rug.kind.docker.DockerfileLine]](((c: AnyRef) =&gt; DockerfileParser.this.mapper.convertValue[com.atomist.rug.kind.docker.DockerfileLine](c, classOf[com.atomist.rug.kind.docker.DockerfileLine])))(collection.this.Iterable.canBuildFrom[com.atomist.rug.kind.docker.DockerfileLine]).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1523
+        </td>
+        <td>
+          1407
+          -
+          1407
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Iterable.canBuildFrom[com.atomist.rug.kind.docker.DockerfileLine]
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1522
+        </td>
+        <td>
+          1413
+          -
+          1460
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.databind.ObjectMapper.convertValue
+        </td>
+        <td style="background: #AEF1AE">
+          DockerfileParser.this.mapper.convertValue[com.atomist.rug.kind.docker.DockerfileLine](c, classOf[com.atomist.rug.kind.docker.DockerfileLine])
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1525
+        </td>
+        <td>
+          1490
+          -
+          1551
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(&quot;Failed to parse content&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          1526
+        </td>
+        <td>
+          1574
+          -
+          1595
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new Dockerfile(lines)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1528
+        </td>
+        <td>
+          1657
+          -
+          1715
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw DockerfileException.apply(&quot;Failed to parse Dockerfile&quot;, e)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

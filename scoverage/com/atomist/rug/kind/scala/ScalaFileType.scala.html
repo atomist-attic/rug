@@ -1,0 +1,235 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/scala/ScalaFileType.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.scala
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.kind.grammar.TypeUnderFile
+</span>4 <span style=''>import com.atomist.source.FileArtifact
+</span>5 <span style=''>import com.atomist.tree.content.text.PositionedTreeNode
+</span>6 <span style=''>
+</span>7 <span style=''>import scala.meta._
+</span>8 <span style=''>import scala.meta.parsers.Parsed.Success
+</span>9 <span style=''>
+</span>10 <span style=''>class ScalaFileType extends TypeUnderFile {
+</span>11 <span style=''>
+</span>12 <span style=''>  override def description: String = </span><span style='background: #AEF1AE'>&quot;Scala file&quot;</span><span style=''>
+</span>13 <span style=''>
+</span>14 <span style=''>  override def isOfType(f: FileArtifact): Boolean = </span><span style='background: #AEF1AE'>f.name.endsWith(&quot;.scala&quot;)</span><span style=''>
+</span>15 <span style=''>
+</span>16 <span style=''>  override def fileToRawNode(f: FileArtifact): Option[PositionedTreeNode] = {
+</span>17 <span style=''>    </span><span style='background: #AEF1AE'>f.content.parse[Source]</span><span style=''> match {
+</span>18 <span style=''>      case Success(ast) =&gt;
+</span>19 <span style=''>        val ourTree = </span><span style='background: #AEF1AE'>new ScalaMetaTreeBackedTreeNode(ast)</span><span style=''>
+</span>20 <span style=''>        </span><span style='background: #AEF1AE'>Some(ourTree)</span><span style=''>
+</span>21 <span style=''>      case other =&gt;
+</span>22 <span style=''>        //println(s&quot;Failure to parse Scala Meta: $other&quot;)
+</span>23 <span style=''>        </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>24 <span style=''>    }
+</span>25 <span style=''>  }
+</span>26 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          2868
+        </td>
+        <td>
+          326
+          -
+          338
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Scala file&quot;
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          2869
+        </td>
+        <td>
+          392
+          -
+          417
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          f.name.endsWith(&quot;.scala&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2870
+        </td>
+        <td>
+          501
+          -
+          510
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          f.content
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2872
+        </td>
+        <td>
+          501
+          -
+          524
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.meta.parsers.Api.XtensionParseInputLike.parse
+        </td>
+        <td style="background: #AEF1AE">
+          scala.meta.`package`.XtensionParseInputLike[String](f.content).parse[scala.meta.Source](inputs.this.Input.stringToInput, parsers.this.Parse.parseSource, scala.meta.dialects.`package`.Scala211)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2871
+        </td>
+        <td>
+          516
+          -
+          516
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.meta.inputs.Input.stringToInput
+        </td>
+        <td style="background: #AEF1AE">
+          inputs.this.Input.stringToInput
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          2873
+        </td>
+        <td>
+          582
+          -
+          618
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.scala.ScalaMetaTreeBackedTreeNode.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new ScalaMetaTreeBackedTreeNode(ast)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          2874
+        </td>
+        <td>
+          627
+          -
+          640
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.kind.scala.ScalaMetaTreeBackedTreeNode](ourTree)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2875
+        </td>
+        <td>
+          727
+          -
+          731
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

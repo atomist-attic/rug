@@ -1,0 +1,792 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/project/edit/ProjectEditorSupport.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.project.edit
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.param.ParameterValues
+</span>4 <span style=''>import com.atomist.source.ArtifactSource
+</span>5 <span style=''>
+</span>6 <span style=''>/**
+</span>7 <span style=''>  * Uses template method pattern to add applicability check
+</span>8 <span style=''>  * and to check whether the post condition is already satisfied.
+</span>9 <span style=''>  */
+</span>10 <span style=''>trait ProjectEditorSupport
+</span>11 <span style=''>  extends ProjectEditor {
+</span>12 <span style=''>
+</span>13 <span style=''>  /**
+</span>14 <span style=''>    * Should we fail if we were called are are not applicable?
+</span>15 <span style=''>    *
+</span>16 <span style=''>    * @return whether to fail if not applicable
+</span>17 <span style=''>    */
+</span>18 <span style=''>  def failOnNotApplicable: Boolean = </span><span style='background: #F0ADAD'>false</span><span style=''>
+</span>19 <span style=''>
+</span>20 <span style=''>  /**
+</span>21 <span style=''>    * Should we fail if no modifications were made.
+</span>22 <span style=''>    *
+</span>23 <span style=''>    * @return whether to fail if no modifications were made
+</span>24 <span style=''>    */
+</span>25 <span style=''>  def failOnNoModification: Boolean = </span><span style='background: #AEF1AE'>false</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>  def modify(as: ArtifactSource, args: ParameterValues): ModificationAttempt = {
+</span>28 <span style=''>    val poa = </span><span style='background: #AEF1AE'>addDefaultParameterValues(args)</span><span style=''>
+</span>29 <span style=''>    </span><span style='background: #AEF1AE'>validateParameters(poa)</span><span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>    val r = if (</span><span style='background: #AEF1AE'>!applicability(as).canApply</span><span style=''>) {
+</span>32 <span style=''>      </span><span style='background: #F0ADAD'>if (failOnNotApplicable) {
+</span>33 <span style=''></span><span style='background: #F0ADAD'>        FailedModificationAttempt(s&quot;Can't apply $this to ${as.getIdString}&quot;)
+</span>34 <span style=''></span><span style='background: #F0ADAD'>      } else {
+</span>35 <span style=''></span><span style='background: #F0ADAD'>        NoModificationNeeded(s&quot;Can't apply $this to ${as.getIdString}&quot;)
+</span>36 <span style=''></span><span style='background: #F0ADAD'>      }</span><span style=''>
+</span>37 <span style=''>    } else </span><span style='background: #AEF1AE'>if (meetsPostcondition(as)) {
+</span>38 <span style=''></span><span style='background: #AEF1AE'>      NoModificationNeeded(s&quot;Artifact source meets postcondition already&quot;)
+</span>39 <span style=''></span><span style='background: #AEF1AE'>    } else {
+</span>40 <span style=''></span><span style='background: #AEF1AE'>      modifyInternal(as, poa)
+</span>41 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>42 <span style=''>
+</span>43 <span style=''>    // We may need to make it fail-fast
+</span>44 <span style=''>    r match {
+</span>45 <span style=''>      case nmn: NoModificationNeeded if </span><span style='background: #AEF1AE'>failOnNoModification</span><span style=''> =&gt;
+</span>46 <span style=''>        </span><span style='background: #AEF1AE'>FailedModificationAttempt(nmn.comment + &quot; and no modification not permitted&quot;)</span><span style=''>
+</span>47 <span style=''>      case x =&gt; x
+</span>48 <span style=''>    }
+</span>49 <span style=''>  }
+</span>50 <span style=''>
+</span>51 <span style=''>  protected def modifyInternal(as: ArtifactSource, pmi: ParameterValues): ModificationAttempt
+</span>52 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          648
+        </td>
+        <td>
+          473
+          -
+          478
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          649
+        </td>
+        <td>
+          649
+          -
+          654
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          650
+        </td>
+        <td>
+          751
+          -
+          782
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.ParameterizedSupport.addDefaultParameterValues
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectEditorSupport.this.addDefaultParameterValues(args)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          651
+        </td>
+        <td>
+          787
+          -
+          810
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.ParameterizedSupport.validateParameters
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectEditorSupport.this.validateParameters(poa)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          652
+        </td>
+        <td>
+          828
+          -
+          855
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectEditorSupport.this.applicability(as).canApply.unary_!
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          669
+        </td>
+        <td>
+          865
+          -
+          1063
+        </td>
+        <td>
+          If
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          if (ProjectEditorSupport.this.failOnNotApplicable)
+  FailedModificationAttempt.apply(scala.StringContext.apply(&quot;Can\'t apply &quot;, &quot; to &quot;, &quot;&quot;).s(this, as.getIdString), FailedModificationAttempt.apply$default$2)
+else
+  NoModificationNeeded.apply(scala.StringContext.apply(&quot;Can\'t apply &quot;, &quot; to &quot;, &quot;&quot;).s(this, as.getIdString))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          653
+        </td>
+        <td>
+          869
+          -
+          888
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.edit.ProjectEditorSupport.failOnNotApplicable
+        </td>
+        <td style="background: #F0ADAD">
+          ProjectEditorSupport.this.failOnNotApplicable
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          660
+        </td>
+        <td>
+          900
+          -
+          968
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.FailedModificationAttempt.apply
+        </td>
+        <td style="background: #F0ADAD">
+          FailedModificationAttempt.apply(scala.StringContext.apply(&quot;Can\'t apply &quot;, &quot; to &quot;, &quot;&quot;).s(this, as.getIdString), FailedModificationAttempt.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          654
+        </td>
+        <td>
+          928
+          -
+          941
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Can\'t apply &quot;
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          657
+        </td>
+        <td>
+          951
+          -
+          965
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.getIdString
+        </td>
+        <td style="background: #F0ADAD">
+          as.getIdString
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          659
+        </td>
+        <td>
+          900
+          -
+          900
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.edit.FailedModificationAttempt.apply$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          FailedModificationAttempt.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          656
+        </td>
+        <td>
+          966
+          -
+          967
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          655
+        </td>
+        <td>
+          945
+          -
+          950
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; to &quot;
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          658
+        </td>
+        <td>
+          926
+          -
+          967
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Can\'t apply &quot;, &quot; to &quot;, &quot;&quot;).s(this, as.getIdString)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          661
+        </td>
+        <td>
+          900
+          -
+          968
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.project.edit.FailedModificationAttempt.apply
+        </td>
+        <td style="background: #F0ADAD">
+          FailedModificationAttempt.apply(scala.StringContext.apply(&quot;Can\'t apply &quot;, &quot; to &quot;, &quot;&quot;).s(this, as.getIdString), FailedModificationAttempt.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          663
+        </td>
+        <td>
+          1032
+          -
+          1037
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; to &quot;
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          666
+        </td>
+        <td>
+          1013
+          -
+          1054
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Can\'t apply &quot;, &quot; to &quot;, &quot;&quot;).s(this, as.getIdString)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          668
+        </td>
+        <td>
+          992
+          -
+          1055
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.project.edit.NoModificationNeeded.apply
+        </td>
+        <td style="background: #F0ADAD">
+          NoModificationNeeded.apply(scala.StringContext.apply(&quot;Can\'t apply &quot;, &quot; to &quot;, &quot;&quot;).s(this, as.getIdString))
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          662
+        </td>
+        <td>
+          1015
+          -
+          1028
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Can\'t apply &quot;
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          665
+        </td>
+        <td>
+          1038
+          -
+          1052
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.getIdString
+        </td>
+        <td style="background: #F0ADAD">
+          as.getIdString
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          664
+        </td>
+        <td>
+          1053
+          -
+          1054
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          667
+        </td>
+        <td>
+          992
+          -
+          1055
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.NoModificationNeeded.apply
+        </td>
+        <td style="background: #F0ADAD">
+          NoModificationNeeded.apply(scala.StringContext.apply(&quot;Can\'t apply &quot;, &quot; to &quot;, &quot;&quot;).s(this, as.getIdString))
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          676
+        </td>
+        <td>
+          1075
+          -
+          1228
+        </td>
+        <td>
+          If
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          if (ProjectEditorSupport.this.meetsPostcondition(as))
+  NoModificationNeeded.apply(scala.StringContext.apply(&quot;Artifact source meets postcondition already&quot;).s())
+else
+  ProjectEditorSupport.this.modifyInternal(as, poa)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          670
+        </td>
+        <td>
+          1079
+          -
+          1101
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.ProjectEditor.meetsPostcondition
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectEditorSupport.this.meetsPostcondition(as)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          672
+        </td>
+        <td>
+          1111
+          -
+          1179
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.NoModificationNeeded.apply
+        </td>
+        <td style="background: #AEF1AE">
+          NoModificationNeeded.apply(scala.StringContext.apply(&quot;Artifact source meets postcondition already&quot;).s())
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          671
+        </td>
+        <td>
+          1132
+          -
+          1178
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Artifact source meets postcondition already&quot;).s()
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          673
+        </td>
+        <td>
+          1111
+          -
+          1179
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.project.edit.NoModificationNeeded.apply
+        </td>
+        <td style="background: #AEF1AE">
+          NoModificationNeeded.apply(scala.StringContext.apply(&quot;Artifact source meets postcondition already&quot;).s())
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          675
+        </td>
+        <td>
+          1199
+          -
+          1222
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.project.edit.ProjectEditorSupport.modifyInternal
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectEditorSupport.this.modifyInternal(as, poa)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          674
+        </td>
+        <td>
+          1199
+          -
+          1222
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.ProjectEditorSupport.modifyInternal
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectEditorSupport.this.modifyInternal(as, poa)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          677
+        </td>
+        <td>
+          1324
+          -
+          1344
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.edit.ProjectEditorSupport.failOnNoModification
+        </td>
+        <td style="background: #AEF1AE">
+          ProjectEditorSupport.this.failOnNoModification
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          678
+        </td>
+        <td>
+          1382
+          -
+          1432
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          nmn.comment.+(&quot; and no modification not permitted&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          680
+        </td>
+        <td>
+          1356
+          -
+          1433
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.FailedModificationAttempt.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FailedModificationAttempt.apply(nmn.comment.+(&quot; and no modification not permitted&quot;), FailedModificationAttempt.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          679
+        </td>
+        <td>
+          1356
+          -
+          1356
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.edit.FailedModificationAttempt.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          FailedModificationAttempt.apply$default$2
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,438 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/plans/JsonResponseCoercer.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.plans
+</span>2 <span style=''>
+</span>3 <span style=''>import javax.script.{ScriptContext, SimpleBindings}
+</span>4 <span style=''>
+</span>5 <span style=''>import com.atomist.rug.runtime.js.JavaScriptContext
+</span>6 <span style=''>import com.atomist.rug.spi.Handlers.Response
+</span>7 <span style=''>import com.atomist.util.JsonUtils
+</span>8 <span style=''>import jdk.nashorn.api.scripting.ScriptObjectMirror
+</span>9 <span style=''>
+</span>10 <span style=''>import scala.collection.JavaConverters._
+</span>11 <span style=''>
+</span>12 <span style=''>/**
+</span>13 <span style=''>  * Convert a string or byte array to an JS Object.
+</span>14 <span style=''>  */
+</span>15 <span style=''>class JsonResponseCoercer(jsc: JavaScriptContext, handler: ScriptObjectMirror) extends ResponseCoercer {
+</span>16 <span style=''>
+</span>17 <span style=''>  override def coerce(response: Response): Response = {
+</span>18 <span style=''>    val body = </span><span style='background: #AEF1AE'>response.body</span><span style=''> match {
+</span>19 <span style=''>      case Some(bytes: Array[Byte]) =&gt; </span><span style='background: #F0ADAD'>new String(bytes)</span><span style=''>
+</span>20 <span style=''>      case Some(str: String) =&gt; str
+</span>21 <span style=''>      case Some(o) =&gt; </span><span style='background: #F0ADAD'>JsonUtils.toJson(o)</span><span style=''>
+</span>22 <span style=''>      case agg =&gt; </span><span style='background: #F0ADAD'>throw new RuntimeException(s&quot;Could not recognize body type for coercion: $agg&quot;)</span><span style=''>
+</span>23 <span style=''>    }
+</span>24 <span style=''>    </span><span style='background: #AEF1AE'>Response(response.status, response.msg, response.code, Some(toJSObject(body)))</span><span style=''>
+</span>25 <span style=''>  }
+</span>26 <span style=''>
+</span>27 <span style=''>  private def toJSObject(body: String): AnyRef = {
+</span>28 <span style=''>
+</span>29 <span style=''>    val bindings = </span><span style='background: #AEF1AE'>new SimpleBindings()</span><span style=''>
+</span>30 <span style=''>    </span><span style='background: #AEF1AE'>bindings.put(&quot;__coercion&quot;, body)</span><span style=''>
+</span>31 <span style=''>
+</span>32 <span style=''>    //TODO - why do we need this?
+</span>33 <span style=''>    </span><span style='background: #AEF1AE'>jsc.engine.getContext.getBindings(ScriptContext.ENGINE_SCOPE).asScala.foreach {
+</span>34 <span style=''></span><span style='background: #AEF1AE'>      case (k: String, v: AnyRef) =&gt; bindings.put(k, v)
+</span>35 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>36 <span style=''>    </span><span style='background: #AEF1AE'>jsc.engine.eval(s&quot;&quot;&quot;JSON.parse(__coercion);&quot;&quot;&quot;, bindings)</span><span style=''>
+</span>37 <span style=''>  }
+</span>38 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          4639
+        </td>
+        <td>
+          556
+          -
+          569
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.body
+        </td>
+        <td style="background: #AEF1AE">
+          response.body
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          4640
+        </td>
+        <td>
+          617
+          -
+          634
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new scala.this.Predef.String(bytes)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          4641
+        </td>
+        <td>
+          693
+          -
+          712
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.JsonUtils.toJson
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.util.JsonUtils.toJson(o)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          4642
+        </td>
+        <td>
+          731
+          -
+          810
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.RuntimeException(scala.StringContext.apply(&quot;Could not recognize body type for coercion: &quot;, &quot;&quot;).s(agg))
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          4644
+        </td>
+        <td>
+          847
+          -
+          859
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.msg
+        </td>
+        <td style="background: #AEF1AE">
+          response.msg
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          4643
+        </td>
+        <td>
+          830
+          -
+          845
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.status
+        </td>
+        <td style="background: #AEF1AE">
+          response.status
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          4646
+        </td>
+        <td>
+          881
+          -
+          897
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.JsonResponseCoercer.toJSObject
+        </td>
+        <td style="background: #AEF1AE">
+          JsonResponseCoercer.this.toJSObject(body)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          4648
+        </td>
+        <td>
+          821
+          -
+          899
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Response.apply(response.status, response.msg, response.code, scala.Some.apply[AnyRef](JsonResponseCoercer.this.toJSObject(body)))
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          4645
+        </td>
+        <td>
+          861
+          -
+          874
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.code
+        </td>
+        <td style="background: #AEF1AE">
+          response.code
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          4647
+        </td>
+        <td>
+          876
+          -
+          898
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[AnyRef](JsonResponseCoercer.this.toJSObject(body))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          4649
+        </td>
+        <td>
+          976
+          -
+          996
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.script.SimpleBindings.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new javax.script.SimpleBindings()
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          4650
+        </td>
+        <td>
+          1001
+          -
+          1033
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.script.SimpleBindings.put
+        </td>
+        <td style="background: #AEF1AE">
+          bindings.put(&quot;__coercion&quot;, body)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          4653
+        </td>
+        <td>
+          1073
+          -
+          1214
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.mapAsScalaMapConverter[String, Object](JsonResponseCoercer.this.jsc.engine.getContext().getBindings(100)).asScala.foreach[Object](((x0$1: (String, Object)) =&gt; x0$1 match {
+  case (_1: String, _2: Object)(String, Object)((k @ (_: String)), (v @ (_: AnyRef))) =&gt; bindings.put(k, v)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          4651
+        </td>
+        <td>
+          1073
+          -
+          1134
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.script.ScriptContext.getBindings
+        </td>
+        <td style="background: #AEF1AE">
+          JsonResponseCoercer.this.jsc.engine.getContext().getBindings(100)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          4652
+        </td>
+        <td>
+          1190
+          -
+          1208
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.script.SimpleBindings.put
+        </td>
+        <td style="background: #AEF1AE">
+          bindings.put(k, v)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4655
+        </td>
+        <td>
+          1219
+          -
+          1276
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.script.AbstractScriptEngine.eval
+        </td>
+        <td style="background: #AEF1AE">
+          JsonResponseCoercer.this.jsc.engine.eval(scala.StringContext.apply(&quot;JSON.parse(__coercion);&quot;).s(), bindings)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4654
+        </td>
+        <td>
+          1235
+          -
+          1265
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;JSON.parse(__coercion);&quot;).s()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

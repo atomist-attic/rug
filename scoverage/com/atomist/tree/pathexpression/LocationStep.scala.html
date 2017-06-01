@@ -1,0 +1,582 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/pathexpression/LocationStep.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.pathexpression
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.kind.core.RepoResolver
+</span>5 <span style=''>import com.atomist.rug.runtime.js.ExecutionContext
+</span>6 <span style=''>import com.atomist.rug.spi.TypeRegistry
+</span>7 <span style=''>import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
+</span>8 <span style=''>
+</span>9 <span style=''>/**
+</span>10 <span style=''>  * A step within a path expression
+</span>11 <span style=''>  *
+</span>12 <span style=''>  * @param axis       AxisSpecificer: direction of navigation
+</span>13 <span style=''>  * @param test       node test: Narrows nodes
+</span>14 <span style=''>  * @param predicates predicates that will be combined to filter nodes.
+</span>15 <span style=''>  *                   Use the predicateToEvaluate field if you wish to evaluate
+</span>16 <span style=''>  */
+</span>17 <span style=''>case class LocationStep(axis: AxisSpecifier,
+</span>18 <span style=''>                        test: NodeTest,
+</span>19 <span style=''>                        predicates: Seq[Predicate]) {
+</span>20 <span style=''>
+</span>21 <span style=''>  import ExpressionEngine.NodePreparer
+</span>22 <span style=''>
+</span>23 <span style=''>  def follow(tn: GraphNode, ee: ExpressionEngine, executionContext: ExecutionContext, nodePreparer: NodePreparer): ExecutionResult =
+</span>24 <span style=''>    </span><span style='background: #AEF1AE'>test.follow(tn, axis, ee, executionContext)</span><span style=''> match {
+</span>25 <span style=''>      case Right(nodes) =&gt; </span><span style='background: #AEF1AE'>ExecutionResult(
+</span>26 <span style=''></span><span style='background: #AEF1AE'>        nodes
+</span>27 <span style=''></span><span style='background: #AEF1AE'>          .map(nodePreparer)
+</span>28 <span style=''></span><span style='background: #AEF1AE'>          .filter(tn =&gt; predicateToEvaluate.evaluate(tn, nodes, ee, executionContext, Some(nodePreparer)))
+</span>29 <span style=''></span><span style='background: #AEF1AE'>      )</span><span style=''>
+</span>30 <span style=''>      case failure =&gt; failure
+</span>31 <span style=''>    }
+</span>32 <span style=''>
+</span>33 <span style=''>  /**
+</span>34 <span style=''>    * Return a single predicate we can use to evaluate this expression.
+</span>35 <span style=''>    * Combines multiple predicates if necessary.
+</span>36 <span style=''>    * Will return TruePredicate if there is essentially no predicate,
+</span>37 <span style=''>    * so this predicate can always be used in evaluation.
+</span>38 <span style=''>    */
+</span>39 <span style=''>  val predicateToEvaluate: Predicate = </span><span style='background: #AEF1AE'>combine(predicates)</span><span style=''>
+</span>40 <span style=''>
+</span>41 <span style=''>  private def combine(preds: Seq[Predicate]): Predicate = preds match {
+</span>42 <span style=''>    case Nil =&gt; TruePredicate
+</span>43 <span style=''>    case pred :: Nil =&gt; pred
+</span>44 <span style=''>    case preds =&gt; </span><span style='background: #AEF1AE'>preds.head and combine(preds.tail)</span><span style=''>
+</span>45 <span style=''>  }
+</span>46 <span style=''>
+</span>47 <span style=''>  override def toString = </span><span style='background: #AEF1AE'>s&quot;${axis}::$test${predicates.mkString(&quot;[&quot;,&quot;][&quot;,&quot;]&quot;)}&quot;</span><span style=''>
+</span>48 <span style=''>}
+</span>49 <span style=''>
+</span>50 <span style=''>/**
+</span>51 <span style=''>  * Result of parsing a path expression.
+</span>52 <span style=''>  */
+</span>53 <span style=''>case class PathExpression(locationSteps: Seq[LocationStep]) {
+</span>54 <span style=''>
+</span>55 <span style=''>  override def toString: String = </span><span style='background: #AEF1AE'>locationSteps.mkString(&quot;/&quot;)</span><span style=''>
+</span>56 <span style=''>
+</span>57 <span style=''>  def dropLastStep: PathExpression = </span><span style='background: #F0ADAD'>copy(locationSteps = locationSteps.dropRight(1))</span><span style=''>
+</span>58 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          8053
+        </td>
+        <td>
+          928
+          -
+          932
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.LocationStep.axis
+        </td>
+        <td style="background: #AEF1AE">
+          LocationStep.this.axis
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          8054
+        </td>
+        <td>
+          912
+          -
+          955
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NodeTest.follow
+        </td>
+        <td style="background: #AEF1AE">
+          LocationStep.this.test.follow(tn, LocationStep.this.axis, ee, executionContext)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          8059
+        </td>
+        <td>
+          991
+          -
+          1165
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExecutionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ExecutionResult.apply(nodes.map[com.atomist.graph.GraphNode, Seq[com.atomist.graph.GraphNode]](nodePreparer)(collection.this.Seq.canBuildFrom[com.atomist.graph.GraphNode]).filter(((tn: com.atomist.graph.GraphNode) =&gt; LocationStep.this.predicateToEvaluate.evaluate(tn, nodes, ee, executionContext, scala.Some.apply[com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer](nodePreparer)))))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          8055
+        </td>
+        <td>
+          1036
+          -
+          1036
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.graph.GraphNode]
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8056
+        </td>
+        <td>
+          1137
+          -
+          1155
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer](nodePreparer)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8058
+        </td>
+        <td>
+          1016
+          -
+          1157
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          nodes.map[com.atomist.graph.GraphNode, Seq[com.atomist.graph.GraphNode]](nodePreparer)(collection.this.Seq.canBuildFrom[com.atomist.graph.GraphNode]).filter(((tn: com.atomist.graph.GraphNode) =&gt; LocationStep.this.predicateToEvaluate.evaluate(tn, nodes, ee, executionContext, scala.Some.apply[com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer](nodePreparer))))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8057
+        </td>
+        <td>
+          1075
+          -
+          1156
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.Predicate.evaluate
+        </td>
+        <td style="background: #AEF1AE">
+          LocationStep.this.predicateToEvaluate.evaluate(tn, nodes, ee, executionContext, scala.Some.apply[com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer](nodePreparer))
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          8061
+        </td>
+        <td>
+          1504
+          -
+          1523
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.LocationStep.combine
+        </td>
+        <td style="background: #AEF1AE">
+          LocationStep.this.combine(LocationStep.this.predicates)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          8060
+        </td>
+        <td>
+          1512
+          -
+          1522
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.LocationStep.predicates
+        </td>
+        <td style="background: #AEF1AE">
+          LocationStep.this.predicates
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          8062
+        </td>
+        <td>
+          1697
+          -
+          1707
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.tail
+        </td>
+        <td style="background: #AEF1AE">
+          preds.tail
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          8064
+        </td>
+        <td>
+          1674
+          -
+          1708
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.Predicate.and
+        </td>
+        <td style="background: #AEF1AE">
+          preds.head.and(LocationStep.this.combine(preds.tail))
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          8063
+        </td>
+        <td>
+          1689
+          -
+          1708
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.LocationStep.combine
+        </td>
+        <td style="background: #AEF1AE">
+          LocationStep.this.combine(preds.tail)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          8068
+        </td>
+        <td>
+          1792
+          -
+          1793
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          8071
+        </td>
+        <td>
+          1758
+          -
+          1791
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          LocationStep.this.predicates.mkString(&quot;[&quot;, &quot;][&quot;, &quot;]&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          8065
+        </td>
+        <td>
+          1742
+          -
+          1743
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          8067
+        </td>
+        <td>
+          1756
+          -
+          1757
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          8070
+        </td>
+        <td>
+          1752
+          -
+          1756
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.LocationStep.test
+        </td>
+        <td style="background: #AEF1AE">
+          LocationStep.this.test
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          8072
+        </td>
+        <td>
+          1740
+          -
+          1793
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;::&quot;, &quot;&quot;, &quot;&quot;).s(LocationStep.this.axis, LocationStep.this.test, LocationStep.this.predicates.mkString(&quot;[&quot;, &quot;][&quot;, &quot;]&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          8066
+        </td>
+        <td>
+          1749
+          -
+          1752
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;::&quot;
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          8069
+        </td>
+        <td>
+          1744
+          -
+          1748
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.LocationStep.axis
+        </td>
+        <td style="background: #AEF1AE">
+          LocationStep.this.axis
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8073
+        </td>
+        <td>
+          1944
+          -
+          1971
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          PathExpression.this.locationSteps.mkString(&quot;/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          8074
+        </td>
+        <td>
+          2031
+          -
+          2057
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.dropRight
+        </td>
+        <td style="background: #F0ADAD">
+          PathExpression.this.locationSteps.dropRight(1)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          8075
+        </td>
+        <td>
+          2010
+          -
+          2058
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpression.copy
+        </td>
+        <td style="background: #F0ADAD">
+          PathExpression.this.copy(PathExpression.this.locationSteps.dropRight(1))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

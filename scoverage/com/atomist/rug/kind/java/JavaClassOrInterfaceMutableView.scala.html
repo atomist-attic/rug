@@ -1,0 +1,782 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/java/JavaClassOrInterfaceMutableView.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.java
+</span>2 <span style=''>
+</span>3 <span style=''>
+</span>4 <span style=''>import com.atomist.rug.kind.java.JavaTypeType._
+</span>5 <span style=''>import com.atomist.rug.spi._
+</span>6 <span style=''>import com.github.javaparser.ast.Modifier
+</span>7 <span style=''>import com.github.javaparser.ast.body._
+</span>8 <span style=''>
+</span>9 <span style=''>import scala.collection.JavaConverters._
+</span>10 <span style=''>
+</span>11 <span style=''>class JavaClassOrInterfaceMutableView(old: ClassOrInterfaceDeclaration, parent: JavaSourceMutableView)
+</span>12 <span style=''>  extends TypeDeclarationView[ClassOrInterfaceDeclaration](old, parent) {
+</span>13 <span style=''>
+</span>14 <span style=''>  override def nodeName: String = </span><span style='background: #AEF1AE'>currentBackingObject.getNameAsString</span><span style=''>
+</span>15 <span style=''>
+</span>16 <span style=''>  override def nodeTags: Set[String] = </span><span style='background: #AEF1AE'>Set(JavaTypeAlias)</span><span style=''>
+</span>17 <span style=''>
+</span>18 <span style=''>  override def childNodeNames: Set[String] = </span><span style='background: #AEF1AE'>Set(ConstructorAlias, MethodAlias, FieldAlias)</span><span style=''>
+</span>19 <span style=''>
+</span>20 <span style=''>  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
+</span>21 <span style=''>    case ConstructorAlias =&gt;
+</span>22 <span style=''>      </span><span style='background: #AEF1AE'>currentBackingObject.getMembers.asScala
+</span>23 <span style=''></span><span style='background: #AEF1AE'>        .collect {
+</span>24 <span style=''></span><span style='background: #AEF1AE'>          case c: ConstructorDeclaration =&gt;
+</span>25 <span style=''></span><span style='background: #AEF1AE'>            new JavaConstructorMutableView(c, this)
+</span>26 <span style=''></span><span style='background: #AEF1AE'>        }</span><span style=''>
+</span>27 <span style=''>    case MethodAlias =&gt;
+</span>28 <span style=''>      </span><span style='background: #AEF1AE'>currentBackingObject.getMembers.asScala
+</span>29 <span style=''></span><span style='background: #AEF1AE'>        .collect {
+</span>30 <span style=''></span><span style='background: #AEF1AE'>          case m: MethodDeclaration =&gt; new JavaMethodMutableView(m, this)
+</span>31 <span style=''></span><span style='background: #AEF1AE'>        }</span><span style=''>
+</span>32 <span style=''>    case FieldAlias =&gt;
+</span>33 <span style=''>      </span><span style='background: #AEF1AE'>currentBackingObject.getMembers.asScala
+</span>34 <span style=''></span><span style='background: #AEF1AE'>        .collect {
+</span>35 <span style=''></span><span style='background: #AEF1AE'>          case f: FieldDeclaration =&gt; new JavaFieldMutableView(f, this)
+</span>36 <span style=''></span><span style='background: #AEF1AE'>        }</span><span style=''>
+</span>37 <span style=''>    case _ =&gt;
+</span>38 <span style=''>      </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>39 <span style=''>  }
+</span>40 <span style=''>
+</span>41 <span style=''>  @ExportFunction(readOnly = true,
+</span>42 <span style=''>    exposeAsProperty = true,
+</span>43 <span style=''>    description = &quot;Is this an interface?&quot;)
+</span>44 <span style=''>  def sourceFile: JavaSourceMutableView = </span><span style='background: #AEF1AE'>parent</span><span style=''>
+</span>45 <span style=''>
+</span>46 <span style=''>  @ExportFunction(readOnly = true,
+</span>47 <span style=''>    exposeAsProperty = true,
+</span>48 <span style=''>    description = &quot;Is this an interface?&quot;)
+</span>49 <span style=''>  def isInterface: Boolean = </span><span style='background: #AEF1AE'>currentBackingObject.isInterface</span><span style=''>
+</span>50 <span style=''>
+</span>51 <span style=''>  @ExportFunction(readOnly = true,
+</span>52 <span style=''>    exposeAsProperty = true,
+</span>53 <span style=''>    description = &quot;Is this type abstract?&quot;)
+</span>54 <span style=''>  def isAbstract: Boolean =
+</span>55 <span style=''>    </span><span style='background: #AEF1AE'>isInterface || currentBackingObject.getModifiers.contains(Modifier.ABSTRACT)</span><span style=''>
+</span>56 <span style=''>
+</span>57 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Does this type extend the given type?&quot;)
+</span>58 <span style=''>  def inheritsFrom(
+</span>59 <span style=''>                    @ExportFunctionParameterDescription(name = &quot;simpleName&quot;,
+</span>60 <span style=''>                      description = &quot;Simple name of the ancestor class we're looking for&quot;)
+</span>61 <span style=''>                    simpleName: String): Boolean =
+</span>62 <span style=''>    </span><span style='background: #AEF1AE'>currentBackingObject.getExtendedTypes.asScala.exists(_.getNameAsString.equals(simpleName))</span><span style=''>
+</span>63 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1846
+        </td>
+        <td>
+          450
+          -
+          486
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.nodeTypes.NodeWithSimpleName.getNameAsString
+        </td>
+        <td style="background: #AEF1AE">
+          JavaClassOrInterfaceMutableView.this.currentBackingObject.getNameAsString()
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          1847
+        </td>
+        <td>
+          531
+          -
+          544
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          1848
+        </td>
+        <td>
+          527
+          -
+          545
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1851
+        </td>
+        <td>
+          627
+          -
+          637
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaTypeType.FieldAlias
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.java.JavaTypeType.FieldAlias
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1850
+        </td>
+        <td>
+          614
+          -
+          625
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaTypeType.MethodAlias
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.java.JavaTypeType.MethodAlias
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1849
+        </td>
+        <td>
+          596
+          -
+          612
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaTypeType.ConstructorAlias
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.java.JavaTypeType.ConstructorAlias
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1852
+        </td>
+        <td>
+          592
+          -
+          638
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](com.atomist.rug.kind.java.JavaTypeType.ConstructorAlias, com.atomist.rug.kind.java.JavaTypeType.MethodAlias, com.atomist.rug.kind.java.JavaTypeType.FieldAlias)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1853
+        </td>
+        <td>
+          764
+          -
+          795
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.body.TypeDeclaration.getMembers
+        </td>
+        <td style="background: #AEF1AE">
+          JavaClassOrInterfaceMutableView.this.currentBackingObject.getMembers()
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1856
+        </td>
+        <td>
+          821
+          -
+          821
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Buffer.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Buffer.canBuildFrom[com.atomist.rug.kind.java.JavaConstructorMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1855
+        </td>
+        <td>
+          821
+          -
+          821
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaClassOrInterfaceMutableView.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1857
+        </td>
+        <td>
+          764
+          -
+          928
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.body.BodyDeclaration[_]](JavaClassOrInterfaceMutableView.this.currentBackingObject.getMembers()).asScala.collect[com.atomist.rug.kind.java.JavaConstructorMutableView, Seq[com.atomist.rug.spi.MutableView[_]]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.github.javaparser.ast.body.BodyDeclaration[_],com.atomist.rug.kind.java.JavaConstructorMutableView] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.github.javaparser.ast.body.BodyDeclaration[_] =&gt; com.atomist.rug.kind.java.JavaConstructorMutableView&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.github.javaparser.ast.body.BodyDeclaration[_], B1 &gt;: com.atomist.rug.kind.java.JavaConstructorMutableView](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[com.github.javaparser.ast.body.BodyDeclaration[_]]: com.github.javaparser.ast.body.BodyDeclaration[_]): com.github.javaparser.ast.body.BodyDeclaration[?0] @unchecked) match {
+      case (c @ (_: com.github.javaparser.ast.body.ConstructorDeclaration)) =&gt; new JavaConstructorMutableView(c, this)
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: com.github.javaparser.ast.body.BodyDeclaration[_]): Boolean = ((x1.asInstanceOf[com.github.javaparser.ast.body.BodyDeclaration[_]]: com.github.javaparser.ast.body.BodyDeclaration[_]): com.github.javaparser.ast.body.BodyDeclaration[?0] @unchecked) match {
+      case (c @ (_: com.github.javaparser.ast.body.ConstructorDeclaration)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.github.javaparser.ast.body.BodyDeclaration[_],com.atomist.rug.kind.java.JavaConstructorMutableView]))(mutable.this.Buffer.canBuildFrom[com.atomist.rug.kind.java.JavaConstructorMutableView])
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1854
+        </td>
+        <td>
+          879
+          -
+          918
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaConstructorMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new JavaConstructorMutableView(c, this)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1858
+        </td>
+        <td>
+          959
+          -
+          990
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.body.TypeDeclaration.getMembers
+        </td>
+        <td style="background: #AEF1AE">
+          JavaClassOrInterfaceMutableView.this.currentBackingObject.getMembers()
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1862
+        </td>
+        <td>
+          959
+          -
+          1101
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.body.BodyDeclaration[_]](JavaClassOrInterfaceMutableView.this.currentBackingObject.getMembers()).asScala.collect[com.atomist.rug.kind.java.JavaMethodMutableView, Seq[com.atomist.rug.spi.MutableView[_]]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.github.javaparser.ast.body.BodyDeclaration[_],com.atomist.rug.kind.java.JavaMethodMutableView] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.github.javaparser.ast.body.BodyDeclaration[_] =&gt; com.atomist.rug.kind.java.JavaMethodMutableView&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.github.javaparser.ast.body.BodyDeclaration[_], B1 &gt;: com.atomist.rug.kind.java.JavaMethodMutableView](x2: A1, default: A1 =&gt; B1): B1 = ((x2.asInstanceOf[com.github.javaparser.ast.body.BodyDeclaration[_]]: com.github.javaparser.ast.body.BodyDeclaration[_]): com.github.javaparser.ast.body.BodyDeclaration[?0] @unchecked) match {
+      case (m @ (_: com.github.javaparser.ast.body.MethodDeclaration)) =&gt; new JavaMethodMutableView(m, this)
+      case (defaultCase$ @ _) =&gt; default.apply(x2)
+    };
+    final def isDefinedAt(x2: com.github.javaparser.ast.body.BodyDeclaration[_]): Boolean = ((x2.asInstanceOf[com.github.javaparser.ast.body.BodyDeclaration[_]]: com.github.javaparser.ast.body.BodyDeclaration[_]): com.github.javaparser.ast.body.BodyDeclaration[?0] @unchecked) match {
+      case (m @ (_: com.github.javaparser.ast.body.MethodDeclaration)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.github.javaparser.ast.body.BodyDeclaration[_],com.atomist.rug.kind.java.JavaMethodMutableView]))(mutable.this.Buffer.canBuildFrom[com.atomist.rug.kind.java.JavaMethodMutableView])
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1861
+        </td>
+        <td>
+          1016
+          -
+          1016
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Buffer.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Buffer.canBuildFrom[com.atomist.rug.kind.java.JavaMethodMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1860
+        </td>
+        <td>
+          1016
+          -
+          1016
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaClassOrInterfaceMutableView.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1859
+        </td>
+        <td>
+          1057
+          -
+          1091
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaMethodMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new JavaMethodMutableView(m, this)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1863
+        </td>
+        <td>
+          1131
+          -
+          1162
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.body.TypeDeclaration.getMembers
+        </td>
+        <td style="background: #AEF1AE">
+          JavaClassOrInterfaceMutableView.this.currentBackingObject.getMembers()
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          1865
+        </td>
+        <td>
+          1188
+          -
+          1188
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaClassOrInterfaceMutableView.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          1867
+        </td>
+        <td>
+          1131
+          -
+          1271
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.body.BodyDeclaration[_]](JavaClassOrInterfaceMutableView.this.currentBackingObject.getMembers()).asScala.collect[com.atomist.rug.kind.java.JavaFieldMutableView, Seq[com.atomist.rug.spi.MutableView[_]]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.github.javaparser.ast.body.BodyDeclaration[_],com.atomist.rug.kind.java.JavaFieldMutableView] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.github.javaparser.ast.body.BodyDeclaration[_] =&gt; com.atomist.rug.kind.java.JavaFieldMutableView&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.github.javaparser.ast.body.BodyDeclaration[_], B1 &gt;: com.atomist.rug.kind.java.JavaFieldMutableView](x3: A1, default: A1 =&gt; B1): B1 = ((x3.asInstanceOf[com.github.javaparser.ast.body.BodyDeclaration[_]]: com.github.javaparser.ast.body.BodyDeclaration[_]): com.github.javaparser.ast.body.BodyDeclaration[?0] @unchecked) match {
+      case (f @ (_: com.github.javaparser.ast.body.FieldDeclaration)) =&gt; new JavaFieldMutableView(f, this)
+      case (defaultCase$ @ _) =&gt; default.apply(x3)
+    };
+    final def isDefinedAt(x3: com.github.javaparser.ast.body.BodyDeclaration[_]): Boolean = ((x3.asInstanceOf[com.github.javaparser.ast.body.BodyDeclaration[_]]: com.github.javaparser.ast.body.BodyDeclaration[_]): com.github.javaparser.ast.body.BodyDeclaration[?0] @unchecked) match {
+      case (f @ (_: com.github.javaparser.ast.body.FieldDeclaration)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.github.javaparser.ast.body.BodyDeclaration[_],com.atomist.rug.kind.java.JavaFieldMutableView]))(mutable.this.Buffer.canBuildFrom[com.atomist.rug.kind.java.JavaFieldMutableView])
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          1866
+        </td>
+        <td>
+          1188
+          -
+          1188
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Buffer.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Buffer.canBuildFrom[com.atomist.rug.kind.java.JavaFieldMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1864
+        </td>
+        <td>
+          1228
+          -
+          1261
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaFieldMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new JavaFieldMutableView(f, this)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1868
+        </td>
+        <td>
+          1292
+          -
+          1295
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1869
+        </td>
+        <td>
+          1450
+          -
+          1456
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaClassOrInterfaceMutableView.parent
+        </td>
+        <td style="background: #AEF1AE">
+          JavaClassOrInterfaceMutableView.this.parent
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1870
+        </td>
+        <td>
+          1594
+          -
+          1626
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.body.ClassOrInterfaceDeclaration.isInterface
+        </td>
+        <td style="background: #AEF1AE">
+          JavaClassOrInterfaceMutableView.this.currentBackingObject.isInterface()
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          1871
+        </td>
+        <td>
+          1783
+          -
+          1844
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.AbstractCollection.contains
+        </td>
+        <td style="background: #AEF1AE">
+          JavaClassOrInterfaceMutableView.this.currentBackingObject.getModifiers().contains(ABSTRACT)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          1872
+        </td>
+        <td>
+          1768
+          -
+          1844
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          JavaClassOrInterfaceMutableView.this.isInterface.||(JavaClassOrInterfaceMutableView.this.currentBackingObject.getModifiers().contains(ABSTRACT))
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          1874
+        </td>
+        <td>
+          2232
+          -
+          2268
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.getNameAsString().equals(simpleName)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          1873
+        </td>
+        <td>
+          2179
+          -
+          2216
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.body.ClassOrInterfaceDeclaration.getExtendedTypes
+        </td>
+        <td style="background: #AEF1AE">
+          JavaClassOrInterfaceMutableView.this.currentBackingObject.getExtendedTypes()
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          1875
+        </td>
+        <td>
+          2179
+          -
+          2269
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.type.ClassOrInterfaceType](JavaClassOrInterfaceMutableView.this.currentBackingObject.getExtendedTypes()).asScala.exists(((x$1: com.github.javaparser.ast.type.ClassOrInterfaceType) =&gt; x$1.getNameAsString().equals(simpleName)))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

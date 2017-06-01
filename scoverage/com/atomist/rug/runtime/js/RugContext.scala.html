@@ -1,0 +1,273 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/js/RugContext.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.js
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.kind.DefaultTypeRegistry
+</span>5 <span style=''>import com.atomist.rug.runtime.js.interop.jsPathExpressionEngine
+</span>6 <span style=''>import com.atomist.rug.spi.TypeRegistry
+</span>7 <span style=''>import com.atomist.tree.{IdentityTreeMaterializer, TreeMaterializer}
+</span>8 <span style=''>
+</span>9 <span style=''>/**
+</span>10 <span style=''>  * Services available to all operations, whether
+</span>11 <span style=''>  * CommandHandlers, EventHandlers or project operations.
+</span>12 <span style=''>  * Some of these are exposed to JavaScript
+</span>13 <span style=''>  * in the HandlerContext TypeScript interface.
+</span>14 <span style=''>  */
+</span>15 <span style=''>trait RugContext extends ExecutionContext {
+</span>16 <span style=''>
+</span>17 <span style=''>  def pathExpressionEngine: jsPathExpressionEngine
+</span>18 <span style=''>
+</span>19 <span style=''>  /**
+</span>20 <span style=''>    * Used to hydrate nodes before running a path expression
+</span>21 <span style=''>    */
+</span>22 <span style=''>  def treeMaterializer: TreeMaterializer = </span><span style='background: #F0ADAD'>IdentityTreeMaterializer</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>  /**
+</span>25 <span style=''>    * Id of the team we're working on behalf of
+</span>26 <span style=''>    */
+</span>27 <span style=''>  def teamId: String
+</span>28 <span style=''>
+</span>29 <span style=''>  /**
+</span>30 <span style=''>    * @return the root node for the team's context.
+</span>31 <span style=''>    *         Path expressions can be executed against it,
+</span>32 <span style=''>    *         for example in command handlers.
+</span>33 <span style=''>    *         Normally a GraphNode, but detyped to
+</span>34 <span style=''>    *         enable JVM/JS interop
+</span>35 <span style=''>    */
+</span>36 <span style=''>  def contextRoot(): AnyRef
+</span>37 <span style=''>
+</span>38 <span style=''>}
+</span>39 <span style=''>
+</span>40 <span style=''>class BaseRugContext extends RugContext {
+</span>41 <span style=''>
+</span>42 <span style=''>  var _treeMaterializer: TreeMaterializer = </span><span style='background: #AEF1AE'>IdentityTreeMaterializer</span><span style=''>
+</span>43 <span style=''>
+</span>44 <span style=''>  override def typeRegistry: TypeRegistry = </span><span style='background: #AEF1AE'>DefaultTypeRegistry</span><span style=''>
+</span>45 <span style=''>
+</span>46 <span style=''>  override def treeMaterializer: TreeMaterializer = </span><span style='background: #AEF1AE'>_treeMaterializer</span><span style=''>
+</span>47 <span style=''>
+</span>48 <span style=''>  override def pathExpressionEngine: jsPathExpressionEngine = </span><span style='background: #AEF1AE'>new jsPathExpressionEngine(this)</span><span style=''>
+</span>49 <span style=''>
+</span>50 <span style=''>  /**
+</span>51 <span style=''>    * Id of the team we're working on behalf of
+</span>52 <span style=''>    */
+</span>53 <span style=''>  override def teamId: String = </span><span style='background: #AEF1AE'>&quot;LOCAL_CONTEXT&quot;</span><span style=''>
+</span>54 <span style=''>
+</span>55 <span style=''>  override def contextRoot(): GraphNode = </span><span style='background: #AEF1AE'>null</span><span style=''>
+</span>56 <span style=''>}
+</span>57 <span style=''>
+</span>58 <span style=''>object LocalRugContext extends BaseRugContext {
+</span>59 <span style=''>
+</span>60 <span style=''>  def apply(trees: TreeMaterializer): LocalRugContext.type = {
+</span>61 <span style=''>    </span><span style='background: #AEF1AE'>this._treeMaterializer = trees</span><span style=''>
+</span>62 <span style=''>    this
+</span>63 <span style=''>  }
+</span>64 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          3994
+        </td>
+        <td>
+          717
+          -
+          741
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.IdentityTreeMaterializer
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.tree.IdentityTreeMaterializer
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          3995
+        </td>
+        <td>
+          1203
+          -
+          1227
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.IdentityTreeMaterializer
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.IdentityTreeMaterializer
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          3996
+        </td>
+        <td>
+          1273
+          -
+          1292
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.DefaultTypeRegistry
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.DefaultTypeRegistry
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          3997
+        </td>
+        <td>
+          1346
+          -
+          1363
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.BaseRugContext._treeMaterializer
+        </td>
+        <td style="background: #AEF1AE">
+          BaseRugContext.this._treeMaterializer
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          3998
+        </td>
+        <td>
+          1427
+          -
+          1459
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsPathExpressionEngine.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.runtime.js.interop.jsPathExpressionEngine(this)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          3999
+        </td>
+        <td>
+          1554
+          -
+          1569
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;LOCAL_CONTEXT&quot;
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          4000
+        </td>
+        <td>
+          1613
+          -
+          1617
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4001
+        </td>
+        <td>
+          1737
+          -
+          1767
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.BaseRugContext._treeMaterializer_=
+        </td>
+        <td style="background: #AEF1AE">
+          this._treeMaterializer_=(trees)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

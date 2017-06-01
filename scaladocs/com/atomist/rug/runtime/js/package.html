@@ -1,0 +1,699 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>js - rug 1.0.0-m.4 API - com.atomist.rug.runtime.js</title>
+          <meta name="description" content="js - rug 1.0.0 - m.4 API - com.atomist.rug.runtime.js" />
+          <meta name="keywords" content="js rug 1.0.0 m.4 API com.atomist.rug.runtime.js" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../index.html';
+            var hash = 'com.atomist.rug.runtime.js.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../../package.html" class="extype" name="com">com</a>.<a href="../../../package.html" class="extype" name="com.atomist">atomist</a>.<a href="../../package.html" class="extype" name="com.atomist.rug">rug</a>.<a href="../package.html" class="extype" name="com.atomist.rug.runtime">runtime</a></p>
+        <h1>js</h1><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">js</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="com.atomist.rug.runtime.js.BaseRugContext" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="BaseRugContextextendsRugContext"></a>
+      <a id="BaseRugContext:BaseRugContext"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="BaseRugContext.html"><span class="name">BaseRugContext</span></a><span class="result"> extends <a href="RugContext.html" class="extype" name="com.atomist.rug.runtime.js.RugContext">RugContext</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@BaseRugContextextendsRugContext" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.runtime.js.ExecutionContext" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="ExecutionContextextendsAnyRef"></a>
+      <a id="ExecutionContext:ExecutionContext"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ExecutionContext.html"><span class="name">ExecutionContext</span></a><span class="result"> extends <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@ExecutionContextextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Context of this execution for a user.</p><div class="fullcomment"><div class="comment cmt"><p>Context of this execution for a user. Includes their
+specific type registry (possibly with added types),
+and a RepoResolver (if available), that knows their credentials.
+</p></div></div>
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptCommandHandler" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JavaScriptCommandHandlerextendsCommandHandlerwithMappedParameterSupportwithJavaScriptUtils"></a>
+      <a id="JavaScriptCommandHandler:JavaScriptCommandHandler"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptCommandHandler.html"><span class="name">JavaScriptCommandHandler</span></a><span class="result"> extends <a href="../CommandHandler.html" class="extype" name="com.atomist.rug.runtime.CommandHandler">CommandHandler</a> with <a href="../plans/MappedParameterSupport.html" class="extype" name="com.atomist.rug.runtime.plans.MappedParameterSupport">MappedParameterSupport</a> with <a href="JavaScriptUtils.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptUtils">JavaScriptUtils</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptCommandHandlerextendsCommandHandlerwithMappedParameterSupportwithJavaScriptUtils" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Runs a CommandHandler in Nashorn.</p>
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptCommandHandlerFinder" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JavaScriptCommandHandlerFinderextendsJavaScriptRugFinder[com.atomist.rug.runtime.js.JavaScriptCommandHandler]withJavaScriptUtils"></a>
+      <a id="JavaScriptCommandHandlerFinder:JavaScriptCommandHandlerFinder"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptCommandHandlerFinder.html"><span class="name">JavaScriptCommandHandlerFinder</span></a><span class="result"> extends <a href="JavaScriptRugFinder.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptRugFinder">JavaScriptRugFinder</a>[<a href="JavaScriptCommandHandler.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptCommandHandler">JavaScriptCommandHandler</a>] with <a href="JavaScriptUtils.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptUtils">JavaScriptUtils</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptCommandHandlerFinderextendsJavaScriptRugFinder[com.atomist.rug.runtime.js.JavaScriptCommandHandler]withJavaScriptUtils" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Finds JavaScriptCommandHandlers in Nashorn vars
+</p>
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptContext" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="JavaScriptContextextendsLazyLogging"></a>
+      <a id="JavaScriptContext:JavaScriptContext"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptContext.html"><span class="name">JavaScriptContext</span></a><span class="result"> extends <span class="extype" name="com.typesafe.scalalogging.LazyLogging">LazyLogging</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptContextextendsLazyLogging" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Context superclass for evaluating JavaScript.</p><div class="fullcomment"><div class="comment cmt"><p>Context superclass for evaluating JavaScript.
+Creates a Nashorn ScriptEngineManager and can evaluate files and JavaScript fragments,
+exposing the known vars in a typesafe way so we partly avoid the horrific detyped
+Nashorn API.</p><p>One of these per rug please, or else they may stomp on one-another
+</p></div></div>
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptEventHandler" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JavaScriptEventHandlerextendsEventHandlerwithJavaScriptUtils"></a>
+      <a id="JavaScriptEventHandler:JavaScriptEventHandler"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptEventHandler.html"><span class="name">JavaScriptEventHandler</span></a><span class="result"> extends <a href="../EventHandler.html" class="extype" name="com.atomist.rug.runtime.EventHandler">EventHandler</a> with <a href="JavaScriptUtils.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptUtils">JavaScriptUtils</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptEventHandlerextendsEventHandlerwithJavaScriptUtils" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">An invokable JS based handler for System Events
+</p>
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptEventHandlerFinder" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JavaScriptEventHandlerFinderextendsJavaScriptRugFinder[com.atomist.rug.runtime.js.JavaScriptEventHandler]withJavaScriptUtils"></a>
+      <a id="JavaScriptEventHandlerFinder:JavaScriptEventHandlerFinder"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptEventHandlerFinder.html"><span class="name">JavaScriptEventHandlerFinder</span></a><span class="result"> extends <a href="JavaScriptRugFinder.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptRugFinder">JavaScriptRugFinder</a>[<a href="JavaScriptEventHandler.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptEventHandler">JavaScriptEventHandler</a>] with <a href="JavaScriptUtils.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptUtils">JavaScriptUtils</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptEventHandlerFinderextendsJavaScriptRugFinder[com.atomist.rug.runtime.js.JavaScriptEventHandler]withJavaScriptUtils" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Discover JavaScriptEventHandlers from a Nashorn instance
+</p>
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptProjectEditor" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JavaScriptProjectEditorextendsJavaScriptProjectOperationwithProjectEditorSupport"></a>
+      <a id="JavaScriptProjectEditor:JavaScriptProjectEditor"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptProjectEditor.html"><span class="name">JavaScriptProjectEditor</span></a><span class="result"> extends <a href="JavaScriptProjectOperation.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptProjectOperation">JavaScriptProjectOperation</a> with <a href="../../../project/edit/ProjectEditorSupport.html" class="extype" name="com.atomist.project.edit.ProjectEditorSupport">ProjectEditorSupport</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptProjectEditorextendsJavaScriptProjectOperationwithProjectEditorSupport" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">ProjectEditor implementation that invokes a JavaScript function.</p>
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptProjectEditorFinder" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JavaScriptProjectEditorFinderextendsJavaScriptRugFinder[com.atomist.rug.runtime.js.JavaScriptProjectEditor]"></a>
+      <a id="JavaScriptProjectEditorFinder:JavaScriptProjectEditorFinder"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptProjectEditorFinder.html"><span class="name">JavaScriptProjectEditorFinder</span></a><span class="result"> extends <a href="JavaScriptRugFinder.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptRugFinder">JavaScriptRugFinder</a>[<a href="JavaScriptProjectEditor.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptProjectEditor">JavaScriptProjectEditor</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptProjectEditorFinderextendsJavaScriptRugFinder[com.atomist.rug.runtime.js.JavaScriptProjectEditor]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Find Editors in a Nashorn.</p>
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptProjectGenerator" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="JavaScriptProjectGeneratorextendsJavaScriptProjectOperationwithProjectGenerator"></a>
+      <a id="JavaScriptProjectGenerator:JavaScriptProjectGenerator"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptProjectGenerator.html"><span class="name">JavaScriptProjectGenerator</span></a><span class="result"> extends <a href="JavaScriptProjectOperation.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptProjectOperation">JavaScriptProjectOperation</a> with <a href="../../../project/generate/ProjectGenerator.html" class="extype" name="com.atomist.project.generate.ProjectGenerator">ProjectGenerator</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptProjectGeneratorextendsJavaScriptProjectOperationwithProjectGenerator" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">ProjectEditor implementation that invokes a JavaScript function.</p><div class="fullcomment"><div class="comment cmt"><p>ProjectEditor implementation that invokes a JavaScript function. This will probably be the result of
+TypeScript compilation, but need not be. Attempts to source metadata from annotations.
+</p></div></div>
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptProjectGeneratorFinder" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JavaScriptProjectGeneratorFinderextendsJavaScriptRugFinder[com.atomist.rug.runtime.js.JavaScriptProjectGenerator]"></a>
+      <a id="JavaScriptProjectGeneratorFinder:JavaScriptProjectGeneratorFinder"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptProjectGeneratorFinder.html"><span class="name">JavaScriptProjectGeneratorFinder</span></a><span class="result"> extends <a href="JavaScriptRugFinder.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptRugFinder">JavaScriptRugFinder</a>[<a href="JavaScriptProjectGenerator.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptProjectGenerator">JavaScriptProjectGenerator</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptProjectGeneratorFinderextendsJavaScriptRugFinder[com.atomist.rug.runtime.js.JavaScriptProjectGenerator]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Find Generators in a Nashorn
+</p>
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptProjectOperation" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="JavaScriptProjectOperationextendsProjectOperationwithLazyLoggingwithJavaScriptUtils"></a>
+      <a id="JavaScriptProjectOperation:JavaScriptProjectOperation"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptProjectOperation.html"><span class="name">JavaScriptProjectOperation</span></a><span class="result"> extends <a href="../../../project/ProjectOperation.html" class="extype" name="com.atomist.project.ProjectOperation">ProjectOperation</a> with <span class="extype" name="com.typesafe.scalalogging.LazyLogging">LazyLogging</span> with <a href="JavaScriptUtils.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptUtils">JavaScriptUtils</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptProjectOperationextendsProjectOperationwithLazyLoggingwithJavaScriptUtils" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Superclass for all operations that delegate to JavaScript.</p>
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptResponseHandler" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JavaScriptResponseHandlerextendsParameterizedRugwithResponseHandlerwithParameterizedSupportwithJavaScriptUtils"></a>
+      <a id="JavaScriptResponseHandler:JavaScriptResponseHandler"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptResponseHandler.html"><span class="name">JavaScriptResponseHandler</span></a><span class="result"> extends <a href="../ParameterizedRug.html" class="extype" name="com.atomist.rug.runtime.ParameterizedRug">ParameterizedRug</a> with <a href="../ResponseHandler.html" class="extype" name="com.atomist.rug.runtime.ResponseHandler">ResponseHandler</a> with <a href="../../../param/ParameterizedSupport.html" class="extype" name="com.atomist.param.ParameterizedSupport">ParameterizedSupport</a> with <a href="JavaScriptUtils.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptUtils">JavaScriptUtils</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptResponseHandlerextendsParameterizedRugwithResponseHandlerwithParameterizedSupportwithJavaScriptUtils" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptResponseHandlerFinder" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JavaScriptResponseHandlerFinderextendsJavaScriptRugFinder[com.atomist.rug.runtime.js.JavaScriptResponseHandler]withJavaScriptUtils"></a>
+      <a id="JavaScriptResponseHandlerFinder:JavaScriptResponseHandlerFinder"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptResponseHandlerFinder.html"><span class="name">JavaScriptResponseHandlerFinder</span></a><span class="result"> extends <a href="JavaScriptRugFinder.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptRugFinder">JavaScriptRugFinder</a>[<a href="JavaScriptResponseHandler.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptResponseHandler">JavaScriptResponseHandler</a>] with <a href="JavaScriptUtils.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptUtils">JavaScriptUtils</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptResponseHandlerFinderextendsJavaScriptRugFinder[com.atomist.rug.runtime.js.JavaScriptResponseHandler]withJavaScriptUtils" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Extract response handlers from a Nashorn instance
+</p>
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptRugFinder" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="JavaScriptRugFinder[R&lt;:com.atomist.rug.runtime.Rug]extendsAnyRef"></a>
+      <a id="JavaScriptRugFinder[R&lt;:Rug]:JavaScriptRugFinder[R]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptRugFinder.html"><span class="name">JavaScriptRugFinder</span></a><span class="tparams">[<span name="R">R &lt;: <a href="../Rug.html" class="extype" name="com.atomist.rug.runtime.Rug">Rug</a></span>]</span><span class="result"> extends <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptRugFinder[R&lt;:com.atomist.rug.runtime.Rug]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Interface for finding rugs of different types in Nashorn
+</p>
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptRuntimeException" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JavaScriptRuntimeExceptionextendsException"></a>
+      <a id="JavaScriptRuntimeException:JavaScriptRuntimeException"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptRuntimeException.html"><span class="name">JavaScriptRuntimeException</span></a><span class="result"> extends <a href="../../../../../scala/package.html#Exception=Exception" class="extmbr" name="scala.Exception">Exception</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptRuntimeExceptionextendsException" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Thrown when there's an exception in the JavaScript or TypeScript runtime
+</p>
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptUtils" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="JavaScriptUtilsextendsAnyRef"></a>
+      <a id="JavaScriptUtils:JavaScriptUtils"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptUtils.html"><span class="name">JavaScriptUtils</span></a><span class="result"> extends <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptUtilsextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Stuff for all JavaScript based things
+</p>
+    </li><li name="com.atomist.rug.runtime.js.PlanBuilder" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PlanBuilderextendsAnyRef"></a>
+      <a id="PlanBuilder:PlanBuilder"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="PlanBuilder.html"><span class="name">PlanBuilder</span></a><span class="result"> extends <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@PlanBuilderextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.runtime.js.RugContext" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="RugContextextendsExecutionContext"></a>
+      <a id="RugContext:RugContext"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="RugContext.html"><span class="name">RugContext</span></a><span class="result"> extends <a href="ExecutionContext.html" class="extype" name="com.atomist.rug.runtime.js.ExecutionContext">ExecutionContext</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@RugContextextendsExecutionContext" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Services available to all operations, whether
+CommandHandlers, EventHandlers or project operations.</p><div class="fullcomment"><div class="comment cmt"><p>Services available to all operations, whether
+CommandHandlers, EventHandlers or project operations.
+Some of these are exposed to JavaScript
+in the HandlerContext TypeScript interface.
+</p></div></div>
+    </li><li name="com.atomist.rug.runtime.js.RuntimeErrorInfo" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RuntimeErrorInfoextendsProductwithSerializable"></a>
+      <a id="RuntimeErrorInfo:RuntimeErrorInfo"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="RuntimeErrorInfo.html"><span class="name">RuntimeErrorInfo</span></a><span class="params">(<span name="message">message: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="filePath">filePath: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="pos">pos: <a href="../../../tree/content/text/LineInputPosition.html" class="extype" name="com.atomist.tree.content.text.LineInputPosition">LineInputPosition</a></span>, <span name="detail">detail: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@RuntimeErrorInfoextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.runtime.js.SimpleContainerGraphNode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SimpleContainerGraphNodeextendsGraphNodewithProductwithSerializable"></a>
+      <a id="SimpleContainerGraphNode:SimpleContainerGraphNode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SimpleContainerGraphNode.html"><span class="name">SimpleContainerGraphNode</span></a><span class="params">(<span name="nodeName">nodeName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="relatedNodes">relatedNodes: <a href="../../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a>]</span>, <span name="nodeTags">nodeTags: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="edges">edges: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <a href="../../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a>]] = <span class="symbol">Map.empty</span></span>)</span><span class="result"> extends <a href="../../../graph/GraphNode.html" class="extype" name="com.atomist.graph.GraphNode">GraphNode</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@SimpleContainerGraphNodeextendsGraphNodewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.runtime.js.SimpleExecutionContext" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SimpleExecutionContextextendsExecutionContextwithProductwithSerializable"></a>
+      <a id="SimpleExecutionContext:SimpleExecutionContext"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SimpleExecutionContext.html"><span class="name">SimpleExecutionContext</span></a><span class="params">(<span name="typeRegistry">typeRegistry: <a href="../../spi/TypeRegistry.html" class="extype" name="com.atomist.rug.spi.TypeRegistry">TypeRegistry</a></span>, <span name="repoResolver">repoResolver: <span class="extype" name="scala.Option">Option</span>[<a href="../../kind/core/RepoResolver.html" class="extype" name="com.atomist.rug.kind.core.RepoResolver">RepoResolver</a>] = <span class="symbol"><span class="name"><a href="../../../../../scala/package.html">None</a></span></span></span>)</span><span class="result"> extends <a href="ExecutionContext.html" class="extype" name="com.atomist.rug.runtime.js.ExecutionContext">ExecutionContext</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@SimpleExecutionContextextendsExecutionContextwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.runtime.js.SourceLanguageRuntimeException" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SourceLanguageRuntimeExceptionextendsJavaScriptRuntimeException"></a>
+      <a id="SourceLanguageRuntimeException:SourceLanguageRuntimeException"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SourceLanguageRuntimeException.html"><span class="name">SourceLanguageRuntimeException</span></a><span class="result"> extends <a href="JavaScriptRuntimeException.html" class="extype" name="com.atomist.rug.runtime.js.JavaScriptRuntimeException">JavaScriptRuntimeException</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@SourceLanguageRuntimeExceptionextendsJavaScriptRuntimeException" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Has information both about the underlying JavaScript error and the original one,
+in a language such as TypeScript</p>
+    </li><li name="com.atomist.rug.runtime.js.Var" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="VarextendsProductwithSerializable"></a>
+      <a id="Var:Var"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Var.html"><span class="name">Var</span></a><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="scriptObjectMirror">scriptObjectMirror: <span class="extype" name="jdk.nashorn.api.scripting.ScriptObjectMirror">ScriptObjectMirror</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@VarextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Information about a JavaScript var exposed in the project scripts
+</p><div class="fullcomment"><div class="comment cmt"><p>Information about a JavaScript var exposed in the project scripts
+</p></div><dl class="paramcmts block"><dt class="param">key</dt><dd class="cmt"><p>name of the var</p></dd><dt class="param">scriptObjectMirror</dt><dd class="cmt"><p>interface for working with Var</p></dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="com.atomist.rug.runtime.js.ConstructPlan" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ConstructPlan"></a>
+      <a id="ConstructPlan:ConstructPlan"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ConstructPlan$.html"><span class="name">ConstructPlan</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@ConstructPlan" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Constructs plans from Nashorn response to a Handler/handle operation
+</p>
+    </li><li name="com.atomist.rug.runtime.js.DefaultExecutionContext" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DefaultExecutionContext"></a>
+      <a id="DefaultExecutionContext:DefaultExecutionContext"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DefaultExecutionContext$.html"><span class="name">DefaultExecutionContext</span></a><span class="result"> extends <a href="ExecutionContext.html" class="extype" name="com.atomist.rug.runtime.js.ExecutionContext">ExecutionContext</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@DefaultExecutionContext" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.runtime.js.ExceptionEnhancer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ExceptionEnhancer"></a>
+      <a id="ExceptionEnhancer:ExceptionEnhancer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ExceptionEnhancer$.html"><span class="name">ExceptionEnhancer</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@ExceptionEnhancer" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Enhances exceptions caught within a JavaScript context that
+we have all sources for
+</p>
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptContext" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JavaScriptContext"></a>
+      <a id="JavaScriptContext:JavaScriptContext"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptContext$.html"><span class="name">JavaScriptContext</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptContext" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptEventHandler" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JavaScriptEventHandler"></a>
+      <a id="JavaScriptEventHandler:JavaScriptEventHandler"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptEventHandler$.html"><span class="name">JavaScriptEventHandler</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptEventHandler" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.runtime.js.JavaScriptProjectGenerator" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JavaScriptProjectGenerator"></a>
+      <a id="JavaScriptProjectGenerator:JavaScriptProjectGenerator"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="JavaScriptProjectGenerator$.html"><span class="name">JavaScriptProjectGenerator</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@JavaScriptProjectGenerator" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.runtime.js.LocalRugContext" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LocalRugContext"></a>
+      <a id="LocalRugContext:LocalRugContext"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="LocalRugContext$.html"><span class="name">LocalRugContext</span></a><span class="result"> extends <a href="BaseRugContext.html" class="extype" name="com.atomist.rug.runtime.js.BaseRugContext">BaseRugContext</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@LocalRugContext" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.runtime.js.SimpleContainerGraphNode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SimpleContainerGraphNode"></a>
+      <a id="SimpleContainerGraphNode:SimpleContainerGraphNode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SimpleContainerGraphNode$.html"><span class="name">SimpleContainerGraphNode</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@SimpleContainerGraphNode" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.rug.runtime.js.interop" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="interop"></a>
+      <a id="interop:interop"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="interop/package.html"><span class="name">interop</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.rug.runtime.js.package@interop" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">  This package contains types exposed to JavaScript via Nashorn, which
+   have a corresponding TypeScript interface.</p><div class="fullcomment"><div class="comment cmt"><p>  This package contains types exposed to JavaScript via Nashorn, which
+   have a corresponding TypeScript interface.
+   We use Java, rather than Scala, types to facilitate this interoperability.
+   Types with names starting with &quot;js&quot; are intended to be used by JavaScript,
+   rather than Scala or Java.
+</p></div></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

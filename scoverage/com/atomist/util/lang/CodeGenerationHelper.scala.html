@@ -1,0 +1,203 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/util/lang/CodeGenerationHelper.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.util.lang
+</span>2 <span style=''>
+</span>3 <span style=''>/**
+</span>4 <span style=''>  * Useful helper for generating any language.
+</span>5 <span style=''>  *
+</span>6 <span style=''>  * @param indent one indent: E.g. a number of spaces or tabs
+</span>7 <span style=''>  */
+</span>8 <span style=''>class CodeGenerationHelper(indent: String = &quot;    &quot;) {
+</span>9 <span style=''>
+</span>10 <span style=''>  /**
+</span>11 <span style=''>    * Indent the block.
+</span>12 <span style=''>    *
+</span>13 <span style=''>    * @param block the string to indent
+</span>14 <span style=''>    * @param n number of indents
+</span>15 <span style=''>    * @return a String
+</span>16 <span style=''>    */
+</span>17 <span style=''>  def indented(block: String, n: Int): String = {
+</span>18 <span style=''>    val padding = </span><span style='background: #AEF1AE'>Array.fill[String](n)(indent).mkString(&quot;&quot;)</span><span style=''>
+</span>19 <span style=''>    </span><span style='background: #AEF1AE'>padding + block.replace(&quot;\n&quot;, s&quot;\n$padding&quot;)</span><span style=''>
+</span>20 <span style=''>  }
+</span>21 <span style=''>
+</span>22 <span style=''>  /**
+</span>23 <span style=''>    * Wrap the given block in an outer block. E.g. wrapping a block in an if
+</span>24 <span style=''>    * statement.
+</span>25 <span style=''>    *
+</span>26 <span style=''>    * @param outerLeft left part of the string e.g. &quot;if (cond) {\n&quot;
+</span>27 <span style=''>    * @param outerRight right part e.g. &quot;\n}&quot;
+</span>28 <span style=''>    * @param block block to wrap
+</span>29 <span style=''>    * @param n indent depth to use for block
+</span>30 <span style=''>    * @return a String
+</span>31 <span style=''>    */
+</span>32 <span style=''>  def wrap(outerLeft: String, outerRight: String, block: String, n: Int): String = {
+</span>33 <span style=''>    </span><span style='background: #F0ADAD'>outerLeft + indented(block, n) + outerRight</span><span style=''>
+</span>34 <span style=''>  }
+</span>35 <span style=''>
+</span>36 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          8883
+        </td>
+        <td>
+          415
+          -
+          457
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[String](scala.Array.fill[String](n)(CodeGenerationHelper.this.indent)((ClassTag.apply[String](classOf[java.lang.String]): scala.reflect.ClassTag[String]))).mkString(&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          8884
+        </td>
+        <td>
+          486
+          -
+          490
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          8887
+        </td>
+        <td>
+          462
+          -
+          506
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          padding.+(block.replace(&quot;\n&quot;, scala.StringContext.apply(&quot;\\n&quot;, &quot;&quot;).s(padding)))
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          8886
+        </td>
+        <td>
+          472
+          -
+          506
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          block.replace(&quot;\n&quot;, scala.StringContext.apply(&quot;\\n&quot;, &quot;&quot;).s(padding))
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          8885
+        </td>
+        <td>
+          492
+          -
+          505
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;\\n&quot;, &quot;&quot;).s(padding)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          8888
+        </td>
+        <td>
+          929
+          -
+          972
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          outerLeft.+(CodeGenerationHelper.this.indented(block, n)).+(outerRight)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

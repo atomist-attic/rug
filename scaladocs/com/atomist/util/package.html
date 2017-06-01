@@ -1,0 +1,316 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>util - rug 1.0.0-m.4 API - com.atomist.util</title>
+          <meta name="description" content="util - rug 1.0.0 - m.4 API - com.atomist.util" />
+          <meta name="keywords" content="util rug 1.0.0 m.4 API com.atomist.util" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../index.html';
+            var hash = 'com.atomist.util.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../lib/package_big.png" />
+        <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.atomist">atomist</a></p>
+        <h1>util</h1><span class="permalink">
+      <a href="../../../index.html#com.atomist.util.package" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">util</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="com.atomist.util.CycleAvoidingVisitor" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="CycleAvoidingVisitorextendsVisitor"></a>
+      <a id="CycleAvoidingVisitor:CycleAvoidingVisitor"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="CycleAvoidingVisitor.html"><span class="name">CycleAvoidingVisitor</span></a><span class="result"> extends <a href="Visitor.html" class="extype" name="com.atomist.util.Visitor">Visitor</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.atomist.util.package@CycleAvoidingVisitorextendsVisitor" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Visitor support that avoids cycles by tracking
+the objects it has visited.</p><div class="fullcomment"><div class="comment cmt"><p>Visitor support that avoids cycles by tracking
+the objects it has visited. Not for use on
+huge graphs.
+</p></div></div>
+    </li><li name="com.atomist.util.SaveAllDescendantsVisitor" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="SaveAllDescendantsVisitorextendsCycleAvoidingVisitor"></a>
+      <a id="SaveAllDescendantsVisitor:SaveAllDescendantsVisitor"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SaveAllDescendantsVisitor.html"><span class="name">SaveAllDescendantsVisitor</span></a><span class="result"> extends <a href="CycleAvoidingVisitor.html" class="extype" name="com.atomist.util.CycleAvoidingVisitor">CycleAvoidingVisitor</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.atomist.util.package@SaveAllDescendantsVisitorextendsCycleAvoidingVisitor" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Visitor implementation that saves all descendants.</p><div class="fullcomment"><div class="comment cmt"><p>Visitor implementation that saves all descendants. Do not use on huge trees!
+</p></div></div>
+    </li><li name="com.atomist.util.ServiceLoaderBackedExtensionProvider" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ServiceLoaderBackedExtensionProvider[T]extendsLazyLogging"></a>
+      <a id="ServiceLoaderBackedExtensionProvider[T]:ServiceLoaderBackedExtensionProvider[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ServiceLoaderBackedExtensionProvider.html"><span class="name">ServiceLoaderBackedExtensionProvider</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="com.typesafe.scalalogging.LazyLogging">LazyLogging</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.atomist.util.package@ServiceLoaderBackedExtensionProvider[T]extendsLazyLogging" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Provider of instances of type <span class="extype" name="T">T</span>.</p><div class="fullcomment"><div class="comment cmt"><p>Provider of instances of type <span class="extype" name="T">T</span>. Instances are loaded via JDK <span class="extype" name="ServiceLoader">ServiceLoader</span> and cached; keyed by their
+respective <span class="extype" name="ClassLoader">ClassLoader</span>s.
+</p></div></div>
+    </li><li name="com.atomist.util.Visitable" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="VisitableextendsAnyRef"></a>
+      <a id="Visitable:Visitable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Visitable.html"><span class="name">Visitable</span></a><span class="result"> extends <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.atomist.util.package@VisitableextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.util.Visitor" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="VisitorextendsAnyRef"></a>
+      <a id="Visitor:Visitor"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Visitor.html"><span class="name">Visitor</span></a><span class="result"> extends <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.atomist.util.package@VisitorextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Simple visitor interface
+</p>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="com.atomist.util.ConsoleVisitor" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ConsoleVisitor"></a>
+      <a id="ConsoleVisitor:ConsoleVisitor"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ConsoleVisitor$.html"><span class="name">ConsoleVisitor</span></a><span class="result"> extends <a href="Visitor.html" class="extype" name="com.atomist.util.Visitor">Visitor</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.atomist.util.package@ConsoleVisitor" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.util.JsonUtils" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="JsonUtils"></a>
+      <a id="JsonUtils:JsonUtils"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="JsonUtils$.html"><span class="name">JsonUtils</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.atomist.util.package@JsonUtils" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Serialize objects to Json.</p>
+    </li><li name="com.atomist.util.Timing" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Timing"></a>
+      <a id="Timing:Timing"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Timing$.html"><span class="name">Timing</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.atomist.util.package@Timing" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">HOF to time operations.</p>
+    </li><li name="com.atomist.util.lang" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="lang"></a>
+      <a id="lang:lang"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="lang/package.html"><span class="name">lang</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.atomist.util.package@lang" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.util.misc" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="misc"></a>
+      <a id="misc:misc"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="misc/package.html"><span class="name">misc</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.atomist.util.package@misc" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.util.scalaparsing" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="scalaparsing"></a>
+      <a id="scalaparsing:scalaparsing"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="scalaparsing/package.html"><span class="name">scalaparsing</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.atomist.util.package@scalaparsing" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.util.yaml" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="yaml"></a>
+      <a id="yaml:yaml"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="yaml/package.html"><span class="name">yaml</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.atomist.util.package@yaml" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

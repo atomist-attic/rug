@@ -1,0 +1,548 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>text - rug 1.0.0-m.4 API - com.atomist.tree.content.text</title>
+          <meta name="description" content="text - rug 1.0.0 - m.4 API - com.atomist.tree.content.text" />
+          <meta name="keywords" content="text rug 1.0.0 m.4 API com.atomist.tree.content.text" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../index.html';
+            var hash = 'com.atomist.tree.content.text.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../../package.html" class="extype" name="com">com</a>.<a href="../../../package.html" class="extype" name="com.atomist">atomist</a>.<a href="../../package.html" class="extype" name="com.atomist.tree">tree</a>.<a href="../package.html" class="extype" name="com.atomist.tree.content">content</a></p>
+        <h1>text</h1><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">text</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="com.atomist.tree.content.text.ChildNode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ChildNodeextendsAnnotationwithAnnotationwithClassfileAnnotation"></a>
+      <a id="ChildNode:ChildNode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ChildNode.html"><span class="name">ChildNode</span></a><span class="result"> extends <span class="extype" name="scala.annotation.Annotation">Annotation</span> with <span class="extype" name="java.lang.annotation.Annotation">Annotation</span> with <span class="extype" name="scala.annotation.ClassfileAnnotation">ClassfileAnnotation</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@ChildNodeextendsAnnotationwithAnnotationwithClassfileAnnotation" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.content.text.FormatInfo" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FormatInfoextendsProductwithSerializable"></a>
+      <a id="FormatInfo:FormatInfo"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="FormatInfo.html"><span class="name">FormatInfo</span></a><span class="params">(<span name="start">start: <a href="PointFormatInfo.html" class="extype" name="com.atomist.tree.content.text.PointFormatInfo">PointFormatInfo</a></span>, <span name="end">end: <a href="PointFormatInfo.html" class="extype" name="com.atomist.tree.content.text.PointFormatInfo">PointFormatInfo</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@FormatInfoextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Information about the format of a node within a file
+</p>
+    </li><li name="com.atomist.tree.content.text.ImmutablePositionedTreeNode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ImmutablePositionedTreeNodeextendsPositionedTreeNodewithProductwithSerializable"></a>
+      <a id="ImmutablePositionedTreeNode:ImmutablePositionedTreeNode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ImmutablePositionedTreeNode.html"><span class="name">ImmutablePositionedTreeNode</span></a><span class="params">(<span name="nodeName">nodeName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="startPosition">startPosition: <a href="InputPosition.html" class="extype" name="com.atomist.tree.content.text.InputPosition">InputPosition</a></span>, <span name="endPosition">endPosition: <a href="InputPosition.html" class="extype" name="com.atomist.tree.content.text.InputPosition">InputPosition</a></span>, <span name="childNodes">childNodes: <a href="../../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="PositionedTreeNode.html" class="extype" name="com.atomist.tree.content.text.PositionedTreeNode">PositionedTreeNode</a>]</span>, <span name="nodeTags">nodeTags: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="significance">significance: <a href="../../TreeNode$$Significance.html" class="extype" name="com.atomist.tree.TreeNode.Significance">Significance</a></span>)</span><span class="result"> extends <a href="PositionedTreeNode.html" class="extype" name="com.atomist.tree.content.text.PositionedTreeNode">PositionedTreeNode</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@ImmutablePositionedTreeNodeextendsPositionedTreeNodewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.content.text.InputPosition" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="InputPositionextendsAnyRef"></a>
+      <a id="InputPosition:InputPosition"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="InputPosition.html"><span class="name">InputPosition</span></a><span class="result"> extends <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@InputPositionextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Represents a position within an input sequence
+</p>
+    </li><li name="com.atomist.tree.content.text.LineHoldingOffsetInputPosition" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LineHoldingOffsetInputPositionextendsInputPositionwithProductwithSerializable"></a>
+      <a id="LineHoldingOffsetInputPosition:LineHoldingOffsetInputPosition"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LineHoldingOffsetInputPosition.html"><span class="name">LineHoldingOffsetInputPosition</span></a><span class="params">(<span name="input">input: <span class="extype" name="java.lang.CharSequence">CharSequence</span></span>, <span name="offset">offset: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result"> extends <a href="InputPosition.html" class="extype" name="com.atomist.tree.content.text.InputPosition">InputPosition</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@LineHoldingOffsetInputPositionextendsInputPositionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Created by rod on 2/9/17.</p>
+    </li><li name="com.atomist.tree.content.text.LineInputPosition" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LineInputPositionextendsInputPosition"></a>
+      <a id="LineInputPosition:LineInputPosition"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LineInputPosition.html"><span class="name">LineInputPosition</span></a><span class="result"> extends <a href="InputPosition.html" class="extype" name="com.atomist.tree.content.text.InputPosition">InputPosition</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@LineInputPositionextendsInputPosition" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.content.text.LineInputPositionImpl" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="LineInputPositionImplextendsLineInputPositionwithProductwithSerializable"></a>
+      <a id="LineInputPositionImpl:LineInputPositionImpl"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LineInputPositionImpl.html"><span class="name">LineInputPositionImpl</span></a><span class="params">(<span name="input">input: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="lineFrom1">lineFrom1: <span class="extype" name="scala.Int">Int</span></span>, <span name="colFrom1">colFrom1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result"> extends <a href="LineInputPosition.html" class="extype" name="com.atomist.tree.content.text.LineInputPosition">LineInputPosition</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@LineInputPositionImplextendsLineInputPositionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">InputPosition implementation given line position, from 1:1.</p><div class="fullcomment"><div class="comment cmt"><p>InputPosition implementation given line position, from 1:1.
+</p></div><dl class="paramcmts block"><dt class="param">input</dt><dd class="cmt"><p>input string</p></dd><dt class="param">lineFrom1</dt><dd class="cmt"><p>line (from 1)</p></dd><dt class="param">colFrom1</dt><dd class="cmt"><p>column (from 1)</p></dd></dl></div>
+    </li><li name="com.atomist.tree.content.text.OffsetInputPosition" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OffsetInputPositionextendsInputPositionwithProductwithSerializable"></a>
+      <a id="OffsetInputPosition:OffsetInputPosition"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="OffsetInputPosition.html"><span class="name">OffsetInputPosition</span></a><span class="params">(<span name="offset">offset: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result"> extends <a href="InputPosition.html" class="extype" name="com.atomist.tree.content.text.InputPosition">InputPosition</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@OffsetInputPositionextendsInputPositionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.content.text.OutOfDateNodeException" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OutOfDateNodeExceptionextendsRuntimeException"></a>
+      <a id="OutOfDateNodeException:OutOfDateNodeException"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="OutOfDateNodeException.html"><span class="name">OutOfDateNodeException</span></a><span class="result"> extends <a href="../../../../../scala/package.html#RuntimeException=RuntimeException" class="extmbr" name="scala.RuntimeException">RuntimeException</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@OutOfDateNodeExceptionextendsRuntimeException" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.content.text.OverwritableTextInFile" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="OverwritableTextInFileextendsOverwritableTextTreeNodeParent"></a>
+      <a id="OverwritableTextInFile:OverwritableTextInFile"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="OverwritableTextInFile.html"><span class="name">OverwritableTextInFile</span></a><span class="result"> extends <a href="OverwritableTextTreeNodeParent.html" class="extype" name="com.atomist.tree.content.text.OverwritableTextTreeNodeParent">OverwritableTextTreeNodeParent</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@OverwritableTextInFileextendsOverwritableTextTreeNodeParent" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Connects OverwritableTextTreeNodes to the file they reside in.</p><div class="fullcomment"><div class="comment cmt"><p>Connects OverwritableTextTreeNodes to the file they reside in.
+This node holds the padding before and between and after them.
+It also glues the updates together: it calls update on the FileArtifactMutableView
+when any node under it gets updated.</p><p>This should be invisible in the path expression tree.
+</p></div></div>
+    </li><li name="com.atomist.tree.content.text.OverwritableTextTreeNode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="OverwritableTextTreeNodeextendsUpdatableTreeNodewithContainerTreeNodewithAddressableTreeNodewithParentAwareTreeNodewithOverwritableTextTreeNodeChildwithOverwritableTextTreeNodeParent"></a>
+      <a id="OverwritableTextTreeNode:OverwritableTextTreeNode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="OverwritableTextTreeNode.html"><span class="name">OverwritableTextTreeNode</span></a><span class="result"> extends <a href="../../UpdatableTreeNode.html" class="extype" name="com.atomist.tree.UpdatableTreeNode">UpdatableTreeNode</a> with <a href="../../ContainerTreeNode.html" class="extype" name="com.atomist.tree.ContainerTreeNode">ContainerTreeNode</a> with <a href="../../AddressableTreeNode.html" class="extype" name="com.atomist.tree.AddressableTreeNode">AddressableTreeNode</a> with <a href="../../ParentAwareTreeNode.html" class="extype" name="com.atomist.tree.ParentAwareTreeNode">ParentAwareTreeNode</a> with <a href="OverwritableTextTreeNodeChild.html" class="extype" name="com.atomist.tree.content.text.OverwritableTextTreeNodeChild">OverwritableTextTreeNodeChild</a> with <a href="OverwritableTextTreeNodeParent.html" class="extype" name="com.atomist.tree.content.text.OverwritableTextTreeNodeParent">OverwritableTextTreeNodeParent</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@OverwritableTextTreeNodeextendsUpdatableTreeNodewithContainerTreeNodewithAddressableTreeNodewithParentAwareTreeNodewithOverwritableTextTreeNodeChildwithOverwritableTextTreeNodeParent" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Serves as a mutable, updatable-from-rug hierarchy</p><div class="fullcomment"><div class="comment cmt"><p>Serves as a mutable, updatable-from-rug hierarchy</p><p>does not need a MutableView over it
+</p></div></div>
+    </li><li name="com.atomist.tree.content.text.OverwritableTextTreeNodeChild" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="OverwritableTextTreeNodeChildextendsAnyRef"></a>
+      <a id="OverwritableTextTreeNodeChild:OverwritableTextTreeNodeChild"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="OverwritableTextTreeNodeChild.html"><span class="name">OverwritableTextTreeNodeChild</span></a><span class="result"> extends <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@OverwritableTextTreeNodeChildextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.content.text.OverwritableTextTreeNodeParent" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="OverwritableTextTreeNodeParentextendsTreeNode"></a>
+      <a id="OverwritableTextTreeNodeParent:OverwritableTextTreeNodeParent"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="OverwritableTextTreeNodeParent.html"><span class="name">OverwritableTextTreeNodeParent</span></a><span class="result"> extends <a href="../../TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@OverwritableTextTreeNodeParentextendsTreeNode" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.content.text.OverwritableTextTypeProvider" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OverwritableTextTypeProviderextendsTypeProvider"></a>
+      <a id="OverwritableTextTypeProvider:OverwritableTextTypeProvider"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="OverwritableTextTypeProvider.html"><span class="name">OverwritableTextTypeProvider</span></a><span class="result"> extends <a href="../../../rug/spi/TypeProvider.html" class="extype" name="com.atomist.rug.spi.TypeProvider">TypeProvider</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@OverwritableTextTypeProviderextendsTypeProvider" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.content.text.PointFormatInfo" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="PointFormatInfoextendsInputPositionwithProductwithSerializable"></a>
+      <a id="PointFormatInfo:PointFormatInfo"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="PointFormatInfo.html"><span class="name">PointFormatInfo</span></a><span class="params">(<span name="offset">offset: <span class="extype" name="scala.Int">Int</span></span>, <span name="lineNumberFrom1">lineNumberFrom1: <span class="extype" name="scala.Int">Int</span></span>, <span name="columnNumberFrom1">columnNumberFrom1: <span class="extype" name="scala.Int">Int</span></span>, <span name="indentDepth">indentDepth: <span class="extype" name="scala.Int">Int</span></span>, <span name="indent">indent: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="InputPosition.html" class="extype" name="com.atomist.tree.content.text.InputPosition">InputPosition</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@PointFormatInfoextendsInputPositionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Information about the format in the file at a particular point
+</p><div class="fullcomment"><div class="comment cmt"><p>Information about the format in the file at a particular point
+</p></div><dl class="paramcmts block"><dt class="param">indentDepth</dt><dd class="cmt"><p>indent depth at the beginning of this line. Number of times
+                   the indent appears at the beginning of this line</p></dd><dt class="param">indent</dt><dd class="cmt"><p>indent used in the file.</p></dd></dl></div>
+    </li><li name="com.atomist.tree.content.text.Positioned" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="PositionedextendsAnyRef"></a>
+      <a id="Positioned:Positioned"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Positioned.html"><span class="name">Positioned</span></a><span class="result"> extends <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@PositionedextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.content.text.PositionedTreeNode" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="PositionedTreeNodeextendsTreeNodewithPositionedwithParsedNode"></a>
+      <a id="PositionedTreeNode:PositionedTreeNode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="PositionedTreeNode.html"><span class="name">PositionedTreeNode</span></a><span class="result"> extends <a href="../../TreeNode.html" class="extype" name="com.atomist.tree.TreeNode">TreeNode</a> with <a href="Positioned.html" class="extype" name="com.atomist.tree.content.text.Positioned">Positioned</a> with <a href="../../../rug/kind/grammar/ParsedNode.html" class="extype" name="com.atomist.rug.kind.grammar.ParsedNode">ParsedNode</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@PositionedTreeNodeextendsTreeNodewithPositionedwithParsedNode" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">These are the beginnings of TreeNodes.</p><div class="fullcomment"><div class="comment cmt"><p>These are the beginnings of TreeNodes. They come in from parsing
+They can't be updated, and shouldn't really know their value.</p><p>Goal: these should not implement TreeNode. They aren't path-expression-ready
+they have to go through TextTreeNodeLifecycle first, to be turned into
+proper TextTreeNodes that know value and can be updated. (Those maintain
+position using padding instead of offsets, so the updates work.)</p><p>ParsedNode is the minimal interface that Rug Language Extensions must supply when
+parsing a file. It's implemented here for backwards compatibility, so that
+existing extensions which supply full PositionedTreeNodes can continue to do so.
+</p></div></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="com.atomist.tree.content.text.FormatInfo" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FormatInfo"></a>
+      <a id="FormatInfo:FormatInfo"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="FormatInfo$.html"><span class="name">FormatInfo</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@FormatInfo" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.content.text.ImmutablePositionedTreeNode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ImmutablePositionedTreeNode"></a>
+      <a id="ImmutablePositionedTreeNode:ImmutablePositionedTreeNode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ImmutablePositionedTreeNode$.html"><span class="name">ImmutablePositionedTreeNode</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@ImmutablePositionedTreeNode" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.content.text.OffsetInputPosition" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OffsetInputPosition"></a>
+      <a id="OffsetInputPosition:OffsetInputPosition"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="OffsetInputPosition$.html"><span class="name">OffsetInputPosition</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@OffsetInputPosition" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.content.text.OverwritableTextTreeNode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OverwritableTextTreeNode"></a>
+      <a id="OverwritableTextTreeNode:OverwritableTextTreeNode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="OverwritableTextTreeNode$.html"><span class="name">OverwritableTextTreeNode</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@OverwritableTextTreeNode" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.content.text.PositionedTreeNode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PositionedTreeNode"></a>
+      <a id="PositionedTreeNode:PositionedTreeNode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="PositionedTreeNode$.html"><span class="name">PositionedTreeNode</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@PositionedTreeNode" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.content.text.TextTreeNodeLifecycle" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TextTreeNodeLifecycle"></a>
+      <a id="TextTreeNodeLifecycle:TextTreeNodeLifecycle"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TextTreeNodeLifecycle$.html"><span class="name">TextTreeNodeLifecycle</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@TextTreeNodeLifecycle" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.atomist.tree.content.text.TreeNodeOperations" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TreeNodeOperations"></a>
+      <a id="TreeNodeOperations:TreeNodeOperations"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TreeNodeOperations$.html"><span class="name">TreeNodeOperations</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@TreeNodeOperations" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Operations on TreeNodes
+</p>
+    </li><li name="com.atomist.tree.content.text.grammar" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="grammar"></a>
+      <a id="grammar:grammar"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="grammar/package.html"><span class="name">grammar</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.atomist.tree.content.text.package@grammar" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

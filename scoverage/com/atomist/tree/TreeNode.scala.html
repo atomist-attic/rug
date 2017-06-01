@@ -1,0 +1,394 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/TreeNode.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.spi.ExportFunction
+</span>5 <span style=''>import com.atomist.tree.TreeNode.Significance
+</span>6 <span style=''>
+</span>7 <span style=''>/**
+</span>8 <span style=''>  * Represents a node in a tree. A tree is a graph that is hierarchical but non-cyclical.
+</span>9 <span style=''>  * May be terminal or non-terminal.
+</span>10 <span style=''>  *
+</span>11 <span style=''>  * Many Rug types are TreeNodes. Some TreeNodes are updatable, some are
+</span>12 <span style=''>  * purely for reference.
+</span>13 <span style=''>  * A TreeNode may be backed by a resource such as
+</span>14 <span style=''>  * an Issue in an issue tracker, by an AST element in a programming language source file,
+</span>15 <span style=''>  * or by a file or directory.
+</span>16 <span style=''>  */
+</span>17 <span style=''>trait TreeNode extends GraphNode {
+</span>18 <span style=''>
+</span>19 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Node content&quot;)
+</span>20 <span style=''>  def value: String
+</span>21 <span style=''>
+</span>22 <span style=''>  override def relatedNodes: Seq[GraphNode] = </span><span style='background: #AEF1AE'>childNodes</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>  override def relatedNodesNamed(key: String): Seq[GraphNode] = </span><span style='background: #AEF1AE'>childrenNamed(key)</span><span style=''>
+</span>25 <span style=''>
+</span>26 <span style=''>  def childrenNamed(key: String): Seq[TreeNode]
+</span>27 <span style=''>
+</span>28 <span style=''>  override def relatedNodeNames: Set[String] = </span><span style='background: #AEF1AE'>childNodeNames</span><span style=''>
+</span>29 <span style=''>
+</span>30 <span style=''>  override def relatedNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>childNodeTypes</span><span style=''>
+</span>31 <span style=''>
+</span>32 <span style=''>  def childNodeNames: Set[String]
+</span>33 <span style=''>
+</span>34 <span style=''>  def childNodeTypes: Set[String]
+</span>35 <span style=''>
+</span>36 <span style=''>  /**
+</span>37 <span style=''>    * Return all visible children of this node.
+</span>38 <span style=''>    *
+</span>39 <span style=''>    * @return the children of this node. Ordering is significant
+</span>40 <span style=''>    */
+</span>41 <span style=''>  def childNodes: Seq[TreeNode] =
+</span>42 <span style=''>    </span><span style='background: #AEF1AE'>childNodeNames.toSeq.flatMap(name =&gt; childrenNamed(name))</span><span style=''>
+</span>43 <span style=''>
+</span>44 <span style=''>  /**
+</span>45 <span style=''>    * Convenient method to return whether this is a leaf node.
+</span>46 <span style=''>    */
+</span>47 <span style=''>  def isLeaf: Boolean = </span><span style='background: #F0ADAD'>childNodes.isEmpty</span><span style=''>
+</span>48 <span style=''>
+</span>49 <span style=''>  /**
+</span>50 <span style=''>    * Convenience method for Java callers and JavaScript.
+</span>51 <span style=''>    */
+</span>52 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Children&quot;)
+</span>53 <span style=''>  def children: java.util.List[TreeNode] = {
+</span>54 <span style=''>    import scala.collection.JavaConverters._
+</span>55 <span style=''>    </span><span style='background: #AEF1AE'>childNodes.asJava</span><span style=''>
+</span>56 <span style=''>  }
+</span>57 <span style=''>
+</span>58 <span style=''>  def childCount: Int = </span><span style='background: #F0ADAD'>childNodes.size</span><span style=''>
+</span>59 <span style=''>
+</span>60 <span style=''>  /**
+</span>61 <span style=''>    * Is this tree node here to help other nodes
+</span>62 <span style=''>    * hang together, or does it have significance
+</span>63 <span style=''>    * to the user and the outside world?
+</span>64 <span style=''>    */
+</span>65 <span style=''>  def significance: Significance = </span><span style='background: #AEF1AE'>TreeNode.Undeclared</span><span style=''>
+</span>66 <span style=''>}
+</span>67 <span style=''>
+</span>68 <span style=''>object TreeNode {
+</span>69 <span style=''>
+</span>70 <span style=''>  sealed trait Significance
+</span>71 <span style=''>  case object Noise extends Significance
+</span>72 <span style=''>  case object Signal extends Significance
+</span>73 <span style=''>  case object Undeclared extends Significance
+</span>74 <span style=''>
+</span>75 <span style=''>  /**
+</span>76 <span style=''>    * Tag added to all dynamically created nodes, such as those backed by
+</span>77 <span style=''>    * Antlr or LinkableContainerTreeNodes.
+</span>78 <span style=''>    */
+</span>79 <span style=''>  val Dynamic: String = </span><span style='background: #AEF1AE'>&quot;-dynamic&quot;</span><span style=''>
+</span>80 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          7096
+        </td>
+        <td>
+          730
+          -
+          740
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.childNodes
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNode.this.childNodes
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          7097
+        </td>
+        <td>
+          806
+          -
+          824
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.childrenNamed
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNode.this.childrenNamed(key)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          7098
+        </td>
+        <td>
+          922
+          -
+          936
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.childNodeNames
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNode.this.childNodeNames
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          7099
+        </td>
+        <td>
+          985
+          -
+          999
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.childNodeTypes
+        </td>
+        <td style="background: #F0ADAD">
+          TreeNode.this.childNodeTypes
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          7102
+        </td>
+        <td>
+          1241
+          -
+          1298
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNode.this.childNodeNames.toSeq.flatMap[com.atomist.tree.TreeNode, Seq[com.atomist.tree.TreeNode]](((name: String) =&gt; TreeNode.this.childrenNamed(name)))(collection.this.Seq.canBuildFrom[com.atomist.tree.TreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          7101
+        </td>
+        <td>
+          1269
+          -
+          1269
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.TreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          7100
+        </td>
+        <td>
+          1278
+          -
+          1297
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.childrenNamed
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNode.this.childrenNamed(name)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          7103
+        </td>
+        <td>
+          1400
+          -
+          1418
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #F0ADAD">
+          TreeNode.this.childNodes.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          7105
+        </td>
+        <td>
+          1646
+          -
+          1663
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsJava.asJava
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.seqAsJavaListConverter[com.atomist.tree.TreeNode](TreeNode.this.childNodes).asJava
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          7104
+        </td>
+        <td>
+          1646
+          -
+          1656
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.childNodes
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNode.this.childNodes
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          7106
+        </td>
+        <td>
+          1693
+          -
+          1708
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #F0ADAD">
+          TreeNode.this.childNodes.size
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          7107
+        </td>
+        <td>
+          1898
+          -
+          1917
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Undeclared
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNode.Undeclared
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          7108
+        </td>
+        <td>
+          2252
+          -
+          2262
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;-dynamic&quot;
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

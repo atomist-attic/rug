@@ -1,0 +1,834 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/util/scalaparsing/ErrorInfo.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.util.scalaparsing
+</span>2 <span style=''>
+</span>3 <span style=''>/**
+</span>4 <span style=''>  * Support for formatting error information in a standard way.
+</span>5 <span style=''>  * Humans index from 1
+</span>6 <span style=''>  *
+</span>7 <span style=''>  * @param message   message describing the failure
+</span>8 <span style=''>  * @param badInput  input that caused the problem
+</span>9 <span style=''>  * @param line      line from 1
+</span>10 <span style=''>  * @param col       column from 1
+</span>11 <span style=''>  * @param filePath  Path to the offending file within the archive
+</span>12 <span style=''>  * @param rootCause exception, if there was one
+</span>13 <span style=''>  */
+</span>14 <span style=''>case class ErrorInfo(
+</span>15 <span style=''>                      message: String,
+</span>16 <span style=''>                      badInput: String,
+</span>17 <span style=''>                      line: Int,
+</span>18 <span style=''>                      col: Int,
+</span>19 <span style=''>                      filePath: String,
+</span>20 <span style=''>                      rootCause: Throwable = null) {
+</span>21 <span style=''>
+</span>22 <span style=''>  override def toString: String =
+</span>23 <span style=''>    </span><span style='background: #AEF1AE'>s&quot;$filePath:$line:$col: $message\n$showLine&quot;</span><span style=''>
+</span>24 <span style=''>
+</span>25 <span style=''>  private def showLine = {
+</span>26 <span style=''>    if (</span><span style='background: #AEF1AE'>line &lt; 1 || col &lt; 1</span><span style=''>)
+</span>27 <span style=''>      </span><span style='background: #AEF1AE'>s&quot;Cannot show line: Position ($line/$col) is invalid&quot;</span><span style=''>
+</span>28 <span style=''>    else </span><span style='background: #AEF1AE'>{
+</span>29 <span style=''></span><span style='background: #AEF1AE'>      val lines = badInput.lines.toSeq
+</span>30 <span style=''></span><span style='background: #AEF1AE'>      if (lines.isEmpty)
+</span>31 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>&quot;&lt;empty input&gt;&quot;</span><span style='background: #AEF1AE'>
+</span>32 <span style=''></span><span style='background: #AEF1AE'>      else {
+</span>33 <span style=''></span><span style='background: #AEF1AE'>        // Humans index from 1
+</span>34 <span style=''></span><span style='background: #AEF1AE'>        val gotoLine = Integer.min(line - 1, lines.size - 1)
+</span>35 <span style=''></span><span style='background: #AEF1AE'>        val badLine = lines(gotoLine)
+</span>36 <span style=''></span><span style='background: #AEF1AE'>        val errorLine = List.fill(col - 1)(&quot; &quot;).mkString(&quot;&quot;) + &quot;^&quot;
+</span>37 <span style=''></span><span style='background: #AEF1AE'>        badLine + &quot;\n&quot; + errorLine
+</span>38 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>39 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>40 <span style=''>  }
+</span>41 <span style=''>
+</span>42 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          9450
+        </td>
+        <td>
+          768
+          -
+          769
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          9452
+        </td>
+        <td>
+          738
+          -
+          742
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.ErrorInfo.line
+        </td>
+        <td style="background: #AEF1AE">
+          ErrorInfo.this.line
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          9446
+        </td>
+        <td>
+          736
+          -
+          738
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;:&quot;
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          9455
+        </td>
+        <td>
+          760
+          -
+          768
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.ErrorInfo.showLine
+        </td>
+        <td style="background: #AEF1AE">
+          ErrorInfo.this.showLine
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          9449
+        </td>
+        <td>
+          757
+          -
+          760
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          9448
+        </td>
+        <td>
+          747
+          -
+          750
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          9451
+        </td>
+        <td>
+          728
+          -
+          736
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.ErrorInfo.filePath
+        </td>
+        <td style="background: #AEF1AE">
+          ErrorInfo.this.filePath
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          9454
+        </td>
+        <td>
+          750
+          -
+          757
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.ErrorInfo.message
+        </td>
+        <td style="background: #AEF1AE">
+          ErrorInfo.this.message
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          9445
+        </td>
+        <td>
+          727
+          -
+          728
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          9453
+        </td>
+        <td>
+          744
+          -
+          747
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.ErrorInfo.col
+        </td>
+        <td style="background: #AEF1AE">
+          ErrorInfo.this.col
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          9456
+        </td>
+        <td>
+          725
+          -
+          769
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;:&quot;, &quot;:&quot;, &quot;: &quot;, &quot;\\n&quot;, &quot;&quot;).s(ErrorInfo.this.filePath, ErrorInfo.this.line, ErrorInfo.this.col, ErrorInfo.this.message, ErrorInfo.this.showLine)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          9447
+        </td>
+        <td>
+          742
+          -
+          744
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;:&quot;
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          9459
+        </td>
+        <td>
+          806
+          -
+          825
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          ErrorInfo.this.line.&lt;(1).||(ErrorInfo.this.col.&lt;(1))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          9458
+        </td>
+        <td>
+          818
+          -
+          825
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          ErrorInfo.this.col.&lt;(1)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          9457
+        </td>
+        <td>
+          813
+          -
+          814
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9461
+        </td>
+        <td>
+          868
+          -
+          870
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;/&quot;
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9464
+        </td>
+        <td>
+          870
+          -
+          873
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.ErrorInfo.col
+        </td>
+        <td style="background: #AEF1AE">
+          ErrorInfo.this.col
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9466
+        </td>
+        <td>
+          833
+          -
+          886
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Cannot show line: Position (&quot;, &quot;/&quot;, &quot;) is invalid&quot;).s(ErrorInfo.this.line, ErrorInfo.this.col)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9460
+        </td>
+        <td>
+          835
+          -
+          864
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Cannot show line: Position (&quot;
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9463
+        </td>
+        <td>
+          864
+          -
+          868
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.ErrorInfo.line
+        </td>
+        <td style="background: #AEF1AE">
+          ErrorInfo.this.line
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9462
+        </td>
+        <td>
+          873
+          -
+          886
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;) is invalid&quot;
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9465
+        </td>
+        <td>
+          833
+          -
+          886
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Cannot show line: Position (&quot;, &quot;/&quot;, &quot;) is invalid&quot;).s(ErrorInfo.this.line, ErrorInfo.this.col)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          9479
+        </td>
+        <td>
+          896
+          -
+          1244
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val lines: Seq[String] = scala.this.Predef.augmentString(ErrorInfo.this.badInput).lines.toSeq;
+  if (lines.isEmpty)
+    &quot;&lt;empty input&gt;&quot;
+  else
+    {
+      val gotoLine: Int = java.this.lang.Integer.min(ErrorInfo.this.line.-(1), lines.size.-(1));
+      val badLine: String = lines.apply(gotoLine);
+      val errorLine: String = immutable.this.List.fill[String](ErrorInfo.this.col.-(1))(&quot; &quot;).mkString(&quot;&quot;).+(&quot;^&quot;);
+      badLine.+(&quot;\n&quot;).+(errorLine)
+    }
+}
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          9468
+        </td>
+        <td>
+          916
+          -
+          936
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(ErrorInfo.this.badInput).lines.toSeq
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          9467
+        </td>
+        <td>
+          916
+          -
+          924
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.ErrorInfo.badInput
+        </td>
+        <td style="background: #AEF1AE">
+          ErrorInfo.this.badInput
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          9469
+        </td>
+        <td>
+          947
+          -
+          960
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          lines.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          9470
+        </td>
+        <td>
+          970
+          -
+          985
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&lt;empty input&gt;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          9471
+        </td>
+        <td>
+          970
+          -
+          985
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&lt;empty input&gt;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          9478
+        </td>
+        <td>
+          997
+          -
+          1238
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val gotoLine: Int = java.this.lang.Integer.min(ErrorInfo.this.line.-(1), lines.size.-(1));
+  val badLine: String = lines.apply(gotoLine);
+  val errorLine: String = immutable.this.List.fill[String](ErrorInfo.this.col.-(1))(&quot; &quot;).mkString(&quot;&quot;).+(&quot;^&quot;);
+  badLine.+(&quot;\n&quot;).+(errorLine)
+}
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          9473
+        </td>
+        <td>
+          1075
+          -
+          1089
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          lines.size.-(1)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          9472
+        </td>
+        <td>
+          1065
+          -
+          1073
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          ErrorInfo.this.line.-(1)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          9474
+        </td>
+        <td>
+          1053
+          -
+          1090
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Integer.min
+        </td>
+        <td style="background: #AEF1AE">
+          java.this.lang.Integer.min(ErrorInfo.this.line.-(1), lines.size.-(1))
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          9475
+        </td>
+        <td>
+          1113
+          -
+          1128
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #AEF1AE">
+          lines.apply(gotoLine)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          9476
+        </td>
+        <td>
+          1153
+          -
+          1195
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.fill[String](ErrorInfo.this.col.-(1))(&quot; &quot;).mkString(&quot;&quot;).+(&quot;^&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          9477
+        </td>
+        <td>
+          1204
+          -
+          1230
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          badLine.+(&quot;\n&quot;).+(errorLine)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

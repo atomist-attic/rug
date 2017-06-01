@@ -1,0 +1,415 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/PathAwareTreeNode.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.AddressableGraphNode
+</span>4 <span style=''>
+</span>5 <span style=''>trait AddressableTreeNode extends AddressableGraphNode with TreeNode
+</span>6 <span style=''>
+</span>7 <span style=''>trait ParentAwareTreeNode extends TreeNode {
+</span>8 <span style=''>
+</span>9 <span style=''>  /**
+</span>10 <span style=''>    * Nullable if at the top level, as we don't want to complicate
+</span>11 <span style=''>    * use from JavaScript by using Option.
+</span>12 <span style=''>    */
+</span>13 <span style=''>  def parent: TreeNode
+</span>14 <span style=''>}
+</span>15 <span style=''>
+</span>16 <span style=''>/**
+</span>17 <span style=''>  * Tree node aware of its parentage and path
+</span>18 <span style=''>  */
+</span>19 <span style=''>trait PathAwareTreeNode extends ParentAwareTreeNode with AddressableTreeNode {
+</span>20 <span style=''>
+</span>21 <span style=''>  /**
+</span>22 <span style=''>    * Override to make type more specific. Null if we're top level.
+</span>23 <span style=''>    */
+</span>24 <span style=''>  override def parent: PathAwareTreeNode
+</span>25 <span style=''>
+</span>26 <span style=''>  override def address: String = </span><span style='background: #AEF1AE'>PathAwareTreeNode.address(this, s&quot;[@name='$nodeName']&quot;)</span><span style=''>
+</span>27 <span style=''>}
+</span>28 <span style=''>
+</span>29 <span style=''>object PathAwareTreeNode {
+</span>30 <span style=''>
+</span>31 <span style=''>  def address(nodeOfInterest: PathAwareTreeNode, test: String): String = {
+</span>32 <span style=''>    val myType = </span><span style='background: #AEF1AE'>nodeOfInterest.nodeTags.mkString(&quot;,&quot;)</span><span style=''>
+</span>33 <span style=''>    if (</span><span style='background: #AEF1AE'>nodeOfInterest.parent == null</span><span style=''>)
+</span>34 <span style=''>      </span><span style='background: #AEF1AE'>s&quot;$myType()$test&quot;</span><span style=''>
+</span>35 <span style=''>    else
+</span>36 <span style=''>      </span><span style='background: #AEF1AE'>s&quot;${nodeOfInterest.parent.address}/$myType()[$test]&quot;</span><span style=''>
+</span>37 <span style=''>  }
+</span>38 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          7075
+        </td>
+        <td>
+          680
+          -
+          683
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\']&quot;
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          7078
+        </td>
+        <td>
+          629
+          -
+          684
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.PathAwareTreeNode.address
+        </td>
+        <td style="background: #AEF1AE">
+          PathAwareTreeNode.address(this, scala.StringContext.apply(&quot;[@name=\'&quot;, &quot;\']&quot;).s(PathAwareTreeNode.this.nodeName))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          7074
+        </td>
+        <td>
+          663
+          -
+          672
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;[@name=\'&quot;
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          7077
+        </td>
+        <td>
+          661
+          -
+          683
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;[@name=\'&quot;, &quot;\']&quot;).s(PathAwareTreeNode.this.nodeName)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          7076
+        </td>
+        <td>
+          672
+          -
+          680
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          PathAwareTreeNode.this.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          7079
+        </td>
+        <td>
+          808
+          -
+          845
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          nodeOfInterest.nodeTags.mkString(&quot;,&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          7080
+        </td>
+        <td>
+          854
+          -
+          883
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          nodeOfInterest.parent.==(null)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          7081
+        </td>
+        <td>
+          891
+          -
+          908
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;()&quot;, &quot;&quot;).s(myType, test)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          7082
+        </td>
+        <td>
+          891
+          -
+          908
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;()&quot;, &quot;&quot;).s(myType, test)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          7084
+        </td>
+        <td>
+          958
+          -
+          960
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;/&quot;
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          7087
+        </td>
+        <td>
+          928
+          -
+          957
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.PathAwareTreeNode.address
+        </td>
+        <td style="background: #AEF1AE">
+          nodeOfInterest.parent.address
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          7089
+        </td>
+        <td>
+          924
+          -
+          976
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;/&quot;, &quot;()[&quot;, &quot;]&quot;).s(nodeOfInterest.parent.address, myType, test)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          7083
+        </td>
+        <td>
+          926
+          -
+          927
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          7086
+        </td>
+        <td>
+          974
+          -
+          976
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          7085
+        </td>
+        <td>
+          966
+          -
+          970
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;()[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          7088
+        </td>
+        <td>
+          924
+          -
+          976
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;/&quot;, &quot;()[&quot;, &quot;]&quot;).s(nodeOfInterest.parent.address, myType, test)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

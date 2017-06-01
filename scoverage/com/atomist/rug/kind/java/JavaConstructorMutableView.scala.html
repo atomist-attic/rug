@@ -1,0 +1,375 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/java/JavaConstructorMutableView.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.java
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.RugRuntimeException
+</span>4 <span style=''>import com.atomist.rug.spi._
+</span>5 <span style=''>import com.github.javaparser.ast.body.ConstructorDeclaration
+</span>6 <span style=''>
+</span>7 <span style=''>import scala.collection.JavaConverters._
+</span>8 <span style=''>
+</span>9 <span style=''>class JavaConstructorTypeProvider extends TypeProvider(classOf[JavaConstructorMutableView]) {
+</span>10 <span style=''>
+</span>11 <span style=''>  override def description: String = </span><span style='background: #AEF1AE'>&quot;Java constructor&quot;</span><span style=''>
+</span>12 <span style=''>}
+</span>13 <span style=''>
+</span>14 <span style=''>class JavaConstructorMutableView(originalBackingObject: ConstructorDeclaration, parent: JavaClassOrInterfaceMutableView)
+</span>15 <span style=''>  extends BodyDeclarationView[ConstructorDeclaration](originalBackingObject, parent) {
+</span>16 <span style=''>
+</span>17 <span style=''>  override def nodeName: String = </span><span style='background: #AEF1AE'>JavaTypeType.ConstructorAlias</span><span style=''>
+</span>18 <span style=''>
+</span>19 <span style=''>  override def nodeTags: Set[String] = </span><span style='background: #AEF1AE'>Set(JavaTypeType.ConstructorAlias)</span><span style=''>
+</span>20 <span style=''>
+</span>21 <span style=''>  override def childNodeNames: Set[String] = </span><span style='background: #AEF1AE'>Set(&quot;JavaParameter&quot;)</span><span style=''>
+</span>22 <span style=''>
+</span>23 <span style=''>  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
+</span>24 <span style=''>    case &quot;JavaParameter&quot; =&gt;
+</span>25 <span style=''>      </span><span style='background: #AEF1AE'>currentBackingObject.getParameters.asScala.map(new JavaConstructorParameterView(_, this))</span><span style=''>
+</span>26 <span style=''>    case _ =&gt; </span><span style='background: #F0ADAD'>throw new RugRuntimeException(null, s&quot;No child with name '$fieldName' in ${getClass.getSimpleName}&quot;)</span><span style=''>
+</span>27 <span style=''>  }
+</span>28 <span style=''>
+</span>29 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Return the name of the constructor&quot;)
+</span>30 <span style=''>  def name: String = </span><span style='background: #F0ADAD'>currentBackingObject.getNameAsString</span><span style=''>
+</span>31 <span style=''>
+</span>32 <span style=''>  @ExportFunction(readOnly = true,
+</span>33 <span style=''>    description = &quot;Return the Javadoc for the constructor, or an empty string if there isn't any&quot;)
+</span>34 <span style=''>  def javadoc(): String =
+</span>35 <span style=''>    </span><span style='background: #F0ADAD'>DocumentableNodeUtils.javadoc(currentBackingObject)</span><span style=''>
+</span>36 <span style=''>
+</span>37 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Return the number of constructor parameters&quot;)
+</span>38 <span style=''>  def parametersSize: Int = </span><span style='background: #AEF1AE'>currentBackingObject.getParameters.size</span><span style=''>
+</span>39 <span style=''>
+</span>40 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          1877
+        </td>
+        <td>
+          343
+          -
+          361
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Java constructor&quot;
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1878
+        </td>
+        <td>
+          608
+          -
+          637
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaTypeType.ConstructorAlias
+        </td>
+        <td style="background: #AEF1AE">
+          JavaTypeType.ConstructorAlias
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1880
+        </td>
+        <td>
+          678
+          -
+          712
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](JavaTypeType.ConstructorAlias)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1879
+        </td>
+        <td>
+          682
+          -
+          711
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaTypeType.ConstructorAlias
+        </td>
+        <td style="background: #AEF1AE">
+          JavaTypeType.ConstructorAlias
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          1881
+        </td>
+        <td>
+          759
+          -
+          779
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](&quot;JavaParameter&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1883
+        </td>
+        <td>
+          951
+          -
+          992
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaConstructorParameterView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new JavaConstructorParameterView(x$1, this)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1882
+        </td>
+        <td>
+          904
+          -
+          938
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.body.CallableDeclaration.getParameters
+        </td>
+        <td style="background: #AEF1AE">
+          JavaConstructorMutableView.this.currentBackingObject.getParameters()
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1885
+        </td>
+        <td>
+          904
+          -
+          993
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.body.Parameter](JavaConstructorMutableView.this.currentBackingObject.getParameters()).asScala.map[com.atomist.rug.kind.java.JavaConstructorParameterView, Seq[com.atomist.rug.spi.MutableView[_]]](((x$1: com.github.javaparser.ast.body.Parameter) =&gt; new JavaConstructorParameterView(x$1, this)))(mutable.this.Buffer.canBuildFrom[com.atomist.rug.kind.java.JavaConstructorParameterView])
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1884
+        </td>
+        <td>
+          950
+          -
+          950
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Buffer.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Buffer.canBuildFrom[com.atomist.rug.kind.java.JavaConstructorParameterView]
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1886
+        </td>
+        <td>
+          1008
+          -
+          1108
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugRuntimeException(null, scala.StringContext.apply(&quot;No child with name \'&quot;, &quot;\' in &quot;, &quot;&quot;).s(fieldName, JavaConstructorMutableView.this.getClass().getSimpleName()), rug.this.RugRuntimeException.&lt;init&gt;$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1887
+        </td>
+        <td>
+          1222
+          -
+          1258
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.nodeTypes.NodeWithSimpleName.getNameAsString
+        </td>
+        <td style="background: #F0ADAD">
+          JavaConstructorMutableView.this.currentBackingObject.getNameAsString()
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1889
+        </td>
+        <td>
+          1424
+          -
+          1475
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.DocumentableNodeUtils.javadoc
+        </td>
+        <td style="background: #F0ADAD">
+          DocumentableNodeUtils.javadoc(JavaConstructorMutableView.this.currentBackingObject)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1888
+        </td>
+        <td>
+          1454
+          -
+          1474
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #F0ADAD">
+          JavaConstructorMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1890
+        </td>
+        <td>
+          1601
+          -
+          1640
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.NodeList.size
+        </td>
+        <td style="background: #AEF1AE">
+          JavaConstructorMutableView.this.currentBackingObject.getParameters().size()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

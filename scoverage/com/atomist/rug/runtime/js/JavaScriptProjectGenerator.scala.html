@@ -1,0 +1,721 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/js/JavaScriptProjectGenerator.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.js
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.param.ParameterValues
+</span>4 <span style=''>import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, RugResolver}
+</span>5 <span style=''>import com.atomist.project.common.InvalidParametersException
+</span>6 <span style=''>import com.atomist.project.generate.ProjectGenerator
+</span>7 <span style=''>import com.atomist.rug.kind.core.{ProjectContext, ProjectMutableView}
+</span>8 <span style=''>import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy
+</span>9 <span style=''>import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
+</span>10 <span style=''>import com.atomist.util.Timing._
+</span>11 <span style=''>import jdk.nashorn.api.scripting.{JSObject, ScriptObjectMirror}
+</span>12 <span style=''>import jdk.nashorn.internal.runtime.ScriptRuntime
+</span>13 <span style=''>
+</span>14 <span style=''>/**
+</span>15 <span style=''>  * Find Generators in a Nashorn
+</span>16 <span style=''>  */
+</span>17 <span style=''>class JavaScriptProjectGeneratorFinder
+</span>18 <span style=''>  extends JavaScriptRugFinder[JavaScriptProjectGenerator] {
+</span>19 <span style=''>
+</span>20 <span style=''>  /**
+</span>21 <span style=''>    * Is the supplied thing valid at all?
+</span>22 <span style=''>    */
+</span>23 <span style=''>  def isValid(obj: ScriptObjectMirror): Boolean = {
+</span>24 <span style=''>    </span><span style='background: #AEF1AE'>obj.getMember(&quot;__kind&quot;) == &quot;generator&quot; &amp;&amp;
+</span>25 <span style=''></span><span style='background: #AEF1AE'>      obj.hasMember(&quot;populate&quot;) &amp;&amp;
+</span>26 <span style=''></span><span style='background: #AEF1AE'>      obj.getMember(&quot;populate&quot;).asInstanceOf[ScriptObjectMirror].isFunction</span><span style=''>
+</span>27 <span style=''>  }
+</span>28 <span style=''>
+</span>29 <span style=''>  override def create(jsc: JavaScriptContext, fnVar: ScriptObjectMirror, resolver: Option[RugResolver]): Option[JavaScriptProjectGenerator] = {
+</span>30 <span style=''>    val project: ArtifactSource = </span><span style='background: #AEF1AE'>removeAtomistTemplateContent(jsc.rugAs)</span><span style=''>
+</span>31 <span style=''>    </span><span style='background: #AEF1AE'>Some(new JavaScriptProjectGenerator(jsc, fnVar, jsc.rugAs, project, resolver))</span><span style=''>
+</span>32 <span style=''>  }
+</span>33 <span style=''>
+</span>34 <span style=''>  private def removeAtomistTemplateContent(startingProject: ArtifactSource, atomistConfig: AtomistConfig = DefaultAtomistConfig): ArtifactSource = {
+</span>35 <span style=''>    </span><span style='background: #AEF1AE'>startingProject.filter(d =&gt; !d.path.equals(atomistConfig.atomistRoot), f =&gt; true)</span><span style=''>
+</span>36 <span style=''>  }
+</span>37 <span style=''>}
+</span>38 <span style=''>
+</span>39 <span style=''>/**
+</span>40 <span style=''>  * ProjectEditor implementation that invokes a JavaScript function. This will probably be the result of
+</span>41 <span style=''>  * TypeScript compilation, but need not be. Attempts to source metadata from annotations.
+</span>42 <span style=''>  */
+</span>43 <span style=''>class JavaScriptProjectGenerator(
+</span>44 <span style=''>                                  jsc: JavaScriptContext,
+</span>45 <span style=''>                                  jsVar: ScriptObjectMirror,
+</span>46 <span style=''>                                  rugAs: ArtifactSource,
+</span>47 <span style=''>                                  startProject: ArtifactSource,
+</span>48 <span style=''>                                  resolver: Option[RugResolver]
+</span>49 <span style=''>                                )
+</span>50 <span style=''>  extends JavaScriptProjectOperation(jsc, jsVar, rugAs)
+</span>51 <span style=''>    with ProjectGenerator {
+</span>52 <span style=''>
+</span>53 <span style=''>  import JavaScriptProjectGenerator.StartingPointFunction
+</span>54 <span style=''>
+</span>55 <span style=''>  @throws(classOf[InvalidParametersException])
+</span>56 <span style=''>  override def generate(projectName: String, pvs: ParameterValues, ctx: ProjectContext): ArtifactSource = {
+</span>57 <span style=''>    val validated = </span><span style='background: #AEF1AE'>addDefaultParameterValues(pvs)</span><span style=''>
+</span>58 <span style=''>    </span><span style='background: #AEF1AE'>validateParameters(validated)</span><span style=''>
+</span>59 <span style=''>
+</span>60 <span style=''>    val raw = </span><span style='background: #AEF1AE'>new EmptyArtifactSource(projectName)</span><span style=''>
+</span>61 <span style=''>    val project = </span><span style='background: #AEF1AE'>raw + startProject</span><span style=''>
+</span>62 <span style=''>    val pmv = </span><span style='background: #AEF1AE'>new ProjectMutableView(rugAs, project, atomistConfig = DefaultAtomistConfig, Some(this),
+</span>63 <span style=''></span><span style='background: #AEF1AE'>      rugResolver = resolver,
+</span>64 <span style=''></span><span style='background: #AEF1AE'>      ctx = ctx)</span><span style=''>
+</span>65 <span style=''>
+</span>66 <span style=''>    val (result, elapsedMillis) = time {
+</span>67 <span style=''>      // If the user has provided this method, call it to get the project starting point
+</span>68 <span style=''>      val projectToInvokePopulateWith = jsVar.getMember(StartingPointFunction) match {
+</span>69 <span style=''>        case null | ScriptRuntime.UNDEFINED =&gt;
+</span>70 <span style=''>          pmv
+</span>71 <span style=''>        case js: JSObject if js.isFunction =&gt;
+</span>72 <span style=''>          val userProject = invokeMemberFunction(jsc, jsVar,
+</span>73 <span style=''>            StartingPointFunction, Some(validated),
+</span>74 <span style=''>            wrapProject(pmv), jsScalaHidingProxy(pmv.context)).asInstanceOf[ProjectMutableView]
+</span>75 <span style=''>          val userAs = raw + userProject.currentBackingObject
+</span>76 <span style=''>          new ProjectMutableView(rugAs, userAs, atomistConfig = DefaultAtomistConfig, Some(this), rugResolver = resolver)
+</span>77 <span style=''>        case x =&gt; throw new IllegalArgumentException(s&quot;Don't know what to do with JavaScript member $x&quot;)
+</span>78 <span style=''>      }
+</span>79 <span style=''>
+</span>80 <span style=''>      invokeMemberFunction(jsc, jsVar, &quot;populate&quot;, Some(validated), wrapProject(projectToInvokePopulateWith))
+</span>81 <span style=''>      projectToInvokePopulateWith.currentBackingObject
+</span>82 <span style=''>    }
+</span>83 <span style=''>    logger.debug(s&quot;$name.populate took ${elapsedMillis}ms&quot;)
+</span>84 <span style=''>    result
+</span>85 <span style=''>  }
+</span>86 <span style=''>
+</span>87 <span style=''>}
+</span>88 <span style=''>
+</span>89 <span style=''>object JavaScriptProjectGenerator {
+</span>90 <span style=''>
+</span>91 <span style=''>  val StartingPointFunction = </span><span style='background: #AEF1AE'>&quot;startingPoint&quot;</span><span style=''>
+</span>92 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          3540
+        </td>
+        <td>
+          887
+          -
+          895
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;__kind&quot;
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          3541
+        </td>
+        <td>
+          900
+          -
+          911
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;generator&quot;
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          3542
+        </td>
+        <td>
+          921
+          -
+          946
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.hasMember
+        </td>
+        <td style="background: #AEF1AE">
+          obj.hasMember(&quot;populate&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          3544
+        </td>
+        <td>
+          873
+          -
+          1025
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          obj.getMember(&quot;__kind&quot;).==(&quot;generator&quot;).&amp;&amp;(obj.hasMember(&quot;populate&quot;)).&amp;&amp;(obj.getMember(&quot;populate&quot;).asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror].isFunction())
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          3543
+        </td>
+        <td>
+          956
+          -
+          1025
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.isFunction
+        </td>
+        <td style="background: #AEF1AE">
+          obj.getMember(&quot;populate&quot;).asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror].isFunction()
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          3546
+        </td>
+        <td>
+          1209
+          -
+          1209
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptProjectGeneratorFinder.removeAtomistTemplateContent$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectGeneratorFinder.this.removeAtomistTemplateContent$default$2
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          3545
+        </td>
+        <td>
+          1238
+          -
+          1247
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptContext.rugAs
+        </td>
+        <td style="background: #AEF1AE">
+          jsc.rugAs
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          3547
+        </td>
+        <td>
+          1209
+          -
+          1248
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptProjectGeneratorFinder.removeAtomistTemplateContent
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectGeneratorFinder.this.removeAtomistTemplateContent(jsc.rugAs, JavaScriptProjectGeneratorFinder.this.removeAtomistTemplateContent$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          3549
+        </td>
+        <td>
+          1258
+          -
+          1330
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptProjectGenerator.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new JavaScriptProjectGenerator(jsc, fnVar, jsc.rugAs, project, resolver)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          3548
+        </td>
+        <td>
+          1301
+          -
+          1310
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptContext.rugAs
+        </td>
+        <td style="background: #AEF1AE">
+          jsc.rugAs
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          3550
+        </td>
+        <td>
+          1253
+          -
+          1331
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.runtime.js.JavaScriptProjectGenerator](new JavaScriptProjectGenerator(jsc, fnVar, jsc.rugAs, project, resolver))
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3552
+        </td>
+        <td>
+          1518
+          -
+          1559
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          d.path.equals(atomistConfig.atomistRoot).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3554
+        </td>
+        <td>
+          1490
+          -
+          1571
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.filter
+        </td>
+        <td style="background: #AEF1AE">
+          startingProject.filter(((d: com.atomist.source.DirectoryArtifact) =&gt; d.path.equals(atomistConfig.atomistRoot).unary_!), ((f: com.atomist.source.FileArtifact) =&gt; true))
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3551
+        </td>
+        <td>
+          1533
+          -
+          1558
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.AtomistConfig.atomistRoot
+        </td>
+        <td style="background: #AEF1AE">
+          atomistConfig.atomistRoot
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3553
+        </td>
+        <td>
+          1566
+          -
+          1570
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          3555
+        </td>
+        <td>
+          2475
+          -
+          2505
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.ParameterizedSupport.addDefaultParameterValues
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectGenerator.this.addDefaultParameterValues(pvs)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          3556
+        </td>
+        <td>
+          2510
+          -
+          2539
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.ParameterizedSupport.validateParameters
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectGenerator.this.validateParameters(validated)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          3557
+        </td>
+        <td>
+          2555
+          -
+          2591
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.EmptyArtifactSource.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.source.EmptyArtifactSource(projectName)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          3558
+        </td>
+        <td>
+          2616
+          -
+          2628
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptProjectGenerator.startProject
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectGenerator.this.startProject
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          3559
+        </td>
+        <td>
+          2610
+          -
+          2628
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.+
+        </td>
+        <td style="background: #AEF1AE">
+          raw.+(JavaScriptProjectGenerator.this.startProject)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          3561
+        </td>
+        <td>
+          2698
+          -
+          2718
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.archive.DefaultAtomistConfig
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.project.archive.DefaultAtomistConfig
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          3564
+        </td>
+        <td>
+          2643
+          -
+          2778
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.kind.core.ProjectMutableView(x$2, x$3, x$4, x$5, x$7, x$6)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          3560
+        </td>
+        <td>
+          2666
+          -
+          2671
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptProjectGenerator.rugAs
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectGenerator.this.rugAs
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          3562
+        </td>
+        <td>
+          2720
+          -
+          2730
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.runtime.js.JavaScriptProjectGenerator](this)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          3563
+        </td>
+        <td>
+          2752
+          -
+          2760
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptProjectGenerator.resolver
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectGenerator.this.resolver
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          3566
+        </td>
+        <td>
+          2797
+          -
+          2797
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          x$1._2
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          3565
+        </td>
+        <td>
+          2789
+          -
+          2789
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$1._1
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          3567
+        </td>
+        <td>
+          3928
+          -
+          3943
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;startingPoint&quot;
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

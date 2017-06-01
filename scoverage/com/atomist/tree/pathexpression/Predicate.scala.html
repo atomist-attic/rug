@@ -1,0 +1,1340 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/pathexpression/Predicate.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.pathexpression
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.runtime.js.ExecutionContext
+</span>5 <span style=''>import com.atomist.rug.spi.TypeRegistry
+</span>6 <span style=''>import com.atomist.tree.TreeNode
+</span>7 <span style=''>import com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer
+</span>8 <span style=''>import com.atomist.tree.utils.NodeUtils
+</span>9 <span style=''>import com.fasterxml.jackson.annotation.JsonProperty
+</span>10 <span style=''>
+</span>11 <span style=''>/**
+</span>12 <span style=''>  * Based on the XPath concept of a predicate. A predicate acts on a sequence of nodes
+</span>13 <span style=''>  * returned from navigation to filter them.
+</span>14 <span style=''>  * Predicates can be evaluated against materialized objects, and most predicates expose enough information
+</span>15 <span style=''>  * to generate queries against external systems to retrieve data.
+</span>16 <span style=''>  */
+</span>17 <span style=''>trait Predicate {
+</span>18 <span style=''>
+</span>19 <span style=''>  @JsonProperty
+</span>20 <span style=''>  def name: String = </span><span style='background: #AEF1AE'>getClass.getSimpleName.replace(&quot;$&quot;, &quot;&quot;)</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>  /**
+</span>23 <span style=''>    * Function taking nodes returned by navigation
+</span>24 <span style=''>    * to filter them. We test one node with knowledge of all returned nodes.
+</span>25 <span style=''>    *
+</span>26 <span style=''>    * @param nodeToTest    node we're testing on;
+</span>27 <span style=''>    * @param returnedNodes all nodes returned. This argument is
+</span>28 <span style=''>    *                      often ignored, but can be used to discern the index of the target node.
+</span>29 <span style=''>    */
+</span>30 <span style=''>  def evaluate(nodeToTest: GraphNode,
+</span>31 <span style=''>               returnedNodes: Seq[GraphNode],
+</span>32 <span style=''>               ee: ExpressionEngine,
+</span>33 <span style=''>               executionContext: ExecutionContext,
+</span>34 <span style=''>               nodePreparer: Option[NodePreparer]): Boolean
+</span>35 <span style=''>
+</span>36 <span style=''>  def and(that: Predicate): Predicate =
+</span>37 <span style=''>    </span><span style='background: #AEF1AE'>AndPredicate(this, that)</span><span style=''>
+</span>38 <span style=''>
+</span>39 <span style=''>  def or(that: Predicate): Predicate =
+</span>40 <span style=''>    </span><span style='background: #AEF1AE'>OrPredicate(this, that)</span><span style=''>
+</span>41 <span style=''>
+</span>42 <span style=''>  def not: Predicate =
+</span>43 <span style=''>    </span><span style='background: #F0ADAD'>NegationOfPredicate(this)</span><span style=''>
+</span>44 <span style=''>
+</span>45 <span style=''>}
+</span>46 <span style=''>
+</span>47 <span style=''>case object TruePredicate extends Predicate {
+</span>48 <span style=''>
+</span>49 <span style=''>  override def toString: String = </span><span style='background: #F0ADAD'>&quot;true&quot;</span><span style=''>
+</span>50 <span style=''>
+</span>51 <span style=''>  override def evaluate(root: GraphNode,
+</span>52 <span style=''>                        returnedNodes: Seq[GraphNode],
+</span>53 <span style=''>                        ee: ExpressionEngine,
+</span>54 <span style=''>                        executionContext: ExecutionContext,
+</span>55 <span style=''>                        nodePreparer: Option[NodePreparer]): Boolean = </span><span style='background: #AEF1AE'>true</span><span style=''>
+</span>56 <span style=''>}
+</span>57 <span style=''>
+</span>58 <span style=''>case object FalsePredicate extends Predicate {
+</span>59 <span style=''>
+</span>60 <span style=''>  override def toString: String = </span><span style='background: #F0ADAD'>&quot;false&quot;</span><span style=''>
+</span>61 <span style=''>
+</span>62 <span style=''>  override def evaluate(root: GraphNode,
+</span>63 <span style=''>                        returnedNodes: Seq[GraphNode],
+</span>64 <span style=''>                        ee: ExpressionEngine,
+</span>65 <span style=''>                        executionContext: ExecutionContext,
+</span>66 <span style=''>                        nodePreparer: Option[NodePreparer]): Boolean = </span><span style='background: #F0ADAD'>false</span><span style=''>
+</span>67 <span style=''>}
+</span>68 <span style=''>
+</span>69 <span style=''>case class NegationOfPredicate(p: Predicate) extends Predicate {
+</span>70 <span style=''>
+</span>71 <span style=''>  override def toString: String = </span><span style='background: #F0ADAD'>&quot;!&quot; + p.name</span><span style=''>
+</span>72 <span style=''>
+</span>73 <span style=''>  override def evaluate(root: GraphNode,
+</span>74 <span style=''>                        returnedNodes: Seq[GraphNode],
+</span>75 <span style=''>                        ee: ExpressionEngine,
+</span>76 <span style=''>                        executionContext: ExecutionContext,
+</span>77 <span style=''>                        nodePreparer: Option[NodePreparer]): Boolean =
+</span>78 <span style=''>      </span><span style='background: #AEF1AE'>!p.evaluate(root, returnedNodes,ee, executionContext, nodePreparer)</span><span style=''>
+</span>79 <span style=''>}
+</span>80 <span style=''>
+</span>81 <span style=''>case class AndPredicate(a: Predicate, b: Predicate) extends Predicate {
+</span>82 <span style=''>
+</span>83 <span style=''>  override def toString: String = </span><span style='background: #F0ADAD'>a.name + &quot; and &quot; + b.name</span><span style=''>
+</span>84 <span style=''>
+</span>85 <span style=''>  override def evaluate(root: GraphNode,
+</span>86 <span style=''>                        returnedNodes: Seq[GraphNode],
+</span>87 <span style=''>                        ee: ExpressionEngine,
+</span>88 <span style=''>                        executionContext: ExecutionContext,
+</span>89 <span style=''>                        nodePreparer: Option[NodePreparer]): Boolean =
+</span>90 <span style=''>    </span><span style='background: #AEF1AE'>a.evaluate(root, returnedNodes, ee, executionContext, nodePreparer) &amp;&amp;
+</span>91 <span style=''></span><span style='background: #AEF1AE'>      b.evaluate(root, returnedNodes, ee, executionContext, nodePreparer)</span><span style=''>
+</span>92 <span style=''>}
+</span>93 <span style=''>
+</span>94 <span style=''>case class OrPredicate(a: Predicate, b: Predicate) extends Predicate {
+</span>95 <span style=''>
+</span>96 <span style=''>  override def toString: String = </span><span style='background: #F0ADAD'>a.name + &quot; or &quot; + b.name</span><span style=''>
+</span>97 <span style=''>
+</span>98 <span style=''>  override def evaluate(root: GraphNode,
+</span>99 <span style=''>                        returnedNodes: Seq[GraphNode],
+</span>100 <span style=''>                        ee: ExpressionEngine,
+</span>101 <span style=''>                        executionContext: ExecutionContext,
+</span>102 <span style=''>                        nodePreparer: Option[NodePreparer]): Boolean =
+</span>103 <span style=''>    </span><span style='background: #AEF1AE'>a.evaluate(root, returnedNodes, ee, executionContext, nodePreparer) ||
+</span>104 <span style=''></span><span style='background: #AEF1AE'>      b.evaluate(root, returnedNodes, ee, executionContext, nodePreparer)</span><span style=''>
+</span>105 <span style=''>}
+</span>106 <span style=''>
+</span>107 <span style=''>/**
+</span>108 <span style=''>  * Predicate that may or may not exist.  This is typically used with
+</span>109 <span style=''>  * NestedPathExpressionPredicates so they get materialized in the returned
+</span>110 <span style=''>  * node tree.
+</span>111 <span style=''>  */
+</span>112 <span style=''>case class OptionalPredicate(optionalPredicate: Predicate) extends Predicate {
+</span>113 <span style=''>  override def toString: String = </span><span style='background: #F0ADAD'>optionalPredicate.name + &quot;?&quot;</span><span style=''>
+</span>114 <span style=''>
+</span>115 <span style=''>  /**
+</span>116 <span style=''>    * Always returns true.
+</span>117 <span style=''>    *
+</span>118 <span style=''>    * @param returnedNodes all nodes returned. This argument is
+</span>119 <span style=''>    *                      often ignored, but can be used to discern the index of the target node.
+</span>120 <span style=''>    * @return
+</span>121 <span style=''>    */
+</span>122 <span style=''>  override def evaluate(root: GraphNode,
+</span>123 <span style=''>                        returnedNodes: Seq[GraphNode],
+</span>124 <span style=''>                        ee: ExpressionEngine,
+</span>125 <span style=''>                        executionContext: ExecutionContext,
+</span>126 <span style=''>                        nodePreparer: Option[NodePreparer]): Boolean = </span><span style='background: #AEF1AE'>true</span><span style=''>
+</span>127 <span style=''>}
+</span>128 <span style=''>
+</span>129 <span style=''>/**
+</span>130 <span style=''>  * Test for the index of the given node among all returned nodes.
+</span>131 <span style=''>  * XPath indexes from 1, and unfortunately we need to do that also.
+</span>132 <span style=''>  */
+</span>133 <span style=''>case class IndexPredicate(i: Int) extends Predicate {
+</span>134 <span style=''>
+</span>135 <span style=''>  def evaluate(tn: GraphNode,
+</span>136 <span style=''>               among: Seq[GraphNode],
+</span>137 <span style=''>               ee: ExpressionEngine,
+</span>138 <span style=''>               executionContext: ExecutionContext,
+</span>139 <span style=''>               nodePreparer: Option[NodePreparer]): Boolean = {
+</span>140 <span style=''>    val index = </span><span style='background: #AEF1AE'>among.indexOf(tn)</span><span style=''>
+</span>141 <span style=''>    if (</span><span style='background: #AEF1AE'>index == -1</span><span style=''>)
+</span>142 <span style=''>      </span><span style='background: #F0ADAD'>throw new IllegalStateException(s&quot;Internal error: Index [$i] not found in collection $among&quot;)</span><span style=''>
+</span>143 <span style=''>    </span><span style='background: #AEF1AE'>i == index + 1</span><span style=''>
+</span>144 <span style=''>  }
+</span>145 <span style=''>
+</span>146 <span style=''>}
+</span>147 <span style=''>
+</span>148 <span style=''>/**
+</span>149 <span style=''>  * Match the node name or a name property
+</span>150 <span style=''>  */
+</span>151 <span style=''>case class NodeNamePredicate(expectedName: String) extends Predicate {
+</span>152 <span style=''>
+</span>153 <span style=''>  override def toString: String = </span><span style='background: #F0ADAD'>s&quot;@name=$expectedName&quot;</span><span style=''>
+</span>154 <span style=''>
+</span>155 <span style=''>  override def evaluate(n: GraphNode,
+</span>156 <span style=''>                        returnedNodes: Seq[GraphNode],
+</span>157 <span style=''>                        ee: ExpressionEngine,
+</span>158 <span style=''>                        executionContext: ExecutionContext,
+</span>159 <span style=''>                        nodePreparer: Option[NodePreparer]): Boolean =
+</span>160 <span style=''>    </span><span style='background: #AEF1AE'>n.nodeName == expectedName || NodeUtils.keyValue(n, &quot;name&quot;).contains(expectedName)</span><span style=''>
+</span>161 <span style=''>}
+</span>162 <span style=''>
+</span>163 <span style=''>case class NodeTypePredicate(expectedType: String) extends Predicate {
+</span>164 <span style=''>
+</span>165 <span style=''>  override def toString: String = </span><span style='background: #F0ADAD'>s&quot;@type=$expectedType&quot;</span><span style=''>
+</span>166 <span style=''>
+</span>167 <span style=''>  override def evaluate(n: GraphNode,
+</span>168 <span style=''>                        returnedNodes: Seq[GraphNode],
+</span>169 <span style=''>                        ee: ExpressionEngine,
+</span>170 <span style=''>                        executionContext: ExecutionContext,
+</span>171 <span style=''>                        nodePreparer: Option[NodePreparer]): Boolean =
+</span>172 <span style=''>    </span><span style='background: #AEF1AE'>n.nodeTags.contains(expectedType)</span><span style=''>
+</span>173 <span style=''>
+</span>174 <span style=''>}
+</span>175 <span style=''>
+</span>176 <span style=''>/**
+</span>177 <span style=''>  * Needs to run against JVM objects. Can't be used to
+</span>178 <span style=''>  * generate queries, but needs to be executed against materialized tree
+</span>179 <span style=''>  *
+</span>180 <span style=''>  * @param name name of the predicate
+</span>181 <span style=''>  * @param f    function to run against returned classes
+</span>182 <span style=''>  */
+</span>183 <span style=''>case class FunctionPredicate(override val name: String, f: (GraphNode, Seq[GraphNode]) =&gt; Boolean)
+</span>184 <span style=''>  extends Predicate {
+</span>185 <span style=''>
+</span>186 <span style=''>  def evaluate(tn: GraphNode,
+</span>187 <span style=''>               among: Seq[GraphNode],
+</span>188 <span style=''>               ee: ExpressionEngine,
+</span>189 <span style=''>               executionContext: ExecutionContext,
+</span>190 <span style=''>               nodePreparer: Option[NodePreparer]): Boolean = </span><span style='background: #AEF1AE'>f(tn, among)</span><span style=''>
+</span>191 <span style=''>
+</span>192 <span style=''>}
+</span>193 <span style=''>
+</span>194 <span style=''>case class NestedPathExpressionPredicate(expression: PathExpression) extends Predicate {
+</span>195 <span style=''>
+</span>196 <span style=''>  override def evaluate(nodeToTest: GraphNode,
+</span>197 <span style=''>                        returnedNodes: Seq[GraphNode],
+</span>198 <span style=''>                        ee: ExpressionEngine,
+</span>199 <span style=''>                        executionContext: ExecutionContext,
+</span>200 <span style=''>                        nodePreparer: Option[NodePreparer]): Boolean = {
+</span>201 <span style=''>    </span><span style='background: #AEF1AE'>ee.evaluate(nodeToTest, expression, executionContext, nodePreparer)</span><span style=''> match {
+</span>202 <span style=''>      case Left(_) =&gt; </span><span style='background: #AEF1AE'>false</span><span style=''>
+</span>203 <span style=''>      case Right(nodes) =&gt; </span><span style='background: #AEF1AE'>nodes.nonEmpty</span><span style=''>
+</span>204 <span style=''>    }
+</span>205 <span style=''>  }
+</span>206 <span style=''>
+</span>207 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          8458
+        </td>
+        <td>
+          735
+          -
+          774
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          Predicate.this.getClass().getSimpleName().replace(&quot;$&quot;, &quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          8459
+        </td>
+        <td>
+          1413
+          -
+          1437
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.AndPredicate.apply
+        </td>
+        <td style="background: #AEF1AE">
+          AndPredicate.apply(this, that)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          8460
+        </td>
+        <td>
+          1482
+          -
+          1505
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.OrPredicate.apply
+        </td>
+        <td style="background: #AEF1AE">
+          OrPredicate.apply(this, that)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          8461
+        </td>
+        <td>
+          1534
+          -
+          1559
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NegationOfPredicate.apply
+        </td>
+        <td style="background: #F0ADAD">
+          NegationOfPredicate.apply(this)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          8462
+        </td>
+        <td>
+          1645
+          -
+          1651
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;true&quot;
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8463
+        </td>
+        <td>
+          1926
+          -
+          1930
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          8464
+        </td>
+        <td>
+          2016
+          -
+          2023
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;false&quot;
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          8465
+        </td>
+        <td>
+          2298
+          -
+          2303
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          8466
+        </td>
+        <td>
+          2407
+          -
+          2410
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;!&quot;
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          8468
+        </td>
+        <td>
+          2407
+          -
+          2419
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;!&quot;.+(NegationOfPredicate.this.p.name)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          8467
+        </td>
+        <td>
+          2413
+          -
+          2419
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.Predicate.name
+        </td>
+        <td style="background: #F0ADAD">
+          NegationOfPredicate.this.p.name
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          8469
+        </td>
+        <td>
+          2700
+          -
+          2767
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          NegationOfPredicate.this.p.evaluate(root, returnedNodes, ee, executionContext, nodePreparer).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          8472
+        </td>
+        <td>
+          2878
+          -
+          2903
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          AndPredicate.this.a.name.+(&quot; and &quot;).+(AndPredicate.this.b.name)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          8471
+        </td>
+        <td>
+          2897
+          -
+          2903
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.Predicate.name
+        </td>
+        <td style="background: #F0ADAD">
+          AndPredicate.this.b.name
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          8470
+        </td>
+        <td>
+          2887
+          -
+          2894
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; and &quot;
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          8474
+        </td>
+        <td>
+          3182
+          -
+          3326
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          AndPredicate.this.a.evaluate(root, returnedNodes, ee, executionContext, nodePreparer).&amp;&amp;(AndPredicate.this.b.evaluate(root, returnedNodes, ee, executionContext, nodePreparer))
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          8473
+        </td>
+        <td>
+          3259
+          -
+          3326
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.Predicate.evaluate
+        </td>
+        <td style="background: #AEF1AE">
+          AndPredicate.this.b.evaluate(root, returnedNodes, ee, executionContext, nodePreparer)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          8475
+        </td>
+        <td>
+          3445
+          -
+          3451
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; or &quot;
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          8477
+        </td>
+        <td>
+          3436
+          -
+          3460
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          OrPredicate.this.a.name.+(&quot; or &quot;).+(OrPredicate.this.b.name)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          8476
+        </td>
+        <td>
+          3454
+          -
+          3460
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.Predicate.name
+        </td>
+        <td style="background: #F0ADAD">
+          OrPredicate.this.b.name
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          8479
+        </td>
+        <td>
+          3739
+          -
+          3883
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          OrPredicate.this.a.evaluate(root, returnedNodes, ee, executionContext, nodePreparer).||(OrPredicate.this.b.evaluate(root, returnedNodes, ee, executionContext, nodePreparer))
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          8478
+        </td>
+        <td>
+          3816
+          -
+          3883
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.Predicate.evaluate
+        </td>
+        <td style="background: #AEF1AE">
+          OrPredicate.this.b.evaluate(root, returnedNodes, ee, executionContext, nodePreparer)
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          8480
+        </td>
+        <td>
+          4170
+          -
+          4198
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          OptionalPredicate.this.optionalPredicate.name.+(&quot;?&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          8481
+        </td>
+        <td>
+          4696
+          -
+          4700
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          8482
+        </td>
+        <td>
+          5140
+          -
+          5157
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.GenSeqLike.indexOf
+        </td>
+        <td style="background: #AEF1AE">
+          among.indexOf[com.atomist.graph.GraphNode](tn)
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          8483
+        </td>
+        <td>
+          5166
+          -
+          5177
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          index.==(-1)
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          8486
+        </td>
+        <td>
+          5162
+          -
+          5162
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          8487
+        </td>
+        <td>
+          5162
+          -
+          5162
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          8485
+        </td>
+        <td>
+          5185
+          -
+          5278
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;Internal error: Index [&quot;, &quot;] not found in collection &quot;, &quot;&quot;).s(IndexPredicate.this.i, among))
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          8484
+        </td>
+        <td>
+          5185
+          -
+          5278
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;Internal error: Index [&quot;, &quot;] not found in collection &quot;, &quot;&quot;).s(IndexPredicate.this.i, among))
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          8489
+        </td>
+        <td>
+          5283
+          -
+          5297
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          IndexPredicate.this.i.==(index.+(1))
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          8488
+        </td>
+        <td>
+          5288
+          -
+          5297
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          index.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          8490
+        </td>
+        <td>
+          5466
+          -
+          5473
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;@name=&quot;
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          8492
+        </td>
+        <td>
+          5473
+          -
+          5485
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NodeNamePredicate.expectedName
+        </td>
+        <td style="background: #F0ADAD">
+          NodeNamePredicate.this.expectedName
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          8491
+        </td>
+        <td>
+          5485
+          -
+          5486
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          8493
+        </td>
+        <td>
+          5464
+          -
+          5486
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;@name=&quot;, &quot;&quot;).s(NodeNamePredicate.this.expectedName)
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          8495
+        </td>
+        <td>
+          5814
+          -
+          5820
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          8498
+        </td>
+        <td>
+          5762
+          -
+          5844
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          n.nodeName.==(NodeNamePredicate.this.expectedName).||(com.atomist.tree.utils.NodeUtils.keyValue(n, &quot;name&quot;).contains[String](NodeNamePredicate.this.expectedName))
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          8497
+        </td>
+        <td>
+          5792
+          -
+          5844
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.contains
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.keyValue(n, &quot;name&quot;).contains[String](NodeNamePredicate.this.expectedName)
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          8494
+        </td>
+        <td>
+          5776
+          -
+          5788
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NodeNamePredicate.expectedName
+        </td>
+        <td style="background: #AEF1AE">
+          NodeNamePredicate.this.expectedName
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          8496
+        </td>
+        <td>
+          5831
+          -
+          5843
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NodeNamePredicate.expectedName
+        </td>
+        <td style="background: #AEF1AE">
+          NodeNamePredicate.this.expectedName
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          8499
+        </td>
+        <td>
+          5956
+          -
+          5963
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;@type=&quot;
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          8501
+        </td>
+        <td>
+          5963
+          -
+          5975
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NodeTypePredicate.expectedType
+        </td>
+        <td style="background: #F0ADAD">
+          NodeTypePredicate.this.expectedType
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          8500
+        </td>
+        <td>
+          5975
+          -
+          5976
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          8502
+        </td>
+        <td>
+          5954
+          -
+          5976
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;@type=&quot;, &quot;&quot;).s(NodeTypePredicate.this.expectedType)
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          8504
+        </td>
+        <td>
+          6252
+          -
+          6285
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          n.nodeTags.contains(NodeTypePredicate.this.expectedType)
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          8503
+        </td>
+        <td>
+          6272
+          -
+          6284
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NodeTypePredicate.expectedType
+        </td>
+        <td style="background: #AEF1AE">
+          NodeTypePredicate.this.expectedType
+        </td>
+      </tr><tr>
+        <td>
+          190
+        </td>
+        <td>
+          8505
+        </td>
+        <td>
+          6866
+          -
+          6878
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function2.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FunctionPredicate.this.f.apply(tn, among)
+        </td>
+      </tr><tr>
+        <td>
+          201
+        </td>
+        <td>
+          8507
+        </td>
+        <td>
+          7258
+          -
+          7325
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExpressionEngine.evaluate
+        </td>
+        <td style="background: #AEF1AE">
+          ee.evaluate(nodeToTest, NestedPathExpressionPredicate.this.expression, executionContext, nodePreparer)
+        </td>
+      </tr><tr>
+        <td>
+          201
+        </td>
+        <td>
+          8506
+        </td>
+        <td>
+          7282
+          -
+          7292
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.NestedPathExpressionPredicate.expression
+        </td>
+        <td style="background: #AEF1AE">
+          NestedPathExpressionPredicate.this.expression
+        </td>
+      </tr><tr>
+        <td>
+          202
+        </td>
+        <td>
+          8508
+        </td>
+        <td>
+          7356
+          -
+          7361
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          203
+        </td>
+        <td>
+          8509
+        </td>
+        <td>
+          7389
+          -
+          7403
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          nodes.nonEmpty
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

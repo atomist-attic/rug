@@ -1,0 +1,801 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/scala/ScalaMetaTreeBackedTreeNode.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.scala
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.tree.TreeNode
+</span>4 <span style=''>import com.atomist.tree.content.text.{InputPosition, OffsetInputPosition, PositionedTreeNode}
+</span>5 <span style=''>import com.atomist.util.lang.JavaHelpers
+</span>6 <span style=''>
+</span>7 <span style=''>import scala.meta._
+</span>8 <span style=''>
+</span>9 <span style=''>/**
+</span>10 <span style=''>  * Immutable tree backed by a ScalaMeta Tree
+</span>11 <span style=''>  */
+</span>12 <span style=''>private[scala] class ScalaMetaTreeBackedTreeNode(smTree: Tree)
+</span>13 <span style=''>  extends TreeNode with PositionedTreeNode {
+</span>14 <span style=''>
+</span>15 <span style=''>  override val nodeName: String = {
+</span>16 <span style=''>    // Map the name of the backing ScalaMeta node class
+</span>17 <span style=''>    // to a usable node name. ScalaMeta full class names are of the form
+</span>18 <span style=''>    // &quot;scala.meta.Type$Name$TypeNameImpl&quot;
+</span>19 <span style=''>    // We want to strip the layers of inner classes and the trailing &quot;Impl&quot;
+</span>20 <span style=''>    // to get a result like &quot;TypeName&quot;
+</span>21 <span style=''>    // We cannot use Class.getSimpleName() as ScalaMeta uses some creative
+</span>22 <span style=''>    // class names with ` that are illegal Java class names according to java.Class
+</span>23 <span style=''>    // (but what would it know)
+</span>24 <span style=''>    val fqn = </span><span style='background: #AEF1AE'>smTree.getClass.getName</span><span style=''>
+</span>25 <span style=''>    </span><span style='background: #AEF1AE'>JavaHelpers.lowerize(fqn.drop(fqn.lastIndexOf(&quot;$&quot;) + 1).replace(&quot;Impl&quot;, &quot;&quot;))</span><span style=''>
+</span>26 <span style=''>  }
+</span>27 <span style=''>
+</span>28 <span style=''>  override def nodeTags: Set[String] = </span><span style='background: #AEF1AE'>super.nodeTags ++ Set(TreeNode.Dynamic, nodeName)</span><span style=''>
+</span>29 <span style=''>
+</span>30 <span style=''>  override def startPosition: InputPosition = </span><span style='background: #AEF1AE'>OffsetInputPosition(smTree.pos.start.offset)</span><span style=''>
+</span>31 <span style=''>
+</span>32 <span style=''>  override def endPosition: InputPosition = </span><span style='background: #AEF1AE'>OffsetInputPosition(smTree.pos.end.offset)</span><span style=''>
+</span>33 <span style=''>
+</span>34 <span style=''>  override def value: String = </span><span style='background: #AEF1AE'>smTree.syntax</span><span style=''>
+</span>35 <span style=''>
+</span>36 <span style=''>  def childNodeNames: Set[String] = </span><span style='background: #AEF1AE'>wrappedChildren.map(_.nodeName).toSet</span><span style=''>
+</span>37 <span style=''>
+</span>38 <span style=''>  override def childNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>childNodes.flatMap(n =&gt; n.nodeTags).toSet</span><span style=''>
+</span>39 <span style=''>
+</span>40 <span style=''>  private def wrappedChildren: Seq[TreeNode] = </span><span style='background: #AEF1AE'>smTree.children.map(new ScalaMetaTreeBackedTreeNode(_))</span><span style=''>
+</span>41 <span style=''>
+</span>42 <span style=''>  override def childrenNamed(key: String): Seq[TreeNode] = </span><span style='background: #AEF1AE'>wrappedChildren.filter(_.nodeName == key)</span><span style=''>
+</span>43 <span style=''>
+</span>44 <span style=''>  override def toString: String = </span><span style='background: #F0ADAD'>s&quot;$nodeName:${nodeTags.mkString(&quot;,&quot;)}:[$value]&quot;</span><span style=''>
+</span>45 <span style=''>
+</span>46 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          2876
+        </td>
+        <td>
+          918
+          -
+          941
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getName
+        </td>
+        <td style="background: #AEF1AE">
+          ScalaMetaTreeBackedTreeNode.this.smTree.getClass().getName()
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          2878
+        </td>
+        <td>
+          946
+          -
+          1022
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaHelpers.lowerize
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.lang.JavaHelpers.lowerize(scala.this.Predef.augmentString(fqn).drop(fqn.lastIndexOf(&quot;$&quot;).+(1)).replace(&quot;Impl&quot;, &quot;&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          2877
+        </td>
+        <td>
+          967
+          -
+          1021
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(fqn).drop(fqn.lastIndexOf(&quot;$&quot;).+(1)).replace(&quot;Impl&quot;, &quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2879
+        </td>
+        <td>
+          1089
+          -
+          1105
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.Dynamic
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.TreeNode.Dynamic
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2882
+        </td>
+        <td>
+          1067
+          -
+          1116
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          ScalaMetaTreeBackedTreeNode.super.nodeTags.++(scala.this.Predef.Set.apply[String](com.atomist.tree.TreeNode.Dynamic, ScalaMetaTreeBackedTreeNode.this.nodeName))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2881
+        </td>
+        <td>
+          1085
+          -
+          1116
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](com.atomist.tree.TreeNode.Dynamic, ScalaMetaTreeBackedTreeNode.this.nodeName)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2880
+        </td>
+        <td>
+          1107
+          -
+          1115
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.scala.ScalaMetaTreeBackedTreeNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          ScalaMetaTreeBackedTreeNode.this.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2884
+        </td>
+        <td>
+          1164
+          -
+          1208
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OffsetInputPosition.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.content.text.OffsetInputPosition.apply(ScalaMetaTreeBackedTreeNode.this.smTree.pos.start.offset)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2883
+        </td>
+        <td>
+          1184
+          -
+          1207
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.meta.inputs.Point.offset
+        </td>
+        <td style="background: #AEF1AE">
+          ScalaMetaTreeBackedTreeNode.this.smTree.pos.start.offset
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          2885
+        </td>
+        <td>
+          1274
+          -
+          1295
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.meta.inputs.Point.offset
+        </td>
+        <td style="background: #AEF1AE">
+          ScalaMetaTreeBackedTreeNode.this.smTree.pos.end.offset
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          2886
+        </td>
+        <td>
+          1254
+          -
+          1296
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OffsetInputPosition.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.content.text.OffsetInputPosition.apply(ScalaMetaTreeBackedTreeNode.this.smTree.pos.end.offset)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          2888
+        </td>
+        <td>
+          1329
+          -
+          1329
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.meta.prettyprinters.Options.Eager
+        </td>
+        <td style="background: #AEF1AE">
+          prettyprinters.this.Options.Eager
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          2887
+        </td>
+        <td>
+          1329
+          -
+          1335
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.scala.ScalaMetaTreeBackedTreeNode.smTree
+        </td>
+        <td style="background: #AEF1AE">
+          ScalaMetaTreeBackedTreeNode.this.smTree
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          2890
+        </td>
+        <td>
+          1329
+          -
+          1342
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.meta.prettyprinters.Api.XtensionSyntax.syntax
+        </td>
+        <td style="background: #AEF1AE">
+          scala.meta.`package`.XtensionSyntax[scala.meta.Tree](ScalaMetaTreeBackedTreeNode.this.smTree)(meta.this.Tree.showSyntax[scala.meta.Tree](scala.meta.dialects.`package`.Scala211, prettyprinters.this.Options.Eager)).syntax
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          2889
+        </td>
+        <td>
+          1329
+          -
+          1329
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.meta.Tree.showSyntax
+        </td>
+        <td style="background: #AEF1AE">
+          meta.this.Tree.showSyntax[scala.meta.Tree](scala.meta.dialects.`package`.Scala211, prettyprinters.this.Options.Eager)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2891
+        </td>
+        <td>
+          1400
+          -
+          1410
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2893
+        </td>
+        <td>
+          1380
+          -
+          1417
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          ScalaMetaTreeBackedTreeNode.this.wrappedChildren.map[String, Seq[String]](((x$1: com.atomist.tree.TreeNode) =&gt; x$1.nodeName))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2892
+        </td>
+        <td>
+          1399
+          -
+          1399
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2894
+        </td>
+        <td>
+          1488
+          -
+          1498
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeTags
+        </td>
+        <td style="background: #F0ADAD">
+          n.nodeTags
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2896
+        </td>
+        <td>
+          1464
+          -
+          1505
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #F0ADAD">
+          ScalaMetaTreeBackedTreeNode.this.childNodes.flatMap[String, Seq[String]](((n: com.atomist.tree.TreeNode) =&gt; n.nodeTags))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2895
+        </td>
+        <td>
+          1482
+          -
+          1482
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          2897
+        </td>
+        <td>
+          1574
+          -
+          1608
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.scala.ScalaMetaTreeBackedTreeNode.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new ScalaMetaTreeBackedTreeNode(x$2)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          2899
+        </td>
+        <td>
+          1554
+          -
+          1609
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          ScalaMetaTreeBackedTreeNode.this.smTree.children.map[com.atomist.rug.kind.scala.ScalaMetaTreeBackedTreeNode, Seq[com.atomist.tree.TreeNode]](((x$2: scala.meta.Tree) =&gt; new ScalaMetaTreeBackedTreeNode(x$2)))(immutable.this.Seq.canBuildFrom[com.atomist.rug.kind.scala.ScalaMetaTreeBackedTreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          2898
+        </td>
+        <td>
+          1573
+          -
+          1573
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Seq.canBuildFrom[com.atomist.rug.kind.scala.ScalaMetaTreeBackedTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          2900
+        </td>
+        <td>
+          1693
+          -
+          1710
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$3.nodeName.==(key)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          2901
+        </td>
+        <td>
+          1670
+          -
+          1711
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          ScalaMetaTreeBackedTreeNode.this.wrappedChildren.filter(((x$3: com.atomist.tree.TreeNode) =&gt; x$3.nodeName.==(key)))
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2903
+        </td>
+        <td>
+          1758
+          -
+          1760
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;:&quot;
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2906
+        </td>
+        <td>
+          1750
+          -
+          1758
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.scala.ScalaMetaTreeBackedTreeNode.nodeName
+        </td>
+        <td style="background: #F0ADAD">
+          ScalaMetaTreeBackedTreeNode.this.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2909
+        </td>
+        <td>
+          1747
+          -
+          1794
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;:&quot;, &quot;:[&quot;, &quot;]&quot;).s(ScalaMetaTreeBackedTreeNode.this.nodeName, ScalaMetaTreeBackedTreeNode.this.nodeTags.mkString(&quot;,&quot;), ScalaMetaTreeBackedTreeNode.this.value)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2908
+        </td>
+        <td>
+          1787
+          -
+          1792
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.scala.ScalaMetaTreeBackedTreeNode.value
+        </td>
+        <td style="background: #F0ADAD">
+          ScalaMetaTreeBackedTreeNode.this.value
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2902
+        </td>
+        <td>
+          1749
+          -
+          1750
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2905
+        </td>
+        <td>
+          1792
+          -
+          1794
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2907
+        </td>
+        <td>
+          1761
+          -
+          1783
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          ScalaMetaTreeBackedTreeNode.this.nodeTags.mkString(&quot;,&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2904
+        </td>
+        <td>
+          1784
+          -
+          1787
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;:[&quot;
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

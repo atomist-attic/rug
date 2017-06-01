@@ -1,0 +1,943 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/content/text/LineInputPosition.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.content.text
+</span>2 <span style=''>
+</span>3 <span style=''>trait LineInputPosition extends InputPosition {
+</span>4 <span style=''>
+</span>5 <span style=''>  def lineFrom1: Int
+</span>6 <span style=''>
+</span>7 <span style=''>  def colFrom1: Int
+</span>8 <span style=''>
+</span>9 <span style=''>  def input: String
+</span>10 <span style=''>
+</span>11 <span style=''>  override def show: String = {
+</span>12 <span style=''>    val lines = </span><span style='background: #AEF1AE'>input.lines.toSeq</span><span style=''>
+</span>13 <span style=''>    val gotoLine = </span><span style='background: #AEF1AE'>Integer.min(lineFrom1 - 1, lines.size - 1)</span><span style=''>
+</span>14 <span style=''>    val badLine = </span><span style='background: #AEF1AE'>lines(gotoLine)</span><span style=''>
+</span>15 <span style=''>    val errorLine = </span><span style='background: #AEF1AE'>List.fill(colFrom1 - 1)(&quot; &quot;).mkString(&quot;&quot;) + &quot;^&quot;</span><span style=''>
+</span>16 <span style=''>    </span><span style='background: #AEF1AE'>badLine + &quot;\n&quot; + errorLine</span><span style=''>
+</span>17 <span style=''>  }
+</span>18 <span style=''>
+</span>19 <span style=''>  override def toString =
+</span>20 <span style=''>    </span><span style='background: #F0ADAD'>s&quot;${getClass.getSimpleName}: $lineFrom1/$colFrom1: offset=$offset&quot;</span><span style=''>
+</span>21 <span style=''>}
+</span>22 <span style=''>
+</span>23 <span style=''>/**
+</span>24 <span style=''>  * InputPosition implementation given line position, from 1:1.
+</span>25 <span style=''>  *
+</span>26 <span style=''>  * @param input     input string
+</span>27 <span style=''>  * @param lineFrom1 line (from 1)
+</span>28 <span style=''>  * @param colFrom1  column (from 1)
+</span>29 <span style=''>  */
+</span>30 <span style=''>case class LineInputPositionImpl(input: String, lineFrom1: Int, colFrom1: Int)
+</span>31 <span style=''>  extends LineInputPosition {
+</span>32 <span style=''>
+</span>33 <span style=''>  override val offset: Int = {
+</span>34 <span style=''>    if (</span><span style='background: #AEF1AE'>lineFrom1 &lt; 1</span><span style=''>)
+</span>35 <span style=''>      </span><span style='background: #AEF1AE'>0</span><span style=''>
+</span>36 <span style=''>    else </span><span style='background: #AEF1AE'>{
+</span>37 <span style=''></span><span style='background: #AEF1AE'>      var offs = 0
+</span>38 <span style=''></span><span style='background: #AEF1AE'>      var line = 1
+</span>39 <span style=''></span><span style='background: #AEF1AE'>      var col = 1
+</span>40 <span style=''></span><span style='background: #AEF1AE'>      for {
+</span>41 <span style=''></span><span style='background: #AEF1AE'>        c &lt;- input.dropRight(1)
+</span>42 <span style=''></span><span style='background: #AEF1AE'>        if !(line &gt;= lineFrom1 &amp;&amp; col &gt;= colFrom1)
+</span>43 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>44 <span style=''></span><span style='background: #AEF1AE'>        c match {
+</span>45 <span style=''></span><span style='background: #AEF1AE'>          case `c` if c == '\n' || c == '\r' =&gt;
+</span>46 <span style=''></span><span style='background: #AEF1AE'>            line += 1
+</span>47 <span style=''></span><span style='background: #AEF1AE'>            col = 1
+</span>48 <span style=''></span><span style='background: #AEF1AE'>            offs += 1
+</span>49 <span style=''></span><span style='background: #AEF1AE'>          case _ =&gt;
+</span>50 <span style=''></span><span style='background: #AEF1AE'>            col += 1
+</span>51 <span style=''></span><span style='background: #AEF1AE'>            offs += 1
+</span>52 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>53 <span style=''></span><span style='background: #AEF1AE'>
+</span>54 <span style=''></span><span style='background: #AEF1AE'>      offs
+</span>55 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>56 <span style=''>  }
+</span>57 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          7320
+        </td>
+        <td>
+          200
+          -
+          217
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(LineInputPosition.this.input).lines.toSeq
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          7319
+        </td>
+        <td>
+          200
+          -
+          205
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineInputPosition.input
+        </td>
+        <td style="background: #AEF1AE">
+          LineInputPosition.this.input
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          7323
+        </td>
+        <td>
+          237
+          -
+          279
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Integer.min
+        </td>
+        <td style="background: #AEF1AE">
+          java.this.lang.Integer.min(LineInputPosition.this.lineFrom1.-(1), lines.size.-(1))
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          7322
+        </td>
+        <td>
+          264
+          -
+          278
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          lines.size.-(1)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          7321
+        </td>
+        <td>
+          249
+          -
+          262
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          LineInputPosition.this.lineFrom1.-(1)
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          7324
+        </td>
+        <td>
+          298
+          -
+          313
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #AEF1AE">
+          lines.apply(gotoLine)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          7325
+        </td>
+        <td>
+          334
+          -
+          381
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.fill[String](LineInputPosition.this.colFrom1.-(1))(&quot; &quot;).mkString(&quot;&quot;).+(&quot;^&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          7326
+        </td>
+        <td>
+          386
+          -
+          412
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          badLine.+(&quot;\n&quot;).+(errorLine)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7329
+        </td>
+        <td>
+          487
+          -
+          489
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;/&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7332
+        </td>
+        <td>
+          452
+          -
+          474
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getSimpleName
+        </td>
+        <td style="background: #F0ADAD">
+          LineInputPosition.this.getClass().getSimpleName()
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7335
+        </td>
+        <td>
+          507
+          -
+          513
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #F0ADAD">
+          LineInputPosition.this.offset
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7334
+        </td>
+        <td>
+          489
+          -
+          497
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineInputPosition.colFrom1
+        </td>
+        <td style="background: #F0ADAD">
+          LineInputPosition.this.colFrom1
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7328
+        </td>
+        <td>
+          475
+          -
+          478
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7331
+        </td>
+        <td>
+          513
+          -
+          514
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7330
+        </td>
+        <td>
+          497
+          -
+          507
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;: offset=&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7333
+        </td>
+        <td>
+          478
+          -
+          487
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineInputPosition.lineFrom1
+        </td>
+        <td style="background: #F0ADAD">
+          LineInputPosition.this.lineFrom1
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7336
+        </td>
+        <td>
+          448
+          -
+          514
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;: &quot;, &quot;/&quot;, &quot;: offset=&quot;, &quot;&quot;).s(LineInputPosition.this.getClass().getSimpleName(), LineInputPosition.this.lineFrom1, LineInputPosition.this.colFrom1, LineInputPosition.this.offset)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          7327
+        </td>
+        <td>
+          450
+          -
+          451
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          7337
+        </td>
+        <td>
+          850
+          -
+          863
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          LineInputPositionImpl.this.lineFrom1.&lt;(1)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          7338
+        </td>
+        <td>
+          871
+          -
+          872
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          7339
+        </td>
+        <td>
+          871
+          -
+          872
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          7357
+        </td>
+        <td>
+          882
+          -
+          1263
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  var offs: Int = 0;
+  var line: Int = 1;
+  var col: Int = 1;
+  scala.this.Predef.augmentString(scala.this.Predef.augmentString(LineInputPositionImpl.this.input).dropRight(1)).withFilter(((c: Char) =&gt; line.&gt;=(LineInputPositionImpl.this.lineFrom1).&amp;&amp;(col.&gt;=(LineInputPositionImpl.this.colFrom1)).unary_!)).foreach[Unit](((c: Char) =&gt; c match {
+    case `c` if c.==('\n').||(c.==('\r')) =&gt; {
+      line = line.+(1);
+      col = 1;
+      offs = offs.+(1)
+    }
+    case _ =&gt; {
+      col = col.+(1);
+      offs = offs.+(1)
+    }
+  }));
+  offs
+}
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          7340
+        </td>
+        <td>
+          901
+          -
+          902
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          7341
+        </td>
+        <td>
+          920
+          -
+          921
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          7342
+        </td>
+        <td>
+          938
+          -
+          939
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          7356
+        </td>
+        <td>
+          946
+          -
+          1245
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.FilterMonadic.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(scala.this.Predef.augmentString(LineInputPositionImpl.this.input).dropRight(1)).withFilter(((c: Char) =&gt; line.&gt;=(LineInputPositionImpl.this.lineFrom1).&amp;&amp;(col.&gt;=(LineInputPositionImpl.this.colFrom1)).unary_!)).foreach[Unit](((c: Char) =&gt; c match {
+  case `c` if c.==('\n').||(c.==('\r')) =&gt; {
+    line = line.+(1);
+    col = 1;
+    offs = offs.+(1)
+  }
+  case _ =&gt; {
+    col = col.+(1);
+    offs = offs.+(1)
+  }
+}))
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          7343
+        </td>
+        <td>
+          965
+          -
+          983
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.dropRight
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(LineInputPositionImpl.this.input).dropRight(1)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          7347
+        </td>
+        <td>
+          995
+          -
+          1034
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          line.&gt;=(LineInputPositionImpl.this.lineFrom1).&amp;&amp;(col.&gt;=(LineInputPositionImpl.this.colFrom1)).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          7344
+        </td>
+        <td>
+          1005
+          -
+          1014
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineInputPositionImpl.lineFrom1
+        </td>
+        <td style="background: #AEF1AE">
+          LineInputPositionImpl.this.lineFrom1
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          7346
+        </td>
+        <td>
+          1018
+          -
+          1033
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;=
+        </td>
+        <td style="background: #AEF1AE">
+          col.&gt;=(LineInputPositionImpl.this.colFrom1)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          7345
+        </td>
+        <td>
+          1025
+          -
+          1033
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineInputPositionImpl.colFrom1
+        </td>
+        <td style="background: #AEF1AE">
+          LineInputPositionImpl.this.colFrom1
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          7350
+        </td>
+        <td>
+          1083
+          -
+          1105
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          c.==('\n').||(c.==('\r'))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          7349
+        </td>
+        <td>
+          1096
+          -
+          1105
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Char.==
+        </td>
+        <td style="background: #AEF1AE">
+          c.==('\r')
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          7348
+        </td>
+        <td>
+          1088
+          -
+          1092
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          '\n'
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          7351
+        </td>
+        <td>
+          1121
+          -
+          1130
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          line.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          7352
+        </td>
+        <td>
+          1149
+          -
+          1150
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          7353
+        </td>
+        <td>
+          1163
+          -
+          1172
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          offs.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          7354
+        </td>
+        <td>
+          1205
+          -
+          1213
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          col.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          7355
+        </td>
+        <td>
+          1226
+          -
+          1235
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          offs.+(1)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,239 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/js/interop/jsGitProjectLoader.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.js.interop
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.kind.core.{ProjectMutableView, RepoResolver}
+</span>4 <span style=''>
+</span>5 <span style=''>/**
+</span>6 <span style=''>  * Backs the TypeScript GitProjectLoader interface
+</span>7 <span style=''>  */
+</span>8 <span style=''>class jsGitProjectLoader(rr: Option[RepoResolver]) {
+</span>9 <span style=''>
+</span>10 <span style=''>  /**
+</span>11 <span style=''>    * Resolve the latest in the given branch. Throw exception if unable to.
+</span>12 <span style=''>    */
+</span>13 <span style=''>  def loadBranch(owner: String, repoName: String, branch: String): ProjectMutableView = {
+</span>14 <span style=''>    val as = </span><span style='background: #AEF1AE'>rr.map(_.resolveBranch(owner, repoName, branch)).getOrElse(
+</span>15 <span style=''></span><span style='background: #AEF1AE'>      </span><span style='background: #F0ADAD'>throw new IllegalStateException(s&quot;No RepoResolver available to resolve $owner:$repoName:branch=$branch&quot;)</span><span style='background: #AEF1AE'>
+</span>16 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>17 <span style=''>    </span><span style='background: #AEF1AE'>new ProjectMutableView(originalBackingObject = as)</span><span style=''>
+</span>18 <span style=''>  }
+</span>19 <span style=''>
+</span>20 <span style=''>  /**
+</span>21 <span style=''>    * Resolve the tree for this sha. Throw exception if unable to.
+</span>22 <span style=''>    */
+</span>23 <span style=''>  def loadSha(owner: String, repoName: String, sha: String): ProjectMutableView = {
+</span>24 <span style=''>    val as = </span><span style='background: #F0ADAD'>rr.map(_.resolveSha(owner, repoName, sha)).getOrElse(
+</span>25 <span style=''></span><span style='background: #F0ADAD'>      throw new IllegalStateException(s&quot;No RepoResolver available to resolve $owner:$repoName:sha=$sha&quot;)
+</span>26 <span style=''></span><span style='background: #F0ADAD'>    )</span><span style=''>
+</span>27 <span style=''>    </span><span style='background: #F0ADAD'>new ProjectMutableView(originalBackingObject = as)</span><span style=''>
+</span>28 <span style=''>  }
+</span>29 <span style=''>
+</span>30 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          4284
+        </td>
+        <td>
+          427
+          -
+          467
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.RepoResolver.resolveBranch
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.resolveBranch(owner, repoName, branch)
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          4286
+        </td>
+        <td>
+          420
+          -
+          596
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          jsGitProjectLoader.this.rr.map[com.atomist.source.ArtifactSource](((x$1: com.atomist.rug.kind.core.RepoResolver) =&gt; x$1.resolveBranch(owner, repoName, branch))).getOrElse[com.atomist.source.ArtifactSource](throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;No RepoResolver available to resolve &quot;, &quot;:&quot;, &quot;:branch=&quot;, &quot;&quot;).s(owner, repoName, branch)))
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          4285
+        </td>
+        <td>
+          486
+          -
+          590
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;No RepoResolver available to resolve &quot;, &quot;:&quot;, &quot;:branch=&quot;, &quot;&quot;).s(owner, repoName, branch))
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          4287
+        </td>
+        <td>
+          601
+          -
+          651
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.rug.kind.core.ProjectMutableView(as)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          4290
+        </td>
+        <td>
+          834
+          -
+          998
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          jsGitProjectLoader.this.rr.map[com.atomist.source.ArtifactSource](((x$2: com.atomist.rug.kind.core.RepoResolver) =&gt; x$2.resolveSha(owner, repoName, sha))).getOrElse[com.atomist.source.ArtifactSource](throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;No RepoResolver available to resolve &quot;, &quot;:&quot;, &quot;:sha=&quot;, &quot;&quot;).s(owner, repoName, sha)))
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          4288
+        </td>
+        <td>
+          841
+          -
+          875
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.RepoResolver.resolveSha
+        </td>
+        <td style="background: #F0ADAD">
+          x$2.resolveSha(owner, repoName, sha)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          4289
+        </td>
+        <td>
+          894
+          -
+          992
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new java.this.lang.IllegalStateException(scala.StringContext.apply(&quot;No RepoResolver available to resolve &quot;, &quot;:&quot;, &quot;:sha=&quot;, &quot;&quot;).s(owner, repoName, sha))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          4291
+        </td>
+        <td>
+          1003
+          -
+          1053
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new com.atomist.rug.kind.core.ProjectMutableView(as)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

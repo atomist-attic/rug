@@ -1,0 +1,456 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/docker/DockerfileLine.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.docker
+</span>2 <span style=''>
+</span>3 <span style=''>class DockerfileLine(val name: String) {
+</span>4 <span style=''>
+</span>5 <span style=''>  private var lineno: Int = </span><span style='background: #AEF1AE'>0</span><span style=''>
+</span>6 <span style=''>  private var raw: String = _
+</span>7 <span style=''>  private var args: Any = _
+</span>8 <span style=''>
+</span>9 <span style=''>  def getLineno = </span><span style='background: #AEF1AE'>lineno</span><span style=''>
+</span>10 <span style=''>
+</span>11 <span style=''>  def setLineno(lineno: Int) =
+</span>12 <span style=''>    </span><span style='background: #AEF1AE'>this.lineno = lineno</span><span style=''>
+</span>13 <span style=''>
+</span>14 <span style=''>  def getArgs: Any = </span><span style='background: #F0ADAD'>args</span><span style=''> match {
+</span>15 <span style=''>    case s: String =&gt; </span><span style='background: #F0ADAD'>s.replace(&quot;#$#&quot;, &quot;&quot;)</span><span style=''>
+</span>16 <span style=''>    case _ =&gt; </span><span style='background: #F0ADAD'>args</span><span style=''>
+</span>17 <span style=''>  }
+</span>18 <span style=''>
+</span>19 <span style=''>  def setArgs(args: Any) = </span><span style='background: #AEF1AE'>this.args = args match {
+</span>20 <span style=''></span><span style='background: #AEF1AE'>    case s: String =&gt; s.replace(&quot;#$#&quot;, &quot;&quot;)
+</span>21 <span style=''></span><span style='background: #AEF1AE'>    case _ =&gt; args
+</span>22 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>  def getRaw: String =
+</span>25 <span style=''>    if (</span><span style='background: #AEF1AE'>&quot;COMMENT&quot;.equals(name)</span><span style=''>)
+</span>26 <span style=''>    </span><span style='background: #AEF1AE'>args.toString</span><span style=''>
+</span>27 <span style=''>   else
+</span>28 <span style=''>    </span><span style='background: #AEF1AE'>raw</span><span style=''>
+</span>29 <span style=''>
+</span>30 <span style=''>  def setRaw(raw: String) =
+</span>31 <span style=''>    </span><span style='background: #AEF1AE'>this.raw = raw.replace(&quot;#$#&quot;, &quot;\\\n&quot;)</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>  override def toString: String = </span><span style='background: #F0ADAD'>raw</span><span style=''>
+</span>34 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          5
+        </td>
+        <td>
+          1486
+        </td>
+        <td>
+          107
+          -
+          108
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          1487
+        </td>
+        <td>
+          186
+          -
+          192
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.lineno
+        </td>
+        <td style="background: #AEF1AE">
+          DockerfileLine.this.lineno
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          1488
+        </td>
+        <td>
+          229
+          -
+          249
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.lineno_=
+        </td>
+        <td style="background: #AEF1AE">
+          this.lineno_=(lineno)
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1489
+        </td>
+        <td>
+          272
+          -
+          276
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.args
+        </td>
+        <td style="background: #F0ADAD">
+          DockerfileLine.this.args
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1490
+        </td>
+        <td>
+          307
+          -
+          327
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #F0ADAD">
+          s.replace(&quot;#$#&quot;, &quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          1491
+        </td>
+        <td>
+          342
+          -
+          346
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.args
+        </td>
+        <td style="background: #F0ADAD">
+          DockerfileLine.this.args
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1493
+        </td>
+        <td>
+          379
+          -
+          469
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.args_=
+        </td>
+        <td style="background: #AEF1AE">
+          this.args_=(args match {
+  case (s @ (_: String)) =&gt; s.replace(&quot;#$#&quot;, &quot;&quot;)
+  case _ =&gt; args
+})
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1492
+        </td>
+        <td>
+          426
+          -
+          446
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          s.replace(&quot;#$#&quot;, &quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1494
+        </td>
+        <td>
+          502
+          -
+          511
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;COMMENT&quot;
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1496
+        </td>
+        <td>
+          502
+          -
+          524
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;COMMENT&quot;.equals(DockerfileLine.this.name)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1495
+        </td>
+        <td>
+          519
+          -
+          523
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.name
+        </td>
+        <td style="background: #AEF1AE">
+          DockerfileLine.this.name
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1497
+        </td>
+        <td>
+          530
+          -
+          543
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Any.toString
+        </td>
+        <td style="background: #AEF1AE">
+          DockerfileLine.this.args.toString()
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1498
+        </td>
+        <td>
+          530
+          -
+          543
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Any.toString
+        </td>
+        <td style="background: #AEF1AE">
+          DockerfileLine.this.args.toString()
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1500
+        </td>
+        <td>
+          556
+          -
+          559
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.raw
+        </td>
+        <td style="background: #AEF1AE">
+          DockerfileLine.this.raw
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1499
+        </td>
+        <td>
+          556
+          -
+          559
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.raw
+        </td>
+        <td style="background: #AEF1AE">
+          DockerfileLine.this.raw
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1501
+        </td>
+        <td>
+          604
+          -
+          630
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          raw.replace(&quot;#$#&quot;, &quot;\\\n&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1502
+        </td>
+        <td>
+          593
+          -
+          630
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.raw_=
+        </td>
+        <td style="background: #AEF1AE">
+          this.raw_=(raw.replace(&quot;#$#&quot;, &quot;\\\n&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1503
+        </td>
+        <td>
+          666
+          -
+          669
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.raw
+        </td>
+        <td style="background: #F0ADAD">
+          DockerfileLine.this.raw
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,591 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/project/archive/RugResolver.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.project.archive
+</span>2 <span style=''>import com.atomist.project.edit.ProjectEditor
+</span>3 <span style=''>import com.atomist.project.generate.ProjectGenerator
+</span>4 <span style=''>import com.atomist.rug.runtime.{CommandHandler, EventHandler, ResponseHandler, Rug}
+</span>5 <span style=''>import com.atomist.source.ArtifactSource
+</span>6 <span style=''>
+</span>7 <span style=''>trait RugResolver {
+</span>8 <span style=''>
+</span>9 <span style=''>  /**
+</span>10 <span style=''>    * Returns the root.
+</span>11 <span style=''>    */
+</span>12 <span style=''>  val resolvedDependencies: ResolvedDependency
+</span>13 <span style=''>
+</span>14 <span style=''>  /**
+</span>15 <span style=''>    * Search direct dependencies of root for a rug.
+</span>16 <span style=''>    */
+</span>17 <span style=''>  def resolve(root: Rug, nameOrFqName: String): Option[Rug]
+</span>18 <span style=''>
+</span>19 <span style=''>  /**
+</span>20 <span style=''>    * Find the node in the dependency graph for a given Rug instance.
+</span>21 <span style=''>    */
+</span>22 <span style=''>  def findResolvedDependency(rug: Rug): Option[ResolvedDependency]
+</span>23 <span style=''>}
+</span>24 <span style=''>
+</span>25 <span style=''>sealed trait RugDependency[T &lt;: RugDependency[T]] {
+</span>26 <span style=''>  def address: Option[Coordinate]
+</span>27 <span style=''>
+</span>28 <span style=''>  def source: ArtifactSource
+</span>29 <span style=''>
+</span>30 <span style=''>  def dependencies: Seq[T]
+</span>31 <span style=''>}
+</span>32 <span style=''>
+</span>33 <span style=''>case class Dependency(override val source: ArtifactSource,
+</span>34 <span style=''>                      override val address: Option[Coordinate] = None,
+</span>35 <span style=''>                      override val dependencies: Seq[Dependency] = Nil)
+</span>36 <span style=''>  extends RugDependency[Dependency]
+</span>37 <span style=''>
+</span>38 <span style=''>case class ResolvedDependency(override val source: ArtifactSource,
+</span>39 <span style=''>                              override val address: Option[Coordinate] = None,
+</span>40 <span style=''>                              override val dependencies: Seq[ResolvedDependency],
+</span>41 <span style=''>                              resolvedRugs: Seq[Rug])
+</span>42 <span style=''>  extends RugDependency[ResolvedDependency] {
+</span>43 <span style=''>
+</span>44 <span style=''>  def rugs: Rugs = {
+</span>45 <span style=''>    </span><span style='background: #AEF1AE'>Rugs(
+</span>46 <span style=''></span><span style='background: #AEF1AE'>      resolvedRugs.collect { case h: ProjectEditor =&gt; h },
+</span>47 <span style=''></span><span style='background: #AEF1AE'>      resolvedRugs.collect { case h: ProjectGenerator =&gt; h },
+</span>48 <span style=''></span><span style='background: #AEF1AE'>      resolvedRugs.collect { case h: CommandHandler =&gt; h },
+</span>49 <span style=''></span><span style='background: #AEF1AE'>      resolvedRugs.collect { case h: EventHandler =&gt; h },
+</span>50 <span style=''></span><span style='background: #AEF1AE'>      resolvedRugs.collect { case h: ResponseHandler =&gt; h })</span><span style=''>
+</span>51 <span style=''>  }
+</span>52 <span style=''>}
+</span>53 <span style=''>
+</span>54 <span style=''>case class Coordinate(group: String, artifact: String, version: String)
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          443
+        </td>
+        <td>
+          1386
+          -
+          1691
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.Rugs.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Rugs.apply(ResolvedDependency.this.resolvedRugs.collect[com.atomist.project.edit.ProjectEditor, Seq[com.atomist.project.edit.ProjectEditor]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.rug.runtime.Rug,com.atomist.project.edit.ProjectEditor] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.rug.runtime.Rug =&gt; com.atomist.project.edit.ProjectEditor&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.rug.runtime.Rug, B1 &gt;: com.atomist.project.edit.ProjectEditor](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.project.edit.ProjectEditor)) =&gt; h
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: com.atomist.rug.runtime.Rug): Boolean = ((x1.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.project.edit.ProjectEditor)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.rug.runtime.Rug,com.atomist.project.edit.ProjectEditor]))(collection.this.Seq.canBuildFrom[com.atomist.project.edit.ProjectEditor]), ResolvedDependency.this.resolvedRugs.collect[com.atomist.project.generate.ProjectGenerator, Seq[com.atomist.project.generate.ProjectGenerator]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.rug.runtime.Rug,com.atomist.project.generate.ProjectGenerator] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.rug.runtime.Rug =&gt; com.atomist.project.generate.ProjectGenerator&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.rug.runtime.Rug, B1 &gt;: com.atomist.project.generate.ProjectGenerator](x2: A1, default: A1 =&gt; B1): B1 = ((x2.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.project.generate.ProjectGenerator)) =&gt; h
+      case (defaultCase$ @ _) =&gt; default.apply(x2)
+    };
+    final def isDefinedAt(x2: com.atomist.rug.runtime.Rug): Boolean = ((x2.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.project.generate.ProjectGenerator)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.rug.runtime.Rug,com.atomist.project.generate.ProjectGenerator]))(collection.this.Seq.canBuildFrom[com.atomist.project.generate.ProjectGenerator]), ResolvedDependency.this.resolvedRugs.collect[com.atomist.rug.runtime.CommandHandler, Seq[com.atomist.rug.runtime.CommandHandler]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.rug.runtime.Rug,com.atomist.rug.runtime.CommandHandler] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.rug.runtime.Rug =&gt; com.atomist.rug.runtime.CommandHandler&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.rug.runtime.Rug, B1 &gt;: com.atomist.rug.runtime.CommandHandler](x3: A1, default: A1 =&gt; B1): B1 = ((x3.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.rug.runtime.CommandHandler)) =&gt; h
+      case (defaultCase$ @ _) =&gt; default.apply(x3)
+    };
+    final def isDefinedAt(x3: com.atomist.rug.runtime.Rug): Boolean = ((x3.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.rug.runtime.CommandHandler)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.rug.runtime.Rug,com.atomist.rug.runtime.CommandHandler]))(collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.CommandHandler]), ResolvedDependency.this.resolvedRugs.collect[com.atomist.rug.runtime.EventHandler, Seq[com.atomist.rug.runtime.EventHandler]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.rug.runtime.Rug,com.atomist.rug.runtime.EventHandler] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.rug.runtime.Rug =&gt; com.atomist.rug.runtime.EventHandler&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.rug.runtime.Rug, B1 &gt;: com.atomist.rug.runtime.EventHandler](x4: A1, default: A1 =&gt; B1): B1 = ((x4.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.rug.runtime.EventHandler)) =&gt; h
+      case (defaultCase$ @ _) =&gt; default.apply(x4)
+    };
+    final def isDefinedAt(x4: com.atomist.rug.runtime.Rug): Boolean = ((x4.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.rug.runtime.EventHandler)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.rug.runtime.Rug,com.atomist.rug.runtime.EventHandler]))(collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.EventHandler]), ResolvedDependency.this.resolvedRugs.collect[com.atomist.rug.runtime.ResponseHandler, Seq[com.atomist.rug.runtime.ResponseHandler]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.rug.runtime.Rug,com.atomist.rug.runtime.ResponseHandler] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.rug.runtime.Rug =&gt; com.atomist.rug.runtime.ResponseHandler&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.rug.runtime.Rug, B1 &gt;: com.atomist.rug.runtime.ResponseHandler](x5: A1, default: A1 =&gt; B1): B1 = ((x5.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.rug.runtime.ResponseHandler)) =&gt; h
+      case (defaultCase$ @ _) =&gt; default.apply(x5)
+    };
+    final def isDefinedAt(x5: com.atomist.rug.runtime.Rug): Boolean = ((x5.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.rug.runtime.ResponseHandler)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.rug.runtime.Rug,com.atomist.rug.runtime.ResponseHandler]))(collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.ResponseHandler]))
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          430
+        </td>
+        <td>
+          1398
+          -
+          1449
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          ResolvedDependency.this.resolvedRugs.collect[com.atomist.project.edit.ProjectEditor, Seq[com.atomist.project.edit.ProjectEditor]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.rug.runtime.Rug,com.atomist.project.edit.ProjectEditor] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.rug.runtime.Rug =&gt; com.atomist.project.edit.ProjectEditor&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.rug.runtime.Rug, B1 &gt;: com.atomist.project.edit.ProjectEditor](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.project.edit.ProjectEditor)) =&gt; h
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: com.atomist.rug.runtime.Rug): Boolean = ((x1.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.project.edit.ProjectEditor)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.rug.runtime.Rug,com.atomist.project.edit.ProjectEditor]))(collection.this.Seq.canBuildFrom[com.atomist.project.edit.ProjectEditor])
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          429
+        </td>
+        <td>
+          1419
+          -
+          1419
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.project.edit.ProjectEditor]
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          428
+        </td>
+        <td>
+          1419
+          -
+          1419
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ResolvedDependency.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          433
+        </td>
+        <td>
+          1457
+          -
+          1511
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          ResolvedDependency.this.resolvedRugs.collect[com.atomist.project.generate.ProjectGenerator, Seq[com.atomist.project.generate.ProjectGenerator]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.rug.runtime.Rug,com.atomist.project.generate.ProjectGenerator] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.rug.runtime.Rug =&gt; com.atomist.project.generate.ProjectGenerator&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.rug.runtime.Rug, B1 &gt;: com.atomist.project.generate.ProjectGenerator](x2: A1, default: A1 =&gt; B1): B1 = ((x2.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.project.generate.ProjectGenerator)) =&gt; h
+      case (defaultCase$ @ _) =&gt; default.apply(x2)
+    };
+    final def isDefinedAt(x2: com.atomist.rug.runtime.Rug): Boolean = ((x2.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.project.generate.ProjectGenerator)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.rug.runtime.Rug,com.atomist.project.generate.ProjectGenerator]))(collection.this.Seq.canBuildFrom[com.atomist.project.generate.ProjectGenerator])
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          432
+        </td>
+        <td>
+          1478
+          -
+          1478
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.project.generate.ProjectGenerator]
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          431
+        </td>
+        <td>
+          1478
+          -
+          1478
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ResolvedDependency.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          436
+        </td>
+        <td>
+          1519
+          -
+          1571
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          ResolvedDependency.this.resolvedRugs.collect[com.atomist.rug.runtime.CommandHandler, Seq[com.atomist.rug.runtime.CommandHandler]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.rug.runtime.Rug,com.atomist.rug.runtime.CommandHandler] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.rug.runtime.Rug =&gt; com.atomist.rug.runtime.CommandHandler&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.rug.runtime.Rug, B1 &gt;: com.atomist.rug.runtime.CommandHandler](x3: A1, default: A1 =&gt; B1): B1 = ((x3.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.rug.runtime.CommandHandler)) =&gt; h
+      case (defaultCase$ @ _) =&gt; default.apply(x3)
+    };
+    final def isDefinedAt(x3: com.atomist.rug.runtime.Rug): Boolean = ((x3.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.rug.runtime.CommandHandler)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.rug.runtime.Rug,com.atomist.rug.runtime.CommandHandler]))(collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.CommandHandler])
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          435
+        </td>
+        <td>
+          1540
+          -
+          1540
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.CommandHandler]
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          434
+        </td>
+        <td>
+          1540
+          -
+          1540
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ResolvedDependency.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          439
+        </td>
+        <td>
+          1579
+          -
+          1629
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          ResolvedDependency.this.resolvedRugs.collect[com.atomist.rug.runtime.EventHandler, Seq[com.atomist.rug.runtime.EventHandler]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.rug.runtime.Rug,com.atomist.rug.runtime.EventHandler] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.rug.runtime.Rug =&gt; com.atomist.rug.runtime.EventHandler&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.rug.runtime.Rug, B1 &gt;: com.atomist.rug.runtime.EventHandler](x4: A1, default: A1 =&gt; B1): B1 = ((x4.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.rug.runtime.EventHandler)) =&gt; h
+      case (defaultCase$ @ _) =&gt; default.apply(x4)
+    };
+    final def isDefinedAt(x4: com.atomist.rug.runtime.Rug): Boolean = ((x4.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.rug.runtime.EventHandler)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.rug.runtime.Rug,com.atomist.rug.runtime.EventHandler]))(collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.EventHandler])
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          438
+        </td>
+        <td>
+          1600
+          -
+          1600
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.EventHandler]
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          437
+        </td>
+        <td>
+          1600
+          -
+          1600
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ResolvedDependency.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          442
+        </td>
+        <td>
+          1637
+          -
+          1690
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          ResolvedDependency.this.resolvedRugs.collect[com.atomist.rug.runtime.ResponseHandler, Seq[com.atomist.rug.runtime.ResponseHandler]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.rug.runtime.Rug,com.atomist.rug.runtime.ResponseHandler] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.rug.runtime.Rug =&gt; com.atomist.rug.runtime.ResponseHandler&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.rug.runtime.Rug, B1 &gt;: com.atomist.rug.runtime.ResponseHandler](x5: A1, default: A1 =&gt; B1): B1 = ((x5.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.rug.runtime.ResponseHandler)) =&gt; h
+      case (defaultCase$ @ _) =&gt; default.apply(x5)
+    };
+    final def isDefinedAt(x5: com.atomist.rug.runtime.Rug): Boolean = ((x5.asInstanceOf[com.atomist.rug.runtime.Rug]: com.atomist.rug.runtime.Rug): com.atomist.rug.runtime.Rug @unchecked) match {
+      case (h @ (_: com.atomist.rug.runtime.ResponseHandler)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.rug.runtime.Rug,com.atomist.rug.runtime.ResponseHandler]))(collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.ResponseHandler])
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          441
+        </td>
+        <td>
+          1658
+          -
+          1658
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.runtime.ResponseHandler]
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          440
+        </td>
+        <td>
+          1658
+          -
+          1658
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.ResolvedDependency.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

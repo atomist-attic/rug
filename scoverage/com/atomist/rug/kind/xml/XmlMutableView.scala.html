@@ -1,0 +1,2482 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/xml/XmlMutableView.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.xml
+</span>2 <span style=''>
+</span>3 <span style=''>import java.io.{StringReader, StringWriter}
+</span>4 <span style=''>import javax.xml.parsers.DocumentBuilderFactory
+</span>5 <span style=''>import javax.xml.transform.dom.DOMSource
+</span>6 <span style=''>import javax.xml.transform.stream.StreamResult
+</span>7 <span style=''>import javax.xml.transform.{OutputKeys, TransformerFactory}
+</span>8 <span style=''>import javax.xml.xpath.{XPathConstants, XPathFactory}
+</span>9 <span style=''>
+</span>10 <span style=''>import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
+</span>11 <span style=''>import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, TerminalView}
+</span>12 <span style=''>import com.atomist.source.FileArtifact
+</span>13 <span style=''>import org.w3c.dom.{Document, Node, NodeList}
+</span>14 <span style=''>import org.xml.sax.InputSource
+</span>15 <span style=''>
+</span>16 <span style=''>object XmlMutableView {
+</span>17 <span style=''>
+</span>18 <span style=''>  def stringToDocument(xmlStr: String): Document = {
+</span>19 <span style=''>    val factory = </span><span style='background: #AEF1AE'>DocumentBuilderFactory.newInstance()</span><span style=''>
+</span>20 <span style=''>
+</span>21 <span style=''>    val builder = </span><span style='background: #AEF1AE'>factory.newDocumentBuilder()</span><span style=''>
+</span>22 <span style=''>    </span><span style='background: #AEF1AE'>builder.parse(new InputSource(new StringReader(xmlStr)))</span><span style=''>
+</span>23 <span style=''>  }
+</span>24 <span style=''>
+</span>25 <span style=''>  def documentToString(doc: Document): String = {
+</span>26 <span style=''>    val tf = </span><span style='background: #AEF1AE'>TransformerFactory.newInstance(&quot;com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl&quot;, getClass.getClassLoader)</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>    </span><span style='background: #AEF1AE'>tf.setAttribute(&quot;indent-number&quot;, 4)</span><span style=''>
+</span>29 <span style=''>
+</span>30 <span style=''>    val transformer = </span><span style='background: #AEF1AE'>tf.newTransformer()</span><span style=''>
+</span>31 <span style=''>
+</span>32 <span style=''>    </span><span style='background: #AEF1AE'>transformer.setOutputProperty(OutputKeys.INDENT, &quot;yes&quot;)</span><span style=''>
+</span>33 <span style=''>
+</span>34 <span style=''>    val writer = </span><span style='background: #AEF1AE'>new StringWriter()</span><span style=''>
+</span>35 <span style=''>    </span><span style='background: #AEF1AE'>transformer.transform(new DOMSource(doc), new StreamResult(writer))</span><span style=''>
+</span>36 <span style=''>    </span><span style='background: #AEF1AE'>writer.getBuffer.toString</span><span style=''>
+</span>37 <span style=''>  }
+</span>38 <span style=''>
+</span>39 <span style=''>  def addContentAsChild(xmlDocument: Document, nodesList: NodeList, nodeToAdd: Node): Node = {
+</span>40 <span style=''>    val lineBreak = </span><span style='background: #AEF1AE'>xmlDocument.createTextNode(&quot;\t&quot;)</span><span style=''>
+</span>41 <span style=''>
+</span>42 <span style=''>    </span><span style='background: #AEF1AE'>nodesList.item(0).appendChild(lineBreak)</span><span style=''>
+</span>43 <span style=''>    </span><span style='background: #AEF1AE'>nodesList.item(0).appendChild(nodeToAdd)</span><span style=''>
+</span>44 <span style=''>  }
+</span>45 <span style=''>
+</span>46 <span style=''>  def prepareContentForInsertion(nodeContent: String, xmlDocument: Document): Node = {
+</span>47 <span style=''>    val factory = </span><span style='background: #AEF1AE'>DocumentBuilderFactory.newInstance()</span><span style=''>
+</span>48 <span style=''>
+</span>49 <span style=''>    val builder = </span><span style='background: #AEF1AE'>factory.newDocumentBuilder()</span><span style=''>
+</span>50 <span style=''>    val subDocument = </span><span style='background: #AEF1AE'>builder.parse(new InputSource(new StringReader(nodeContent)))</span><span style=''>
+</span>51 <span style=''>
+</span>52 <span style=''>    val actualNode = </span><span style='background: #AEF1AE'>subDocument.getDocumentElement</span><span style=''>
+</span>53 <span style=''>
+</span>54 <span style=''>    val nodeToAdd = </span><span style='background: #AEF1AE'>xmlDocument.importNode(actualNode, true)</span><span style=''>
+</span>55 <span style=''>    nodeToAdd
+</span>56 <span style=''>  }
+</span>57 <span style=''>
+</span>58 <span style=''>  def executeXPathExpression(xpath: String, xmlDocument: Document): NodeList = {
+</span>59 <span style=''>    val xpathExpression = </span><span style='background: #AEF1AE'>XPathFactory.newInstance().newXPath()</span><span style=''>
+</span>60 <span style=''>
+</span>61 <span style=''>    val nodesList = </span><span style='background: #AEF1AE'>xpathExpression.compile(xpath)
+</span>62 <span style=''></span><span style='background: #AEF1AE'>      .evaluate(xmlDocument, XPathConstants.NODESET).asInstanceOf[NodeList]</span><span style=''>
+</span>63 <span style=''>    nodesList
+</span>64 <span style=''>  }
+</span>65 <span style=''>
+</span>66 <span style=''>  def parentNode(xpath: String, xmlDocument: Document): Option[Node] = {
+</span>67 <span style=''>    val xpathExpression = </span><span style='background: #F0ADAD'>XPathFactory.newInstance().newXPath()</span><span style=''>
+</span>68 <span style=''>
+</span>69 <span style=''>    val nodesList = </span><span style='background: #F0ADAD'>xpathExpression.compile(xpath)
+</span>70 <span style=''></span><span style='background: #F0ADAD'>      .evaluate(xmlDocument, XPathConstants.NODESET).asInstanceOf[NodeList]</span><span style=''>
+</span>71 <span style=''>
+</span>72 <span style=''>    if (</span><span style='background: #F0ADAD'>nodesList.getLength &gt; 0</span><span style=''>) {
+</span>73 <span style=''>      </span><span style='background: #F0ADAD'>Some(nodesList.item(0).getParentNode)</span><span style=''>
+</span>74 <span style=''>    } else {
+</span>75 <span style=''>      </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>76 <span style=''>    }
+</span>77 <span style=''>  }
+</span>78 <span style=''>}
+</span>79 <span style=''>
+</span>80 <span style=''>class XmlMutableView(
+</span>81 <span style=''>                      originalBackingObject: FileArtifact,
+</span>82 <span style=''>                      parent: ProjectMutableView)
+</span>83 <span style=''>  extends LazyFileArtifactBackedMutableView(originalBackingObject, parent)
+</span>84 <span style=''>    with TerminalView[FileArtifact] {
+</span>85 <span style=''>
+</span>86 <span style=''>  private var xml = </span><span style='background: #AEF1AE'>originalBackingObject.content</span><span style=''>
+</span>87 <span style=''>
+</span>88 <span style=''>  override protected def currentContent: String = </span><span style='background: #AEF1AE'>xml</span><span style=''>
+</span>89 <span style=''>
+</span>90 <span style=''>  import XmlMutableView._
+</span>91 <span style=''>
+</span>92 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add the specified content under the indicated xpath-selected node&quot;)
+</span>93 <span style=''>  def addChildNode(@ExportFunctionParameterDescription(name = &quot;xpath&quot;,
+</span>94 <span style=''>    description = &quot;The XPath selector for the node to add the content under&quot;)
+</span>95 <span style=''>                           xpath: String,
+</span>96 <span style=''>                           @ExportFunctionParameterDescription(name = &quot;newNode&quot;,
+</span>97 <span style=''>                             description = &quot;The new node name to be added as a child&quot;)
+</span>98 <span style=''>                           newNode: String,
+</span>99 <span style=''>                           @ExportFunctionParameterDescription(name = &quot;nodeContent&quot;,
+</span>100 <span style=''>                             description = &quot;XML document to be added under the indicated node&quot;)
+</span>101 <span style=''>                           nodeContent: String): Unit = {
+</span>102 <span style=''>    val xmlDocument = </span><span style='background: #AEF1AE'>stringToDocument(currentContent)</span><span style=''>
+</span>103 <span style=''>
+</span>104 <span style=''>    val nodesList: NodeList = </span><span style='background: #AEF1AE'>executeXPathExpression(xpath, xmlDocument)</span><span style=''>
+</span>105 <span style=''>
+</span>106 <span style=''>    val nodeToAdd: Node = </span><span style='background: #AEF1AE'>prepareContentForInsertion(nodeContent, xmlDocument)</span><span style=''>
+</span>107 <span style=''>
+</span>108 <span style=''>    </span><span style='background: #AEF1AE'>addContentAsChild(xmlDocument, nodesList, nodeToAdd)</span><span style=''>
+</span>109 <span style=''>
+</span>110 <span style=''>    </span><span style='background: #AEF1AE'>this.xml = documentToString(xmlDocument)</span><span style=''>
+</span>111 <span style=''>  }
+</span>112 <span style=''>
+</span>113 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Adds or replaces a node&quot;)
+</span>114 <span style=''>  def addOrReplaceNode(@ExportFunctionParameterDescription(name = &quot;parentNodeXPath&quot;,
+</span>115 <span style=''>    description = &quot;The XPath selector for the parent node&quot;)
+</span>116 <span style=''>                       xpathOfParent: String,
+</span>117 <span style=''>                       @ExportFunctionParameterDescription(name = &quot;xPathOfNodeToReplace&quot;,
+</span>118 <span style=''>                         description = &quot;The XPath selector for the node to replace&quot;)
+</span>119 <span style=''>                       xPathOfNodeToReplace: String,
+</span>120 <span style=''>                       @ExportFunctionParameterDescription(name = &quot;newNode&quot;,
+</span>121 <span style=''>                         description = &quot;The name of the node being placed&quot;)
+</span>122 <span style=''>                       newNode: String,
+</span>123 <span style=''>                       @ExportFunctionParameterDescription(name = &quot;nodeContent&quot;,
+</span>124 <span style=''>                         description = &quot;The content of the node being placed&quot;)
+</span>125 <span style=''>                       nodeContent: String): Unit = {
+</span>126 <span style=''>
+</span>127 <span style=''>    val xmlDocument = </span><span style='background: #AEF1AE'>stringToDocument(currentContent)</span><span style=''>
+</span>128 <span style=''>
+</span>129 <span style=''>    val nodeToAdd: Node = </span><span style='background: #AEF1AE'>prepareContentForInsertion(nodeContent, xmlDocument)</span><span style=''>
+</span>130 <span style=''>
+</span>131 <span style=''>    if (</span><span style='background: #AEF1AE'>this.contains(xPathOfNodeToReplace)</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>132 <span style=''></span><span style='background: #AEF1AE'>      val xpathExpression = XPathFactory.newInstance().newXPath()
+</span>133 <span style=''></span><span style='background: #AEF1AE'>      val nodeToReplace: Node = xpathExpression.compile(xPathOfNodeToReplace)
+</span>134 <span style=''></span><span style='background: #AEF1AE'>        .evaluate(xmlDocument, XPathConstants.NODE).asInstanceOf[Node]
+</span>135 <span style=''></span><span style='background: #AEF1AE'>      nodeToReplace.getParentNode.replaceChild(nodeToAdd, nodeToReplace)
+</span>136 <span style=''></span><span style='background: #AEF1AE'>      this.xml = documentToString(xmlDocument)
+</span>137 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''> else {
+</span>138 <span style=''>      </span><span style='background: #AEF1AE'>addChildNode(xpathOfParent, newNode, nodeContent)</span><span style=''>
+</span>139 <span style=''>    }
+</span>140 <span style=''>  }
+</span>141 <span style=''>
+</span>142 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Adds a node if it does not exist&quot;)
+</span>143 <span style=''>  def addNodeIfNotPresent(@ExportFunctionParameterDescription(name = &quot;parentNodeXPath&quot;,
+</span>144 <span style=''>    description = &quot;The XPath selector for the parent node&quot;)
+</span>145 <span style=''>                       xpathOfParent: String,
+</span>146 <span style=''>                       @ExportFunctionParameterDescription(name = &quot;xPathOfNodeToPlace&quot;,
+</span>147 <span style=''>                         description = &quot;The XPath selector for the node to be placed&quot;)
+</span>148 <span style=''>                       xPathOfNodeToPlace: String,
+</span>149 <span style=''>                       @ExportFunctionParameterDescription(name = &quot;newNode&quot;,
+</span>150 <span style=''>                         description = &quot;The name of the node being placed&quot;)
+</span>151 <span style=''>                       newNode: String,
+</span>152 <span style=''>                       @ExportFunctionParameterDescription(name = &quot;nodeContent&quot;,
+</span>153 <span style=''>                         description = &quot;The content of the node being placed&quot;)
+</span>154 <span style=''>                       nodeContent: String): Unit = {
+</span>155 <span style=''>
+</span>156 <span style=''>    val xmlDocument = </span><span style='background: #AEF1AE'>stringToDocument(currentContent)</span><span style=''>
+</span>157 <span style=''>
+</span>158 <span style=''>    val nodeToAdd: Node = </span><span style='background: #AEF1AE'>prepareContentForInsertion(nodeContent, xmlDocument)</span><span style=''>
+</span>159 <span style=''>
+</span>160 <span style=''>    if (</span><span style='background: #AEF1AE'>!this.contains(xPathOfNodeToPlace)</span><span style=''>) {
+</span>161 <span style=''>      </span><span style='background: #AEF1AE'>addChildNode(xpathOfParent, newNode, nodeContent)</span><span style=''>
+</span>162 <span style=''>    }
+</span>163 <span style=''>  }
+</span>164 <span style=''>
+</span>165 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Tests whether a node matching the given xpath expression is present&quot;)
+</span>166 <span style=''>  def contains(@ExportFunctionParameterDescription(name = &quot;xpath&quot;,
+</span>167 <span style=''>    description = &quot;The XPath to test against for the presence of a node&quot;)
+</span>168 <span style=''>               xpath: String): Boolean = {
+</span>169 <span style=''>    val xmlDocument = </span><span style='background: #AEF1AE'>stringToDocument(currentContent)</span><span style=''>
+</span>170 <span style=''>
+</span>171 <span style=''>    </span><span style='background: #AEF1AE'>executeXPathExpression(xpath, xmlDocument).getLength</span><span style=''> match {
+</span>172 <span style=''>      case 0 =&gt; </span><span style='background: #AEF1AE'>false</span><span style=''>
+</span>173 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>true</span><span style=''>
+</span>174 <span style=''>    }
+</span>175 <span style=''>  }
+</span>176 <span style=''>
+</span>177 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Get the text content for a specific xpath expression&quot;)
+</span>178 <span style=''>  def getTextContentFor(@ExportFunctionParameterDescription(name = &quot;xpath&quot;,
+</span>179 <span style=''>    description = &quot;The XPath to use to retrieve the test content&quot;)
+</span>180 <span style=''>                        xpath: String): String = {
+</span>181 <span style=''>    val xmlDocument = </span><span style='background: #AEF1AE'>stringToDocument(currentContent)</span><span style=''>
+</span>182 <span style=''>    val nodesList: NodeList = </span><span style='background: #AEF1AE'>executeXPathExpression(xpath, xmlDocument)</span><span style=''>
+</span>183 <span style=''>
+</span>184 <span style=''>    val numberOfFoundNodes = </span><span style='background: #AEF1AE'>nodesList.getLength</span><span style=''>
+</span>185 <span style=''>    if (</span><span style='background: #AEF1AE'>numberOfFoundNodes &gt; 0</span><span style=''>) {
+</span>186 <span style=''>      </span><span style='background: #AEF1AE'>nodesList.item(0).getTextContent</span><span style=''>
+</span>187 <span style=''>    } else {
+</span>188 <span style=''>      </span><span style='background: #AEF1AE'>&quot;&quot;</span><span style=''>
+</span>189 <span style=''>    }
+</span>190 <span style=''>  }
+</span>191 <span style=''>
+</span>192 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Set the text content for a specific xpath expression&quot;)
+</span>193 <span style=''>  def setTextContentFor(@ExportFunctionParameterDescription(name = &quot;xpath&quot;,
+</span>194 <span style=''>    description = &quot;The XPath to use to set the test content&quot;)
+</span>195 <span style=''>                        xpath: String,
+</span>196 <span style=''>                        @ExportFunctionParameterDescription(name = &quot;newContent&quot;,
+</span>197 <span style=''>                          description = &quot;New text content for the XPath&quot;)
+</span>198 <span style=''>                        newContent: String): Unit = {
+</span>199 <span style=''>    val xmlDocument = </span><span style='background: #AEF1AE'>stringToDocument(currentContent)</span><span style=''>
+</span>200 <span style=''>    val nodesList: NodeList = </span><span style='background: #AEF1AE'>executeXPathExpression(xpath, xmlDocument)</span><span style=''>
+</span>201 <span style=''>
+</span>202 <span style=''>    val numberOfFoundNodes = </span><span style='background: #AEF1AE'>nodesList.getLength</span><span style=''>
+</span>203 <span style=''>    if (</span><span style='background: #AEF1AE'>numberOfFoundNodes &gt; 0</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>204 <span style=''></span><span style='background: #AEF1AE'>      nodesList.item(0).setTextContent(newContent)
+</span>205 <span style=''></span><span style='background: #AEF1AE'>      this.xml = documentToString(xmlDocument)
+</span>206 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>207 <span style=''>  }
+</span>208 <span style=''>
+</span>209 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Deletes the specified node&quot;)
+</span>210 <span style=''>  def deleteNode(@ExportFunctionParameterDescription(name = &quot;xpath&quot;,
+</span>211 <span style=''>    description = &quot;The XPath to the node to delete&quot;)
+</span>212 <span style=''>                 xpath: String): Unit = {
+</span>213 <span style=''>    val xmlDocument = </span><span style='background: #AEF1AE'>stringToDocument(currentContent)</span><span style=''>
+</span>214 <span style=''>    val nodesList: NodeList = </span><span style='background: #AEF1AE'>executeXPathExpression(xpath, xmlDocument)</span><span style=''>
+</span>215 <span style=''>
+</span>216 <span style=''>    val numberOfFoundNodes = </span><span style='background: #AEF1AE'>nodesList.getLength</span><span style=''>
+</span>217 <span style=''>
+</span>218 <span style=''>    if (</span><span style='background: #AEF1AE'>numberOfFoundNodes &gt; 0</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>219 <span style=''></span><span style='background: #AEF1AE'>      val nodeToRemove: Node = nodesList.item(0)
+</span>220 <span style=''></span><span style='background: #AEF1AE'>      nodeToRemove.getParentNode.removeChild(nodeToRemove)
+</span>221 <span style=''></span><span style='background: #AEF1AE'>      this.xml = documentToString(xmlDocument)
+</span>222 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>223 <span style=''>  }
+</span>224 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          2938
+        </td>
+        <td>
+          725
+          -
+          761
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.xml.parsers.DocumentBuilderFactory.newInstance
+        </td>
+        <td style="background: #AEF1AE">
+          javax.xml.parsers.DocumentBuilderFactory.newInstance()
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          2939
+        </td>
+        <td>
+          781
+          -
+          809
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.xml.parsers.DocumentBuilderFactory.newDocumentBuilder
+        </td>
+        <td style="background: #AEF1AE">
+          factory.newDocumentBuilder()
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          2942
+        </td>
+        <td>
+          814
+          -
+          870
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.xml.parsers.DocumentBuilder.parse
+        </td>
+        <td style="background: #AEF1AE">
+          builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(xmlStr)))
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          2941
+        </td>
+        <td>
+          828
+          -
+          869
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.xml.sax.InputSource.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new org.xml.sax.InputSource(new java.io.StringReader(xmlStr))
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          2940
+        </td>
+        <td>
+          844
+          -
+          868
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.StringReader.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.io.StringReader(xmlStr)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2945
+        </td>
+        <td>
+          939
+          -
+          1065
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.xml.transform.TransformerFactory.newInstance
+        </td>
+        <td style="background: #AEF1AE">
+          javax.xml.transform.TransformerFactory.newInstance(&quot;com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl&quot;, XmlMutableView.this.getClass().getClassLoader())
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2944
+        </td>
+        <td>
+          1041
+          -
+          1064
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getClassLoader
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.this.getClass().getClassLoader()
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2943
+        </td>
+        <td>
+          970
+          -
+          1039
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl&quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2946
+        </td>
+        <td>
+          1071
+          -
+          1106
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.xml.transform.TransformerFactory.setAttribute
+        </td>
+        <td style="background: #AEF1AE">
+          tf.setAttribute(&quot;indent-number&quot;, 4)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2947
+        </td>
+        <td>
+          1130
+          -
+          1149
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.xml.transform.TransformerFactory.newTransformer
+        </td>
+        <td style="background: #AEF1AE">
+          tf.newTransformer()
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          2948
+        </td>
+        <td>
+          1155
+          -
+          1210
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.xml.transform.Transformer.setOutputProperty
+        </td>
+        <td style="background: #AEF1AE">
+          transformer.setOutputProperty(&quot;indent&quot;, &quot;yes&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          2949
+        </td>
+        <td>
+          1229
+          -
+          1247
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.StringWriter.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.io.StringWriter()
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          2951
+        </td>
+        <td>
+          1294
+          -
+          1318
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.xml.transform.stream.StreamResult.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new javax.xml.transform.stream.StreamResult(writer)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          2950
+        </td>
+        <td>
+          1274
+          -
+          1292
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.xml.transform.dom.DOMSource.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new javax.xml.transform.dom.DOMSource(doc)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          2952
+        </td>
+        <td>
+          1252
+          -
+          1319
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.xml.transform.Transformer.transform
+        </td>
+        <td style="background: #AEF1AE">
+          transformer.transform(new javax.xml.transform.dom.DOMSource(doc), new javax.xml.transform.stream.StreamResult(writer))
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2953
+        </td>
+        <td>
+          1324
+          -
+          1349
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.StringBuffer.toString
+        </td>
+        <td style="background: #AEF1AE">
+          writer.getBuffer().toString()
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          2954
+        </td>
+        <td>
+          1470
+          -
+          1502
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.w3c.dom.Document.createTextNode
+        </td>
+        <td style="background: #AEF1AE">
+          xmlDocument.createTextNode(&quot;\t&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          2955
+        </td>
+        <td>
+          1508
+          -
+          1548
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.w3c.dom.Node.appendChild
+        </td>
+        <td style="background: #AEF1AE">
+          nodesList.item(0).appendChild(lineBreak)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          2956
+        </td>
+        <td>
+          1553
+          -
+          1593
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.w3c.dom.Node.appendChild
+        </td>
+        <td style="background: #AEF1AE">
+          nodesList.item(0).appendChild(nodeToAdd)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          2957
+        </td>
+        <td>
+          1704
+          -
+          1740
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.xml.parsers.DocumentBuilderFactory.newInstance
+        </td>
+        <td style="background: #AEF1AE">
+          javax.xml.parsers.DocumentBuilderFactory.newInstance()
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          2958
+        </td>
+        <td>
+          1760
+          -
+          1788
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.xml.parsers.DocumentBuilderFactory.newDocumentBuilder
+        </td>
+        <td style="background: #AEF1AE">
+          factory.newDocumentBuilder()
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2960
+        </td>
+        <td>
+          1825
+          -
+          1871
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.xml.sax.InputSource.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new org.xml.sax.InputSource(new java.io.StringReader(nodeContent))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2959
+        </td>
+        <td>
+          1841
+          -
+          1870
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.StringReader.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.io.StringReader(nodeContent)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2961
+        </td>
+        <td>
+          1811
+          -
+          1872
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.xml.parsers.DocumentBuilder.parse
+        </td>
+        <td style="background: #AEF1AE">
+          builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(nodeContent)))
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          2962
+        </td>
+        <td>
+          1895
+          -
+          1925
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.w3c.dom.Document.getDocumentElement
+        </td>
+        <td style="background: #AEF1AE">
+          subDocument.getDocumentElement()
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          2963
+        </td>
+        <td>
+          1947
+          -
+          1987
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.w3c.dom.Document.importNode
+        </td>
+        <td style="background: #AEF1AE">
+          xmlDocument.importNode(actualNode, true)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          2964
+        </td>
+        <td>
+          2114
+          -
+          2151
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.xml.xpath.XPathFactory.newXPath
+        </td>
+        <td style="background: #AEF1AE">
+          javax.xml.xpath.XPathFactory.newInstance().newXPath()
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          2966
+        </td>
+        <td>
+          2173
+          -
+          2279
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          xpathExpression.compile(xpath).evaluate(xmlDocument, javax.xml.xpath.XPathConstants.NODESET).asInstanceOf[org.w3c.dom.NodeList]
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          2965
+        </td>
+        <td>
+          2233
+          -
+          2255
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          javax.xml.xpath.XPathConstants.NODESET
+        </td>
+        <td style="background: #AEF1AE">
+          javax.xml.xpath.XPathConstants.NODESET
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          2967
+        </td>
+        <td>
+          2398
+          -
+          2435
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.xml.xpath.XPathFactory.newXPath
+        </td>
+        <td style="background: #F0ADAD">
+          javax.xml.xpath.XPathFactory.newInstance().newXPath()
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          2969
+        </td>
+        <td>
+          2457
+          -
+          2563
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          xpathExpression.compile(xpath).evaluate(xmlDocument, javax.xml.xpath.XPathConstants.NODESET).asInstanceOf[org.w3c.dom.NodeList]
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          2968
+        </td>
+        <td>
+          2517
+          -
+          2539
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          javax.xml.xpath.XPathConstants.NODESET
+        </td>
+        <td style="background: #F0ADAD">
+          javax.xml.xpath.XPathConstants.NODESET
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          2970
+        </td>
+        <td>
+          2573
+          -
+          2596
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          nodesList.getLength().&gt;(0)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          2972
+        </td>
+        <td>
+          2606
+          -
+          2643
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[org.w3c.dom.Node](nodesList.item(0).getParentNode())
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          2971
+        </td>
+        <td>
+          2611
+          -
+          2642
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.w3c.dom.Node.getParentNode
+        </td>
+        <td style="background: #F0ADAD">
+          nodesList.item(0).getParentNode()
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          2973
+        </td>
+        <td>
+          2606
+          -
+          2643
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[org.w3c.dom.Node](nodesList.item(0).getParentNode())
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          2975
+        </td>
+        <td>
+          2663
+          -
+          2667
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          2974
+        </td>
+        <td>
+          2663
+          -
+          2667
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          2976
+        </td>
+        <td>
+          2946
+          -
+          2975
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.this.originalBackingObject.content
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          2977
+        </td>
+        <td>
+          3027
+          -
+          3030
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.xml
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.this.xml
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          2978
+        </td>
+        <td>
+          3859
+          -
+          3873
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.currentContent
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.this.currentContent
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          2979
+        </td>
+        <td>
+          3842
+          -
+          3874
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.stringToDocument
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.stringToDocument(XmlMutableView.this.currentContent)
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          2980
+        </td>
+        <td>
+          3906
+          -
+          3948
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.executeXPathExpression
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.executeXPathExpression(xpath, xmlDocument)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          2981
+        </td>
+        <td>
+          3976
+          -
+          4028
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.prepareContentForInsertion
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.prepareContentForInsertion(nodeContent, xmlDocument)
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          2982
+        </td>
+        <td>
+          4034
+          -
+          4086
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.addContentAsChild
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.addContentAsChild(xmlDocument, nodesList, nodeToAdd)
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          2984
+        </td>
+        <td>
+          4092
+          -
+          4132
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.xml_=
+        </td>
+        <td style="background: #AEF1AE">
+          this.xml_=(XmlMutableView.documentToString(xmlDocument))
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          2983
+        </td>
+        <td>
+          4103
+          -
+          4132
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.documentToString
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.documentToString(xmlDocument)
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          2986
+        </td>
+        <td>
+          5064
+          -
+          5096
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.stringToDocument
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.stringToDocument(XmlMutableView.this.currentContent)
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          2985
+        </td>
+        <td>
+          5081
+          -
+          5095
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.currentContent
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.this.currentContent
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          2987
+        </td>
+        <td>
+          5124
+          -
+          5176
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.prepareContentForInsertion
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.prepareContentForInsertion(nodeContent, xmlDocument)
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          2995
+        </td>
+        <td>
+          5223
+          -
+          5565
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val xpathExpression: javax.xml.xpath.XPath = javax.xml.xpath.XPathFactory.newInstance().newXPath();
+  val nodeToReplace: org.w3c.dom.Node = xpathExpression.compile(xPathOfNodeToReplace).evaluate(xmlDocument, javax.xml.xpath.XPathConstants.NODE).asInstanceOf[org.w3c.dom.Node];
+  nodeToReplace.getParentNode().replaceChild(nodeToAdd, nodeToReplace);
+  this.xml_=(XmlMutableView.documentToString(xmlDocument))
+}
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          2988
+        </td>
+        <td>
+          5186
+          -
+          5221
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.contains
+        </td>
+        <td style="background: #AEF1AE">
+          this.contains(xPathOfNodeToReplace)
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          2989
+        </td>
+        <td>
+          5253
+          -
+          5290
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.xml.xpath.XPathFactory.newXPath
+        </td>
+        <td style="background: #AEF1AE">
+          javax.xml.xpath.XPathFactory.newInstance().newXPath()
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          2990
+        </td>
+        <td>
+          5400
+          -
+          5419
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          javax.xml.xpath.XPathConstants.NODE
+        </td>
+        <td style="background: #AEF1AE">
+          javax.xml.xpath.XPathConstants.NODE
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          2991
+        </td>
+        <td>
+          5323
+          -
+          5439
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          xpathExpression.compile(xPathOfNodeToReplace).evaluate(xmlDocument, javax.xml.xpath.XPathConstants.NODE).asInstanceOf[org.w3c.dom.Node]
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          2992
+        </td>
+        <td>
+          5446
+          -
+          5512
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.w3c.dom.Node.replaceChild
+        </td>
+        <td style="background: #AEF1AE">
+          nodeToReplace.getParentNode().replaceChild(nodeToAdd, nodeToReplace)
+        </td>
+      </tr><tr>
+        <td>
+          136
+        </td>
+        <td>
+          2993
+        </td>
+        <td>
+          5530
+          -
+          5559
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.documentToString
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.documentToString(xmlDocument)
+        </td>
+      </tr><tr>
+        <td>
+          136
+        </td>
+        <td>
+          2994
+        </td>
+        <td>
+          5519
+          -
+          5559
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.xml_=
+        </td>
+        <td style="background: #AEF1AE">
+          this.xml_=(XmlMutableView.documentToString(xmlDocument))
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          2996
+        </td>
+        <td>
+          5579
+          -
+          5628
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.addChildNode
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.this.addChildNode(xpathOfParent, newNode, nodeContent)
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          2997
+        </td>
+        <td>
+          5579
+          -
+          5628
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.addChildNode
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.this.addChildNode(xpathOfParent, newNode, nodeContent)
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          2999
+        </td>
+        <td>
+          6576
+          -
+          6608
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.stringToDocument
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.stringToDocument(XmlMutableView.this.currentContent)
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          2998
+        </td>
+        <td>
+          6593
+          -
+          6607
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.currentContent
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.this.currentContent
+        </td>
+      </tr><tr>
+        <td>
+          158
+        </td>
+        <td>
+          3000
+        </td>
+        <td>
+          6636
+          -
+          6688
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.prepareContentForInsertion
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.prepareContentForInsertion(nodeContent, xmlDocument)
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          3005
+        </td>
+        <td>
+          6694
+          -
+          6694
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          3004
+        </td>
+        <td>
+          6694
+          -
+          6694
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          3001
+        </td>
+        <td>
+          6698
+          -
+          6732
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          this.contains(xPathOfNodeToPlace).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          3002
+        </td>
+        <td>
+          6742
+          -
+          6791
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.addChildNode
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.this.addChildNode(xpathOfParent, newNode, nodeContent)
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          3003
+        </td>
+        <td>
+          6742
+          -
+          6791
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.addChildNode
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.this.addChildNode(xpathOfParent, newNode, nodeContent)
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          3007
+        </td>
+        <td>
+          7129
+          -
+          7161
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.stringToDocument
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.stringToDocument(XmlMutableView.this.currentContent)
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          3006
+        </td>
+        <td>
+          7146
+          -
+          7160
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.currentContent
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.this.currentContent
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          3008
+        </td>
+        <td>
+          7167
+          -
+          7219
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.w3c.dom.NodeList.getLength
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.executeXPathExpression(xpath, xmlDocument).getLength()
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          3009
+        </td>
+        <td>
+          7244
+          -
+          7249
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          173
+        </td>
+        <td>
+          3010
+        </td>
+        <td>
+          7266
+          -
+          7270
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          3011
+        </td>
+        <td>
+          7620
+          -
+          7634
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.currentContent
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.this.currentContent
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          3012
+        </td>
+        <td>
+          7603
+          -
+          7635
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.stringToDocument
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.stringToDocument(XmlMutableView.this.currentContent)
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          3013
+        </td>
+        <td>
+          7666
+          -
+          7708
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.executeXPathExpression
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.executeXPathExpression(xpath, xmlDocument)
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          3014
+        </td>
+        <td>
+          7739
+          -
+          7758
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.w3c.dom.NodeList.getLength
+        </td>
+        <td style="background: #AEF1AE">
+          nodesList.getLength()
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          3015
+        </td>
+        <td>
+          7767
+          -
+          7789
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          numberOfFoundNodes.&gt;(0)
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          3017
+        </td>
+        <td>
+          7799
+          -
+          7831
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          org.w3c.dom.Node.getTextContent
+        </td>
+        <td style="background: #AEF1AE">
+          nodesList.item(0).getTextContent()
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          3016
+        </td>
+        <td>
+          7799
+          -
+          7831
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.w3c.dom.Node.getTextContent
+        </td>
+        <td style="background: #AEF1AE">
+          nodesList.item(0).getTextContent()
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          3019
+        </td>
+        <td>
+          7851
+          -
+          7853
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          3018
+        </td>
+        <td>
+          7851
+          -
+          7853
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          3020
+        </td>
+        <td>
+          8396
+          -
+          8410
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.currentContent
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.this.currentContent
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          3021
+        </td>
+        <td>
+          8379
+          -
+          8411
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.stringToDocument
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.stringToDocument(XmlMutableView.this.currentContent)
+        </td>
+      </tr><tr>
+        <td>
+          200
+        </td>
+        <td>
+          3022
+        </td>
+        <td>
+          8442
+          -
+          8484
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.executeXPathExpression
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.executeXPathExpression(xpath, xmlDocument)
+        </td>
+      </tr><tr>
+        <td>
+          202
+        </td>
+        <td>
+          3023
+        </td>
+        <td>
+          8515
+          -
+          8534
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.w3c.dom.NodeList.getLength
+        </td>
+        <td style="background: #AEF1AE">
+          nodesList.getLength()
+        </td>
+      </tr><tr>
+        <td>
+          203
+        </td>
+        <td>
+          3029
+        </td>
+        <td>
+          8539
+          -
+          8539
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          203
+        </td>
+        <td>
+          3028
+        </td>
+        <td>
+          8567
+          -
+          8672
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  nodesList.item(0).setTextContent(newContent);
+  this.xml_=(XmlMutableView.documentToString(xmlDocument))
+}
+        </td>
+      </tr><tr>
+        <td>
+          203
+        </td>
+        <td>
+          3030
+        </td>
+        <td>
+          8539
+          -
+          8539
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          203
+        </td>
+        <td>
+          3024
+        </td>
+        <td>
+          8543
+          -
+          8565
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          numberOfFoundNodes.&gt;(0)
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          3025
+        </td>
+        <td>
+          8575
+          -
+          8619
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.w3c.dom.Node.setTextContent
+        </td>
+        <td style="background: #AEF1AE">
+          nodesList.item(0).setTextContent(newContent)
+        </td>
+      </tr><tr>
+        <td>
+          205
+        </td>
+        <td>
+          3026
+        </td>
+        <td>
+          8637
+          -
+          8666
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.documentToString
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.documentToString(xmlDocument)
+        </td>
+      </tr><tr>
+        <td>
+          205
+        </td>
+        <td>
+          3027
+        </td>
+        <td>
+          8626
+          -
+          8666
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.xml_=
+        </td>
+        <td style="background: #AEF1AE">
+          this.xml_=(XmlMutableView.documentToString(xmlDocument))
+        </td>
+      </tr><tr>
+        <td>
+          213
+        </td>
+        <td>
+          3031
+        </td>
+        <td>
+          8961
+          -
+          8975
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.currentContent
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.this.currentContent
+        </td>
+      </tr><tr>
+        <td>
+          213
+        </td>
+        <td>
+          3032
+        </td>
+        <td>
+          8944
+          -
+          8976
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.stringToDocument
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.stringToDocument(XmlMutableView.this.currentContent)
+        </td>
+      </tr><tr>
+        <td>
+          214
+        </td>
+        <td>
+          3033
+        </td>
+        <td>
+          9007
+          -
+          9049
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.executeXPathExpression
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.executeXPathExpression(xpath, xmlDocument)
+        </td>
+      </tr><tr>
+        <td>
+          216
+        </td>
+        <td>
+          3034
+        </td>
+        <td>
+          9080
+          -
+          9099
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.w3c.dom.NodeList.getLength
+        </td>
+        <td style="background: #AEF1AE">
+          nodesList.getLength()
+        </td>
+      </tr><tr>
+        <td>
+          218
+        </td>
+        <td>
+          3035
+        </td>
+        <td>
+          9109
+          -
+          9131
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          numberOfFoundNodes.&gt;(0)
+        </td>
+      </tr><tr>
+        <td>
+          218
+        </td>
+        <td>
+          3040
+        </td>
+        <td>
+          9133
+          -
+          9295
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val nodeToRemove: org.w3c.dom.Node = nodesList.item(0);
+  nodeToRemove.getParentNode().removeChild(nodeToRemove);
+  this.xml_=(XmlMutableView.documentToString(xmlDocument))
+}
+        </td>
+      </tr><tr>
+        <td>
+          218
+        </td>
+        <td>
+          3042
+        </td>
+        <td>
+          9105
+          -
+          9105
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          218
+        </td>
+        <td>
+          3041
+        </td>
+        <td>
+          9105
+          -
+          9105
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          219
+        </td>
+        <td>
+          3036
+        </td>
+        <td>
+          9166
+          -
+          9183
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.w3c.dom.NodeList.item
+        </td>
+        <td style="background: #AEF1AE">
+          nodesList.item(0)
+        </td>
+      </tr><tr>
+        <td>
+          220
+        </td>
+        <td>
+          3037
+        </td>
+        <td>
+          9190
+          -
+          9242
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.w3c.dom.Node.removeChild
+        </td>
+        <td style="background: #AEF1AE">
+          nodeToRemove.getParentNode().removeChild(nodeToRemove)
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          3038
+        </td>
+        <td>
+          9260
+          -
+          9289
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.documentToString
+        </td>
+        <td style="background: #AEF1AE">
+          XmlMutableView.documentToString(xmlDocument)
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          3039
+        </td>
+        <td>
+          9249
+          -
+          9289
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.xml.XmlMutableView.xml_=
+        </td>
+        <td style="background: #AEF1AE">
+          this.xml_=(XmlMutableView.documentToString(xmlDocument))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

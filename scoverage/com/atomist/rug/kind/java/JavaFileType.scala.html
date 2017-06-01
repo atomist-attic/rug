@@ -1,0 +1,106 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/java/JavaFileType.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.java
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.kind.grammar.AntlrRawFileType
+</span>4 <span style=''>import com.atomist.source.FileArtifact
+</span>5 <span style=''>import com.atomist.tree.content.text.grammar.antlr.FromGrammarAstNodeCreationStrategy
+</span>6 <span style=''>
+</span>7 <span style=''>/**
+</span>8 <span style=''>  * Path-expression oriented Java type built on JavaParser.
+</span>9 <span style=''>  * Please refer to the ANTLR grammar for Java 8 for the
+</span>10 <span style=''>  * production names, which are used unchanged in path expression.
+</span>11 <span style=''>  * https://github.com/antlr/grammars-v4/blob/master/java8/Java8.g4
+</span>12 <span style=''>  */
+</span>13 <span style=''>class JavaFileType
+</span>14 <span style=''>  extends AntlrRawFileType(&quot;compilationUnit&quot;,
+</span>15 <span style=''>    FromGrammarAstNodeCreationStrategy,
+</span>16 <span style=''>    &quot;classpath:grammars/antlr/Java8.g4&quot;) {
+</span>17 <span style=''>
+</span>18 <span style=''>  override def description = </span><span style='background: #AEF1AE'>&quot;Java file&quot;</span><span style=''>
+</span>19 <span style=''>
+</span>20 <span style=''>  override def isOfType(f: FileArtifact): Boolean =
+</span>21 <span style=''>    </span><span style='background: #AEF1AE'>f.name.endsWith(&quot;.java&quot;)</span><span style=''>
+</span>22 <span style=''>
+</span>23 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1907
+        </td>
+        <td>
+          653
+          -
+          664
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Java file&quot;
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          1908
+        </td>
+        <td>
+          722
+          -
+          746
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          f.name.endsWith(&quot;.java&quot;)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

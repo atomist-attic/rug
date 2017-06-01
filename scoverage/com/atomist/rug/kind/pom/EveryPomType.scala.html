@@ -1,0 +1,237 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/pom/EveryPomType.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.pom
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.kind.core.ProjectMutableView
+</span>5 <span style=''>import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
+</span>6 <span style=''>
+</span>7 <span style=''>/**
+</span>8 <span style=''>  * Maven POM type
+</span>9 <span style=''>  */
+</span>10 <span style=''>class EveryPomType
+</span>11 <span style=''>  extends Type
+</span>12 <span style=''>    with ReflectivelyTypedType {
+</span>13 <span style=''>
+</span>14 <span style=''>  override def description = </span><span style='background: #AEF1AE'>&quot;POM XML file&quot;</span><span style=''>
+</span>15 <span style=''>
+</span>16 <span style=''>  override def runtimeClass = </span><span style='background: #AEF1AE'>classOf[PomMutableView]</span><span style=''>
+</span>17 <span style=''>
+</span>18 <span style=''>  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = {
+</span>19 <span style=''>    context match {
+</span>20 <span style=''>      case pmv: ProjectMutableView =&gt;
+</span>21 <span style=''>        </span><span style='background: #AEF1AE'>Some(pmv.currentBackingObject.allFiles
+</span>22 <span style=''></span><span style='background: #AEF1AE'>          .filter(f =&gt; f.name.equals(&quot;pom.xml&quot;))
+</span>23 <span style=''></span><span style='background: #AEF1AE'>          .map(f =&gt; new PomMutableView(f, pmv))
+</span>24 <span style=''></span><span style='background: #AEF1AE'>        )</span><span style=''>
+</span>25 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>26 <span style=''>    }
+</span>27 <span style=''>  }
+</span>28 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          2399
+        </td>
+        <td>
+          317
+          -
+          331
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;POM XML file&quot;
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2400
+        </td>
+        <td>
+          363
+          -
+          386
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.rug.kind.pom.PomMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          2405
+        </td>
+        <td>
+          532
+          -
+          677
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Seq[com.atomist.rug.spi.MutableView[_]]](pmv.currentBackingObject.allFiles.filter(((f: com.atomist.source.FileArtifact) =&gt; f.name.equals(&quot;pom.xml&quot;))).map[com.atomist.rug.kind.pom.PomMutableView, Seq[com.atomist.rug.spi.MutableView[_]]](((f: com.atomist.source.FileArtifact) =&gt; new PomMutableView(f, pmv)))(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.pom.PomMutableView]))
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          2401
+        </td>
+        <td>
+          594
+          -
+          618
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          f.name.equals(&quot;pom.xml&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2403
+        </td>
+        <td>
+          634
+          -
+          634
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.kind.pom.PomMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2402
+        </td>
+        <td>
+          640
+          -
+          666
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.pom.PomMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new PomMutableView(f, pmv)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2404
+        </td>
+        <td>
+          537
+          -
+          667
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          pmv.currentBackingObject.allFiles.filter(((f: com.atomist.source.FileArtifact) =&gt; f.name.equals(&quot;pom.xml&quot;))).map[com.atomist.rug.kind.pom.PomMutableView, Seq[com.atomist.rug.spi.MutableView[_]]](((f: com.atomist.source.FileArtifact) =&gt; new PomMutableView(f, pmv)))(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.pom.PomMutableView])
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          2406
+        </td>
+        <td>
+          694
+          -
+          698
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

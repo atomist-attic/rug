@@ -1,0 +1,956 @@
+<html>
+      <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+      <title id="title">Scoverage Code Coverage</title>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+      <style>
+        .meter {
+        height: 14px;
+        position: relative;
+        background: #BB2020;
+}
+
+.meter span {
+	display: block;
+	height: 100%;
+	background-color: rgb(43,194,83);
+	background-image: -webkit-gradient(
+	  linear,
+	  left bottom,
+	  left top,
+	  color-stop(0, rgb(43,194,83)),
+	  color-stop(1, rgb(84,240,84))
+	 );
+	background-image: -webkit-linear-gradient(
+	  center bottom,
+	  rgb(43,194,83) 37%,
+	  rgb(84,240,84) 69%
+	 );
+	background-image: -moz-linear-gradient(
+	  center bottom,
+	  rgb(43,194,83) 37%,
+	  rgb(84,240,84) 69%
+	 );
+	background-image: -ms-linear-gradient(
+	  center bottom,
+	  rgb(43,194,83) 37%,
+	  rgb(84,240,84) 69%
+	 );
+	background-image: -o-linear-gradient(
+	  center bottom,
+	  rgb(43,194,83) 37%,
+	  rgb(84,240,84) 69%
+	 );
+	-webkit-box-shadow:
+	  inset 0 2px 9px  rgba(255,255,255,0.3),
+	  inset 0 -2px 6px rgba(0,0,0,0.4);
+	-moz-box-shadow:
+	  inset 0 2px 9px  rgba(255,255,255,0.3),
+	  inset 0 -2px 6px rgba(0,0,0,0.4);
+	position: relative;
+	overflow: hidden;
+}
+      </style>
+    </head><body style="font-family: monospace;">
+      <table class="tablesorter table table-striped" style="font-size:13px">
+      <thead>
+        <tr>
+          <th>
+            Class
+          </th>
+          <th>
+            Source file
+          </th>
+          <th>
+            Lines
+          </th>
+          <th>
+            Methods
+          </th>
+          <th>
+            Statements
+          </th>
+          <th>
+            Invoked
+          </th>
+          <th>
+            Coverage
+          </th>
+          <th>
+          </th>
+          <th>
+            Branches
+          </th>
+          <th>
+            Invoked
+          </th>
+          <th>
+            Coverage
+          </th>
+          <th>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+      <td>
+        <a href="com/atomist/rug/ts/AbstractTypeScriptGenerator.scala.html">
+          AbstractTypeScriptGenerator
+        </a>
+      </td>
+      <td>
+        AbstractTypeScriptGenerator.scala
+      </td>
+      <td>
+        261
+      </td>
+      <td>
+        13
+      </td>
+      <td>
+        159
+      </td>
+      <td>
+        145
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 91%"></span>
+        </div>
+      </td>
+      <td>
+        91.19
+        %
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/AbstractTypeScriptGenerator.scala.html">
+          AbstractTypeScriptGenerator.GeneratedType
+        </a>
+      </td>
+      <td>
+        AbstractTypeScriptGenerator.scala
+      </td>
+      <td>
+        55
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/AbstractTypeScriptGenerator.scala.html">
+          AbstractTypeScriptGenerator.MethodInfo
+        </a>
+      </td>
+      <td>
+        AbstractTypeScriptGenerator.scala
+      </td>
+      <td>
+        122
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        71
+      </td>
+      <td>
+        62
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 87%"></span>
+        </div>
+      </td>
+      <td>
+        87.32
+        %
+      </td>
+      <td>
+        8
+      </td>
+      <td>
+        8
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/AbstractTypeScriptGenerator.scala.html">
+          AbstractTypeScriptGenerator.MethodParam
+        </a>
+      </td>
+      <td>
+        AbstractTypeScriptGenerator.scala
+      </td>
+      <td>
+        146
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        21
+      </td>
+      <td>
+        16
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 76%"></span>
+        </div>
+      </td>
+      <td>
+        76.19
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/Cardinality.scala.html">
+          Cardinality
+        </a>
+      </td>
+      <td>
+        Cardinality.scala
+      </td>
+      <td>
+        19
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 67%"></span>
+        </div>
+      </td>
+      <td>
+        66.67
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/CortexTypeGenerator.scala.html">
+          CortexTypeGenerator
+        </a>
+      </td>
+      <td>
+        CortexTypeGenerator.scala
+      </td>
+      <td>
+        116
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        68
+      </td>
+      <td>
+        67
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 99%"></span>
+        </div>
+      </td>
+      <td>
+        98.53
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/CortexTypeGeneratorApp.scala.html">
+          CortexTypeGeneratorApp
+        </a>
+      </td>
+      <td>
+        CortexTypeGeneratorApp.scala
+      </td>
+      <td>
+        30
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        20
+      </td>
+      <td>
+        18
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 90%"></span>
+        </div>
+      </td>
+      <td>
+        90.00
+        %
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 50%"></span>
+        </div>
+      </td>
+      <td>
+        50.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/CortexTypeGeneratorApp.scala.html">
+          DefaultTypeGeneratorConfig
+        </a>
+      </td>
+      <td>
+        CortexTypeGeneratorApp.scala
+      </td>
+      <td>
+        13
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        5
+      </td>
+      <td>
+        5
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/CortexTypeGenerator.scala.html">
+          EnumProp
+        </a>
+      </td>
+      <td>
+        CortexTypeGenerator.scala
+      </td>
+      <td>
+        137
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/CortexTypeGenerator.scala.html">
+          JsonBackedTyped
+        </a>
+      </td>
+      <td>
+        CortexTypeGenerator.scala
+      </td>
+      <td>
+        193
+      </td>
+      <td>
+        5
+      </td>
+      <td>
+        58
+      </td>
+      <td>
+        52
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 90%"></span>
+        </div>
+      </td>
+      <td>
+        89.66
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/CortexTypeGenerator.scala.html">
+          Prop
+        </a>
+      </td>
+      <td>
+        CortexTypeGenerator.scala
+      </td>
+      <td>
+        125
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/CortexTypeGenerator.scala.html">
+          SimpleProp
+        </a>
+      </td>
+      <td>
+        CortexTypeGenerator.scala
+      </td>
+      <td>
+        132
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/AbstractTypeScriptGenerator.scala.html">
+          TypeGenerationConfig
+        </a>
+      </td>
+      <td>
+        AbstractTypeScriptGenerator.scala
+      </td>
+      <td>
+        299
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/TypeScriptInterfaceGenerator.scala.html">
+          TypeScriptInterfaceGenerator
+        </a>
+      </td>
+      <td>
+        TypeScriptInterfaceGenerator.scala
+      </td>
+      <td>
+        111
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        97
+      </td>
+      <td>
+        95
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 98%"></span>
+        </div>
+      </td>
+      <td>
+        97.94
+        %
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        5
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 83%"></span>
+        </div>
+      </td>
+      <td>
+        83.33
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/TypeScriptInterfaceGenerator.scala.html">
+          TypeScriptInterfaceGenerator.InterfaceGeneratedType
+        </a>
+      </td>
+      <td>
+        TypeScriptInterfaceGenerator.scala
+      </td>
+      <td>
+        54
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        41
+      </td>
+      <td>
+        41
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/TypeScriptInterfaceGenerator.scala.html">
+          TypeScriptInterfaceGenerator.InterfaceMethodInfo
+        </a>
+      </td>
+      <td>
+        TypeScriptInterfaceGenerator.scala
+      </td>
+      <td>
+        73
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        27
+      </td>
+      <td>
+        27
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/TypeScriptStubClassGenerator.scala.html">
+          TypeScriptStubClassGenerator
+        </a>
+      </td>
+      <td>
+        TypeScriptStubClassGenerator.scala
+      </td>
+      <td>
+        196
+      </td>
+      <td>
+        5
+      </td>
+      <td>
+        84
+      </td>
+      <td>
+        55
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 65%"></span>
+        </div>
+      </td>
+      <td>
+        65.48
+        %
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 25%"></span>
+        </div>
+      </td>
+      <td>
+        25.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/TypeScriptStubClassGenerator.scala.html">
+          TypeScriptStubClassGenerator.ClassGeneratedType
+        </a>
+      </td>
+      <td>
+        TypeScriptStubClassGenerator.scala
+      </td>
+      <td>
+        73
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        70
+      </td>
+      <td>
+        62
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 89%"></span>
+        </div>
+      </td>
+      <td>
+        88.57
+        %
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 50%"></span>
+        </div>
+      </td>
+      <td>
+        50.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="com/atomist/rug/ts/TypeScriptStubClassGenerator.scala.html">
+          TypeScriptStubClassGenerator.ClassMethodInfo
+        </a>
+      </td>
+      <td>
+        TypeScriptStubClassGenerator.scala
+      </td>
+      <td>
+        158
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        152
+      </td>
+      <td>
+        97
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 64%"></span>
+        </div>
+      </td>
+      <td>
+        63.82
+        %
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 75%"></span>
+        </div>
+      </td>
+      <td>
+        75.00
+        %
+      </td>
+    </tr>
+      </tbody>
+    </table>
+    </body>
+    </html>

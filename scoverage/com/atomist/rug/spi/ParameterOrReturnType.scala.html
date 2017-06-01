@@ -1,0 +1,296 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/spi/ParameterOrReturnType.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.spi
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.param.ParameterValidationPatterns
+</span>4 <span style=''>
+</span>5 <span style=''>/**
+</span>6 <span style=''>  * Represents the type of an operation parameter or parameter
+</span>7 <span style=''>  */
+</span>8 <span style=''>sealed trait ParameterOrReturnType {
+</span>9 <span style=''>
+</span>10 <span style=''>  def name: String
+</span>11 <span style=''>
+</span>12 <span style=''>  def isArray: Boolean
+</span>13 <span style=''>
+</span>14 <span style=''>}
+</span>15 <span style=''>
+</span>16 <span style=''>object SimpleParameterOrReturnType {
+</span>17 <span style=''>
+</span>18 <span style=''>  def fromJavaType(t: java.lang.reflect.Type): SimpleParameterOrReturnType = {
+</span>19 <span style=''>    val typeName = </span><span style='background: #AEF1AE'>t.getTypeName</span><span style=''>
+</span>20 <span style=''>    </span><span style='background: #AEF1AE'>typeName.indexOf(&quot;&lt;&quot;)</span><span style=''> match {
+</span>21 <span style=''>      case index if </span><span style='background: #AEF1AE'>index &gt; -1</span><span style=''> =&gt;
+</span>22 <span style=''>        val left = </span><span style='background: #AEF1AE'>typeName.take(index)</span><span style=''>
+</span>23 <span style=''>        val right = </span><span style='background: #AEF1AE'>typeName.substring(index + 1).dropRight(1)</span><span style=''>
+</span>24 <span style=''>        </span><span style='background: #AEF1AE'>SimpleParameterOrReturnType(right, isArray = true)</span><span style=''>
+</span>25 <span style=''>      case -1 =&gt;
+</span>26 <span style=''>        </span><span style='background: #AEF1AE'>SimpleParameterOrReturnType(t.getTypeName, isArray = false)</span><span style=''>
+</span>27 <span style=''>    }
+</span>28 <span style=''>  }
+</span>29 <span style=''>}
+</span>30 <span style=''>
+</span>31 <span style=''>/**
+</span>32 <span style=''>  * Represents a type or reference for which we don't need to generate
+</span>33 <span style=''>  * anything special
+</span>34 <span style=''>  */
+</span>35 <span style=''>case class SimpleParameterOrReturnType(name: String, isArray: Boolean)
+</span>36 <span style=''>  extends ParameterOrReturnType
+</span>37 <span style=''>
+</span>38 <span style=''>/**
+</span>39 <span style=''>  * Represents an enum type that we must generate
+</span>40 <span style=''>  */
+</span>41 <span style=''>case class EnumParameterOrReturnType(name: String, legalValues: Seq[String]) extends ParameterOrReturnType {
+</span>42 <span style=''>
+</span>43 <span style=''>  override def isArray: Boolean = </span><span style='background: #AEF1AE'>false</span><span style=''>
+</span>44 <span style=''>
+</span>45 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          5279
+        </td>
+        <td>
+          376
+          -
+          389
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Type.getTypeName
+        </td>
+        <td style="background: #AEF1AE">
+          t.getTypeName()
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          5280
+        </td>
+        <td>
+          394
+          -
+          415
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.indexOf
+        </td>
+        <td style="background: #AEF1AE">
+          typeName.indexOf(&quot;&lt;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          5281
+        </td>
+        <td>
+          444
+          -
+          454
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          index.&gt;(-1)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5282
+        </td>
+        <td>
+          477
+          -
+          497
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.take
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(typeName).take(index)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          5283
+        </td>
+        <td>
+          518
+          -
+          560
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.dropRight
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(typeName.substring(index.+(1))).dropRight(1)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          5284
+        </td>
+        <td>
+          569
+          -
+          619
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.SimpleParameterOrReturnType.apply
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleParameterOrReturnType.apply(right, true)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5287
+        </td>
+        <td>
+          645
+          -
+          704
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.SimpleParameterOrReturnType.apply
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleParameterOrReturnType.apply(t.getTypeName(), false)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5286
+        </td>
+        <td>
+          698
+          -
+          703
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5285
+        </td>
+        <td>
+          673
+          -
+          686
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Type.getTypeName
+        </td>
+        <td style="background: #AEF1AE">
+          t.getTypeName()
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          5288
+        </td>
+        <td>
+          1126
+          -
+          1131
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

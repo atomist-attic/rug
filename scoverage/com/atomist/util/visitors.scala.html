@@ -1,0 +1,282 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/util/visitors.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.util
+</span>2 <span style=''>
+</span>3 <span style=''>import java.util.Objects
+</span>4 <span style=''>
+</span>5 <span style=''>import scala.collection.mutable.ListBuffer
+</span>6 <span style=''>
+</span>7 <span style=''>/**
+</span>8 <span style=''>  * Visitor implementation that saves all descendants. Do not use on huge trees!
+</span>9 <span style=''>  */
+</span>10 <span style=''>class SaveAllDescendantsVisitor extends CycleAvoidingVisitor {
+</span>11 <span style=''>
+</span>12 <span style=''>  private val _nodes = </span><span style='background: #F0ADAD'>ListBuffer.empty[Visitable]</span><span style=''>
+</span>13 <span style=''>
+</span>14 <span style=''>  override def visitInternal(v: Visitable, depth: Int): Boolean = {
+</span>15 <span style=''>      </span><span style='background: #F0ADAD'>_nodes.append(v)</span><span style=''>
+</span>16 <span style=''>      </span><span style='background: #F0ADAD'>true</span><span style=''>
+</span>17 <span style=''>  }
+</span>18 <span style=''>
+</span>19 <span style=''>  def descendants: Seq[Visitable] = </span><span style='background: #F0ADAD'>_nodes</span><span style=''>
+</span>20 <span style=''>}
+</span>21 <span style=''>
+</span>22 <span style=''>object ConsoleVisitor extends Visitor {
+</span>23 <span style=''>
+</span>24 <span style=''>  override def visit(v: Visitable, depth: Int): Boolean = {
+</span>25 <span style=''>    v match {
+</span>26 <span style=''>      case _ =&gt;
+</span>27 <span style=''>        </span><span style='background: #F0ADAD'>println(List.fill(depth)(&quot;\t&quot;).mkString(&quot;&quot;) + Objects.toString(v))</span><span style=''>
+</span>28 <span style=''>    }
+</span>29 <span style=''>    </span><span style='background: #F0ADAD'>true</span><span style=''>
+</span>30 <span style=''>  }
+</span>31 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          9484
+        </td>
+        <td>
+          273
+          -
+          300
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.empty
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.mutable.ListBuffer.empty[com.atomist.util.Visitable]
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          9485
+        </td>
+        <td>
+          376
+          -
+          392
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.BufferLike.append
+        </td>
+        <td style="background: #F0ADAD">
+          SaveAllDescendantsVisitor.this._nodes.append(v)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          9486
+        </td>
+        <td>
+          399
+          -
+          403
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          9487
+        </td>
+        <td>
+          445
+          -
+          451
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.SaveAllDescendantsVisitor._nodes
+        </td>
+        <td style="background: #F0ADAD">
+          SaveAllDescendantsVisitor.this._nodes
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9488
+        </td>
+        <td>
+          619
+          -
+          623
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;\t&quot;
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9491
+        </td>
+        <td>
+          602
+          -
+          659
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.List.fill[String](depth)(&quot;\t&quot;).mkString(&quot;&quot;).+(java.util.Objects.toString(v))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9490
+        </td>
+        <td>
+          640
+          -
+          659
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Objects.toString
+        </td>
+        <td style="background: #F0ADAD">
+          java.util.Objects.toString(v)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9489
+        </td>
+        <td>
+          634
+          -
+          636
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9492
+        </td>
+        <td>
+          594
+          -
+          660
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.println(immutable.this.List.fill[String](depth)(&quot;\t&quot;).mkString(&quot;&quot;).+(java.util.Objects.toString(v)))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          9493
+        </td>
+        <td>
+          671
+          -
+          675
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          true
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

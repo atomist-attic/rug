@@ -1,0 +1,453 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/content/text/LineHoldingOffsetInputPosition.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.content.text
+</span>2 <span style=''>
+</span>3 <span style=''>/**
+</span>4 <span style=''>  * Created by rod on 2/9/17.
+</span>5 <span style=''>  */
+</span>6 <span style=''>case class LineHoldingOffsetInputPosition(input: CharSequence, offset: Int) extends InputPosition {
+</span>7 <span style=''>
+</span>8 <span style=''>  </span><span style='background: #F0ADAD'>require(offset &gt;= 0, s&quot;Offset must be &gt;= 0, had $offset&quot;)</span><span style=''>
+</span>9 <span style=''>
+</span>10 <span style=''>  override def show: String = </span><span style='background: #F0ADAD'>s&quot;${input.toString.take(offset)}  HERE [${input.toString.drop(offset)}] : offset=$offset&quot;</span><span style=''>
+</span>11 <span style=''>
+</span>12 <span style=''>  override def toString: String = </span><span style='background: #F0ADAD'>show</span><span style=''>
+</span>13 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          8
+        </td>
+        <td>
+          7302
+        </td>
+        <td>
+          236
+          -
+          237
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          8
+        </td>
+        <td>
+          7305
+        </td>
+        <td>
+          181
+          -
+          238
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.require
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.require(LineHoldingOffsetInputPosition.this.offset.&gt;=(0), scala.StringContext.apply(&quot;Offset must be &gt;= 0, had &quot;, &quot;&quot;).s(LineHoldingOffsetInputPosition.this.offset))
+        </td>
+      </tr><tr>
+        <td>
+          8
+        </td>
+        <td>
+          7301
+        </td>
+        <td>
+          204
+          -
+          230
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Offset must be &gt;= 0, had &quot;
+        </td>
+      </tr><tr>
+        <td>
+          8
+        </td>
+        <td>
+          7304
+        </td>
+        <td>
+          202
+          -
+          237
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Offset must be &gt;= 0, had &quot;, &quot;&quot;).s(LineHoldingOffsetInputPosition.this.offset)
+        </td>
+      </tr><tr>
+        <td>
+          8
+        </td>
+        <td>
+          7300
+        </td>
+        <td>
+          189
+          -
+          200
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;=
+        </td>
+        <td style="background: #F0ADAD">
+          LineHoldingOffsetInputPosition.this.offset.&gt;=(0)
+        </td>
+      </tr><tr>
+        <td>
+          8
+        </td>
+        <td>
+          7303
+        </td>
+        <td>
+          230
+          -
+          236
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineHoldingOffsetInputPosition.offset
+        </td>
+        <td style="background: #F0ADAD">
+          LineHoldingOffsetInputPosition.this.offset
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          7311
+        </td>
+        <td>
+          294
+          -
+          300
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineHoldingOffsetInputPosition.offset
+        </td>
+        <td style="background: #F0ADAD">
+          LineHoldingOffsetInputPosition.this.offset
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          7314
+        </td>
+        <td>
+          332
+          -
+          338
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineHoldingOffsetInputPosition.offset
+        </td>
+        <td style="background: #F0ADAD">
+          LineHoldingOffsetInputPosition.this.offset
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          7308
+        </td>
+        <td>
+          340
+          -
+          352
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;] : offset=&quot;
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          7317
+        </td>
+        <td>
+          270
+          -
+          359
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;  HERE [&quot;, &quot;] : offset=&quot;, &quot;&quot;).s(scala.this.Predef.augmentString(LineHoldingOffsetInputPosition.this.input.toString()).take(LineHoldingOffsetInputPosition.this.offset), scala.this.Predef.augmentString(LineHoldingOffsetInputPosition.this.input.toString()).drop(LineHoldingOffsetInputPosition.this.offset), LineHoldingOffsetInputPosition.this.offset)
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          7307
+        </td>
+        <td>
+          302
+          -
+          311
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;  HERE [&quot;
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          7316
+        </td>
+        <td>
+          352
+          -
+          358
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineHoldingOffsetInputPosition.offset
+        </td>
+        <td style="background: #F0ADAD">
+          LineHoldingOffsetInputPosition.this.offset
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          7310
+        </td>
+        <td>
+          274
+          -
+          288
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #F0ADAD">
+          LineHoldingOffsetInputPosition.this.input.toString()
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          7313
+        </td>
+        <td>
+          312
+          -
+          326
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #F0ADAD">
+          LineHoldingOffsetInputPosition.this.input.toString()
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          7306
+        </td>
+        <td>
+          272
+          -
+          273
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          7315
+        </td>
+        <td>
+          312
+          -
+          339
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.drop
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.augmentString(LineHoldingOffsetInputPosition.this.input.toString()).drop(LineHoldingOffsetInputPosition.this.offset)
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          7309
+        </td>
+        <td>
+          358
+          -
+          359
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          7312
+        </td>
+        <td>
+          274
+          -
+          301
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.take
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.augmentString(LineHoldingOffsetInputPosition.this.input.toString()).take(LineHoldingOffsetInputPosition.this.offset)
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          7318
+        </td>
+        <td>
+          395
+          -
+          399
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.LineHoldingOffsetInputPosition.show
+        </td>
+        <td style="background: #F0ADAD">
+          LineHoldingOffsetInputPosition.this.show
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,1094 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/core/LineType.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.core
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.spi.{ExportFunction, _}
+</span>5 <span style=''>
+</span>6 <span style=''>/**
+</span>7 <span style=''>  * Type representing a line within a file
+</span>8 <span style=''>  */
+</span>9 <span style=''>class LineType
+</span>10 <span style=''>  extends Type
+</span>11 <span style=''>    with ReflectivelyTypedType {
+</span>12 <span style=''>
+</span>13 <span style=''>  override def description = </span><span style='background: #AEF1AE'>&quot;Represents a line within a text file&quot;</span><span style=''>
+</span>14 <span style=''>
+</span>15 <span style=''>  /** Describe the MutableView subclass to allow for reflective function export */
+</span>16 <span style=''>  override def runtimeClass: Class[LineMutableView] = </span><span style='background: #AEF1AE'>classOf[LineMutableView]</span><span style=''>
+</span>17 <span style=''>
+</span>18 <span style=''>  override def findAllIn(context: GraphNode): Option[Seq[LineMutableView]] = {
+</span>19 <span style=''>    context match {
+</span>20 <span style=''>      case fa: FileMutableView =&gt;
+</span>21 <span style=''>        </span><span style='background: #AEF1AE'>Some(fa.originalBackingObject.content.lines
+</span>22 <span style=''></span><span style='background: #AEF1AE'>          .zipWithIndex
+</span>23 <span style=''></span><span style='background: #AEF1AE'>          .map(tup =&gt; new LineMutableView(tup._1, tup._2, fa))
+</span>24 <span style=''></span><span style='background: #AEF1AE'>          .toSeq
+</span>25 <span style=''></span><span style='background: #AEF1AE'>        )</span><span style=''>
+</span>26 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>27 <span style=''>    }
+</span>28 <span style=''>  }
+</span>29 <span style=''>
+</span>30 <span style=''>}
+</span>31 <span style=''>
+</span>32 <span style=''>class LineMutableView(
+</span>33 <span style=''>                       originalBackingObject: String,
+</span>34 <span style=''>                       linenum: Int,
+</span>35 <span style=''>                       override val parent: FileMutableView)
+</span>36 <span style=''>  extends ViewSupport[String](originalBackingObject, parent)
+</span>37 <span style=''>    with TerminalView[String] {
+</span>38 <span style=''>
+</span>39 <span style=''>  override def nodeName: String = </span><span style='background: #AEF1AE'>s&quot;Line#$linenum&quot;</span><span style=''>
+</span>40 <span style=''>
+</span>41 <span style=''>  override def childNodeNames: Set[String] = </span><span style='background: #F0ADAD'>Set()</span><span style=''>
+</span>42 <span style=''>
+</span>43 <span style=''>  @ExportFunction(readOnly = true,
+</span>44 <span style=''>    exposeAsProperty = true,
+</span>45 <span style=''>    description = &quot;Containing file&quot;)
+</span>46 <span style=''>  def file: FileMutableView = </span><span style='background: #F0ADAD'>parent</span><span style=''>
+</span>47 <span style=''>
+</span>48 <span style=''>  @ExportFunction(readOnly = false,
+</span>49 <span style=''>    description = &quot;Update this line's content&quot;)
+</span>50 <span style=''>  def update(@ExportFunctionParameterDescription(name = &quot;s2&quot;,
+</span>51 <span style=''>    description = &quot;The content to update this line to&quot;)
+</span>52 <span style=''>             s2: String): Unit = {
+</span>53 <span style=''>    </span><span style='background: #F0ADAD'>updateTo(s2)</span><span style=''>
+</span>54 <span style=''>  }
+</span>55 <span style=''>
+</span>56 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Return this line's content&quot;)
+</span>57 <span style=''>  override def value: String = </span><span style='background: #AEF1AE'>currentBackingObject</span><span style=''>
+</span>58 <span style=''>
+</span>59 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Return this line's content&quot;)
+</span>60 <span style=''>  @Deprecated
+</span>61 <span style=''>  def content: String = </span><span style='background: #F0ADAD'>value</span><span style=''>
+</span>62 <span style=''>
+</span>63 <span style=''>  @ExportFunction(readOnly = true,
+</span>64 <span style=''>    exposeAsProperty = true,
+</span>65 <span style=''>    description = &quot;Line number from 0&quot;)
+</span>66 <span style=''>  def num: Int = </span><span style='background: #AEF1AE'>linenum</span><span style=''>
+</span>67 <span style=''>
+</span>68 <span style=''>  @ExportFunction(readOnly = true,
+</span>69 <span style=''>    exposeAsProperty = true,
+</span>70 <span style=''>    description = &quot;Line number from 1&quot;)
+</span>71 <span style=''>  def numFrom1: Int = </span><span style='background: #AEF1AE'>linenum + 1</span><span style=''>
+</span>72 <span style=''>
+</span>73 <span style=''>  @ExportFunction(readOnly = true,
+</span>74 <span style=''>    exposeAsProperty = true,
+</span>75 <span style=''>    description = &quot;Line length&quot;)
+</span>76 <span style=''>  def length: Int = </span><span style='background: #F0ADAD'>value.length</span><span style=''>
+</span>77 <span style=''>
+</span>78 <span style=''>  override protected def updateParent(): Unit = {
+</span>79 <span style=''>    </span><span style='background: #F0ADAD'>applied(parent)</span><span style=''>
+</span>80 <span style=''>  }
+</span>81 <span style=''>
+</span>82 <span style=''>  private def applied(f: FileMutableView) = {
+</span>83 <span style=''>    var i = </span><span style='background: #F0ADAD'>0</span><span style=''>
+</span>84 <span style=''>    val newLines =
+</span>85 <span style=''>      </span><span style='background: #F0ADAD'>for {
+</span>86 <span style=''></span><span style='background: #F0ADAD'>        l &lt;- f.content.lines
+</span>87 <span style=''></span><span style='background: #F0ADAD'>      } yield {
+</span>88 <span style=''></span><span style='background: #F0ADAD'>        val newL = if (i == num)
+</span>89 <span style=''></span><span style='background: #F0ADAD'>          value
+</span>90 <span style=''></span><span style='background: #F0ADAD'>        else l
+</span>91 <span style=''></span><span style='background: #F0ADAD'>        i += 1
+</span>92 <span style=''></span><span style='background: #F0ADAD'>        newL
+</span>93 <span style=''></span><span style='background: #F0ADAD'>      }</span><span style=''>
+</span>94 <span style=''>    val newContent = </span><span style='background: #F0ADAD'>newLines.mkString(&quot;\n&quot;)</span><span style=''>
+</span>95 <span style=''>    </span><span style='background: #F0ADAD'>f.setContent(newContent)</span><span style=''>
+</span>96 <span style=''>    f
+</span>97 <span style=''>  }
+</span>98 <span style=''>
+</span>99 <span style=''>  override def toString: String =
+</span>100 <span style=''>    </span><span style='background: #F0ADAD'>s&quot;${parent.path}:$numFrom1;value=[$value];hc=$hashCode&quot;</span><span style=''>
+</span>101 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          880
+        </td>
+        <td>
+          263
+          -
+          301
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Represents a line within a text file&quot;
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          881
+        </td>
+        <td>
+          440
+          -
+          464
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.rug.kind.core.LineMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          882
+        </td>
+        <td>
+          612
+          -
+          644
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          fa.originalBackingObject.content
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          887
+        </td>
+        <td>
+          607
+          -
+          764
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Seq[com.atomist.rug.kind.core.LineMutableView]](scala.this.Predef.augmentString(fa.originalBackingObject.content).lines.zipWithIndex.map[com.atomist.rug.kind.core.LineMutableView](((tup: (String, Int)) =&gt; new LineMutableView(tup._1, tup._2, fa))).toSeq)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          884
+        </td>
+        <td>
+          725
+          -
+          731
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          tup._2
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          883
+        </td>
+        <td>
+          717
+          -
+          723
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          tup._1
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          885
+        </td>
+        <td>
+          697
+          -
+          736
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.LineMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new LineMutableView(tup._1, tup._2, fa)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          886
+        </td>
+        <td>
+          612
+          -
+          754
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(fa.originalBackingObject.content).lines.zipWithIndex.map[com.atomist.rug.kind.core.LineMutableView](((tup: (String, Int)) =&gt; new LineMutableView(tup._1, tup._2, fa))).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          888
+        </td>
+        <td>
+          781
+          -
+          785
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          891
+        </td>
+        <td>
+          1111
+          -
+          1118
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.LineMutableView.linenum
+        </td>
+        <td style="background: #AEF1AE">
+          LineMutableView.this.linenum
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          890
+        </td>
+        <td>
+          1118
+          -
+          1119
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          889
+        </td>
+        <td>
+          1105
+          -
+          1111
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Line#&quot;
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          892
+        </td>
+        <td>
+          1103
+          -
+          1119
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Line#&quot;, &quot;&quot;).s(LineMutableView.this.linenum)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          893
+        </td>
+        <td>
+          1166
+          -
+          1171
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.Set.apply[String]()
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          894
+        </td>
+        <td>
+          1304
+          -
+          1310
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.LineMutableView.parent
+        </td>
+        <td style="background: #F0ADAD">
+          LineMutableView.this.parent
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          895
+        </td>
+        <td>
+          1553
+          -
+          1565
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.updateTo
+        </td>
+        <td style="background: #F0ADAD">
+          LineMutableView.this.updateTo(s2)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          896
+        </td>
+        <td>
+          1681
+          -
+          1701
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          LineMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          897
+        </td>
+        <td>
+          1820
+          -
+          1825
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.LineMutableView.value
+        </td>
+        <td style="background: #F0ADAD">
+          LineMutableView.this.value
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          898
+        </td>
+        <td>
+          1948
+          -
+          1955
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.LineMutableView.linenum
+        </td>
+        <td style="background: #AEF1AE">
+          LineMutableView.this.linenum
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          899
+        </td>
+        <td>
+          2083
+          -
+          2094
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          LineMutableView.this.linenum.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          900
+        </td>
+        <td>
+          2213
+          -
+          2225
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.length
+        </td>
+        <td style="background: #F0ADAD">
+          LineMutableView.this.value.length()
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          902
+        </td>
+        <td>
+          2281
+          -
+          2296
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.LineMutableView.applied
+        </td>
+        <td style="background: #F0ADAD">
+          LineMutableView.this.applied(LineMutableView.this.parent)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          901
+        </td>
+        <td>
+          2289
+          -
+          2295
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.LineMutableView.parent
+        </td>
+        <td style="background: #F0ADAD">
+          LineMutableView.this.parent
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          903
+        </td>
+        <td>
+          2288
+          -
+          2288
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          904
+        </td>
+        <td>
+          2360
+          -
+          2361
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          905
+        </td>
+        <td>
+          2406
+          -
+          2415
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.content
+        </td>
+        <td style="background: #F0ADAD">
+          f.content
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          912
+        </td>
+        <td>
+          2387
+          -
+          2537
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.Iterator.map
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.augmentString(f.content).lines.map[String](((l: String) =&gt; {
+  val newL: String = if (i.==(LineMutableView.this.num))
+    LineMutableView.this.value
+  else
+    l;
+  i = i.+(1);
+  newL
+}))
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          907
+        </td>
+        <td>
+          2461
+          -
+          2469
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #F0ADAD">
+          i.==(LineMutableView.this.num)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          906
+        </td>
+        <td>
+          2466
+          -
+          2469
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.LineMutableView.num
+        </td>
+        <td style="background: #F0ADAD">
+          LineMutableView.this.num
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          908
+        </td>
+        <td>
+          2481
+          -
+          2486
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.LineMutableView.value
+        </td>
+        <td style="background: #F0ADAD">
+          LineMutableView.this.value
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          909
+        </td>
+        <td>
+          2481
+          -
+          2486
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.kind.core.LineMutableView.value
+        </td>
+        <td style="background: #F0ADAD">
+          LineMutableView.this.value
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          910
+        </td>
+        <td>
+          2500
+          -
+          2501
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.rug.kind.core.LineMutableView.l
+        </td>
+        <td style="background: #F0ADAD">
+          l
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          911
+        </td>
+        <td>
+          2510
+          -
+          2516
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #F0ADAD">
+          i.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          913
+        </td>
+        <td>
+          2559
+          -
+          2582
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          newLines.mkString(&quot;\n&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          914
+        </td>
+        <td>
+          2587
+          -
+          2611
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileMutableView.setContent
+        </td>
+        <td style="background: #F0ADAD">
+          f.setContent(newContent)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          923
+        </td>
+        <td>
+          2707
+          -
+          2715
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.hashCode
+        </td>
+        <td style="background: #F0ADAD">
+          LineMutableView.this.hashCode()
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          917
+        </td>
+        <td>
+          2687
+          -
+          2696
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;;value=[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          920
+        </td>
+        <td>
+          2665
+          -
+          2676
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.path
+        </td>
+        <td style="background: #F0ADAD">
+          LineMutableView.this.parent.path
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          922
+        </td>
+        <td>
+          2696
+          -
+          2701
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.LineMutableView.value
+        </td>
+        <td style="background: #F0ADAD">
+          LineMutableView.this.value
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          916
+        </td>
+        <td>
+          2677
+          -
+          2679
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;:&quot;
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          919
+        </td>
+        <td>
+          2715
+          -
+          2716
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          918
+        </td>
+        <td>
+          2701
+          -
+          2707
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;];hc=&quot;
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          921
+        </td>
+        <td>
+          2679
+          -
+          2687
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.LineMutableView.numFrom1
+        </td>
+        <td style="background: #F0ADAD">
+          LineMutableView.this.numFrom1
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          915
+        </td>
+        <td>
+          2663
+          -
+          2664
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          924
+        </td>
+        <td>
+          2661
+          -
+          2716
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;:&quot;, &quot;;value=[&quot;, &quot;];hc=&quot;, &quot;&quot;).s(LineMutableView.this.parent.path, LineMutableView.this.numFrom1, LineMutableView.this.value, LineMutableView.this.hashCode())
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

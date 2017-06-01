@@ -1,0 +1,597 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/ts/CortexTypeGeneratorApp.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.ts
+</span>2 <span style=''>
+</span>3 <span style=''>import java.io.PrintWriter
+</span>4 <span style=''>
+</span>5 <span style=''>import com.atomist.util.Utils
+</span>6 <span style=''>import org.apache.commons.io.IOUtils
+</span>7 <span style=''>
+</span>8 <span style=''>object DefaultTypeGeneratorConfig {
+</span>9 <span style=''>
+</span>10 <span style=''>  val CortexJsonLocation = </span><span style='background: #AEF1AE'>&quot;/com/atomist/rug/ts/cortex.json&quot;</span><span style=''>
+</span>11 <span style=''>
+</span>12 <span style=''>  lazy val CortexJson: String =
+</span>13 <span style=''>    </span><span style='background: #AEF1AE'>Utils.withCloseable(getClass.getResourceAsStream(CortexJsonLocation))(IOUtils.toString(_, &quot;UTF-8&quot;))</span><span style=''>
+</span>14 <span style=''>}
+</span>15 <span style=''>
+</span>16 <span style=''>/**
+</span>17 <span style=''>  * Intended to run as part of build
+</span>18 <span style=''>  */
+</span>19 <span style=''>object CortexTypeGeneratorApp extends App {
+</span>20 <span style=''>
+</span>21 <span style=''>  import CortexTypeGenerator._
+</span>22 <span style=''>  import DefaultTypeGeneratorConfig._
+</span>23 <span style=''>
+</span>24 <span style=''>  // TODO could take second argument as URL of endpoint
+</span>25 <span style=''>
+</span>26 <span style=''>  val target = if (</span><span style='background: #AEF1AE'>args.length &lt; 1</span><span style=''>) </span><span style='background: #F0ADAD'>&quot;target/.atomist/node_modules/@atomist&quot;</span><span style=''> else </span><span style='background: #AEF1AE'>args.head</span><span style=''>
+</span>27 <span style=''>  val tsig = </span><span style='background: #AEF1AE'>new CortexTypeGenerator(DefaultCortexDir, DefaultCortexStubDir)</span><span style=''>
+</span>28 <span style=''>  val output = </span><span style='background: #AEF1AE'>tsig.toNodeModule(CortexJson)</span><span style=''>
+</span>29 <span style=''>  </span><span style='background: #AEF1AE'>println(s&quot;Generated Type module&quot;)</span><span style=''>
+</span>30 <span style=''>  </span><span style='background: #AEF1AE'>output.allFiles.foreach(f =&gt; Utils.withCloseable(new PrintWriter(target + &quot;/&quot; + f.path))(_.write(f.content)))</span><span style=''>
+</span>31 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          6543
+        </td>
+        <td>
+          188
+          -
+          221
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;/com/atomist/rug/ts/cortex.json&quot;
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          6546
+        </td>
+        <td>
+          329
+          -
+          357
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.apache.commons.io.IOUtils.toString
+        </td>
+        <td style="background: #AEF1AE">
+          org.apache.commons.io.IOUtils.toString(x$1, &quot;UTF-8&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          6545
+        </td>
+        <td>
+          279
+          -
+          327
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getResourceAsStream
+        </td>
+        <td style="background: #AEF1AE">
+          DefaultTypeGeneratorConfig.this.getClass().getResourceAsStream(DefaultTypeGeneratorConfig.this.CortexJsonLocation)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          6544
+        </td>
+        <td>
+          308
+          -
+          326
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.DefaultTypeGeneratorConfig.CortexJsonLocation
+        </td>
+        <td style="background: #AEF1AE">
+          DefaultTypeGeneratorConfig.this.CortexJsonLocation
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          6547
+        </td>
+        <td>
+          259
+          -
+          358
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.Utils.withCloseable
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.Utils.withCloseable[java.io.InputStream, String](DefaultTypeGeneratorConfig.this.getClass().getResourceAsStream(DefaultTypeGeneratorConfig.this.CortexJsonLocation))(((x$1: java.io.InputStream) =&gt; org.apache.commons.io.IOUtils.toString(x$1, &quot;UTF-8&quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          6552
+        </td>
+        <td>
+          661
+          -
+          670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.head
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[String](CortexTypeGeneratorApp.this.args).head
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          6548
+        </td>
+        <td>
+          599
+          -
+          614
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          CortexTypeGeneratorApp.this.args.length.&lt;(1)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          6551
+        </td>
+        <td>
+          661
+          -
+          665
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.App.args
+        </td>
+        <td style="background: #AEF1AE">
+          CortexTypeGeneratorApp.this.args
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          6553
+        </td>
+        <td>
+          661
+          -
+          670
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.head
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[String](CortexTypeGeneratorApp.this.args).head
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          6550
+        </td>
+        <td>
+          616
+          -
+          655
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;target/.atomist/node_modules/@atomist&quot;
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          6549
+        </td>
+        <td>
+          616
+          -
+          655
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;target/.atomist/node_modules/@atomist&quot;
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          6555
+        </td>
+        <td>
+          726
+          -
+          746
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.CortexTypeGenerator.DefaultCortexStubDir
+        </td>
+        <td style="background: #AEF1AE">
+          CortexTypeGenerator.DefaultCortexStubDir
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          6554
+        </td>
+        <td>
+          708
+          -
+          724
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.CortexTypeGenerator.DefaultCortexDir
+        </td>
+        <td style="background: #AEF1AE">
+          CortexTypeGenerator.DefaultCortexDir
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          6556
+        </td>
+        <td>
+          684
+          -
+          747
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.CortexTypeGenerator.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new CortexTypeGenerator(CortexTypeGenerator.DefaultCortexDir, CortexTypeGenerator.DefaultCortexStubDir)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          6557
+        </td>
+        <td>
+          763
+          -
+          792
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.CortexTypeGenerator.toNodeModule
+        </td>
+        <td style="background: #AEF1AE">
+          CortexTypeGeneratorApp.this.tsig.toNodeModule(DefaultTypeGeneratorConfig.CortexJson)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          6559
+        </td>
+        <td>
+          795
+          -
+          828
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.println(scala.StringContext.apply(&quot;Generated Type module&quot;).s())
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          6558
+        </td>
+        <td>
+          803
+          -
+          827
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Generated Type module&quot;).s()
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          6561
+        </td>
+        <td>
+          911
+          -
+          917
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.path
+        </td>
+        <td style="background: #AEF1AE">
+          f.path
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          6564
+        </td>
+        <td>
+          928
+          -
+          937
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          f.content
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          6563
+        </td>
+        <td>
+          880
+          -
+          918
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.PrintWriter.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.io.PrintWriter(CortexTypeGeneratorApp.this.target.+(&quot;/&quot;).+(f.path))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          6566
+        </td>
+        <td>
+          860
+          -
+          939
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.Utils.withCloseable
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.Utils.withCloseable[java.io.PrintWriter, Unit](new java.io.PrintWriter(CortexTypeGeneratorApp.this.target.+(&quot;/&quot;).+(f.path)))(((x$2: java.io.PrintWriter) =&gt; x$2.write(f.content)))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          6560
+        </td>
+        <td>
+          905
+          -
+          908
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;/&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          6562
+        </td>
+        <td>
+          896
+          -
+          917
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          CortexTypeGeneratorApp.this.target.+(&quot;/&quot;).+(f.path)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          6565
+        </td>
+        <td>
+          920
+          -
+          938
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.PrintWriter.write
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.write(f.content)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          6567
+        </td>
+        <td>
+          831
+          -
+          940
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          CortexTypeGeneratorApp.this.output.allFiles.foreach[Unit](((f: com.atomist.source.FileArtifact) =&gt; com.atomist.util.Utils.withCloseable[java.io.PrintWriter, Unit](new java.io.PrintWriter(CortexTypeGeneratorApp.this.target.+(&quot;/&quot;).+(f.path)))(((x$2: java.io.PrintWriter) =&gt; x$2.write(f.content)))))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

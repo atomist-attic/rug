@@ -1,0 +1,216 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/project/common/template/CombinedMergeTool.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.project.common.template
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.source.FileArtifact
+</span>4 <span style=''>
+</span>5 <span style=''>/**
+</span>6 <span style=''>  * Combines template handling from different merge tools.
+</span>7 <span style=''>  *
+</span>8 <span style=''>  * @param mergeTools a sequence of MergeTools
+</span>9 <span style=''>  */
+</span>10 <span style=''>class CombinedMergeTool(
+</span>11 <span style=''>                         mergeTools: Seq[MergeTool]
+</span>12 <span style=''>                       ) extends MergeTool {
+</span>13 <span style=''>
+</span>14 <span style=''>  override def isTemplate(templateName: String): Boolean =
+</span>15 <span style=''>    </span><span style='background: #AEF1AE'>mergeTools.exists(mt =&gt; mt.isTemplate(templateName))</span><span style=''>
+</span>16 <span style=''>
+</span>17 <span style=''>  override def mergeString(context: MergeContext, templateString: String): String = {
+</span>18 <span style=''>    </span><span style='background: #F0ADAD'>mergeTools.head.mergeString(context, templateString)</span><span style=''>
+</span>19 <span style=''>  }
+</span>20 <span style=''>
+</span>21 <span style=''>  override def mergeToFile(context: MergeContext, templateName: String): FileArtifact =
+</span>22 <span style=''>    </span><span style='background: #AEF1AE'>mergeTools.find(mt =&gt; mt.isTemplate(templateName))
+</span>23 <span style=''></span><span style='background: #AEF1AE'>      .map(mt =&gt; mt.mergeToFile(context, templateName))
+</span>24 <span style=''></span><span style='background: #AEF1AE'>      .getOrElse(
+</span>25 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Unable to find a MergeTool for supposed template '$templateName'&quot;)</span><span style='background: #AEF1AE'>
+</span>26 <span style=''></span><span style='background: #AEF1AE'>      )</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          522
+        </td>
+        <td>
+          390
+          -
+          442
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #AEF1AE">
+          CombinedMergeTool.this.mergeTools.exists(((mt: com.atomist.project.common.template.MergeTool) =&gt; mt.isTemplate(templateName)))
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          521
+        </td>
+        <td>
+          414
+          -
+          441
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.common.template.MergeTool.isTemplate
+        </td>
+        <td style="background: #AEF1AE">
+          mt.isTemplate(templateName)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          523
+        </td>
+        <td>
+          534
+          -
+          586
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.common.template.MergeTool.mergeString
+        </td>
+        <td style="background: #F0ADAD">
+          CombinedMergeTool.this.mergeTools.head.mergeString(context, templateString)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          524
+        </td>
+        <td>
+          706
+          -
+          733
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.common.template.MergeTool.isTemplate
+        </td>
+        <td style="background: #AEF1AE">
+          mt.isTemplate(templateName)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          525
+        </td>
+        <td>
+          752
+          -
+          789
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.common.template.MergeTool.mergeToFile
+        </td>
+        <td style="background: #AEF1AE">
+          mt.mergeToFile(context, templateName)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          527
+        </td>
+        <td>
+          684
+          -
+          928
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          CombinedMergeTool.this.mergeTools.find(((mt: com.atomist.project.common.template.MergeTool) =&gt; mt.isTemplate(templateName))).map[com.atomist.source.FileArtifact](((mt: com.atomist.project.common.template.MergeTool) =&gt; mt.mergeToFile(context, templateName))).getOrElse[com.atomist.source.FileArtifact](throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Unable to find a MergeTool for supposed template \'&quot;, &quot;\'&quot;).s(templateName)))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          526
+        </td>
+        <td>
+          817
+          -
+          920
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Unable to find a MergeTool for supposed template \'&quot;, &quot;\'&quot;).s(templateName))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

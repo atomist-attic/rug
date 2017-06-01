@@ -1,0 +1,1040 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/util/scalaparsing/CommonTypesParser.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.util.scalaparsing
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.{BadRugException, BadRugSyntaxException, RugRuntimeException}
+</span>4 <span style=''>import com.atomist.source.FileArtifact
+</span>5 <span style=''>import com.atomist.tree.content.text._
+</span>6 <span style=''>import com.typesafe.scalalogging.LazyLogging
+</span>7 <span style=''>
+</span>8 <span style=''>import scala.util.matching.Regex
+</span>9 <span style=''>import scala.util.parsing.combinator.JavaTokenParsers
+</span>10 <span style=''>import scala.util.parsing.input.{CharSequenceReader, OffsetPosition, Positional}
+</span>11 <span style=''>
+</span>12 <span style=''>/**
+</span>13 <span style=''>  * Convenient support for parsers for different languages implemented using
+</span>14 <span style=''>  * Scala parser combinators.
+</span>15 <span style=''>  * Offers common tokens, consistent reserved word handling, comment and string handling,
+</span>16 <span style=''>  * and productions for nested blocks.
+</span>17 <span style=''>  *
+</span>18 <span style=''>  * @see TreeNode
+</span>19 <span style=''>  */
+</span>20 <span style=''>abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
+</span>21 <span style=''>
+</span>22 <span style=''>  val HashLineComment = </span><span style='background: #AEF1AE'>&quot;&quot;&quot;\#.*[\n|\r\n]&quot;&quot;&quot;</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>  // NB: This does not correctly preserve positions
+</span>25 <span style=''>  def doubleQuotedString: Parser[String] = </span><span style='background: #AEF1AE'>(stringLiteral | (&quot;\&quot;&quot; ~ </span><span style='background: #F0ADAD'>&quot;[^\&quot;]+&quot;.r</span><span style='background: #AEF1AE'> ~ </span><span style='background: #F0ADAD'>&quot;\&quot;&quot;</span><span style='background: #AEF1AE'>)) ^^ {
+</span>26 <span style=''></span><span style='background: #AEF1AE'>    case s : String =&gt; s.substring(1).dropRight(1).replace(&quot;&quot;&quot;\\&quot;&quot;&quot;, &quot;&quot;&quot;\&quot;&quot;&quot;)
+</span>27 <span style=''></span><span style='background: #AEF1AE'>    case _ ~ illFormedString ~ _ =&gt; </span><span style='background: #F0ADAD'>throw new BadRugException(
+</span>28 <span style=''></span><span style='background: #F0ADAD'>      s&quot;It looks like you're trying to use a string, but [$illFormedString] is not a valid Java String&quot;) {}</span><span style='background: #AEF1AE'>
+</span>29 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>  val EqualsToken = </span><span style='background: #AEF1AE'>&quot;=&quot;</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>  def singleQuote = </span><span style='background: #AEF1AE'>&quot;'&quot;</span><span style=''>
+</span>34 <span style=''>
+</span>35 <span style=''>  def singleQuotedString: Parser[String] = </span><span style='background: #AEF1AE'>singleQuote ~&gt; &quot;&quot;&quot;[^']*&quot;&quot;&quot;.r &lt;~ singleQuote</span><span style=''>
+</span>36 <span style=''>
+</span>37 <span style=''>  case class IdentifierRef(name: String)
+</span>38 <span style=''>
+</span>39 <span style=''>  /**
+</span>40 <span style=''>    * Parse an identifier, which must not have the name of one of the given reserved words.
+</span>41 <span style=''>    *
+</span>42 <span style=''>    * @param reservedWords words which are illegal identifier names
+</span>43 <span style=''>    * @return parsed IdentifierRef
+</span>44 <span style=''>    */
+</span>45 <span style=''>  protected def identifierRef(reservedWords: Set[String], underlying: Parser[String] = ident) = </span><span style='background: #AEF1AE'>new</span><span style=''> Parser[IdentifierRef] {
+</span>46 <span style=''>    def apply(in: Input): ParseResult[IdentifierRef] = {
+</span>47 <span style=''>      val pr = </span><span style='background: #AEF1AE'>underlying.apply(in)</span><span style=''>
+</span>48 <span style=''>      pr match {
+</span>49 <span style=''>        case succ: Success[String @unchecked] =&gt;
+</span>50 <span style=''>          if (</span><span style='background: #AEF1AE'>reservedWords.contains(succ.get)</span><span style=''>)
+</span>51 <span style=''>            </span><span style='background: #AEF1AE'>Failure(s&quot;Cannot use reserved word '${succ.get}' as function name&quot;, succ.next)</span><span style=''>
+</span>52 <span style=''>          else
+</span>53 <span style=''>            </span><span style='background: #AEF1AE'>Success[IdentifierRef](IdentifierRef(succ.get), succ.next)</span><span style=''>
+</span>54 <span style=''>        case f: Failure =&gt; f
+</span>55 <span style=''>        case _ =&gt; </span><span style='background: #F0ADAD'>???</span><span style=''>
+</span>56 <span style=''>      }
+</span>57 <span style=''>    }
+</span>58 <span style=''>  }
+</span>59 <span style=''>
+</span>60 <span style=''>  protected def identifierRefString(reservedWords: Set[String], underlying: Parser[String] = ident): Parser[String] =
+</span>61 <span style=''>    </span><span style='background: #AEF1AE'>identifierRef(reservedWords, underlying) ^^ (ir =&gt; ir.name)</span><span style=''>
+</span>62 <span style=''>
+</span>63 <span style=''>  protected def parseTo[T](f: FileArtifact, parser: Parser[T]): T = {
+</span>64 <span style=''>    logger.debug(s&quot;Rug input is\n------\n${f.path}\n${f.content}\n------\n&quot;)
+</span>65 <span style=''>    // We need a source that gives us positions
+</span>66 <span style=''>    val source = </span><span style='background: #AEF1AE'>new CharSequenceReader(f.content)</span><span style=''>
+</span>67 <span style=''>    val parsed = </span><span style='background: #AEF1AE'>parse(parser, source)</span><span style=''> match {
+</span>68 <span style=''>      case Success(matched, _) =&gt; matched
+</span>69 <span style=''>      case Failure(msg, rest) =&gt;
+</span>70 <span style=''>        </span><span style='background: #AEF1AE'>throw new BadRugSyntaxException(ErrorInfo(s&quot;Failure: $msg&quot;, badInput = f.content, line = rest.pos.line, col = rest.pos.column, filePath = f.path))</span><span style=''>
+</span>71 <span style=''>      case Error(msg, rest) =&gt;
+</span>72 <span style=''>        </span><span style='background: #F0ADAD'>throw new BadRugSyntaxException(ErrorInfo(s&quot;Error: $msg&quot;, badInput = f.content, line = rest.pos.line, col = rest.pos.column, filePath = f.path))</span><span style=''>
+</span>73 <span style=''>    }
+</span>74 <span style=''>    logger.debug(s&quot;Parse result=$parsed&quot;)
+</span>75 <span style=''>    parsed
+</span>76 <span style=''>  }
+</span>77 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          9402
+        </td>
+        <td>
+          786
+          -
+          805
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\\#.*[\\n|\\r\\n]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          9405
+        </td>
+        <td>
+          927
+          -
+          937
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.r
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.augmentString(&quot;[^\&quot;]+&quot;).r
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          9408
+        </td>
+        <td>
+          920
+          -
+          944
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.~
+        </td>
+        <td style="background: #AEF1AE">
+          CommonTypesParser.this.literal(&quot;\&quot;&quot;).~[String](CommonTypesParser.this.regex(scala.this.Predef.augmentString(&quot;[^\&quot;]+&quot;).r)).~[String](CommonTypesParser.this.literal(&quot;\&quot;&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          9407
+        </td>
+        <td>
+          940
+          -
+          944
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #F0ADAD">
+          CommonTypesParser.this.literal(&quot;\&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          9404
+        </td>
+        <td>
+          927
+          -
+          935
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;[^\&quot;]+&quot;
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          9406
+        </td>
+        <td>
+          927
+          -
+          937
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.regex
+        </td>
+        <td style="background: #F0ADAD">
+          CommonTypesParser.this.regex(scala.this.Predef.augmentString(&quot;[^\&quot;]+&quot;).r)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          9403
+        </td>
+        <td>
+          920
+          -
+          924
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\&quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          9411
+        </td>
+        <td>
+          902
+          -
+          1204
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          CommonTypesParser.this.stringLiteral.|[java.io.Serializable](CommonTypesParser.this.literal(&quot;\&quot;&quot;).~[String](CommonTypesParser.this.regex(scala.this.Predef.augmentString(&quot;[^\&quot;]+&quot;).r)).~[String](CommonTypesParser.this.literal(&quot;\&quot;&quot;))).^^[String](((x0$1: java.io.Serializable) =&gt; x0$1 match {
+  case (s @ (_: String)) =&gt; scala.this.Predef.augmentString(s.substring(1)).dropRight(1).replace(&quot;\\\\&quot;, &quot;\\&quot;)
+  case (_1: Any, _2: Any)CommonTypesParser.this.~[Any,Any]((_1: Any, _2: Any)CommonTypesParser.this.~[Any,Any](_, (illFormedString @ _)), _) =&gt; throw {
+    final class $anon extends com.atomist.rug.BadRugException {
+      def &lt;init&gt;(): &lt;$anon: com.atomist.rug.BadRugException&gt; = {
+        $anon.super.&lt;init&gt;(scala.StringContext.apply(&quot;It looks like you\'re trying to use a string, but [&quot;, &quot;] is not a valid Java String&quot;).s(illFormedString), rug.this.BadRugException.&lt;init&gt;$default$2);
+        ()
+      }
+    };
+    new $anon()
+  }
+}))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          9409
+        </td>
+        <td>
+          975
+          -
+          1029
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(s.substring(1)).dropRight(1).replace(&quot;\\\\&quot;, &quot;\\&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9410
+        </td>
+        <td>
+          1066
+          -
+          1200
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw {
+  final class $anon extends com.atomist.rug.BadRugException {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.rug.BadRugException&gt; = {
+      $anon.super.&lt;init&gt;(scala.StringContext.apply(&quot;It looks like you\'re trying to use a string, but [&quot;, &quot;] is not a valid Java String&quot;).s(illFormedString), rug.this.BadRugException.&lt;init&gt;$default$2);
+      ()
+    }
+  };
+  new $anon()
+}
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          9412
+        </td>
+        <td>
+          1226
+          -
+          1229
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;=&quot;
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          9413
+        </td>
+        <td>
+          1251
+          -
+          1254
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\'&quot;
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          9414
+        </td>
+        <td>
+          1299
+          -
+          1310
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.CommonTypesParser.singleQuote
+        </td>
+        <td style="background: #AEF1AE">
+          CommonTypesParser.this.singleQuote
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          9417
+        </td>
+        <td>
+          1314
+          -
+          1327
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.regex
+        </td>
+        <td style="background: #AEF1AE">
+          CommonTypesParser.this.regex(scala.this.Predef.augmentString(&quot;[^\']*&quot;).r)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          9416
+        </td>
+        <td>
+          1314
+          -
+          1327
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.r
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(&quot;[^\']*&quot;).r
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          9419
+        </td>
+        <td>
+          1331
+          -
+          1342
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.literal
+        </td>
+        <td style="background: #AEF1AE">
+          CommonTypesParser.this.literal(CommonTypesParser.this.singleQuote)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          9415
+        </td>
+        <td>
+          1314
+          -
+          1325
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;[^\']*&quot;
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          9418
+        </td>
+        <td>
+          1331
+          -
+          1342
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.CommonTypesParser.singleQuote
+        </td>
+        <td style="background: #AEF1AE">
+          CommonTypesParser.this.singleQuote
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          9420
+        </td>
+        <td>
+          1299
+          -
+          1342
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.&lt;~
+        </td>
+        <td style="background: #AEF1AE">
+          CommonTypesParser.this.literal(CommonTypesParser.this.singleQuote).~&gt;[String](CommonTypesParser.this.regex(scala.this.Predef.augmentString(&quot;[^\']*&quot;).r)).&lt;~[String](CommonTypesParser.this.literal(CommonTypesParser.this.singleQuote))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          9437
+        </td>
+        <td>
+          1696
+          -
+          1699
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.CommonTypesParser.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          9421
+        </td>
+        <td>
+          1796
+          -
+          1816
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.apply
+        </td>
+        <td style="background: #AEF1AE">
+          underlying.apply(in)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          9423
+        </td>
+        <td>
+          1897
+          -
+          1929
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          reservedWords.contains(succ.get)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          9422
+        </td>
+        <td>
+          1920
+          -
+          1928
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Success.get
+        </td>
+        <td style="background: #AEF1AE">
+          succ.get
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          9426
+        </td>
+        <td>
+          1981
+          -
+          1989
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Success.get
+        </td>
+        <td style="background: #AEF1AE">
+          succ.get
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          9425
+        </td>
+        <td>
+          1990
+          -
+          2009
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\' as function name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          9428
+        </td>
+        <td>
+          2011
+          -
+          2020
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Success.next
+        </td>
+        <td style="background: #AEF1AE">
+          succ.next
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          9430
+        </td>
+        <td>
+          1943
+          -
+          2021
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Failure.apply
+        </td>
+        <td style="background: #AEF1AE">
+          CommonTypesParser.this.Failure.apply(scala.StringContext.apply(&quot;Cannot use reserved word \'&quot;, &quot;\' as function name&quot;).s(succ.get), succ.next)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          9424
+        </td>
+        <td>
+          1953
+          -
+          1980
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Cannot use reserved word \'&quot;
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          9427
+        </td>
+        <td>
+          1951
+          -
+          2009
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Cannot use reserved word \'&quot;, &quot;\' as function name&quot;).s(succ.get)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          9429
+        </td>
+        <td>
+          1943
+          -
+          2021
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Failure.apply
+        </td>
+        <td style="background: #AEF1AE">
+          CommonTypesParser.this.Failure.apply(scala.StringContext.apply(&quot;Cannot use reserved word \'&quot;, &quot;\' as function name&quot;).s(succ.get), succ.next)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          9432
+        </td>
+        <td>
+          2072
+          -
+          2095
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.CommonTypesParser.IdentifierRef.apply
+        </td>
+        <td style="background: #AEF1AE">
+          CommonTypesParser.this.IdentifierRef.apply(succ.get)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          9435
+        </td>
+        <td>
+          2049
+          -
+          2107
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Success.apply
+        </td>
+        <td style="background: #AEF1AE">
+          CommonTypesParser.this.Success.apply[CommonTypesParser.this.IdentifierRef](CommonTypesParser.this.IdentifierRef.apply(succ.get), succ.next)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          9434
+        </td>
+        <td>
+          2049
+          -
+          2107
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Success.apply
+        </td>
+        <td style="background: #AEF1AE">
+          CommonTypesParser.this.Success.apply[CommonTypesParser.this.IdentifierRef](CommonTypesParser.this.IdentifierRef.apply(succ.get), succ.next)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          9431
+        </td>
+        <td>
+          2086
+          -
+          2094
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Success.get
+        </td>
+        <td style="background: #AEF1AE">
+          succ.get
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          9433
+        </td>
+        <td>
+          2097
+          -
+          2106
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Success.next
+        </td>
+        <td style="background: #AEF1AE">
+          succ.next
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          9436
+        </td>
+        <td>
+          2155
+          -
+          2158
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          9439
+        </td>
+        <td>
+          2300
+          -
+          2359
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.Parsers.Parser.^^
+        </td>
+        <td style="background: #AEF1AE">
+          CommonTypesParser.this.identifierRef(reservedWords, underlying).^^[String](((ir: CommonTypesParser.this.IdentifierRef) =&gt; ir.name))
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          9438
+        </td>
+        <td>
+          2351
+          -
+          2358
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.scalaparsing.CommonTypesParser.IdentifierRef.name
+        </td>
+        <td style="background: #AEF1AE">
+          ir.name
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          9441
+        </td>
+        <td>
+          2573
+          -
+          2606
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.input.CharSequenceReader.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.util.parsing.input.CharSequenceReader(f.content)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          9440
+        </td>
+        <td>
+          2596
+          -
+          2605
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          f.content
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          9442
+        </td>
+        <td>
+          2624
+          -
+          2645
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.parsing.combinator.RegexParsers.parse
+        </td>
+        <td style="background: #AEF1AE">
+          CommonTypesParser.this.parse[T](parser, source)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          9443
+        </td>
+        <td>
+          2737
+          -
+          2883
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new com.atomist.rug.BadRugSyntaxException(ErrorInfo.apply(scala.StringContext.apply(&quot;Failure: &quot;, &quot;&quot;).s(msg), f.content, rest.pos.line, rest.pos.column, f.path, ErrorInfo.apply$default$6), rug.this.BadRugSyntaxException.&lt;init&gt;$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          9444
+        </td>
+        <td>
+          2923
+          -
+          3067
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.BadRugSyntaxException(ErrorInfo.apply(scala.StringContext.apply(&quot;Error: &quot;, &quot;&quot;).s(msg), f.content, rest.pos.line, rest.pos.column, f.path, ErrorInfo.apply$default$6), rug.this.BadRugSyntaxException.&lt;init&gt;$default$2)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,2711 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/plans/LocalInstructionRunner.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.plans
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.param.SimpleParameterValues
+</span>4 <span style=''>import com.atomist.project.archive.RugResolver
+</span>5 <span style=''>import com.atomist.project.edit._
+</span>6 <span style=''>import com.atomist.project.generate.ProjectGenerator
+</span>7 <span style=''>import com.atomist.rug.runtime._
+</span>8 <span style=''>import com.atomist.rug.runtime.js.RugContext
+</span>9 <span style=''>import com.atomist.rug.spi.Handlers.Instruction._
+</span>10 <span style=''>import com.atomist.rug.spi.Handlers.Status.{Failure, Success}
+</span>11 <span style=''>import com.atomist.rug.spi.Handlers.{Instruction, Response, Status}
+</span>12 <span style=''>import com.atomist.rug.spi.{Body, RugFunctionRegistry}
+</span>13 <span style=''>import com.atomist.rug.{BadPlanException, BadRugFunctionResponseException}
+</span>14 <span style=''>import org.slf4j.{Logger, LoggerFactory}
+</span>15 <span style=''>
+</span>16 <span style=''>import scala.util.{Try, Failure =&gt; ScalaFailure, Success =&gt; ScalaSuccess}
+</span>17 <span style=''>
+</span>18 <span style=''>/**
+</span>19 <span style=''>  * Run instructions synchronously in this JVM
+</span>20 <span style=''>  *
+</span>21 <span style=''>  * TODO - ensure we blow up if there are rugs or instructions with duplicate names
+</span>22 <span style=''>  * and don't have different GA's
+</span>23 <span style=''>  */
+</span>24 <span style=''>class LocalInstructionRunner(currentRug: Rug,
+</span>25 <span style=''>                             projectManagement: ProjectManagement,
+</span>26 <span style=''>                             rugContext: RugContext,
+</span>27 <span style=''>                             secretResolver: SecretResolver,
+</span>28 <span style=''>                             rugFunctionRegistry: RugFunctionRegistry = DefaultRugFunctionRegistry,
+</span>29 <span style=''>                             rugResolver: Option[RugResolver] = None,
+</span>30 <span style=''>                             loggerOption: Option[Logger] = None)
+</span>31 <span style=''>  extends InstructionRunner {
+</span>32 <span style=''>
+</span>33 <span style=''>  private val logger: Logger = </span><span style='background: #AEF1AE'>loggerOption.getOrElse(LoggerFactory getLogger getClass.getName)</span><span style=''>
+</span>34 <span style=''>
+</span>35 <span style=''>  private def doWithProjectName(instruction: Instruction, action: (String) =&gt; Response) = {
+</span>36 <span style=''>    </span><span style='background: #F0ADAD'>instruction.detail.projectName</span><span style=''> match {
+</span>37 <span style=''>      case Some(projectName) =&gt; </span><span style='background: #F0ADAD'>action(projectName)</span><span style=''>
+</span>38 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>throw new BadPlanException(s&quot;Project name required for $instruction.&quot;)</span><span style=''>
+</span>39 <span style=''>    }
+</span>40 <span style=''>  }
+</span>41 <span style=''>
+</span>42 <span style=''>  override def run(instruction: Instruction, callbackInput: Option[Response]): Response = {
+</span>43 <span style=''>    val parameters = </span><span style='background: #AEF1AE'>SimpleParameterValues(instruction.detail.parameters)</span><span style=''>
+</span>44 <span style=''>    instruction match {
+</span>45 <span style=''>      case Execute(detail) =&gt;
+</span>46 <span style=''>        </span><span style='background: #AEF1AE'>rugFunctionRegistry.find(detail.name)</span><span style=''> match {
+</span>47 <span style=''>          case Some(fn) =&gt;
+</span>48 <span style=''>            val replaced = </span><span style='background: #AEF1AE'>secretResolver.replaceSecretTokens(detail.parameters)</span><span style=''>
+</span>49 <span style=''>            val resolved = </span><span style='background: #AEF1AE'>SimpleParameterValues(replaced ++ secretResolver.resolveSecrets(fn.secrets))</span><span style=''>
+</span>50 <span style=''>            </span><span style='background: #AEF1AE'>Try {
+</span>51 <span style=''></span><span style='background: #AEF1AE'>              fn.run(resolved)
+</span>52 <span style=''></span><span style='background: #AEF1AE'>            }</span><span style=''> match {
+</span>53 <span style=''>              case ScalaSuccess(response) =&gt;
+</span>54 <span style=''>                //ensure the body is String or byte[]!
+</span>55 <span style=''>                val thedata = </span><span style='background: #AEF1AE'>response.body</span><span style=''> match {
+</span>56 <span style=''>                  case Some(Body(Some(str), None)) =&gt; </span><span style='background: #AEF1AE'>Some(str)</span><span style=''>
+</span>57 <span style=''>                  case Some(Body(None, Some(bytes))) =&gt; </span><span style='background: #F0ADAD'>Some(bytes)</span><span style=''>
+</span>58 <span style=''>                  case Some(Body(_, _)) =&gt; </span><span style='background: #F0ADAD'>throw new BadRugFunctionResponseException(s&quot;Function `${fn.name}` should return a string body or a byte array, but not both&quot;)</span><span style=''>
+</span>59 <span style=''>                  case _ =&gt; </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>60 <span style=''>                }
+</span>61 <span style=''>                </span><span style='background: #AEF1AE'>Response(response.status, response.msg, response.code, thedata)</span><span style=''>
+</span>62 <span style=''>              case ScalaFailure(throwaball) =&gt;
+</span>63 <span style=''>                val msg = </span><span style='background: #AEF1AE'>s&quot;Rug Function ${detail.name} threw exception: ${throwaball.getMessage}&quot;</span><span style=''>
+</span>64 <span style=''>                </span><span style='background: #AEF1AE'>logger.warn(msg, throwaball)</span><span style=''>
+</span>65 <span style=''>                </span><span style='background: #AEF1AE'>Response(Status.Failure, Some(msg), None, Some(throwaball))</span><span style=''>
+</span>66 <span style=''>            }
+</span>67 <span style=''>          case _ =&gt;
+</span>68 <span style=''>            val msg = </span><span style='background: #AEF1AE'>s&quot;Cannot find Rug Function ${detail.name}&quot;</span><span style=''>
+</span>69 <span style=''>            </span><span style='background: #AEF1AE'>logger.warn(msg)</span><span style=''>
+</span>70 <span style=''>            </span><span style='background: #AEF1AE'>Response(Status.Failure, Some(msg), None, None)</span><span style=''>
+</span>71 <span style=''>        }
+</span>72 <span style=''>      case _ =&gt;
+</span>73 <span style=''>        </span><span style='background: #AEF1AE'>rugResolver</span><span style=''> match {
+</span>74 <span style=''>          case Some(resolver) =&gt;
+</span>75 <span style=''>            </span><span style='background: #AEF1AE'>resolver.resolve(currentRug, extractName(instruction.detail))</span><span style=''> match {
+</span>76 <span style=''>              case Some(rug: ProjectGenerator) =&gt;
+</span>77 <span style=''>                </span><span style='background: #F0ADAD'>doWithProjectName(instruction, (projectName: String) =&gt; {
+</span>78 <span style=''></span><span style='background: #F0ADAD'>                  val as = projectManagement.generate(rug, parameters, projectName)
+</span>79 <span style=''></span><span style='background: #F0ADAD'>                  if (as != null) Response(Success)
+</span>80 <span style=''></span><span style='background: #F0ADAD'>                  else Response(Failure, Some(s&quot;failed to run generator ${rug.name} to create $projectName&quot;))
+</span>81 <span style=''></span><span style='background: #F0ADAD'>                })</span><span style=''>
+</span>82 <span style=''>              case Some(rug: ProjectEditor) =&gt;
+</span>83 <span style=''>                </span><span style='background: #F0ADAD'>doWithProjectName(instruction, (projectName: String) =&gt; {
+</span>84 <span style=''></span><span style='background: #F0ADAD'>                  projectManagement.edit(rug, parameters, projectName, instruction.detail.editorTarget) match {
+</span>85 <span style=''></span><span style='background: #F0ADAD'>                    case _: SuccessfulModification =&gt; Response(Success)
+</span>86 <span style=''></span><span style='background: #F0ADAD'>                    case success: NoModificationNeeded =&gt; Response(Success, Some(success.comment))
+</span>87 <span style=''></span><span style='background: #F0ADAD'>                    case failure: FailedModificationAttempt =&gt; Response(Failure, Some(failure.failureExplanation))
+</span>88 <span style=''></span><span style='background: #F0ADAD'>                  }
+</span>89 <span style=''></span><span style='background: #F0ADAD'>                })</span><span style=''>
+</span>90 <span style=''>              case Some(rug: CommandHandler) =&gt;
+</span>91 <span style=''>                val planOption = </span><span style='background: #F0ADAD'>rug.handle(rugContext, parameters)</span><span style=''>
+</span>92 <span style=''>                </span><span style='background: #F0ADAD'>Response(Success, None, None, planOption)</span><span style=''>
+</span>93 <span style=''>              case Some(rug: ResponseHandler) =&gt;
+</span>94 <span style=''>                callbackInput match {
+</span>95 <span style=''>                  case Some(response) =&gt;
+</span>96 <span style=''>                    val planOption = </span><span style='background: #AEF1AE'>rug.handle(rugContext, response, parameters)</span><span style=''>
+</span>97 <span style=''>                    </span><span style='background: #AEF1AE'>Response(Success, None, None, planOption)</span><span style=''>
+</span>98 <span style=''>                  case c =&gt;
+</span>99 <span style=''>                    </span><span style='background: #F0ADAD'>throw new BadPlanException(s&quot;Callback input was not recognized: $c&quot;)</span><span style=''>
+</span>100 <span style=''>                }
+</span>101 <span style=''>              case Some(rug) =&gt; </span><span style='background: #F0ADAD'>throw new BadPlanException(s&quot;Unrecognized rug type: $rug&quot;)</span><span style=''>
+</span>102 <span style=''>              case None =&gt; </span><span style='background: #F0ADAD'>throw new BadPlanException(s&quot;Could not find rug with name: ${instruction.detail.name}&quot;)</span><span style=''>
+</span>103 <span style=''>            }
+</span>104 <span style=''>          case _ =&gt; </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Could not find rug with name: ${instruction.detail.name} because no RugResolver supplied&quot;)</span><span style=''>
+</span>105 <span style=''>        }
+</span>106 <span style=''>    }
+</span>107 <span style=''>  }
+</span>108 <span style=''>
+</span>109 <span style=''>  /**
+</span>110 <span style=''>    * Convert Instruction.Detail name/coords to a string for resolver.
+</span>111 <span style=''>    */
+</span>112 <span style=''>  def extractName(detail: Instruction.Detail): String = {
+</span>113 <span style=''>    </span><span style='background: #AEF1AE'>detail.coordinates</span><span style=''> match {
+</span>114 <span style=''>      case Some(coords) =&gt;
+</span>115 <span style=''>        </span><span style='background: #F0ADAD'>s&quot;${coords.group}:${coords.artifact}:${detail.name}&quot;</span><span style=''>
+</span>116 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>detail.name</span><span style=''>
+</span>117 <span style=''>    }
+</span>118 <span style=''>  }
+</span>119 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          4658
+        </td>
+        <td>
+          1428
+          -
+          1492
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          LocalInstructionRunner.this.loggerOption.getOrElse[org.slf4j.Logger](org.slf4j.LoggerFactory.getLogger(LocalInstructionRunner.this.getClass().getName()))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          4657
+        </td>
+        <td>
+          1451
+          -
+          1491
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.LoggerFactory.getLogger
+        </td>
+        <td style="background: #AEF1AE">
+          org.slf4j.LoggerFactory.getLogger(LocalInstructionRunner.this.getClass().getName())
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          4656
+        </td>
+        <td>
+          1475
+          -
+          1491
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getName
+        </td>
+        <td style="background: #AEF1AE">
+          LocalInstructionRunner.this.getClass().getName()
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          4659
+        </td>
+        <td>
+          1590
+          -
+          1620
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.projectName
+        </td>
+        <td style="background: #F0ADAD">
+          instruction.detail.projectName
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          4660
+        </td>
+        <td>
+          1661
+          -
+          1680
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #F0ADAD">
+          action.apply(projectName)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          4661
+        </td>
+        <td>
+          1697
+          -
+          1767
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.BadPlanException(scala.StringContext.apply(&quot;Project name required for &quot;, &quot;.&quot;).s(instruction), rug.this.BadPlanException.&lt;init&gt;$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          4663
+        </td>
+        <td>
+          1892
+          -
+          1944
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValues.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.param.SimpleParameterValues.apply(instruction.detail.parameters)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          4662
+        </td>
+        <td>
+          1914
+          -
+          1943
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.parameters
+        </td>
+        <td style="background: #AEF1AE">
+          instruction.detail.parameters
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          4664
+        </td>
+        <td>
+          2032
+          -
+          2043
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.name
+        </td>
+        <td style="background: #AEF1AE">
+          detail.name
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          4665
+        </td>
+        <td>
+          2007
+          -
+          2044
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.RugFunctionRegistry.find
+        </td>
+        <td style="background: #AEF1AE">
+          LocalInstructionRunner.this.rugFunctionRegistry.find(detail.name)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          4667
+        </td>
+        <td>
+          2107
+          -
+          2160
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.SecretResolver.replaceSecretTokens
+        </td>
+        <td style="background: #AEF1AE">
+          LocalInstructionRunner.this.secretResolver.replaceSecretTokens(detail.parameters)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          4666
+        </td>
+        <td>
+          2142
+          -
+          2159
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.parameters
+        </td>
+        <td style="background: #AEF1AE">
+          detail.parameters
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          4668
+        </td>
+        <td>
+          2252
+          -
+          2262
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.SecretAwareRug.secrets
+        </td>
+        <td style="background: #AEF1AE">
+          fn.secrets
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          4670
+        </td>
+        <td>
+          2219
+          -
+          2219
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.param.ParameterValue]
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          4669
+        </td>
+        <td>
+          2222
+          -
+          2263
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.SecretResolver.resolveSecrets
+        </td>
+        <td style="background: #AEF1AE">
+          LocalInstructionRunner.this.secretResolver.resolveSecrets(fn.secrets)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          4672
+        </td>
+        <td>
+          2188
+          -
+          2264
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValues.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.param.SimpleParameterValues.apply(replaced.++[com.atomist.param.ParameterValue, Seq[com.atomist.param.ParameterValue]](LocalInstructionRunner.this.secretResolver.resolveSecrets(fn.secrets))(collection.this.Seq.canBuildFrom[com.atomist.param.ParameterValue]))
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          4671
+        </td>
+        <td>
+          2210
+          -
+          2263
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          replaced.++[com.atomist.param.ParameterValue, Seq[com.atomist.param.ParameterValue]](LocalInstructionRunner.this.secretResolver.resolveSecrets(fn.secrets))(collection.this.Seq.canBuildFrom[com.atomist.param.ParameterValue])
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          4674
+        </td>
+        <td>
+          2277
+          -
+          2327
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.Try.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Try.apply[com.atomist.rug.spi.FunctionResponse](fn.run(resolved))
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          4673
+        </td>
+        <td>
+          2297
+          -
+          2313
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.RugFunction.run
+        </td>
+        <td style="background: #AEF1AE">
+          fn.run(resolved)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          4675
+        </td>
+        <td>
+          2466
+          -
+          2479
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.FunctionResponse.body
+        </td>
+        <td style="background: #AEF1AE">
+          response.body
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          4676
+        </td>
+        <td>
+          2542
+          -
+          2551
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](str)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          4677
+        </td>
+        <td>
+          2608
+          -
+          2619
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[Array[Byte]](bytes)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          4678
+        </td>
+        <td>
+          2663
+          -
+          2788
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.BadRugFunctionResponseException(scala.StringContext.apply(&quot;Function `&quot;, &quot;` should return a string body or a byte array, but not both&quot;).s(fn.name))
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          4679
+        </td>
+        <td>
+          2817
+          -
+          2821
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4682
+        </td>
+        <td>
+          2896
+          -
+          2909
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.FunctionResponse.code
+        </td>
+        <td style="background: #AEF1AE">
+          response.code
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4681
+        </td>
+        <td>
+          2882
+          -
+          2894
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.FunctionResponse.msg
+        </td>
+        <td style="background: #AEF1AE">
+          response.msg
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4680
+        </td>
+        <td>
+          2865
+          -
+          2880
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.FunctionResponse.status
+        </td>
+        <td style="background: #AEF1AE">
+          response.status
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          4683
+        </td>
+        <td>
+          2856
+          -
+          2919
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Response.apply(response.status, response.msg, response.code, thedata)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4686
+        </td>
+        <td>
+          3064
+          -
+          3065
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4685
+        </td>
+        <td>
+          3022
+          -
+          3041
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; threw exception: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4688
+        </td>
+        <td>
+          3042
+          -
+          3063
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Throwable.getMessage
+        </td>
+        <td style="background: #AEF1AE">
+          throwaball.getMessage()
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4684
+        </td>
+        <td>
+          2995
+          -
+          3009
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Rug Function &quot;
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4687
+        </td>
+        <td>
+          3010
+          -
+          3021
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.name
+        </td>
+        <td style="background: #AEF1AE">
+          detail.name
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          4689
+        </td>
+        <td>
+          2993
+          -
+          3065
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Rug Function &quot;, &quot; threw exception: &quot;, &quot;&quot;).s(detail.name, throwaball.getMessage())
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          4690
+        </td>
+        <td>
+          3082
+          -
+          3110
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.warn
+        </td>
+        <td style="background: #AEF1AE">
+          LocalInstructionRunner.this.logger.warn(msg, throwaball)
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          4695
+        </td>
+        <td>
+          3127
+          -
+          3186
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Failure, scala.Some.apply[String](msg), scala.None, scala.Some.apply[Throwable](throwaball))
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          4694
+        </td>
+        <td>
+          3169
+          -
+          3185
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Throwable](throwaball)
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          4691
+        </td>
+        <td>
+          3136
+          -
+          3150
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Status.Failure
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Status.Failure
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          4693
+        </td>
+        <td>
+          3163
+          -
+          3167
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          4692
+        </td>
+        <td>
+          3152
+          -
+          3161
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](msg)
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          4697
+        </td>
+        <td>
+          3284
+          -
+          3285
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          4699
+        </td>
+        <td>
+          3243
+          -
+          3285
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Cannot find Rug Function &quot;, &quot;&quot;).s(detail.name)
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          4696
+        </td>
+        <td>
+          3245
+          -
+          3271
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Cannot find Rug Function &quot;
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          4698
+        </td>
+        <td>
+          3272
+          -
+          3283
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.name
+        </td>
+        <td style="background: #AEF1AE">
+          detail.name
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          4700
+        </td>
+        <td>
+          3298
+          -
+          3314
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.warn
+        </td>
+        <td style="background: #AEF1AE">
+          LocalInstructionRunner.this.logger.warn(msg)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          4704
+        </td>
+        <td>
+          3369
+          -
+          3373
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          4703
+        </td>
+        <td>
+          3363
+          -
+          3367
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          4702
+        </td>
+        <td>
+          3352
+          -
+          3361
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](msg)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          4705
+        </td>
+        <td>
+          3327
+          -
+          3374
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Failure, scala.Some.apply[String](msg), scala.None, scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          4701
+        </td>
+        <td>
+          3336
+          -
+          3350
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Status.Failure
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Status.Failure
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          4706
+        </td>
+        <td>
+          3409
+          -
+          3420
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.LocalInstructionRunner.rugResolver
+        </td>
+        <td style="background: #AEF1AE">
+          LocalInstructionRunner.this.rugResolver
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          4709
+        </td>
+        <td>
+          3503
+          -
+          3534
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.LocalInstructionRunner.extractName
+        </td>
+        <td style="background: #AEF1AE">
+          LocalInstructionRunner.this.extractName(instruction.detail)
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          4708
+        </td>
+        <td>
+          3515
+          -
+          3533
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.detail
+        </td>
+        <td style="background: #AEF1AE">
+          instruction.detail
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          4707
+        </td>
+        <td>
+          3491
+          -
+          3501
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.LocalInstructionRunner.currentRug
+        </td>
+        <td style="background: #AEF1AE">
+          LocalInstructionRunner.this.currentRug
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          4710
+        </td>
+        <td>
+          3474
+          -
+          3535
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.archive.RugResolver.resolve
+        </td>
+        <td style="background: #AEF1AE">
+          resolver.resolve(LocalInstructionRunner.this.currentRug, LocalInstructionRunner.this.extractName(instruction.detail))
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          4730
+        </td>
+        <td>
+          3610
+          -
+          3932
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.LocalInstructionRunner.doWithProjectName
+        </td>
+        <td style="background: #F0ADAD">
+          LocalInstructionRunner.this.doWithProjectName(instruction, ((projectName: String) =&gt; {
+  val as: com.atomist.source.ArtifactSource = LocalInstructionRunner.this.projectManagement.generate(rug, parameters, projectName);
+  if (as.!=(null))
+    com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Success, com.atomist.rug.spi.Handlers.Response.apply$default$2, com.atomist.rug.spi.Handlers.Response.apply$default$3, com.atomist.rug.spi.Handlers.Response.apply$default$4)
+  else
+    com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Failure, scala.Some.apply[String](scala.StringContext.apply(&quot;failed to run generator &quot;, &quot; to create &quot;, &quot;&quot;).s(rug.name, projectName)), com.atomist.rug.spi.Handlers.Response.apply$default$3, com.atomist.rug.spi.Handlers.Response.apply$default$4)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          4711
+        </td>
+        <td>
+          3695
+          -
+          3751
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.ProjectManagement.generate
+        </td>
+        <td style="background: #F0ADAD">
+          LocalInstructionRunner.this.projectManagement.generate(rug, parameters, projectName)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          4713
+        </td>
+        <td>
+          3795
+          -
+          3802
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Status.Success
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Status.Success
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          4712
+        </td>
+        <td>
+          3774
+          -
+          3784
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #F0ADAD">
+          as.!=(null)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          4715
+        </td>
+        <td>
+          3786
+          -
+          3786
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$3
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          4718
+        </td>
+        <td>
+          3786
+          -
+          3803
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Success, com.atomist.rug.spi.Handlers.Response.apply$default$2, com.atomist.rug.spi.Handlers.Response.apply$default$3, com.atomist.rug.spi.Handlers.Response.apply$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          4717
+        </td>
+        <td>
+          3786
+          -
+          3803
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Success, com.atomist.rug.spi.Handlers.Response.apply$default$2, com.atomist.rug.spi.Handlers.Response.apply$default$3, com.atomist.rug.spi.Handlers.Response.apply$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          4714
+        </td>
+        <td>
+          3786
+          -
+          3786
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          4716
+        </td>
+        <td>
+          3786
+          -
+          3786
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$4
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply$default$4
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          4721
+        </td>
+        <td>
+          3887
+          -
+          3899
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; to create &quot;
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          4724
+        </td>
+        <td>
+          3850
+          -
+          3911
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;failed to run generator &quot;, &quot; to create &quot;, &quot;&quot;).s(rug.name, projectName)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          4727
+        </td>
+        <td>
+          3827
+          -
+          3827
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$4
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply$default$4
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          4726
+        </td>
+        <td>
+          3827
+          -
+          3827
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$3
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          4720
+        </td>
+        <td>
+          3852
+          -
+          3877
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;failed to run generator &quot;
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          4729
+        </td>
+        <td>
+          3827
+          -
+          3913
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Failure, scala.Some.apply[String](scala.StringContext.apply(&quot;failed to run generator &quot;, &quot; to create &quot;, &quot;&quot;).s(rug.name, projectName)), com.atomist.rug.spi.Handlers.Response.apply$default$3, com.atomist.rug.spi.Handlers.Response.apply$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          4723
+        </td>
+        <td>
+          3878
+          -
+          3886
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.Rug.name
+        </td>
+        <td style="background: #F0ADAD">
+          rug.name
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          4722
+        </td>
+        <td>
+          3910
+          -
+          3911
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          4725
+        </td>
+        <td>
+          3845
+          -
+          3912
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](scala.StringContext.apply(&quot;failed to run generator &quot;, &quot; to create &quot;, &quot;&quot;).s(rug.name, projectName))
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          4719
+        </td>
+        <td>
+          3836
+          -
+          3843
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Status.Failure
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Status.Failure
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          4728
+        </td>
+        <td>
+          3827
+          -
+          3913
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Failure, scala.Some.apply[String](scala.StringContext.apply(&quot;failed to run generator &quot;, &quot; to create &quot;, &quot;&quot;).s(rug.name, projectName)), com.atomist.rug.spi.Handlers.Response.apply$default$3, com.atomist.rug.spi.Handlers.Response.apply$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          4750
+        </td>
+        <td>
+          3996
+          -
+          4490
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.LocalInstructionRunner.doWithProjectName
+        </td>
+        <td style="background: #F0ADAD">
+          LocalInstructionRunner.this.doWithProjectName(instruction, ((projectName: String) =&gt; LocalInstructionRunner.this.projectManagement.edit(rug, parameters, projectName, instruction.detail.editorTarget) match {
+  case (_: com.atomist.project.edit.SuccessfulModification) =&gt; com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Success, com.atomist.rug.spi.Handlers.Response.apply$default$2, com.atomist.rug.spi.Handlers.Response.apply$default$3, com.atomist.rug.spi.Handlers.Response.apply$default$4)
+  case (success @ (_: com.atomist.project.edit.NoModificationNeeded)) =&gt; com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Success, scala.Some.apply[String](success.comment), com.atomist.rug.spi.Handlers.Response.apply$default$3, com.atomist.rug.spi.Handlers.Response.apply$default$4)
+  case (failure @ (_: com.atomist.project.edit.FailedModificationAttempt)) =&gt; com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Failure, scala.Some.apply[String](failure.failureExplanation), com.atomist.rug.spi.Handlers.Response.apply$default$3, com.atomist.rug.spi.Handlers.Response.apply$default$4)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          4732
+        </td>
+        <td>
+          4072
+          -
+          4157
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.ProjectManagement.edit
+        </td>
+        <td style="background: #F0ADAD">
+          LocalInstructionRunner.this.projectManagement.edit(rug, parameters, projectName, instruction.detail.editorTarget)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          4731
+        </td>
+        <td>
+          4125
+          -
+          4156
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.editorTarget
+        </td>
+        <td style="background: #F0ADAD">
+          instruction.detail.editorTarget
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          4733
+        </td>
+        <td>
+          4229
+          -
+          4236
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Status.Success
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Status.Success
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          4736
+        </td>
+        <td>
+          4220
+          -
+          4220
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$4
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply$default$4
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          4735
+        </td>
+        <td>
+          4220
+          -
+          4220
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$3
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          4734
+        </td>
+        <td>
+          4220
+          -
+          4220
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          4737
+        </td>
+        <td>
+          4220
+          -
+          4237
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Success, com.atomist.rug.spi.Handlers.Response.apply$default$2, com.atomist.rug.spi.Handlers.Response.apply$default$3, com.atomist.rug.spi.Handlers.Response.apply$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          4739
+        </td>
+        <td>
+          4319
+          -
+          4334
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.edit.NoModificationNeeded.comment
+        </td>
+        <td style="background: #F0ADAD">
+          success.comment
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          4742
+        </td>
+        <td>
+          4296
+          -
+          4296
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$4
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply$default$4
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          4738
+        </td>
+        <td>
+          4305
+          -
+          4312
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Status.Success
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Status.Success
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          4741
+        </td>
+        <td>
+          4296
+          -
+          4296
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$3
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          4740
+        </td>
+        <td>
+          4314
+          -
+          4335
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](success.comment)
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          4743
+        </td>
+        <td>
+          4296
+          -
+          4336
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Success, scala.Some.apply[String](success.comment), com.atomist.rug.spi.Handlers.Response.apply$default$3, com.atomist.rug.spi.Handlers.Response.apply$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          4745
+        </td>
+        <td>
+          4423
+          -
+          4449
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.edit.FailedModificationAttempt.failureExplanation
+        </td>
+        <td style="background: #F0ADAD">
+          failure.failureExplanation
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          4748
+        </td>
+        <td>
+          4400
+          -
+          4400
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$4
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply$default$4
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          4744
+        </td>
+        <td>
+          4409
+          -
+          4416
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Status.Failure
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Status.Failure
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          4747
+        </td>
+        <td>
+          4400
+          -
+          4400
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply$default$3
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          4749
+        </td>
+        <td>
+          4400
+          -
+          4451
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Failure, scala.Some.apply[String](failure.failureExplanation), com.atomist.rug.spi.Handlers.Response.apply$default$3, com.atomist.rug.spi.Handlers.Response.apply$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          4746
+        </td>
+        <td>
+          4418
+          -
+          4450
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](failure.failureExplanation)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          4751
+        </td>
+        <td>
+          4583
+          -
+          4593
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.LocalInstructionRunner.rugContext
+        </td>
+        <td style="background: #F0ADAD">
+          LocalInstructionRunner.this.rugContext
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          4752
+        </td>
+        <td>
+          4572
+          -
+          4606
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.CommandHandler.handle
+        </td>
+        <td style="background: #F0ADAD">
+          rug.handle(LocalInstructionRunner.this.rugContext, parameters)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          4754
+        </td>
+        <td>
+          4641
+          -
+          4645
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          4753
+        </td>
+        <td>
+          4632
+          -
+          4639
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Status.Success
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Status.Success
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          4756
+        </td>
+        <td>
+          4623
+          -
+          4664
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Success, scala.None, scala.None, planOption)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          4755
+        </td>
+        <td>
+          4647
+          -
+          4651
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          4757
+        </td>
+        <td>
+          4841
+          -
+          4851
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.LocalInstructionRunner.rugContext
+        </td>
+        <td style="background: #AEF1AE">
+          LocalInstructionRunner.this.rugContext
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          4758
+        </td>
+        <td>
+          4830
+          -
+          4874
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.ResponseHandler.handle
+        </td>
+        <td style="background: #AEF1AE">
+          rug.handle(LocalInstructionRunner.this.rugContext, response, parameters)
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          4760
+        </td>
+        <td>
+          4913
+          -
+          4917
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          4759
+        </td>
+        <td>
+          4904
+          -
+          4911
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Status.Success
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Status.Success
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          4762
+        </td>
+        <td>
+          4895
+          -
+          4936
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Response.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Response.apply(com.atomist.rug.spi.Handlers.Status.Success, scala.None, scala.None, planOption)
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          4761
+        </td>
+        <td>
+          4919
+          -
+          4923
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          4763
+        </td>
+        <td>
+          4985
+          -
+          5053
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.BadPlanException(scala.StringContext.apply(&quot;Callback input was not recognized: &quot;, &quot;&quot;).s(c), rug.this.BadPlanException.&lt;init&gt;$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          4764
+        </td>
+        <td>
+          5104
+          -
+          5162
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.BadPlanException(scala.StringContext.apply(&quot;Unrecognized rug type: &quot;, &quot;&quot;).s(rug), rug.this.BadPlanException.&lt;init&gt;$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          4765
+        </td>
+        <td>
+          5190
+          -
+          5277
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.BadPlanException(scala.StringContext.apply(&quot;Could not find rug with name: &quot;, &quot;&quot;).s(instruction.detail.name), rug.this.BadPlanException.&lt;init&gt;$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          4766
+        </td>
+        <td>
+          5312
+          -
+          5439
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Could not find rug with name: &quot;, &quot; because no RugResolver supplied&quot;).s(instruction.detail.name))
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          4767
+        </td>
+        <td>
+          5607
+          -
+          5625
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.coordinates
+        </td>
+        <td style="background: #AEF1AE">
+          detail.coordinates
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          4772
+        </td>
+        <td>
+          5673
+          -
+          5685
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.MavenCoordinate.group
+        </td>
+        <td style="background: #F0ADAD">
+          coords.group
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          4775
+        </td>
+        <td>
+          5669
+          -
+          5721
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;:&quot;, &quot;:&quot;, &quot;&quot;).s(coords.group, coords.artifact, detail.name)
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          4769
+        </td>
+        <td>
+          5686
+          -
+          5688
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;:&quot;
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          4768
+        </td>
+        <td>
+          5671
+          -
+          5672
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          4771
+        </td>
+        <td>
+          5720
+          -
+          5721
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          4774
+        </td>
+        <td>
+          5708
+          -
+          5719
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.name
+        </td>
+        <td style="background: #F0ADAD">
+          detail.name
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          4770
+        </td>
+        <td>
+          5705
+          -
+          5707
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;:&quot;
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          4773
+        </td>
+        <td>
+          5689
+          -
+          5704
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.MavenCoordinate.artifact
+        </td>
+        <td style="background: #F0ADAD">
+          coords.artifact
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          4776
+        </td>
+        <td>
+          5738
+          -
+          5749
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.name
+        </td>
+        <td style="background: #AEF1AE">
+          detail.name
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

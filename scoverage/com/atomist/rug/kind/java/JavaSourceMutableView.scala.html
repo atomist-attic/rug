@@ -1,0 +1,968 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/java/JavaSourceMutableView.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.java
+</span>2 <span style=''>
+</span>3 <span style=''>import java.util.Objects
+</span>4 <span style=''>
+</span>5 <span style=''>import com.atomist.rug.RugRuntimeException
+</span>6 <span style=''>import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
+</span>7 <span style=''>import com.atomist.rug.kind.java.JavaTypeType._
+</span>8 <span style=''>import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, MutableView}
+</span>9 <span style=''>import com.atomist.source.FileArtifact
+</span>10 <span style=''>import com.github.javaparser.JavaParser
+</span>11 <span style=''>import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
+</span>12 <span style=''>import com.github.javaparser.ast.expr.Name
+</span>13 <span style=''>import com.github.javaparser.ast.{CompilationUnit, PackageDeclaration}
+</span>14 <span style=''>
+</span>15 <span style=''>import scala.collection.JavaConverters._
+</span>16 <span style=''>import scala.util.Try
+</span>17 <span style=''>
+</span>18 <span style=''>class JavaSourceMutableView(old: FileArtifact, parent: ProjectMutableView)
+</span>19 <span style=''>  extends LazyFileArtifactBackedMutableView(old, parent) {
+</span>20 <span style=''>
+</span>21 <span style=''>  lazy val compilationUnit: Option[CompilationUnit] = {
+</span>22 <span style=''>    </span><span style='background: #AEF1AE'>Try {
+</span>23 <span style=''></span><span style='background: #AEF1AE'>      // It's possible there'll be a parsing error. Hide it
+</span>24 <span style=''></span><span style='background: #AEF1AE'>      JavaParser.parse(old.inputStream)
+</span>25 <span style=''></span><span style='background: #AEF1AE'>    }.toOption</span><span style=''>
+</span>26 <span style=''>  }
+</span>27 <span style=''>
+</span>28 <span style=''>  override protected def wellFormed: Boolean =
+</span>29 <span style=''>    </span><span style='background: #AEF1AE'>compilationUnit.isDefined</span><span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>  override def dirty = </span><span style='background: #AEF1AE'>true</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>  override protected def currentContent: String = </span><span style='background: #AEF1AE'>Objects.toString(compilationUnit.getOrElse(&quot;&quot;))</span><span style=''>
+</span>34 <span style=''>
+</span>35 <span style=''>  override def childNodeNames: Set[String] = </span><span style='background: #AEF1AE'>Set(JavaTypeAlias)</span><span style=''>
+</span>36 <span style=''>
+</span>37 <span style=''>  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = (compilationUnit, fieldName) match {
+</span>38 <span style=''>    case (None, _) =&gt; </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>39 <span style=''>    case (Some(cu), JavaTypeAlias) =&gt;
+</span>40 <span style=''>      </span><span style='background: #AEF1AE'>cu.getTypes.asScala
+</span>41 <span style=''></span><span style='background: #AEF1AE'>        .collect {
+</span>42 <span style=''></span><span style='background: #AEF1AE'>          case c: ClassOrInterfaceDeclaration =&gt; c
+</span>43 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>44 <span style=''></span><span style='background: #AEF1AE'>        .map(c =&gt; new JavaClassOrInterfaceMutableView(c, this))</span><span style=''>
+</span>45 <span style=''>
+</span>46 <span style=''>    case _ =&gt; </span><span style='background: #F0ADAD'>throw new RugRuntimeException(null, s&quot;No child with name '$fieldName' in ${getClass.getSimpleName}&quot;)</span><span style=''>
+</span>47 <span style=''>  }
+</span>48 <span style=''>
+</span>49 <span style=''>  override def commit(): Unit = {
+</span>50 <span style=''>    if (</span><span style='background: #AEF1AE'>dirty</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>51 <span style=''></span><span style='background: #AEF1AE'>      val latest = currentBackingObject
+</span>52 <span style=''></span><span style='background: #AEF1AE'>      parent.updateFile(old, latest)
+</span>53 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>54 <span style=''>  }
+</span>55 <span style=''>
+</span>56 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Return the Java project&quot;)
+</span>57 <span style=''>  def javaProject: JavaProjectMutableView =
+</span>58 <span style=''>    </span><span style='background: #AEF1AE'>new JavaProjectMutableView(parent)</span><span style=''>
+</span>59 <span style=''>
+</span>60 <span style=''>  /**
+</span>61 <span style=''>    * Return the package name.
+</span>62 <span style=''>    */
+</span>63 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Return the package name&quot;)
+</span>64 <span style=''>  def pkg: String = compilationUnit match {
+</span>65 <span style=''>    case Some(cu) =&gt; </span><span style='background: #AEF1AE'>cu.getPackageDeclaration.get().getNameAsString</span><span style=''>
+</span>66 <span style=''>    case None =&gt; </span><span style='background: #F0ADAD'>&quot;&quot;</span><span style=''>
+</span>67 <span style=''>  }
+</span>68 <span style=''>
+</span>69 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Count the types in this source file&quot;)
+</span>70 <span style=''>  def typeCount: Int = compilationUnit match {
+</span>71 <span style=''>    case Some(cu) =&gt; </span><span style='background: #F0ADAD'>cu.getTypes.size()</span><span style=''>
+</span>72 <span style=''>    case None =&gt; </span><span style='background: #F0ADAD'>0</span><span style=''>
+</span>73 <span style=''>  }
+</span>74 <span style=''>
+</span>75 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Move the source file to the given package&quot;)
+</span>76 <span style=''>  def movePackage(@ExportFunctionParameterDescription(name = &quot;newPackage&quot;,
+</span>77 <span style=''>    description = &quot;The package to move the source file to&quot;) newPackage: String): Unit = compilationUnit match {
+</span>78 <span style=''>    case Some(cu) =&gt;
+</span>79 <span style=''>      val pathToReplace = </span><span style='background: #AEF1AE'>pkg.replace(&quot;.&quot;, &quot;/&quot;)</span><span style=''>
+</span>80 <span style=''>      val newPath = </span><span style='background: #AEF1AE'>newPackage.replace(&quot;.&quot;, &quot;/&quot;)</span><span style=''>
+</span>81 <span style=''>      </span><span style='background: #AEF1AE'>cu.setPackageDeclaration(new PackageDeclaration(new Name(newPackage)))</span><span style=''>
+</span>82 <span style=''>      </span><span style='background: #AEF1AE'>setPath(path.replace(pathToReplace, newPath))</span><span style=''>
+</span>83 <span style=''>    case None </span><span style='background: #F0ADAD'>=&gt;</span><span style=''>
+</span>84 <span style=''>  }
+</span>85 <span style=''>
+</span>86 <span style=''>  def rename(newName: String): Unit = {
+</span>87 <span style=''>    </span><span style='background: #AEF1AE'>setName(newName)</span><span style=''>
+</span>88 <span style=''>  }
+</span>89 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          2027
+        </td>
+        <td>
+          925
+          -
+          958
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.JavaParser.parse
+        </td>
+        <td style="background: #AEF1AE">
+          com.github.javaparser.JavaParser.parse(JavaSourceMutableView.this.old.inputStream())
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          2026
+        </td>
+        <td>
+          942
+          -
+          957
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.inputStream
+        </td>
+        <td style="background: #AEF1AE">
+          JavaSourceMutableView.this.old.inputStream()
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          2028
+        </td>
+        <td>
+          853
+          -
+          973
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.Try.toOption
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Try.apply[com.github.javaparser.ast.CompilationUnit](com.github.javaparser.JavaParser.parse(JavaSourceMutableView.this.old.inputStream())).toOption
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          2029
+        </td>
+        <td>
+          1030
+          -
+          1055
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #AEF1AE">
+          JavaSourceMutableView.this.compilationUnit.isDefined
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          2030
+        </td>
+        <td>
+          1080
+          -
+          1084
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          2032
+        </td>
+        <td>
+          1136
+          -
+          1183
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Objects.toString
+        </td>
+        <td style="background: #AEF1AE">
+          java.util.Objects.toString(JavaSourceMutableView.this.compilationUnit.getOrElse[Object](&quot;&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          2031
+        </td>
+        <td>
+          1153
+          -
+          1182
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          JavaSourceMutableView.this.compilationUnit.getOrElse[Object](&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          2033
+        </td>
+        <td>
+          1234
+          -
+          1247
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          2034
+        </td>
+        <td>
+          1230
+          -
+          1248
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](com.atomist.rug.kind.java.JavaTypeType.JavaTypeAlias)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2035
+        </td>
+        <td>
+          1380
+          -
+          1383
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          2036
+        </td>
+        <td>
+          1428
+          -
+          1439
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.CompilationUnit.getTypes
+        </td>
+        <td style="background: #AEF1AE">
+          cu.getTypes()
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          2038
+        </td>
+        <td>
+          1465
+          -
+          1465
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Buffer.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Buffer.canBuildFrom[com.github.javaparser.ast.body.ClassOrInterfaceDeclaration]
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          2037
+        </td>
+        <td>
+          1465
+          -
+          1465
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaSourceMutableView.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2039
+        </td>
+        <td>
+          1546
+          -
+          1590
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaClassOrInterfaceMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new JavaClassOrInterfaceMutableView(c, this)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2041
+        </td>
+        <td>
+          1428
+          -
+          1591
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.body.TypeDeclaration[_]](cu.getTypes()).asScala.collect[com.github.javaparser.ast.body.ClassOrInterfaceDeclaration, scala.collection.mutable.Buffer[com.github.javaparser.ast.body.ClassOrInterfaceDeclaration]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.github.javaparser.ast.body.TypeDeclaration[_],com.github.javaparser.ast.body.ClassOrInterfaceDeclaration] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.github.javaparser.ast.body.TypeDeclaration[_] =&gt; com.github.javaparser.ast.body.ClassOrInterfaceDeclaration&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.github.javaparser.ast.body.TypeDeclaration[_], B1 &gt;: com.github.javaparser.ast.body.ClassOrInterfaceDeclaration](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[com.github.javaparser.ast.body.TypeDeclaration[_]]: com.github.javaparser.ast.body.TypeDeclaration[_]): com.github.javaparser.ast.body.TypeDeclaration[?0] @unchecked) match {
+      case (c @ (_: com.github.javaparser.ast.body.ClassOrInterfaceDeclaration)) =&gt; c
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: com.github.javaparser.ast.body.TypeDeclaration[_]): Boolean = ((x1.asInstanceOf[com.github.javaparser.ast.body.TypeDeclaration[_]]: com.github.javaparser.ast.body.TypeDeclaration[_]): com.github.javaparser.ast.body.TypeDeclaration[?0] @unchecked) match {
+      case (c @ (_: com.github.javaparser.ast.body.ClassOrInterfaceDeclaration)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.github.javaparser.ast.body.TypeDeclaration[_],com.github.javaparser.ast.body.ClassOrInterfaceDeclaration]))(mutable.this.Buffer.canBuildFrom[com.github.javaparser.ast.body.ClassOrInterfaceDeclaration]).map[com.atomist.rug.kind.java.JavaClassOrInterfaceMutableView, Seq[com.atomist.rug.spi.MutableView[_]]](((c: com.github.javaparser.ast.body.ClassOrInterfaceDeclaration) =&gt; new JavaClassOrInterfaceMutableView(c, this)))(mutable.this.Buffer.canBuildFrom[com.atomist.rug.kind.java.JavaClassOrInterfaceMutableView])
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2040
+        </td>
+        <td>
+          1540
+          -
+          1540
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Buffer.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Buffer.canBuildFrom[com.atomist.rug.kind.java.JavaClassOrInterfaceMutableView]
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          2042
+        </td>
+        <td>
+          1607
+          -
+          1707
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugRuntimeException(null, scala.StringContext.apply(&quot;No child with name \'&quot;, &quot;\' in &quot;, &quot;&quot;).s(fieldName, JavaSourceMutableView.this.getClass().getSimpleName()), rug.this.RugRuntimeException.&lt;init&gt;$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2048
+        </td>
+        <td>
+          1751
+          -
+          1751
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2047
+        </td>
+        <td>
+          1762
+          -
+          1846
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val latest: com.atomist.source.FileArtifact = JavaSourceMutableView.this.currentBackingObject;
+  JavaSourceMutableView.this.parent.updateFile(JavaSourceMutableView.this.old, latest)
+}
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2049
+        </td>
+        <td>
+          1751
+          -
+          1751
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2043
+        </td>
+        <td>
+          1755
+          -
+          1760
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaSourceMutableView.dirty
+        </td>
+        <td style="background: #AEF1AE">
+          JavaSourceMutableView.this.dirty
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          2044
+        </td>
+        <td>
+          1783
+          -
+          1803
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          JavaSourceMutableView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          2045
+        </td>
+        <td>
+          1828
+          -
+          1831
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaSourceMutableView.old
+        </td>
+        <td style="background: #AEF1AE">
+          JavaSourceMutableView.this.old
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          2046
+        </td>
+        <td>
+          1810
+          -
+          1840
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.updateFile
+        </td>
+        <td style="background: #AEF1AE">
+          JavaSourceMutableView.this.parent.updateFile(JavaSourceMutableView.this.old, latest)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          2051
+        </td>
+        <td>
+          1976
+          -
+          2010
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaProjectMutableView.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new JavaProjectMutableView(JavaSourceMutableView.this.parent)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          2050
+        </td>
+        <td>
+          2003
+          -
+          2009
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaSourceMutableView.parent
+        </td>
+        <td style="background: #AEF1AE">
+          JavaSourceMutableView.this.parent
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          2052
+        </td>
+        <td>
+          2197
+          -
+          2243
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.nodeTypes.NodeWithName.getNameAsString
+        </td>
+        <td style="background: #AEF1AE">
+          cu.getPackageDeclaration().get().getNameAsString()
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          2053
+        </td>
+        <td>
+          2261
+          -
+          2263
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          2054
+        </td>
+        <td>
+          2425
+          -
+          2443
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.NodeList.size
+        </td>
+        <td style="background: #F0ADAD">
+          cu.getTypes().size()
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          2055
+        </td>
+        <td>
+          2461
+          -
+          2462
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          2056
+        </td>
+        <td>
+          2797
+          -
+          2818
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          JavaSourceMutableView.this.pkg.replace(&quot;.&quot;, &quot;/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          2057
+        </td>
+        <td>
+          2839
+          -
+          2867
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          newPackage.replace(&quot;.&quot;, &quot;/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          2060
+        </td>
+        <td>
+          2874
+          -
+          2944
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.CompilationUnit.setPackageDeclaration
+        </td>
+        <td style="background: #AEF1AE">
+          cu.setPackageDeclaration(new com.github.javaparser.ast.PackageDeclaration(new com.github.javaparser.ast.expr.Name(newPackage)))
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          2059
+        </td>
+        <td>
+          2899
+          -
+          2943
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.PackageDeclaration.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.github.javaparser.ast.PackageDeclaration(new com.github.javaparser.ast.expr.Name(newPackage))
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          2058
+        </td>
+        <td>
+          2922
+          -
+          2942
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.expr.Name.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.github.javaparser.ast.expr.Name(newPackage)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          2062
+        </td>
+        <td>
+          2951
+          -
+          2996
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView.setPath
+        </td>
+        <td style="background: #AEF1AE">
+          JavaSourceMutableView.this.setPath(JavaSourceMutableView.this.path.replace(pathToReplace, newPath))
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          2061
+        </td>
+        <td>
+          2959
+          -
+          2995
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          JavaSourceMutableView.this.path.replace(pathToReplace, newPath)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          2063
+        </td>
+        <td>
+          3011
+          -
+          3013
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          2064
+        </td>
+        <td>
+          3063
+          -
+          3079
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.setName
+        </td>
+        <td style="background: #AEF1AE">
+          JavaSourceMutableView.this.setName(newName)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

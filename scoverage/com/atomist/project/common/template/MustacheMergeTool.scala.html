@@ -1,0 +1,788 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/project/common/template/MustacheMergeTool.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.project.common.template
+</span>2 <span style=''>
+</span>3 <span style=''>import java.io.StringWriter
+</span>4 <span style=''>
+</span>5 <span style=''>import com.atomist.source.{ArtifactSource, FileArtifact, StringFileArtifact}
+</span>6 <span style=''>import com.github.mustachejava.DefaultMustacheFactory
+</span>7 <span style=''>
+</span>8 <span style=''>import scala.collection.JavaConverters._
+</span>9 <span style=''>
+</span>10 <span style=''>object MustacheMergeTool {
+</span>11 <span style=''>
+</span>12 <span style=''>  val SupportedExtensions = </span><span style='background: #AEF1AE'>Set(
+</span>13 <span style=''></span><span style='background: #AEF1AE'>    &quot;.scaml&quot;,
+</span>14 <span style=''></span><span style='background: #AEF1AE'>    &quot;.mustache&quot;
+</span>15 <span style=''></span><span style='background: #AEF1AE'>  )</span><span style=''>
+</span>16 <span style=''>}
+</span>17 <span style=''>
+</span>18 <span style=''>class MustacheMergeTool(templateContent: ArtifactSource)
+</span>19 <span style=''>  extends MergeTool {
+</span>20 <span style=''>
+</span>21 <span style=''>  import MustacheMergeTool._
+</span>22 <span style=''>
+</span>23 <span style=''>  private val mf = </span><span style='background: #AEF1AE'>new DefaultMustacheFactory(new ArtifactSourceBackedMustacheResolver(templateContent.underPath(&quot;.atomist/templates&quot;)))</span><span style=''>
+</span>24 <span style=''>
+</span>25 <span style=''>  override def isTemplate(path: String): Boolean =
+</span>26 <span style=''>    </span><span style='background: #AEF1AE'>SupportedExtensions.exists(extension =&gt; path.endsWith(extension))</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>  override def mergeToFile(context: MergeContext, path: String): FileArtifact =
+</span>29 <span style=''>    </span><span style='background: #AEF1AE'>templateContent.findFile(path)</span><span style=''> match {
+</span>30 <span style=''>      case None =&gt;
+</span>31 <span style=''>        </span><span style='background: #AEF1AE'>throw new IllegalArgumentException(s&quot;Template '$path' not found&quot;)</span><span style=''>
+</span>32 <span style=''>      case Some(template) =&gt;
+</span>33 <span style=''>        val templateOutput = </span><span style='background: #AEF1AE'>new StringWriter</span><span style=''>
+</span>34 <span style=''>        val filePath = </span><span style='background: #AEF1AE'>mergeString(context, toInPlaceFilePath(path)).replace(&quot;:&quot;, &quot;/&quot;)</span><span style=''>
+</span>35 <span style=''>        val mustache = </span><span style='background: #AEF1AE'>mf.compile(template.content)</span><span style=''>
+</span>36 <span style=''>        </span><span style='background: #AEF1AE'>mustache.execute(templateOutput, context.map.asJava)</span><span style=''>
+</span>37 <span style=''>        </span><span style='background: #AEF1AE'>StringFileArtifact(filePath, templateOutput.toString, template.mode, template.uniqueId)</span><span style=''>
+</span>38 <span style=''>    }
+</span>39 <span style=''>
+</span>40 <span style=''>  override def mergeString(context: MergeContext, templateString: String): String = {
+</span>41 <span style=''>    val templateOutput = </span><span style='background: #AEF1AE'>new StringWriter</span><span style=''>
+</span>42 <span style=''>    val mustache = </span><span style='background: #AEF1AE'>mf.compile(templateString)</span><span style=''>
+</span>43 <span style=''>    </span><span style='background: #AEF1AE'>mustache.execute(templateOutput, context.map.asJava)</span><span style=''>
+</span>44 <span style=''>    </span><span style='background: #AEF1AE'>templateOutput.toString</span><span style=''>
+</span>45 <span style=''>  }
+</span>46 <span style=''>
+</span>47 <span style=''>  private[template] def toInPlaceFilePath(path: String): String = {
+</span>48 <span style=''>    val extension = </span><span style='background: #AEF1AE'>SupportedExtensions.find(extension =&gt; path.endsWith(s&quot;_$extension&quot;))</span><span style=''>
+</span>49 <span style=''>    if (</span><span style='background: #AEF1AE'>extension.isDefined</span><span style=''>)
+</span>50 <span style=''>      </span><span style='background: #AEF1AE'>path.dropRight(s&quot;_${extension.get}&quot;.length)</span><span style=''>
+</span>51 <span style=''>    else
+</span>52 <span style=''>      </span><span style='background: #AEF1AE'>path</span><span style=''>
+</span>53 <span style=''>  }
+</span>54 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          553
+        </td>
+        <td>
+          304
+          -
+          342
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](&quot;.scaml&quot;, &quot;.mustache&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          555
+        </td>
+        <td>
+          502
+          -
+          591
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.common.template.ArtifactSourceBackedMustacheResolver.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new ArtifactSourceBackedMustacheResolver(MustacheMergeTool.this.templateContent.underPath(&quot;.atomist/templates&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          554
+        </td>
+        <td>
+          543
+          -
+          590
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.underPath
+        </td>
+        <td style="background: #AEF1AE">
+          MustacheMergeTool.this.templateContent.underPath(&quot;.atomist/templates&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          556
+        </td>
+        <td>
+          475
+          -
+          592
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.mustachejava.DefaultMustacheFactory.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.github.mustachejava.DefaultMustacheFactory(new ArtifactSourceBackedMustacheResolver(MustacheMergeTool.this.templateContent.underPath(&quot;.atomist/templates&quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          558
+        </td>
+        <td>
+          649
+          -
+          714
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #AEF1AE">
+          MustacheMergeTool.SupportedExtensions.exists(((extension: String) =&gt; path.endsWith(extension)))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          557
+        </td>
+        <td>
+          689
+          -
+          713
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          path.endsWith(extension)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          559
+        </td>
+        <td>
+          800
+          -
+          830
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactContainer.findFile
+        </td>
+        <td style="background: #AEF1AE">
+          MustacheMergeTool.this.templateContent.findFile(path)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          560
+        </td>
+        <td>
+          866
+          -
+          931
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Template \'&quot;, &quot;\' not found&quot;).s(path))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          561
+        </td>
+        <td>
+          990
+          -
+          1006
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.StringWriter.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.io.StringWriter()
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          562
+        </td>
+        <td>
+          1030
+          -
+          1093
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          MustacheMergeTool.this.mergeString(context, MustacheMergeTool.this.toInPlaceFilePath(path)).replace(&quot;:&quot;, &quot;/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          564
+        </td>
+        <td>
+          1117
+          -
+          1145
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.mustachejava.DefaultMustacheFactory.compile
+        </td>
+        <td style="background: #AEF1AE">
+          MustacheMergeTool.this.mf.compile(template.content)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          563
+        </td>
+        <td>
+          1128
+          -
+          1144
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          template.content
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          567
+        </td>
+        <td>
+          1154
+          -
+          1206
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.mustachejava.Mustache.execute
+        </td>
+        <td style="background: #AEF1AE">
+          mustache.execute(templateOutput, scala.collection.JavaConverters.mapAsJavaMapConverter[String, Any](context.map).asJava)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          566
+        </td>
+        <td>
+          1187
+          -
+          1205
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsJava.asJava
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.mapAsJavaMapConverter[String, Any](context.map).asJava
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          565
+        </td>
+        <td>
+          1187
+          -
+          1198
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.common.template.MergeContext.map
+        </td>
+        <td style="background: #AEF1AE">
+          context.map
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          568
+        </td>
+        <td>
+          1244
+          -
+          1267
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.StringWriter.toString
+        </td>
+        <td style="background: #AEF1AE">
+          templateOutput.toString()
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          570
+        </td>
+        <td>
+          1284
+          -
+          1301
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.Artifact.uniqueId
+        </td>
+        <td style="background: #AEF1AE">
+          template.uniqueId
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          569
+        </td>
+        <td>
+          1269
+          -
+          1282
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.mode
+        </td>
+        <td style="background: #AEF1AE">
+          template.mode
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          571
+        </td>
+        <td>
+          1215
+          -
+          1302
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.StringFileArtifact.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.StringFileArtifact.apply(filePath, templateOutput.toString(), template.mode, template.uniqueId)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          572
+        </td>
+        <td>
+          1421
+          -
+          1437
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.StringWriter.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.io.StringWriter()
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          573
+        </td>
+        <td>
+          1457
+          -
+          1483
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.mustachejava.DefaultMustacheFactory.compile
+        </td>
+        <td style="background: #AEF1AE">
+          MustacheMergeTool.this.mf.compile(templateString)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          576
+        </td>
+        <td>
+          1488
+          -
+          1540
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.mustachejava.Mustache.execute
+        </td>
+        <td style="background: #AEF1AE">
+          mustache.execute(templateOutput, scala.collection.JavaConverters.mapAsJavaMapConverter[String, Any](context.map).asJava)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          575
+        </td>
+        <td>
+          1521
+          -
+          1539
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsJava.asJava
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.mapAsJavaMapConverter[String, Any](context.map).asJava
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          574
+        </td>
+        <td>
+          1521
+          -
+          1532
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.common.template.MergeContext.map
+        </td>
+        <td style="background: #AEF1AE">
+          context.map
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          577
+        </td>
+        <td>
+          1545
+          -
+          1568
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.StringWriter.toString
+        </td>
+        <td style="background: #AEF1AE">
+          templateOutput.toString()
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          579
+        </td>
+        <td>
+          1700
+          -
+          1729
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          path.endsWith(scala.StringContext.apply(&quot;_&quot;, &quot;&quot;).s(extension))
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          578
+        </td>
+        <td>
+          1714
+          -
+          1728
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;_&quot;, &quot;&quot;).s(extension)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          580
+        </td>
+        <td>
+          1662
+          -
+          1730
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #AEF1AE">
+          MustacheMergeTool.SupportedExtensions.find(((extension: String) =&gt; path.endsWith(scala.StringContext.apply(&quot;_&quot;, &quot;&quot;).s(extension))))
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          581
+        </td>
+        <td>
+          1739
+          -
+          1758
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #AEF1AE">
+          extension.isDefined
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          582
+        </td>
+        <td>
+          1781
+          -
+          1808
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.length
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;_&quot;, &quot;&quot;).s(extension.get).length()
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          584
+        </td>
+        <td>
+          1766
+          -
+          1809
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.dropRight
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(path).dropRight(scala.StringContext.apply(&quot;_&quot;, &quot;&quot;).s(extension.get).length())
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          583
+        </td>
+        <td>
+          1766
+          -
+          1809
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.dropRight
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(path).dropRight(scala.StringContext.apply(&quot;_&quot;, &quot;&quot;).s(extension.get).length())
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          585
+        </td>
+        <td>
+          1825
+          -
+          1829
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.project.common.template.MustacheMergeTool.path
+        </td>
+        <td style="background: #AEF1AE">
+          path
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

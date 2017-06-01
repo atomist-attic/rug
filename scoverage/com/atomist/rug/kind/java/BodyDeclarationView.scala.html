@@ -1,0 +1,930 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/java/BodyDeclarationView.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.java
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.kind.core.FileMetrics
+</span>4 <span style=''>import com.atomist.rug.spi._
+</span>5 <span style=''>import com.atomist.util.lang.JavaParserUtils
+</span>6 <span style=''>import com.github.javaparser.ast.CompilationUnit
+</span>7 <span style=''>import com.github.javaparser.ast.body.BodyDeclaration
+</span>8 <span style=''>
+</span>9 <span style=''>/**
+</span>10 <span style=''>  * Abstract class for views of fields, methods, and other body declarations backed by JavaParser.
+</span>11 <span style=''>  *
+</span>12 <span style=''>  * @tparam T underlying BodyDeclaration subclass
+</span>13 <span style=''>  */
+</span>14 <span style=''>abstract class BodyDeclarationView[T &lt;: BodyDeclaration[T]](originalBackingObject: T, parent: MutableView[_])
+</span>15 <span style=''>  extends ViewSupport[T](originalBackingObject, parent)
+</span>16 <span style=''>    with FileMetrics {
+</span>17 <span style=''>
+</span>18 <span style=''>  final override def dirty = </span><span style='background: #F0ADAD'>true</span><span style=''>
+</span>19 <span style=''>
+</span>20 <span style=''>  override def childNodeTypes: Set[String] = </span><span style='background: #F0ADAD'>childNodeNames</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>  @ExportFunction(readOnly = true,
+</span>23 <span style=''>    exposeAsProperty = true,
+</span>24 <span style=''>    description = &quot;Line count&quot;)
+</span>25 <span style=''>  override def lineCount: Int =
+</span>26 <span style=''>    </span><span style='background: #F0ADAD'>FileMetrics.lineCount(currentBackingObject.toString)</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Add an import to the containing Java source&quot;)
+</span>29 <span style=''>  def addImport(@ExportFunctionParameterDescription(name = &quot;fqn&quot;,
+</span>30 <span style=''>    description = &quot;The fully qualified name of the import&quot;)
+</span>31 <span style=''>                fqn: String): Unit = {
+</span>32 <span style=''>    val compilationUnit: Option[CompilationUnit] = </span><span style='background: #AEF1AE'>parent</span><span style=''> match {
+</span>33 <span style=''>      case jsv: JavaSourceMutableView =&gt; jsv.compilationUnit
+</span>34 <span style=''>      case jcoiv: JavaClassOrInterfaceMutableView =&gt; </span><span style='background: #AEF1AE'>jcoiv.compilationUnit</span><span style=''>
+</span>35 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(&quot;Failed to get compilation unit&quot;)</span><span style=''>
+</span>36 <span style=''>    }
+</span>37 <span style=''>    </span><span style='background: #AEF1AE'>compilationUnit.foreach(JavaParserUtils.addImportsIfNeeded(Seq(fqn), _))</span><span style=''>
+</span>38 <span style=''>  }
+</span>39 <span style=''>
+</span>40 <span style=''>  @ExportFunction(readOnly = false, description = &quot;Remove an import from the containing Java source&quot;)
+</span>41 <span style=''>  def removeImport(@ExportFunctionParameterDescription(name = &quot;fqn&quot;,
+</span>42 <span style=''>    description = &quot;The fully qualified name of the import&quot;)
+</span>43 <span style=''>                   fqn: String): Unit = {
+</span>44 <span style=''>    val compilationUnit: Option[CompilationUnit] = </span><span style='background: #AEF1AE'>parent</span><span style=''> match {
+</span>45 <span style=''>      case jsv: JavaSourceMutableView =&gt; jsv.compilationUnit
+</span>46 <span style=''>      case jcoiv: JavaClassOrInterfaceMutableView =&gt; </span><span style='background: #F0ADAD'>jcoiv.compilationUnit</span><span style=''>
+</span>47 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(&quot;Failed to get compilation unit&quot;)</span><span style=''>
+</span>48 <span style=''>    }
+</span>49 <span style=''>    </span><span style='background: #AEF1AE'>compilationUnit.foreach(JavaParserUtils.removeImportsIfNeeded(Seq(fqn), _))</span><span style=''>
+</span>50 <span style=''>  }
+</span>51 <span style=''>
+</span>52 <span style=''>  @ExportFunction(readOnly = true, description = &quot;Does the element have the given annotation?&quot;)
+</span>53 <span style=''>  def hasAnnotation(@ExportFunctionParameterDescription(name = &quot;annotation&quot;,
+</span>54 <span style=''>    description = &quot;The string name of the annotation to look for&quot;)
+</span>55 <span style=''>                    annotation: String): Boolean = {
+</span>56 <span style=''>    </span><span style='background: #F0ADAD'>JavaParserUtils.getAnnotation(currentBackingObject, annotation).isDefined</span><span style=''>
+</span>57 <span style=''>  }
+</span>58 <span style=''>
+</span>59 <span style=''>  @ExportFunction(readOnly = false,
+</span>60 <span style=''>    description = &quot;Annotate the element with the given annotation&quot;)
+</span>61 <span style=''>  def addAnnotation(@ExportFunctionParameterDescription(name = &quot;pkg&quot;, description = &quot;Package where the annotation is sourced&quot;)
+</span>62 <span style=''>                    pkg: String,
+</span>63 <span style=''>                    @ExportFunctionParameterDescription(name = &quot;annotation&quot;,
+</span>64 <span style=''>                      description = &quot;The annotation to add&quot;)
+</span>65 <span style=''>                    annotation: String): Unit = {
+</span>66 <span style=''>    </span><span style='background: #AEF1AE'>JavaTypeType.annotationAddedTo(currentBackingObject, annotation)</span><span style=''>
+</span>67 <span style=''>    val annotationName: String =
+</span>68 <span style=''>      if (</span><span style='background: #AEF1AE'>annotation.contains(&quot;(&quot;)</span><span style=''>) </span><span style='background: #AEF1AE'>annotation.substring(0, annotation.indexOf('('))</span><span style=''>
+</span>69 <span style=''>      else </span><span style='background: #AEF1AE'>annotation</span><span style=''>
+</span>70 <span style=''>    </span><span style='background: #AEF1AE'>addImport(s&quot;$pkg.$annotationName&quot;)</span><span style=''>
+</span>71 <span style=''>  }
+</span>72 <span style=''>
+</span>73 <span style=''>  @ExportFunction(readOnly = false,
+</span>74 <span style=''>    description = &quot;Remove annotation from the element&quot;)
+</span>75 <span style=''>  def removeAnnotation(@ExportFunctionParameterDescription(name = &quot;pkg&quot;, description = &quot;Package where the annotation is sourced&quot;)
+</span>76 <span style=''>                    pkg: String,
+</span>77 <span style=''>                    @ExportFunctionParameterDescription(name = &quot;annotation&quot;,
+</span>78 <span style=''>                      description = &quot;The annotation to remove&quot;)
+</span>79 <span style=''>                    annotation: String): Unit = {
+</span>80 <span style=''>    </span><span style='background: #AEF1AE'>JavaTypeType.annotationRemovedFrom(currentBackingObject, annotation)</span><span style=''>
+</span>81 <span style=''>    // removeImport(s&quot;$pkg.$annotation&quot;) TODO Check first if no other member is annotated with same annotation
+</span>82 <span style=''>  }
+</span>83 <span style=''>
+</span>84 <span style=''>  /**
+</span>85 <span style=''>    * Commit all changes, invoking updaters and calling parent if necessary.
+</span>86 <span style=''>    */
+</span>87 <span style=''>  override def commit(): Unit = </span><span style='background: #AEF1AE'>parent.commit()</span><span style=''>
+</span>88 <span style=''>
+</span>89 <span style=''>  override def toString =
+</span>90 <span style=''>    </span><span style='background: #F0ADAD'>s&quot;JavaClassOrInterfaceView exposing $currentBackingObject: dirty=$dirty&quot;</span><span style=''>
+</span>91 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1747
+        </td>
+        <td>
+          639
+          -
+          643
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1748
+        </td>
+        <td>
+          690
+          -
+          704
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.childNodeNames
+        </td>
+        <td style="background: #F0ADAD">
+          BodyDeclarationView.this.childNodeNames
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1750
+        </td>
+        <td>
+          838
+          -
+          890
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileMetrics.lineCount
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.kind.core.FileMetrics.lineCount(BodyDeclarationView.this.currentBackingObject.toString())
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1749
+        </td>
+        <td>
+          860
+          -
+          889
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.Node.toString
+        </td>
+        <td style="background: #F0ADAD">
+          BodyDeclarationView.this.currentBackingObject.toString()
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1751
+        </td>
+        <td>
+          1205
+          -
+          1211
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.BodyDeclarationView.parent
+        </td>
+        <td style="background: #AEF1AE">
+          BodyDeclarationView.this.parent
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          1752
+        </td>
+        <td>
+          1334
+          -
+          1355
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.TypeDeclarationView.compilationUnit
+        </td>
+        <td style="background: #AEF1AE">
+          jcoiv.compilationUnit
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1753
+        </td>
+        <td>
+          1372
+          -
+          1440
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(&quot;Failed to get compilation unit&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1755
+        </td>
+        <td>
+          1475
+          -
+          1522
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaParserUtils.addImportsIfNeeded
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.lang.JavaParserUtils.addImportsIfNeeded(collection.this.Seq.apply[String](fqn), x$1)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1754
+        </td>
+        <td>
+          1510
+          -
+          1518
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[String](fqn)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1756
+        </td>
+        <td>
+          1451
+          -
+          1523
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          compilationUnit.foreach[Unit](((x$1: com.github.javaparser.ast.CompilationUnit) =&gt; com.atomist.util.lang.JavaParserUtils.addImportsIfNeeded(collection.this.Seq.apply[String](fqn), x$1)))
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1757
+        </td>
+        <td>
+          1853
+          -
+          1859
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.BodyDeclarationView.parent
+        </td>
+        <td style="background: #AEF1AE">
+          BodyDeclarationView.this.parent
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1758
+        </td>
+        <td>
+          1982
+          -
+          2003
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.TypeDeclarationView.compilationUnit
+        </td>
+        <td style="background: #F0ADAD">
+          jcoiv.compilationUnit
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1759
+        </td>
+        <td>
+          2020
+          -
+          2088
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(&quot;Failed to get compilation unit&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1761
+        </td>
+        <td>
+          2123
+          -
+          2173
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaParserUtils.removeImportsIfNeeded
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.lang.JavaParserUtils.removeImportsIfNeeded(collection.this.Seq.apply[String](fqn), x$2)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1760
+        </td>
+        <td>
+          2161
+          -
+          2169
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[String](fqn)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1762
+        </td>
+        <td>
+          2099
+          -
+          2174
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          compilationUnit.foreach[Unit](((x$2: com.github.javaparser.ast.CompilationUnit) =&gt; com.atomist.util.lang.JavaParserUtils.removeImportsIfNeeded(collection.this.Seq.apply[String](fqn), x$2)))
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1764
+        </td>
+        <td>
+          2477
+          -
+          2550
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.util.lang.JavaParserUtils.getAnnotation[T](BodyDeclarationView.this.currentBackingObject, annotation).isDefined
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1763
+        </td>
+        <td>
+          2507
+          -
+          2527
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #F0ADAD">
+          BodyDeclarationView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          1766
+        </td>
+        <td>
+          3012
+          -
+          3076
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaTypeType.annotationAddedTo
+        </td>
+        <td style="background: #AEF1AE">
+          JavaTypeType.annotationAddedTo[T](BodyDeclarationView.this.currentBackingObject, annotation)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          1765
+        </td>
+        <td>
+          3043
+          -
+          3063
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          BodyDeclarationView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          1770
+        </td>
+        <td>
+          3146
+          -
+          3194
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.substring
+        </td>
+        <td style="background: #AEF1AE">
+          annotation.substring(0, annotation.indexOf(40))
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          1769
+        </td>
+        <td>
+          3170
+          -
+          3193
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.indexOf
+        </td>
+        <td style="background: #AEF1AE">
+          annotation.indexOf(40)
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          1771
+        </td>
+        <td>
+          3146
+          -
+          3194
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          java.lang.String.substring
+        </td>
+        <td style="background: #AEF1AE">
+          annotation.substring(0, annotation.indexOf(40))
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          1768
+        </td>
+        <td>
+          3167
+          -
+          3168
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          1767
+        </td>
+        <td>
+          3120
+          -
+          3144
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.contains
+        </td>
+        <td style="background: #AEF1AE">
+          annotation.contains(&quot;(&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          1772
+        </td>
+        <td>
+          3206
+          -
+          3216
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.rug.kind.java.BodyDeclarationView.annotation
+        </td>
+        <td style="background: #AEF1AE">
+          annotation
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          1773
+        </td>
+        <td>
+          3231
+          -
+          3254
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;.&quot;, &quot;&quot;).s(pkg, annotationName)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          1774
+        </td>
+        <td>
+          3221
+          -
+          3255
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.BodyDeclarationView.addImport
+        </td>
+        <td style="background: #AEF1AE">
+          BodyDeclarationView.this.addImport(scala.StringContext.apply(&quot;&quot;, &quot;.&quot;, &quot;&quot;).s(pkg, annotationName))
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          1775
+        </td>
+        <td>
+          3746
+          -
+          3766
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          BodyDeclarationView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          1777
+        </td>
+        <td>
+          3745
+          -
+          3745
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          1776
+        </td>
+        <td>
+          3711
+          -
+          3779
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaTypeType.annotationRemovedFrom
+        </td>
+        <td style="background: #AEF1AE">
+          JavaTypeType.annotationRemovedFrom[T](BodyDeclarationView.this.currentBackingObject, annotation)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          1778
+        </td>
+        <td>
+          4018
+          -
+          4033
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.MutableView.commit
+        </td>
+        <td style="background: #AEF1AE">
+          BodyDeclarationView.this.parent.commit()
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          1779
+        </td>
+        <td>
+          4067
+          -
+          4102
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;JavaClassOrInterfaceView exposing &quot;
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          1782
+        </td>
+        <td>
+          4102
+          -
+          4122
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #F0ADAD">
+          BodyDeclarationView.this.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          1781
+        </td>
+        <td>
+          4136
+          -
+          4137
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          1784
+        </td>
+        <td>
+          4065
+          -
+          4137
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;JavaClassOrInterfaceView exposing &quot;, &quot;: dirty=&quot;, &quot;&quot;).s(BodyDeclarationView.this.currentBackingObject, BodyDeclarationView.this.dirty)
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          1780
+        </td>
+        <td>
+          4122
+          -
+          4131
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;: dirty=&quot;
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          1783
+        </td>
+        <td>
+          4131
+          -
+          4136
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.BodyDeclarationView.dirty
+        </td>
+        <td style="background: #F0ADAD">
+          BodyDeclarationView.this.dirty
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

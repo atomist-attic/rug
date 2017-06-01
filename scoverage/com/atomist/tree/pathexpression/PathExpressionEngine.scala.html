@@ -1,0 +1,1058 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/pathexpression/PathExpressionEngine.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.pathexpression
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.runtime.js.{DefaultExecutionContext, ExecutionContext}
+</span>5 <span style=''>import com.atomist.tree.pathexpression.ExecutionResult._
+</span>6 <span style=''>
+</span>7 <span style=''>/**
+</span>8 <span style=''>  * Expression engine implementation for our path format
+</span>9 <span style=''>  */
+</span>10 <span style=''>class PathExpressionEngine extends ExpressionEngine {
+</span>11 <span style=''>
+</span>12 <span style=''>  import ExpressionEngine.NodePreparer
+</span>13 <span style=''>
+</span>14 <span style=''>  override def evaluate(node: GraphNode,
+</span>15 <span style=''>                        parsed: PathExpression,
+</span>16 <span style=''>                        executionContext: ExecutionContext = DefaultExecutionContext,
+</span>17 <span style=''>                        nodePreparer: Option[NodePreparer]): ExecutionResult = {
+</span>18 <span style=''>    val (result, report) = evaluateAndReport(node, parsed, executionContext, nodePreparer)
+</span>19 <span style=''>    result
+</span>20 <span style=''>  }
+</span>21 <span style=''>
+</span>22 <span style=''>  private def evaluateAndReport(node: GraphNode,
+</span>23 <span style=''>                                parsed: PathExpression,
+</span>24 <span style=''>                                executionContext: ExecutionContext,
+</span>25 <span style=''>                                nodePreparer: Option[NodePreparer]): (ExecutionResult, Seq[String]) = {
+</span>26 <span style=''>    val report = </span><span style='background: #AEF1AE'>Seq[String]()</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>    def say(something: =&gt; String) = </span><span style='background: #AEF1AE'>{}</span><span style=''> //report = report :+ something
+</span>29 <span style=''>
+</span>30 <span style=''>    var nodesToApplyNextStepTo: ExecutionResult = </span><span style='background: #AEF1AE'>ExecutionResult(List(node))</span><span style=''>
+</span>31 <span style=''>    </span><span style='background: #AEF1AE'>for (locationStep &lt;- parsed.locationSteps) {
+</span>32 <span style=''></span><span style='background: #AEF1AE'>      say(</span><span style='background: #F0ADAD'>s&quot;Checking location step $locationStep&quot;</span><span style='background: #AEF1AE'>)
+</span>33 <span style=''></span><span style='background: #AEF1AE'>      val nextNodes: ExecutionResult = nodesToApplyNextStepTo match {
+</span>34 <span style=''></span><span style='background: #AEF1AE'>        case Right(n :: Nil) =&gt;
+</span>35 <span style=''></span><span style='background: #AEF1AE'>          // say(&quot;why bother with a special case&quot;)
+</span>36 <span style=''></span><span style='background: #AEF1AE'>          val next: ExecutionResult = locationStep.follow(n, this, executionContext, nodePreparer.getOrElse(n =&gt; n))
+</span>37 <span style=''></span><span style='background: #AEF1AE'>          next
+</span>38 <span style=''></span><span style='background: #AEF1AE'>        case Right(s) if s.isEmpty =&gt;
+</span>39 <span style=''></span><span style='background: #AEF1AE'>          ExecutionResult(Nil)
+</span>40 <span style=''></span><span style='background: #AEF1AE'>        case Right(seq) =&gt;
+</span>41 <span style=''></span><span style='background: #AEF1AE'>          say(</span><span style='background: #F0ADAD'>s&quot;checking ${seq.size} nodes for matches&quot;</span><span style='background: #AEF1AE'>)
+</span>42 <span style=''></span><span style='background: #AEF1AE'>          val results: Seq[ExecutionResult] = seq
+</span>43 <span style=''></span><span style='background: #AEF1AE'>            .map(kid =&gt;
+</span>44 <span style=''></span><span style='background: #AEF1AE'>              locationStep.follow(kid, this, executionContext, nodePreparer.getOrElse(n =&gt; n)))
+</span>45 <span style=''></span><span style='background: #AEF1AE'>          if (results.exists(_.isLeft)) {
+</span>46 <span style=''></span><span style='background: #AEF1AE'>            // If there are failures, use the first
+</span>47 <span style=''></span><span style='background: #AEF1AE'>            </span><span style='background: #F0ADAD'>results.find(_.isLeft).head</span><span style='background: #AEF1AE'>
+</span>48 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>49 <span style=''></span><span style='background: #AEF1AE'>          else {
+</span>50 <span style=''></span><span style='background: #AEF1AE'>            val kids: Seq[GraphNode] = results.flatMap(r =&gt; r.right.toOption).flatten
+</span>51 <span style=''></span><span style='background: #AEF1AE'>            ExecutionResult(kids)
+</span>52 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>53 <span style=''></span><span style='background: #AEF1AE'>        case failure@Left(msg) =&gt;
+</span>54 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>say(s&quot;Failure: $msg&quot;)</span><span style='background: #AEF1AE'>
+</span>55 <span style=''></span><span style='background: #AEF1AE'>          failure
+</span>56 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>57 <span style=''></span><span style='background: #AEF1AE'>      //  say(s&quot;After evaluating $locationStep on ${nodesToApplyNextStepTo.right.get.map(TreeNodeUtils.toShortString).mkString(&quot;\n ... and ... \n&quot;)} we have $nextNodes&quot;)
+</span>58 <span style=''></span><span style='background: #AEF1AE'>      nodesToApplyNextStepTo = nextNodes
+</span>59 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>60 <span style=''>    </span><span style='background: #AEF1AE'>say(</span><span style='background: #F0ADAD'>s&quot;Returning $nodesToApplyNextStepTo when evaluating [$parsed] against $node&quot;</span><span style='background: #AEF1AE'>)</span><span style=''>
+</span>61 <span style=''>
+</span>62 <span style=''>    </span><span style='background: #AEF1AE'>(nodesToApplyNextStepTo, report.map(</span><span style='background: #F0ADAD'>&quot; &quot; + _</span><span style='background: #AEF1AE'>))</span><span style=''>
+</span>63 <span style=''>  }
+</span>64 <span style=''>
+</span>65 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          8199
+        </td>
+        <td>
+          638
+          -
+          638
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$1._1
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          8200
+        </td>
+        <td>
+          646
+          -
+          646
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          x$1._2
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          8201
+        </td>
+        <td>
+          1030
+          -
+          1043
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[String]()
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8202
+        </td>
+        <td>
+          1081
+          -
+          1083
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          8203
+        </td>
+        <td>
+          1182
+          -
+          1192
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.apply
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.apply[com.atomist.graph.GraphNode](node)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          8204
+        </td>
+        <td>
+          1166
+          -
+          1193
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExecutionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ExecutionResult.apply(immutable.this.List.apply[com.atomist.graph.GraphNode](node))
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          8236
+        </td>
+        <td>
+          1198
+          -
+          2505
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          parsed.locationSteps.foreach[Unit](((locationStep: com.atomist.tree.pathexpression.LocationStep) =&gt; {
+  say(scala.StringContext.apply(&quot;Checking location step &quot;, &quot;&quot;).s(locationStep));
+  val nextNodes: com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult = nodesToApplyNextStepTo match {
+    case (b: Seq[com.atomist.graph.GraphNode])scala.util.Right[String,Seq[com.atomist.graph.GraphNode]]((head: com.atomist.graph.GraphNode, tl: List[com.atomist.graph.GraphNode])scala.collection.immutable.::[com.atomist.graph.GraphNode]((n @ _), immutable.this.Nil)) =&gt; {
+      val next: com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult = locationStep.follow(n, this, executionContext, nodePreparer.getOrElse[com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer](((n: com.atomist.graph.GraphNode) =&gt; n)));
+      next
+    }
+    case (b: Seq[com.atomist.graph.GraphNode])scala.util.Right[String,Seq[com.atomist.graph.GraphNode]]((s @ _)) if s.isEmpty =&gt; ExecutionResult.apply(immutable.this.Nil)
+    case (b: Seq[com.atomist.graph.GraphNode])scala.util.Right[String,Seq[com.atomist.graph.GraphNode]]((seq @ _)) =&gt; {
+      say(scala.StringContext.apply(&quot;checking &quot;, &quot; nodes for matches&quot;).s(seq.size));
+      val results: Seq[com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult] = seq.map[com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult, Seq[com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult]](((kid: com.atomist.graph.GraphNode) =&gt; locationStep.follow(kid, this, executionContext, nodePreparer.getOrElse[com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer](((n: com.atomist.graph.GraphNode) =&gt; n)))))(collection.this.Seq.canBuildFrom[com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult]);
+      if (results.exists(((x$2: com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult) =&gt; x$2.isLeft)))
+        scala.this.Option.option2Iterable[com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult](results.find(((x$3: com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult) =&gt; x$3.isLeft))).head
+      else
+        {
+          val kids: Seq[com.atomist.graph.GraphNode] = results.flatMap[Seq[com.atomist.graph.GraphNode], Seq[Seq[com.atomist.graph.GraphNode]]](((r: com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult) =&gt; scala.this.Option.option2Iterable[Seq[com.atomist.graph.GraphNode]](r.right.toOption)))(collection.this.Seq.canBuildFrom[Seq[com.atomist.graph.GraphNode]]).flatten[com.atomist.graph.GraphNode](scala.this.Predef.$conforms[Seq[com.atomist.graph.GraphNode]]);
+          ExecutionResult.apply(kids)
+        }
+    }
+    case (failure @ (a: String)scala.util.Left[String,Seq[com.atomist.graph.GraphNode]]((msg @ _))) =&gt; {
+      say(scala.StringContext.apply(&quot;Failure: &quot;, &quot;&quot;).s(msg));
+      failure
+    }
+  };
+  nodesToApplyNextStepTo = nextNodes
+}))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          8205
+        </td>
+        <td>
+          1253
+          -
+          1292
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Checking location step &quot;, &quot;&quot;).s(locationStep)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          8206
+        </td>
+        <td>
+          1249
+          -
+          1293
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionEngine.say
+        </td>
+        <td style="background: #AEF1AE">
+          say(scala.StringContext.apply(&quot;Checking location step &quot;, &quot;&quot;).s(locationStep))
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          8208
+        </td>
+        <td>
+          1485
+          -
+          1563
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.LocationStep.follow
+        </td>
+        <td style="background: #AEF1AE">
+          locationStep.follow(n, this, executionContext, nodePreparer.getOrElse[com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer](((n: com.atomist.graph.GraphNode) =&gt; n)))
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          8207
+        </td>
+        <td>
+          1532
+          -
+          1562
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          nodePreparer.getOrElse[com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer](((n: com.atomist.graph.GraphNode) =&gt; n))
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          8209
+        </td>
+        <td>
+          1604
+          -
+          1613
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          s.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          8211
+        </td>
+        <td>
+          1627
+          -
+          1647
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExecutionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ExecutionResult.apply(immutable.this.Nil)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          8210
+        </td>
+        <td>
+          1643
+          -
+          1646
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          8212
+        </td>
+        <td>
+          1691
+          -
+          1701
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;checking &quot;
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          8214
+        </td>
+        <td>
+          1702
+          -
+          1710
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #F0ADAD">
+          seq.size
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          8216
+        </td>
+        <td>
+          1685
+          -
+          1731
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionEngine.say
+        </td>
+        <td style="background: #AEF1AE">
+          say(scala.StringContext.apply(&quot;checking &quot;, &quot; nodes for matches&quot;).s(seq.size))
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          8213
+        </td>
+        <td>
+          1711
+          -
+          1730
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; nodes for matches&quot;
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          8215
+        </td>
+        <td>
+          1689
+          -
+          1730
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;checking &quot;, &quot; nodes for matches&quot;).s(seq.size)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          8220
+        </td>
+        <td>
+          1778
+          -
+          1901
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          seq.map[com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult, Seq[com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult]](((kid: com.atomist.graph.GraphNode) =&gt; locationStep.follow(kid, this, executionContext, nodePreparer.getOrElse[com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer](((n: com.atomist.graph.GraphNode) =&gt; n)))))(collection.this.Seq.canBuildFrom[com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult])
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          8219
+        </td>
+        <td>
+          1798
+          -
+          1798
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult]
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          8217
+        </td>
+        <td>
+          1869
+          -
+          1899
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          nodePreparer.getOrElse[com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer](((n: com.atomist.graph.GraphNode) =&gt; n))
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          8218
+        </td>
+        <td>
+          1820
+          -
+          1900
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.LocationStep.follow
+        </td>
+        <td style="background: #AEF1AE">
+          locationStep.follow(kid, this, executionContext, nodePreparer.getOrElse[com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer](((n: com.atomist.graph.GraphNode) =&gt; n)))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          8221
+        </td>
+        <td>
+          1931
+          -
+          1939
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.Either.isLeft
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.isLeft
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          8222
+        </td>
+        <td>
+          1916
+          -
+          1940
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #AEF1AE">
+          results.exists(((x$2: com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult) =&gt; x$2.isLeft))
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          8223
+        </td>
+        <td>
+          2021
+          -
+          2029
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.Either.isLeft
+        </td>
+        <td style="background: #F0ADAD">
+          x$3.isLeft
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          8226
+        </td>
+        <td>
+          2008
+          -
+          2035
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Option.option2Iterable[com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult](results.find(((x$3: com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult) =&gt; x$3.isLeft))).head
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          8225
+        </td>
+        <td>
+          2008
+          -
+          2035
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Option.option2Iterable[com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult](results.find(((x$3: com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult) =&gt; x$3.isLeft))).head
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          8224
+        </td>
+        <td>
+          2008
+          -
+          2030
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #F0ADAD">
+          results.find(((x$3: com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult) =&gt; x$3.isLeft))
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          8233
+        </td>
+        <td>
+          2063
+          -
+          2196
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val kids: Seq[com.atomist.graph.GraphNode] = results.flatMap[Seq[com.atomist.graph.GraphNode], Seq[Seq[com.atomist.graph.GraphNode]]](((r: com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult) =&gt; scala.this.Option.option2Iterable[Seq[com.atomist.graph.GraphNode]](r.right.toOption)))(collection.this.Seq.canBuildFrom[Seq[com.atomist.graph.GraphNode]]).flatten[com.atomist.graph.GraphNode](scala.this.Predef.$conforms[Seq[com.atomist.graph.GraphNode]]);
+  ExecutionResult.apply(kids)
+}
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          8229
+        </td>
+        <td>
+          2119
+          -
+          2119
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Seq[com.atomist.graph.GraphNode]]
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          8228
+        </td>
+        <td>
+          2125
+          -
+          2141
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[Seq[com.atomist.graph.GraphNode]](r.right.toOption)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          8231
+        </td>
+        <td>
+          2104
+          -
+          2150
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.generic.GenericTraversableTemplate.flatten
+        </td>
+        <td style="background: #AEF1AE">
+          results.flatMap[Seq[com.atomist.graph.GraphNode], Seq[Seq[com.atomist.graph.GraphNode]]](((r: com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult) =&gt; scala.this.Option.option2Iterable[Seq[com.atomist.graph.GraphNode]](r.right.toOption)))(collection.this.Seq.canBuildFrom[Seq[com.atomist.graph.GraphNode]]).flatten[com.atomist.graph.GraphNode](scala.this.Predef.$conforms[Seq[com.atomist.graph.GraphNode]])
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          8230
+        </td>
+        <td>
+          2143
+          -
+          2143
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.$conforms[Seq[com.atomist.graph.GraphNode]]
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          8227
+        </td>
+        <td>
+          2125
+          -
+          2141
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.Either.RightProjection.toOption
+        </td>
+        <td style="background: #AEF1AE">
+          r.right.toOption
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          8232
+        </td>
+        <td>
+          2163
+          -
+          2184
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExecutionResult.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ExecutionResult.apply(kids)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          8235
+        </td>
+        <td>
+          2241
+          -
+          2262
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionEngine.say
+        </td>
+        <td style="background: #F0ADAD">
+          say(scala.StringContext.apply(&quot;Failure: &quot;, &quot;&quot;).s(msg))
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          8234
+        </td>
+        <td>
+          2245
+          -
+          2261
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Failure: &quot;, &quot;&quot;).s(msg)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          8238
+        </td>
+        <td>
+          2510
+          -
+          2591
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.PathExpressionEngine.say
+        </td>
+        <td style="background: #AEF1AE">
+          say(scala.StringContext.apply(&quot;Returning &quot;, &quot; when evaluating [&quot;, &quot;] against &quot;, &quot;&quot;).s(nodesToApplyNextStepTo, parsed, node))
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          8237
+        </td>
+        <td>
+          2514
+          -
+          2590
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Returning &quot;, &quot; when evaluating [&quot;, &quot;] against &quot;, &quot;&quot;).s(nodesToApplyNextStepTo, parsed, node)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          8241
+        </td>
+        <td>
+          2622
+          -
+          2641
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          report.map[String, Seq[String]](((x$4: String) =&gt; &quot; &quot;.+(x$4)))(collection.this.Seq.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          8240
+        </td>
+        <td>
+          2632
+          -
+          2632
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          8239
+        </td>
+        <td>
+          2633
+          -
+          2640
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; &quot;.+(x$4)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          8242
+        </td>
+        <td>
+          2597
+          -
+          2642
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple2.apply[com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult, Seq[String]](nodesToApplyNextStepTo, report.map[String, Seq[String]](((x$4: String) =&gt; &quot; &quot;.+(x$4)))(collection.this.Seq.canBuildFrom[String]))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

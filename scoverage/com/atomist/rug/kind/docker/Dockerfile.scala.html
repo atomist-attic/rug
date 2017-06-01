@@ -1,0 +1,3786 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/docker/Dockerfile.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.docker
+</span>2 <span style=''>
+</span>3 <span style=''>import java.util.concurrent.atomic.AtomicInteger
+</span>4 <span style=''>import com.atomist.util.Utils.StringImprovements
+</span>5 <span style=''>
+</span>6 <span style=''>class Dockerfile(val lines: Seq[DockerfileLine]) {
+</span>7 <span style=''>
+</span>8 <span style=''>  def this() = </span><span style='background: #AEF1AE'>this(Seq())</span><span style=''>
+</span>9 <span style=''>
+</span>10 <span style=''>  var _lines = </span><span style='background: #AEF1AE'>lines</span><span style=''>
+</span>11 <span style=''>
+</span>12 <span style=''>  object Command extends Enumeration(initial = 0) {
+</span>13 <span style=''>    type Command = Value
+</span>14 <span style=''>    val COMMENT, FROM, MAINTAINER, LABEL, RUN, ADD, COPY, ARG, ENV, EXPOSE, ONBUILD, STOPSIGNAL, USER, VOLUME, WORKDIR, ENTRYPOINT, CMD, HEALTHCHECK = </span><span style='background: #AEF1AE'>Value</span><span style=''>
+</span>15 <span style=''>  }
+</span>16 <span style=''>
+</span>17 <span style=''>  import Command._
+</span>18 <span style=''>
+</span>19 <span style=''>  def getExposePorts: Set[Int] = {
+</span>20 <span style=''>    val matchingLines: Seq[DockerfileLine] = </span><span style='background: #AEF1AE'>lines.filter(d =&gt; EXPOSE.toString.equals(d.name))</span><span style=''>
+</span>21 <span style=''>    val exposeLineToPorts: (DockerfileLine) =&gt; Set[Int] = l =&gt; {
+</span>22 <span style=''>      // This could be a single value, or a list of values. First trim off any extra whitespace
+</span>23 <span style=''>      val exposeValue: String = </span><span style='background: #AEF1AE'>l.getRaw.stripPrefix(EXPOSE.toString).trim</span><span style=''>
+</span>24 <span style=''>      val portValues: Array[String] = </span><span style='background: #AEF1AE'>exposeValue.split(' ')</span><span style=''>
+</span>25 <span style=''>      // A bit hacky, but need to skip entries which are whitespace (the split above leaves in whitespace lines)
+</span>26 <span style=''>      </span><span style='background: #AEF1AE'>portValues.filter(v =&gt; v.trim.length &gt; 0).map(v =&gt; Integer.parseInt(v)).toSet</span><span style=''>
+</span>27 <span style=''>    }
+</span>28 <span style=''>
+</span>29 <span style=''>    </span><span style='background: #AEF1AE'>matchingLines.flatMap(exposeLineToPorts).toSet</span><span style=''>
+</span>30 <span style=''>  }
+</span>31 <span style=''>
+</span>32 <span style=''>  def addOrUpdateFrom(arg: String): this.type = {
+</span>33 <span style=''>    </span><span style='background: #AEF1AE'>addOrUpdate(FROM, arg)</span><span style=''>
+</span>34 <span style=''>    this
+</span>35 <span style=''>  }
+</span>36 <span style=''>
+</span>37 <span style=''>  def addOrUpdateExpose(arg: String): this.type = {
+</span>38 <span style=''>    </span><span style='background: #AEF1AE'>addOrUpdate(EXPOSE, arg)</span><span style=''>
+</span>39 <span style=''>    this
+</span>40 <span style=''>  }
+</span>41 <span style=''>
+</span>42 <span style=''>  def addExpose(arg: String): this.type = {
+</span>43 <span style=''>    </span><span style='background: #AEF1AE'>add(EXPOSE, arg)</span><span style=''>
+</span>44 <span style=''>    this
+</span>45 <span style=''>  }
+</span>46 <span style=''>
+</span>47 <span style=''>  def addOrUpdateMaintainer(arg: String): this.type = {
+</span>48 <span style=''>    </span><span style='background: #F0ADAD'>addOrUpdate(MAINTAINER, arg)</span><span style=''>
+</span>49 <span style=''>    this
+</span>50 <span style=''>  }
+</span>51 <span style=''>
+</span>52 <span style=''>  def addMaintainer(arg: String): this.type = {
+</span>53 <span style=''>    </span><span style='background: #AEF1AE'>add(MAINTAINER, arg)</span><span style=''>
+</span>54 <span style=''>    this
+</span>55 <span style=''>  }
+</span>56 <span style=''>
+</span>57 <span style=''>  def addOrUpdateLabel(arg: String*): this.type = {
+</span>58 <span style=''>    </span><span style='background: #F0ADAD'>addOrUpdate(LABEL, arg.mkString(&quot; &quot;))</span><span style=''>
+</span>59 <span style=''>    this
+</span>60 <span style=''>  }
+</span>61 <span style=''>
+</span>62 <span style=''>  def addLabel(arg: String*): this.type = {
+</span>63 <span style=''>    </span><span style='background: #F0ADAD'>add(LABEL, arg.mkString(&quot; &quot;))</span><span style=''>
+</span>64 <span style=''>    this
+</span>65 <span style=''>  }
+</span>66 <span style=''>
+</span>67 <span style=''>  def addRun(arg: String): this.type = {
+</span>68 <span style=''>    </span><span style='background: #F0ADAD'>add(RUN, arg)</span><span style=''>
+</span>69 <span style=''>    this
+</span>70 <span style=''>  }
+</span>71 <span style=''>
+</span>72 <span style=''>  def addCopy(arg: String): this.type = {
+</span>73 <span style=''>    </span><span style='background: #F0ADAD'>add(COPY, arg)</span><span style=''>
+</span>74 <span style=''>    this
+</span>75 <span style=''>  }
+</span>76 <span style=''>
+</span>77 <span style=''>  def addAdd(arg: String): this.type = {
+</span>78 <span style=''>    </span><span style='background: #AEF1AE'>add(ADD, arg)</span><span style=''>
+</span>79 <span style=''>    this
+</span>80 <span style=''>  }
+</span>81 <span style=''>
+</span>82 <span style=''>  def addEnv(arg: String): this.type = {
+</span>83 <span style=''>    </span><span style='background: #F0ADAD'>add(ENV, arg)</span><span style=''>
+</span>84 <span style=''>    this
+</span>85 <span style=''>  }
+</span>86 <span style=''>
+</span>87 <span style=''>  def addVolume(arg: String): this.type = {
+</span>88 <span style=''>    </span><span style='background: #F0ADAD'>add(VOLUME, arg)</span><span style=''>
+</span>89 <span style=''>    this
+</span>90 <span style=''>  }
+</span>91 <span style=''>
+</span>92 <span style=''>  def addOrUpdateWorkdir(arg: String): this.type = {
+</span>93 <span style=''>    </span><span style='background: #AEF1AE'>addOrUpdate(WORKDIR, arg)</span><span style=''>
+</span>94 <span style=''>    this
+</span>95 <span style=''>  }
+</span>96 <span style=''>
+</span>97 <span style=''>  def addOrUpdateEntryPoint(arg: String): this.type = {
+</span>98 <span style=''>    </span><span style='background: #AEF1AE'>addOrUpdate(ENTRYPOINT, arg)</span><span style=''>
+</span>99 <span style=''>    this
+</span>100 <span style=''>  }
+</span>101 <span style=''>
+</span>102 <span style=''>  def addOrUpdateCmd(arg: String): this.type = {
+</span>103 <span style=''>    </span><span style='background: #AEF1AE'>addOrUpdate(CMD, arg)</span><span style=''>
+</span>104 <span style=''>    this
+</span>105 <span style=''>  }
+</span>106 <span style=''>
+</span>107 <span style=''>  def addOrUpdateHealthcheck(arg: String): this.type = {
+</span>108 <span style=''>    </span><span style='background: #AEF1AE'>addOrUpdate(HEALTHCHECK, arg)</span><span style=''>
+</span>109 <span style=''>    this
+</span>110 <span style=''>  }
+</span>111 <span style=''>
+</span>112 <span style=''>  override def toString = {
+</span>113 <span style=''>    val builder = </span><span style='background: #AEF1AE'>new StringBuilder</span><span style=''>
+</span>114 <span style=''>    val ai = </span><span style='background: #AEF1AE'>new AtomicInteger(1)</span><span style=''>
+</span>115 <span style=''>    </span><span style='background: #AEF1AE'>_lines.foreach(d =&gt; {
+</span>116 <span style=''></span><span style='background: #AEF1AE'>      val lb = &quot;\n&quot;.r.findAllMatchIn(d.getRaw).length
+</span>117 <span style=''></span><span style='background: #AEF1AE'>      while (ai.get() &lt; d.getLineno - lb) {
+</span>118 <span style=''></span><span style='background: #AEF1AE'>        builder.append(&quot;\n&quot;)
+</span>119 <span style=''></span><span style='background: #AEF1AE'>        ai.incrementAndGet()
+</span>120 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>121 <span style=''></span><span style='background: #AEF1AE'>      for (i &lt;- 0 until lb) {
+</span>122 <span style=''></span><span style='background: #AEF1AE'>        ai.incrementAndGet()
+</span>123 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>124 <span style=''></span><span style='background: #AEF1AE'>      builder.append(d.getRaw)
+</span>125 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
+</span>126 <span style=''>    </span><span style='background: #AEF1AE'>builder.toString.toSystem</span><span style=''>
+</span>127 <span style=''>  }
+</span>128 <span style=''>
+</span>129 <span style=''>  private def add(cmd: Command, arg: Any) = {
+</span>130 <span style=''>    val line: DockerfileLine = </span><span style='background: #AEF1AE'>create(cmd)</span><span style=''>
+</span>131 <span style=''>    </span><span style='background: #AEF1AE'>setRaw(line, cmd, arg)</span><span style=''>
+</span>132 <span style=''>  }
+</span>133 <span style=''>
+</span>134 <span style=''>  private def addOrUpdate(cmd: Command, arg: Any): Unit = {
+</span>135 <span style=''>    val line = </span><span style='background: #AEF1AE'>addOrUpdate(cmd)</span><span style=''>
+</span>136 <span style=''>    </span><span style='background: #AEF1AE'>setRaw(line, cmd, arg)</span><span style=''>
+</span>137 <span style=''>  }
+</span>138 <span style=''>
+</span>139 <span style=''>  private def setRaw(line: DockerfileLine, cmd: Command, arg: Any) {
+</span>140 <span style=''>    </span><span style='background: #AEF1AE'>line.setArgs(arg)</span><span style=''>
+</span>141 <span style=''>    </span><span style='background: #AEF1AE'>line.setRaw(cmd.toString + &quot; &quot; + arg)</span><span style=''>
+</span>142 <span style=''>  }
+</span>143 <span style=''>
+</span>144 <span style=''>  private def addOrUpdate(cmd: Command): DockerfileLine =
+</span>145 <span style=''>    </span><span style='background: #AEF1AE'>_lines.find(d =&gt; cmd.toString.equals(d.name)).getOrElse({
+</span>146 <span style=''></span><span style='background: #AEF1AE'>      val line = new DockerfileLine(cmd.toString)
+</span>147 <span style=''></span><span style='background: #AEF1AE'>      mergeLines(line)
+</span>148 <span style=''></span><span style='background: #AEF1AE'>      line
+</span>149 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
+</span>150 <span style=''>
+</span>151 <span style=''>  private def create(cmd: Command): DockerfileLine = {
+</span>152 <span style=''>    val line = </span><span style='background: #AEF1AE'>new DockerfileLine(cmd.toString)</span><span style=''>
+</span>153 <span style=''>    </span><span style='background: #AEF1AE'>mergeLines(line)</span><span style=''>
+</span>154 <span style=''>    line
+</span>155 <span style=''>  }
+</span>156 <span style=''>
+</span>157 <span style=''>  private def mergeLines(line: DockerfileLine): Unit = {
+</span>158 <span style=''>    var _line = line
+</span>159 <span style=''>
+</span>160 <span style=''>    // First get the next element in the order
+</span>161 <span style=''>    val newCmd = </span><span style='background: #AEF1AE'>Command.values.find(_.toString == line.name).head</span><span style=''>
+</span>162 <span style=''>
+</span>163 <span style=''>    var nextCmdLine: DockerfileLine = </span><span style='background: #AEF1AE'>null</span><span style=''>
+</span>164 <span style=''>    var ix: Int = -</span><span style='background: #AEF1AE'>1</span><span style=''>
+</span>165 <span style=''>    </span><span style='background: #AEF1AE'>for (i &lt;- _lines.indices; if nextCmdLine == null) {
+</span>166 <span style=''></span><span style='background: #AEF1AE'>      val cmd = Command.values.find(_.toString == _lines(i).name).head
+</span>167 <span style=''></span><span style='background: #AEF1AE'>      if (newCmd.id &lt;= cmd.id) {
+</span>168 <span style=''></span><span style='background: #AEF1AE'>        nextCmdLine = _lines(i)
+</span>169 <span style=''></span><span style='background: #AEF1AE'>        ix = i
+</span>170 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>171 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>172 <span style=''>    if (</span><span style='background: #AEF1AE'>nextCmdLine != null</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>173 <span style=''></span><span style='background: #AEF1AE'>      // Insert before
+</span>174 <span style=''></span><span style='background: #AEF1AE'>      val lb = &quot;\n&quot;.r.findAllMatchIn(nextCmdLine.getRaw).length
+</span>175 <span style=''></span><span style='background: #AEF1AE'>      _line.setLineno(nextCmdLine.getLineno - lb)
+</span>176 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''> else </span><span style='background: #AEF1AE'>if (_lines.nonEmpty)
+</span>177 <span style=''></span><span style='background: #AEF1AE'>      _line.setLineno(_lines.last.getLineno + 1)
+</span>178 <span style=''></span><span style='background: #AEF1AE'>    else
+</span>179 <span style=''></span><span style='background: #AEF1AE'>      _line.setLineno(1)</span><span style=''>
+</span>180 <span style=''>
+</span>181 <span style=''>    if (</span><span style='background: #AEF1AE'>ix &gt;= 0</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>182 <span style=''></span><span style='background: #AEF1AE'>      _lines = insertAt(_line, ix, _lines.toList)
+</span>183 <span style=''></span><span style='background: #AEF1AE'>      // Update line numbers in later lines
+</span>184 <span style=''></span><span style='background: #AEF1AE'>      for (i &lt;- (ix + 1) until _lines.size) {
+</span>185 <span style=''></span><span style='background: #AEF1AE'>        _lines(i).setLineno(_lines(i).getLineno + 1)
+</span>186 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>187 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''> else
+</span>188 <span style=''>      </span><span style='background: #AEF1AE'>_lines :+= _line</span><span style=''>
+</span>189 <span style=''>  }
+</span>190 <span style=''>
+</span>191 <span style=''>  private def insertAt[T](n: T, pos: Int, list: List[T]): List[T] =
+</span>192 <span style=''>    if (</span><span style='background: #AEF1AE'>pos &gt;= list.length</span><span style=''>) {
+</span>193 <span style=''>      </span><span style='background: #F0ADAD'>list ::: List(n)</span><span style=''>
+</span>194 <span style=''>    } else {
+</span>195 <span style=''>      </span><span style='background: #AEF1AE'>list.zipWithIndex.foldLeft(List[T]()) { (acc, tuple) =&gt;
+</span>196 <span style=''></span><span style='background: #AEF1AE'>        tuple match {
+</span>197 <span style=''></span><span style='background: #AEF1AE'>          case (item, idx) =&gt;
+</span>198 <span style=''></span><span style='background: #AEF1AE'>            if (idx == pos) acc ::: List(n, item) else acc ::: List(item)
+</span>199 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>200 <span style=''></span><span style='background: #AEF1AE'>      }</span><span style=''>
+</span>201 <span style=''>    }
+</span>202 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          8
+        </td>
+        <td>
+          1321
+        </td>
+        <td>
+          208
+          -
+          213
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          8
+        </td>
+        <td>
+          1323
+        </td>
+        <td>
+          203
+          -
+          203
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          8
+        </td>
+        <td>
+          1322
+        </td>
+        <td>
+          203
+          -
+          214
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.&lt;init&gt;(collection.this.Seq.apply[Nothing]())
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          1324
+        </td>
+        <td>
+          231
+          -
+          236
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.lines
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.lines
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1333
+        </td>
+        <td>
+          466
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1342
+        </td>
+        <td>
+          466
+          -
+          471
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1336
+        </td>
+        <td>
+          466
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1327
+        </td>
+        <td>
+          466
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1330
+        </td>
+        <td>
+          466
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1339
+        </td>
+        <td>
+          466
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1329
+        </td>
+        <td>
+          466
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1338
+        </td>
+        <td>
+          466
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1332
+        </td>
+        <td>
+          466
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1341
+        </td>
+        <td>
+          466
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1326
+        </td>
+        <td>
+          466
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1335
+        </td>
+        <td>
+          466
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1334
+        </td>
+        <td>
+          466
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1328
+        </td>
+        <td>
+          466
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1337
+        </td>
+        <td>
+          466
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1331
+        </td>
+        <td>
+          466
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1340
+        </td>
+        <td>
+          466
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1325
+        </td>
+        <td>
+          466
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Command.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1345
+        </td>
+        <td>
+          577
+          -
+          626
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.lines.filter(((d: com.atomist.rug.kind.docker.DockerfileLine) =&gt; Dockerfile.this.Command.EXPOSE.toString().equals(d.name)))
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1344
+        </td>
+        <td>
+          595
+          -
+          625
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.Command.EXPOSE.toString().equals(d.name)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1343
+        </td>
+        <td>
+          618
+          -
+          624
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.name
+        </td>
+        <td style="background: #AEF1AE">
+          d.name
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1346
+        </td>
+        <td>
+          820
+          -
+          862
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.trim
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(l.getRaw).stripPrefix(Dockerfile.this.Command.EXPOSE.toString()).trim()
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1347
+        </td>
+        <td>
+          901
+          -
+          923
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.split
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(exposeValue).split(' ')
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1351
+        </td>
+        <td>
+          1088
+          -
+          1088
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.Array.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Array.canBuildFrom[Int]((ClassTag.Int: scala.reflect.ClassTag[Int]))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1348
+        </td>
+        <td>
+          1066
+          -
+          1083
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          v.trim().length().&gt;(0)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1350
+        </td>
+        <td>
+          1094
+          -
+          1113
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Integer.parseInt
+        </td>
+        <td style="background: #AEF1AE">
+          java.this.lang.Integer.parseInt(v)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1353
+        </td>
+        <td>
+          1043
+          -
+          1120
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.intArrayOps(scala.this.Predef.refArrayOps[String](scala.this.Predef.refArrayOps[String](portValues).filter(((v: String) =&gt; v.trim().length().&gt;(0)))).map[Int, Array[Int]](((v: String) =&gt; java.this.lang.Integer.parseInt(v)))(scala.this.Array.canBuildFrom[Int]((ClassTag.Int: scala.reflect.ClassTag[Int])))).toSet[Int]
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1352
+        </td>
+        <td>
+          1043
+          -
+          1114
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[String](scala.this.Predef.refArrayOps[String](portValues).filter(((v: String) =&gt; v.trim().length().&gt;(0)))).map[Int, Array[Int]](((v: String) =&gt; java.this.lang.Integer.parseInt(v)))(scala.this.Array.canBuildFrom[Int]((ClassTag.Int: scala.reflect.ClassTag[Int])))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1349
+        </td>
+        <td>
+          1043
+          -
+          1084
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[String](portValues).filter(((v: String) =&gt; v.trim().length().&gt;(0)))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1354
+        </td>
+        <td>
+          1153
+          -
+          1153
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Int]
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1355
+        </td>
+        <td>
+          1132
+          -
+          1178
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          matchingLines.flatMap[Int, Seq[Int]](exposeLineToPorts)(collection.this.Seq.canBuildFrom[Int]).toSet[Int]
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1357
+        </td>
+        <td>
+          1238
+          -
+          1260
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addOrUpdate
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.addOrUpdate(Dockerfile.this.Command.FROM, arg)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1356
+        </td>
+        <td>
+          1250
+          -
+          1254
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.Command.FROM
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.Command.FROM
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1359
+        </td>
+        <td>
+          1331
+          -
+          1355
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addOrUpdate
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.addOrUpdate(Dockerfile.this.Command.EXPOSE, arg)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1358
+        </td>
+        <td>
+          1343
+          -
+          1349
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.Command.EXPOSE
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.Command.EXPOSE
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1360
+        </td>
+        <td>
+          1422
+          -
+          1428
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.Command.EXPOSE
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.Command.EXPOSE
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1361
+        </td>
+        <td>
+          1418
+          -
+          1434
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.add
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.add(Dockerfile.this.Command.EXPOSE, arg)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1363
+        </td>
+        <td>
+          1509
+          -
+          1537
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addOrUpdate
+        </td>
+        <td style="background: #F0ADAD">
+          Dockerfile.this.addOrUpdate(Dockerfile.this.Command.MAINTAINER, arg)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1362
+        </td>
+        <td>
+          1521
+          -
+          1531
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.Command.MAINTAINER
+        </td>
+        <td style="background: #F0ADAD">
+          Dockerfile.this.Command.MAINTAINER
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1365
+        </td>
+        <td>
+          1604
+          -
+          1624
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.add
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.add(Dockerfile.this.Command.MAINTAINER, arg)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1364
+        </td>
+        <td>
+          1608
+          -
+          1618
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.Command.MAINTAINER
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.Command.MAINTAINER
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1366
+        </td>
+        <td>
+          1707
+          -
+          1712
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.Command.LABEL
+        </td>
+        <td style="background: #F0ADAD">
+          Dockerfile.this.Command.LABEL
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1368
+        </td>
+        <td>
+          1695
+          -
+          1732
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addOrUpdate
+        </td>
+        <td style="background: #F0ADAD">
+          Dockerfile.this.addOrUpdate(Dockerfile.this.Command.LABEL, arg.mkString(&quot; &quot;))
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1367
+        </td>
+        <td>
+          1714
+          -
+          1731
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          arg.mkString(&quot; &quot;)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1369
+        </td>
+        <td>
+          1799
+          -
+          1804
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.Command.LABEL
+        </td>
+        <td style="background: #F0ADAD">
+          Dockerfile.this.Command.LABEL
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1371
+        </td>
+        <td>
+          1795
+          -
+          1824
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.add
+        </td>
+        <td style="background: #F0ADAD">
+          Dockerfile.this.add(Dockerfile.this.Command.LABEL, arg.mkString(&quot; &quot;))
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1370
+        </td>
+        <td>
+          1806
+          -
+          1823
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          arg.mkString(&quot; &quot;)
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          1372
+        </td>
+        <td>
+          1888
+          -
+          1891
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.Command.RUN
+        </td>
+        <td style="background: #F0ADAD">
+          Dockerfile.this.Command.RUN
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          1373
+        </td>
+        <td>
+          1884
+          -
+          1897
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.add
+        </td>
+        <td style="background: #F0ADAD">
+          Dockerfile.this.add(Dockerfile.this.Command.RUN, arg)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          1375
+        </td>
+        <td>
+          1958
+          -
+          1972
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.add
+        </td>
+        <td style="background: #F0ADAD">
+          Dockerfile.this.add(Dockerfile.this.Command.COPY, arg)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          1374
+        </td>
+        <td>
+          1962
+          -
+          1966
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.Command.COPY
+        </td>
+        <td style="background: #F0ADAD">
+          Dockerfile.this.Command.COPY
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          1377
+        </td>
+        <td>
+          2032
+          -
+          2045
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.add
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.add(Dockerfile.this.Command.ADD, arg)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          1376
+        </td>
+        <td>
+          2036
+          -
+          2039
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.Command.ADD
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.Command.ADD
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1378
+        </td>
+        <td>
+          2109
+          -
+          2112
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.Command.ENV
+        </td>
+        <td style="background: #F0ADAD">
+          Dockerfile.this.Command.ENV
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1379
+        </td>
+        <td>
+          2105
+          -
+          2118
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.add
+        </td>
+        <td style="background: #F0ADAD">
+          Dockerfile.this.add(Dockerfile.this.Command.ENV, arg)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          1381
+        </td>
+        <td>
+          2181
+          -
+          2197
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.add
+        </td>
+        <td style="background: #F0ADAD">
+          Dockerfile.this.add(Dockerfile.this.Command.VOLUME, arg)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          1380
+        </td>
+        <td>
+          2185
+          -
+          2191
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.Command.VOLUME
+        </td>
+        <td style="background: #F0ADAD">
+          Dockerfile.this.Command.VOLUME
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1383
+        </td>
+        <td>
+          2269
+          -
+          2294
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addOrUpdate
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.addOrUpdate(Dockerfile.this.Command.WORKDIR, arg)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1382
+        </td>
+        <td>
+          2281
+          -
+          2288
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.Command.WORKDIR
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.Command.WORKDIR
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          1384
+        </td>
+        <td>
+          2381
+          -
+          2391
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.Command.ENTRYPOINT
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.Command.ENTRYPOINT
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          1385
+        </td>
+        <td>
+          2369
+          -
+          2397
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addOrUpdate
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.addOrUpdate(Dockerfile.this.Command.ENTRYPOINT, arg)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          1387
+        </td>
+        <td>
+          2465
+          -
+          2486
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addOrUpdate
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.addOrUpdate(Dockerfile.this.Command.CMD, arg)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          1386
+        </td>
+        <td>
+          2477
+          -
+          2480
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.Command.CMD
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.Command.CMD
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          1389
+        </td>
+        <td>
+          2562
+          -
+          2591
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addOrUpdate
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.addOrUpdate(Dockerfile.this.Command.HEALTHCHECK, arg)
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          1388
+        </td>
+        <td>
+          2574
+          -
+          2585
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.Command.HEALTHCHECK
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.Command.HEALTHCHECK
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          1390
+        </td>
+        <td>
+          2652
+          -
+          2669
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.`package`.StringBuilder()
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          1391
+        </td>
+        <td>
+          2683
+          -
+          2703
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.concurrent.atomic.AtomicInteger.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.util.concurrent.atomic.AtomicInteger(1)
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          1408
+        </td>
+        <td>
+          2708
+          -
+          2998
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this._lines.foreach[StringBuilder](((d: com.atomist.rug.kind.docker.DockerfileLine) =&gt; {
+  val lb: Int = scala.this.Predef.augmentString(&quot;\n&quot;).r.findAllMatchIn(d.getRaw).length;
+  while$1(){
+    if (ai.get().&lt;(d.getLineno.-(lb)))
+      {
+        {
+          builder.append(&quot;\n&quot;);
+          ai.incrementAndGet()
+        };
+        while$1()
+      }
+    else
+      ()
+  };
+  scala.this.Predef.intWrapper(0).until(lb).foreach[Int](((i: Int) =&gt; ai.incrementAndGet()));
+  builder.append(d.getRaw)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          1393
+        </td>
+        <td>
+          2767
+          -
+          2775
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.getRaw
+        </td>
+        <td style="background: #AEF1AE">
+          d.getRaw
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          1392
+        </td>
+        <td>
+          2745
+          -
+          2749
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          1394
+        </td>
+        <td>
+          2745
+          -
+          2783
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.Iterator.length
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(&quot;\n&quot;).r.findAllMatchIn(d.getRaw).length
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          1402
+        </td>
+        <td>
+          2790
+          -
+          2790
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          1396
+        </td>
+        <td>
+          2797
+          -
+          2824
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          ai.get().&lt;(d.getLineno.-(lb))
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          1399
+        </td>
+        <td>
+          2826
+          -
+          2826
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.while$1
+        </td>
+        <td style="background: #AEF1AE">
+          while$1()
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          1401
+        </td>
+        <td>
+          2790
+          -
+          2790
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          1395
+        </td>
+        <td>
+          2808
+          -
+          2824
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          d.getLineno.-(lb)
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          1400
+        </td>
+        <td>
+          2826
+          -
+          2893
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  {
+    builder.append(&quot;\n&quot;);
+    ai.incrementAndGet()
+  };
+  while$1()
+}
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          1397
+        </td>
+        <td>
+          2836
+          -
+          2856
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.append
+        </td>
+        <td style="background: #AEF1AE">
+          builder.append(&quot;\n&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          1398
+        </td>
+        <td>
+          2865
+          -
+          2885
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.concurrent.atomic.AtomicInteger.incrementAndGet
+        </td>
+        <td style="background: #AEF1AE">
+          ai.incrementAndGet()
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          1405
+        </td>
+        <td>
+          2900
+          -
+          2952
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Range.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.intWrapper(0).until(lb).foreach[Int](((i: Int) =&gt; ai.incrementAndGet()))
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          1403
+        </td>
+        <td>
+          2910
+          -
+          2911
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          1404
+        </td>
+        <td>
+          2932
+          -
+          2952
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.concurrent.atomic.AtomicInteger.incrementAndGet
+        </td>
+        <td style="background: #AEF1AE">
+          ai.incrementAndGet()
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          1407
+        </td>
+        <td>
+          2967
+          -
+          2991
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.append
+        </td>
+        <td style="background: #AEF1AE">
+          builder.append(d.getRaw)
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          1406
+        </td>
+        <td>
+          2982
+          -
+          2990
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.getRaw
+        </td>
+        <td style="background: #AEF1AE">
+          d.getRaw
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          1410
+        </td>
+        <td>
+          3003
+          -
+          3028
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.Utils.StringImprovements.toSystem
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.Utils.StringImprovements(builder.toString()).toSystem
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          1409
+        </td>
+        <td>
+          3003
+          -
+          3019
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.toString
+        </td>
+        <td style="background: #AEF1AE">
+          builder.toString()
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          1411
+        </td>
+        <td>
+          3111
+          -
+          3122
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.create
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.create(cmd)
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          1412
+        </td>
+        <td>
+          3127
+          -
+          3149
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.setRaw
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.setRaw(line, cmd, arg)
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          1413
+        </td>
+        <td>
+          3230
+          -
+          3246
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.addOrUpdate
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.addOrUpdate(cmd)
+        </td>
+      </tr><tr>
+        <td>
+          136
+        </td>
+        <td>
+          1414
+        </td>
+        <td>
+          3251
+          -
+          3273
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.setRaw
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.setRaw(line, cmd, arg)
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          1415
+        </td>
+        <td>
+          3352
+          -
+          3369
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.setArgs
+        </td>
+        <td style="background: #AEF1AE">
+          line.setArgs(arg)
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          1416
+        </td>
+        <td>
+          3386
+          -
+          3410
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          cmd.toString().+(&quot; &quot;).+(arg)
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          1417
+        </td>
+        <td>
+          3374
+          -
+          3411
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.setRaw
+        </td>
+        <td style="background: #AEF1AE">
+          line.setRaw(cmd.toString().+(&quot; &quot;).+(arg))
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          1423
+        </td>
+        <td>
+          3479
+          -
+          3627
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this._lines.find(((d: com.atomist.rug.kind.docker.DockerfileLine) =&gt; cmd.toString().equals(d.name))).getOrElse[com.atomist.rug.kind.docker.DockerfileLine]({
+  val line: com.atomist.rug.kind.docker.DockerfileLine = new DockerfileLine(cmd.toString());
+  Dockerfile.this.mergeLines(line);
+  line
+})
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          1419
+        </td>
+        <td>
+          3496
+          -
+          3523
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          cmd.toString().equals(d.name)
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          1418
+        </td>
+        <td>
+          3516
+          -
+          3522
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.name
+        </td>
+        <td style="background: #AEF1AE">
+          d.name
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          1420
+        </td>
+        <td>
+          3573
+          -
+          3585
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #AEF1AE">
+          cmd.toString()
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          1421
+        </td>
+        <td>
+          3554
+          -
+          3586
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new DockerfileLine(cmd.toString())
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          1422
+        </td>
+        <td>
+          3593
+          -
+          3609
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.mergeLines
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.mergeLines(line)
+        </td>
+      </tr><tr>
+        <td>
+          152
+        </td>
+        <td>
+          1425
+        </td>
+        <td>
+          3699
+          -
+          3731
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new DockerfileLine(cmd.toString())
+        </td>
+      </tr><tr>
+        <td>
+          152
+        </td>
+        <td>
+          1424
+        </td>
+        <td>
+          3718
+          -
+          3730
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #AEF1AE">
+          cmd.toString()
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          1426
+        </td>
+        <td>
+          3736
+          -
+          3752
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.mergeLines
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.mergeLines(line)
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          1429
+        </td>
+        <td>
+          3910
+          -
+          3954
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.Command.values.find(((x$1: Dockerfile.this.Command.Value) =&gt; x$1.toString().==(line.name)))
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          1428
+        </td>
+        <td>
+          3930
+          -
+          3953
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.toString().==(line.name)
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          1430
+        </td>
+        <td>
+          3910
+          -
+          3959
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[Dockerfile.this.Command.Value](Dockerfile.this.Command.values.find(((x$1: Dockerfile.this.Command.Value) =&gt; x$1.toString().==(line.name)))).head
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          1427
+        </td>
+        <td>
+          3944
+          -
+          3953
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.name
+        </td>
+        <td style="background: #AEF1AE">
+          line.name
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          1431
+        </td>
+        <td>
+          3999
+          -
+          4003
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          1432
+        </td>
+        <td>
+          4023
+          -
+          4024
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          -1
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          1433
+        </td>
+        <td>
+          4058
+          -
+          4077
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          nextCmdLine.==(null)
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          1444
+        </td>
+        <td>
+          4029
+          -
+          4245
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.FilterMonadic.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this._lines.indices.withFilter(((i: Int) =&gt; nextCmdLine.==(null))).foreach[Unit](((i: Int) =&gt; {
+  val cmd: Dockerfile.this.Command.Value = scala.this.Option.option2Iterable[Dockerfile.this.Command.Value](Dockerfile.this.Command.values.find(((x$2: Dockerfile.this.Command.Value) =&gt; x$2.toString().==(Dockerfile.this._lines.apply(i).name)))).head;
+  if (newCmd.id.&lt;=(cmd.id))
+    {
+      nextCmdLine = Dockerfile.this._lines.apply(i);
+      ix = i
+    }
+  else
+    ()
+}))
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          1434
+        </td>
+        <td>
+          4131
+          -
+          4145
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.name
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this._lines.apply(i).name
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          1437
+        </td>
+        <td>
+          4097
+          -
+          4151
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[Dockerfile.this.Command.Value](Dockerfile.this.Command.values.find(((x$2: Dockerfile.this.Command.Value) =&gt; x$2.toString().==(Dockerfile.this._lines.apply(i).name)))).head
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          1436
+        </td>
+        <td>
+          4097
+          -
+          4146
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.Command.values.find(((x$2: Dockerfile.this.Command.Value) =&gt; x$2.toString().==(Dockerfile.this._lines.apply(i).name)))
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          1435
+        </td>
+        <td>
+          4117
+          -
+          4145
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.toString().==(Dockerfile.this._lines.apply(i).name)
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          1438
+        </td>
+        <td>
+          4175
+          -
+          4181
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value.id
+        </td>
+        <td style="background: #AEF1AE">
+          cmd.id
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          1441
+        </td>
+        <td>
+          4183
+          -
+          4239
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  nextCmdLine = Dockerfile.this._lines.apply(i);
+  ix = i
+}
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          1443
+        </td>
+        <td>
+          4158
+          -
+          4158
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          1439
+        </td>
+        <td>
+          4162
+          -
+          4181
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;=
+        </td>
+        <td style="background: #AEF1AE">
+          newCmd.id.&lt;=(cmd.id)
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          1442
+        </td>
+        <td>
+          4158
+          -
+          4158
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          1440
+        </td>
+        <td>
+          4207
+          -
+          4216
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this._lines.apply(i)
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          1451
+        </td>
+        <td>
+          4275
+          -
+          4419
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val lb: Int = scala.this.Predef.augmentString(&quot;\n&quot;).r.findAllMatchIn(nextCmdLine.getRaw).length;
+  _line.setLineno(nextCmdLine.getLineno.-(lb))
+}
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          1445
+        </td>
+        <td>
+          4254
+          -
+          4273
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          nextCmdLine.!=(null)
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          1447
+        </td>
+        <td>
+          4337
+          -
+          4355
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.getRaw
+        </td>
+        <td style="background: #AEF1AE">
+          nextCmdLine.getRaw
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          1446
+        </td>
+        <td>
+          4315
+          -
+          4319
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          1448
+        </td>
+        <td>
+          4315
+          -
+          4363
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.Iterator.length
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(&quot;\n&quot;).r.findAllMatchIn(nextCmdLine.getRaw).length
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          1450
+        </td>
+        <td>
+          4370
+          -
+          4413
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.setLineno
+        </td>
+        <td style="background: #AEF1AE">
+          _line.setLineno(nextCmdLine.getLineno.-(lb))
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          1449
+        </td>
+        <td>
+          4386
+          -
+          4412
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          nextCmdLine.getLineno.-(lb)
+        </td>
+      </tr><tr>
+        <td>
+          176
+        </td>
+        <td>
+          1458
+        </td>
+        <td>
+          4425
+          -
+          4528
+        </td>
+        <td>
+          If
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          if (Dockerfile.this._lines.nonEmpty)
+  _line.setLineno(Dockerfile.this._lines.last.getLineno.+(1))
+else
+  _line.setLineno(1)
+        </td>
+      </tr><tr>
+        <td>
+          176
+        </td>
+        <td>
+          1452
+        </td>
+        <td>
+          4429
+          -
+          4444
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this._lines.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          1455
+        </td>
+        <td>
+          4452
+          -
+          4494
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.setLineno
+        </td>
+        <td style="background: #AEF1AE">
+          _line.setLineno(Dockerfile.this._lines.last.getLineno.+(1))
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          1454
+        </td>
+        <td>
+          4452
+          -
+          4494
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.setLineno
+        </td>
+        <td style="background: #AEF1AE">
+          _line.setLineno(Dockerfile.this._lines.last.getLineno.+(1))
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          1453
+        </td>
+        <td>
+          4468
+          -
+          4493
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this._lines.last.getLineno.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          179
+        </td>
+        <td>
+          1456
+        </td>
+        <td>
+          4510
+          -
+          4528
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.setLineno
+        </td>
+        <td style="background: #AEF1AE">
+          _line.setLineno(1)
+        </td>
+      </tr><tr>
+        <td>
+          179
+        </td>
+        <td>
+          1457
+        </td>
+        <td>
+          4510
+          -
+          4528
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.setLineno
+        </td>
+        <td style="background: #AEF1AE">
+          _line.setLineno(1)
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          1459
+        </td>
+        <td>
+          4538
+          -
+          4545
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;=
+        </td>
+        <td style="background: #AEF1AE">
+          ix.&gt;=(0)
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          1468
+        </td>
+        <td>
+          4547
+          -
+          4755
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  Dockerfile.this._lines_=(Dockerfile.this.insertAt[com.atomist.rug.kind.docker.DockerfileLine](_line, ix, Dockerfile.this._lines.toList));
+  scala.this.Predef.intWrapper(ix.+(1)).until(Dockerfile.this._lines.size).foreach[Unit](((i: Int) =&gt; Dockerfile.this._lines.apply(i).setLineno(Dockerfile.this._lines.apply(i).getLineno.+(1))))
+}
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          1461
+        </td>
+        <td>
+          4564
+          -
+          4598
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile.insertAt
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this.insertAt[com.atomist.rug.kind.docker.DockerfileLine](_line, ix, Dockerfile.this._lines.toList)
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          1460
+        </td>
+        <td>
+          4584
+          -
+          4597
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toList
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this._lines.toList
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          1462
+        </td>
+        <td>
+          4555
+          -
+          4598
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile._lines_=
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this._lines_=(Dockerfile.this.insertAt[com.atomist.rug.kind.docker.DockerfileLine](_line, ix, Dockerfile.this._lines.toList))
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          1467
+        </td>
+        <td>
+          4649
+          -
+          4741
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Range.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.intWrapper(ix.+(1)).until(Dockerfile.this._lines.size).foreach[Unit](((i: Int) =&gt; Dockerfile.this._lines.apply(i).setLineno(Dockerfile.this._lines.apply(i).getLineno.+(1))))
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          1464
+        </td>
+        <td>
+          4674
+          -
+          4685
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this._lines.size
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          1463
+        </td>
+        <td>
+          4660
+          -
+          4666
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          ix.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          1465
+        </td>
+        <td>
+          4717
+          -
+          4740
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this._lines.apply(i).getLineno.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          1466
+        </td>
+        <td>
+          4697
+          -
+          4741
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.DockerfileLine.setLineno
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this._lines.apply(i).setLineno(Dockerfile.this._lines.apply(i).getLineno.+(1))
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          1470
+        </td>
+        <td>
+          4767
+          -
+          4783
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this._lines.:+[com.atomist.rug.kind.docker.DockerfileLine, Seq[com.atomist.rug.kind.docker.DockerfileLine]](_line)(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.docker.DockerfileLine])
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          1472
+        </td>
+        <td>
+          4767
+          -
+          4783
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile._lines_=
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this._lines_=(Dockerfile.this._lines.:+[com.atomist.rug.kind.docker.DockerfileLine, Seq[com.atomist.rug.kind.docker.DockerfileLine]](_line)(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.docker.DockerfileLine]))
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          1469
+        </td>
+        <td>
+          4774
+          -
+          4774
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.kind.docker.DockerfileLine]
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          1471
+        </td>
+        <td>
+          4767
+          -
+          4783
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.docker.Dockerfile._lines_=
+        </td>
+        <td style="background: #AEF1AE">
+          Dockerfile.this._lines_=(Dockerfile.this._lines.:+[com.atomist.rug.kind.docker.DockerfileLine, Seq[com.atomist.rug.kind.docker.DockerfileLine]](_line)(collection.this.Seq.canBuildFrom[com.atomist.rug.kind.docker.DockerfileLine]))
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          1474
+        </td>
+        <td>
+          4865
+          -
+          4883
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;=
+        </td>
+        <td style="background: #AEF1AE">
+          pos.&gt;=(list.length)
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          1473
+        </td>
+        <td>
+          4872
+          -
+          4883
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.LinearSeqOptimized.length
+        </td>
+        <td style="background: #AEF1AE">
+          list.length
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          1476
+        </td>
+        <td>
+          4893
+          -
+          4909
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  &lt;synthetic&gt; &lt;artifact&gt; val x$3: List[T] = list;
+  immutable.this.List.apply[T](n).:::[T](x$3)
+}
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          1475
+        </td>
+        <td>
+          4898
+          -
+          4909
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.:::
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.List.apply[T](n).:::[T](x$3)
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          1485
+        </td>
+        <td>
+          4929
+          -
+          5128
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.LinearSeqOptimized.foldLeft
+        </td>
+        <td style="background: #AEF1AE">
+          list.zipWithIndex[T, List[(T, Int)]](immutable.this.List.canBuildFrom[(T, Int)]).foldLeft[List[T]](immutable.this.Nil)(((acc: List[T], tuple: (T, Int)) =&gt; tuple match {
+  case (_1: T, _2: Int)(T, Int)((item @ _), (idx @ _)) =&gt; if (idx.==(pos))
+    {
+      &lt;synthetic&gt; &lt;artifact&gt; val x$4: List[T] = acc;
+      immutable.this.List.apply[T](n, item).:::[T](x$4)
+    }
+  else
+    {
+      &lt;synthetic&gt; &lt;artifact&gt; val x$5: List[T] = acc;
+      immutable.this.List.apply[T](item).:::[T](x$5)
+    }
+}))
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          1484
+        </td>
+        <td>
+          4929
+          -
+          5128
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.LinearSeqOptimized.foldLeft
+        </td>
+        <td style="background: #AEF1AE">
+          list.zipWithIndex[T, List[(T, Int)]](immutable.this.List.canBuildFrom[(T, Int)]).foldLeft[List[T]](immutable.this.Nil)(((acc: List[T], tuple: (T, Int)) =&gt; tuple match {
+  case (_1: T, _2: Int)(T, Int)((item @ _), (idx @ _)) =&gt; if (idx.==(pos))
+    {
+      &lt;synthetic&gt; &lt;artifact&gt; val x$4: List[T] = acc;
+      immutable.this.List.apply[T](n, item).:::[T](x$4)
+    }
+  else
+    {
+      &lt;synthetic&gt; &lt;artifact&gt; val x$5: List[T] = acc;
+      immutable.this.List.apply[T](item).:::[T](x$5)
+    }
+}))
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          1478
+        </td>
+        <td>
+          4956
+          -
+          4965
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          1477
+        </td>
+        <td>
+          4934
+          -
+          4934
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[(T, Int)]
+        </td>
+      </tr><tr>
+        <td>
+          198
+        </td>
+        <td>
+          1483
+        </td>
+        <td>
+          5092
+          -
+          5110
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  &lt;synthetic&gt; &lt;artifact&gt; val x$5: List[T] = acc;
+  immutable.this.List.apply[T](item).:::[T](x$5)
+}
+        </td>
+      </tr><tr>
+        <td>
+          198
+        </td>
+        <td>
+          1479
+        </td>
+        <td>
+          5053
+          -
+          5063
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          idx.==(pos)
+        </td>
+      </tr><tr>
+        <td>
+          198
+        </td>
+        <td>
+          1482
+        </td>
+        <td>
+          5096
+          -
+          5110
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.:::
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.apply[T](item).:::[T](x$5)
+        </td>
+      </tr><tr>
+        <td>
+          198
+        </td>
+        <td>
+          1481
+        </td>
+        <td>
+          5065
+          -
+          5086
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  &lt;synthetic&gt; &lt;artifact&gt; val x$4: List[T] = acc;
+  immutable.this.List.apply[T](n, item).:::[T](x$4)
+}
+        </td>
+      </tr><tr>
+        <td>
+          198
+        </td>
+        <td>
+          1480
+        </td>
+        <td>
+          5069
+          -
+          5086
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.:::
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.apply[T](n, item).:::[T](x$4)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

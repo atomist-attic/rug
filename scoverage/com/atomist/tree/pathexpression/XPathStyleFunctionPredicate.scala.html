@@ -1,0 +1,897 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/pathexpression/XPathStyleFunctionPredicate.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.pathexpression
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.spi.TypeRegistry
+</span>4 <span style=''>import com.atomist.tree.TreeNode
+</span>5 <span style=''>import com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer
+</span>6 <span style=''>import XPathTypes._
+</span>7 <span style=''>import com.atomist.graph.GraphNode
+</span>8 <span style=''>import com.atomist.rug.runtime.js.ExecutionContext
+</span>9 <span style=''>import com.atomist.tree.utils.NodeUtils
+</span>10 <span style=''>
+</span>11 <span style=''>/**
+</span>12 <span style=''>  * Handles an XPath predicate based on a function call
+</span>13 <span style=''>  *
+</span>14 <span style=''>  * @param name function
+</span>15 <span style=''>  * @param args arguments to the function
+</span>16 <span style=''>  */
+</span>17 <span style=''>case class XPathStyleFunctionPredicate(override val name: String,
+</span>18 <span style=''>                                       args: Seq[FunctionArg],
+</span>19 <span style=''>                                       functionRegistry: FunctionRegistry = DefaultFunctionRegistry)
+</span>20 <span style=''>  extends Predicate {
+</span>21 <span style=''>
+</span>22 <span style=''>  val fun: Function = </span><span style='background: #AEF1AE'>functionRegistry.find(name, args).getOrElse(
+</span>23 <span style=''></span><span style='background: #AEF1AE'>    throw new IllegalArgumentException(s&quot;No function named [$name] with args [$args]: Function registry=\n$functionRegistry&quot;)
+</span>24 <span style=''></span><span style='background: #AEF1AE'>  )</span><span style=''>
+</span>25 <span style=''>
+</span>26 <span style=''>  def evaluate(tn: GraphNode,
+</span>27 <span style=''>               among: Seq[GraphNode],
+</span>28 <span style=''>               ee: ExpressionEngine,
+</span>29 <span style=''>               executionContext: ExecutionContext,
+</span>30 <span style=''>               nodePreparer: Option[NodePreparer]): Boolean = {
+</span>31 <span style=''>    val convertedArgs: Seq[Any] = </span><span style='background: #AEF1AE'>args.zipWithIndex.map(tup =&gt;
+</span>32 <span style=''></span><span style='background: #AEF1AE'>      convertToRequiredType(tup._1, fun.argTypes(tup._2), tn, ee, executionContext, nodePreparer))</span><span style=''>
+</span>33 <span style=''>    </span><span style='background: #AEF1AE'>fun.invoke(convertedArgs) == true</span><span style=''>
+</span>34 <span style=''>  }
+</span>35 <span style=''>
+</span>36 <span style=''>  private def convertToRequiredType(fa: FunctionArg, requiredType: XPathType,
+</span>37 <span style=''>                                    contextNode: GraphNode, ee: ExpressionEngine,
+</span>38 <span style=''>                                    ec: ExecutionContext, np: Option[NodePreparer]): Any =
+</span>39 <span style=''>    requiredType match {
+</span>40 <span style=''>      case String =&gt; </span><span style='background: #AEF1AE'>convertToString(fa, contextNode, ee, ec, np)</span><span style=''>
+</span>41 <span style=''>      case Boolean =&gt; </span><span style='background: #F0ADAD'>convertToBoolean(fa, contextNode, ee, ec, np)</span><span style=''>
+</span>42 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>???</span><span style=''>
+</span>43 <span style=''>    }
+</span>44 <span style=''>
+</span>45 <span style=''>  // See XPath spec 4.2
+</span>46 <span style=''>  private def convertToString(fa: FunctionArg, contextNode: GraphNode, ee: ExpressionEngine, ec: ExecutionContext, np: Option[NodePreparer]): String = {
+</span>47 <span style=''>    val value = fa match {
+</span>48 <span style=''>      case s: StringLiteralFunctionArg =&gt; </span><span style='background: #AEF1AE'>s.s</span><span style=''>
+</span>49 <span style=''>      case rpe: RelativePathFunctionArg =&gt; </span><span style='background: #AEF1AE'>ee.evaluate(contextNode, rpe.pe, ec, np)</span><span style=''> match {
+</span>50 <span style=''>        case Right(l) if </span><span style='background: #AEF1AE'>l.nonEmpty</span><span style=''> =&gt;
+</span>51 <span style=''>          </span><span style='background: #AEF1AE'>NodeUtils.value(l.head)</span><span style=''>
+</span>52 <span style=''>        case _ =&gt; </span><span style='background: #AEF1AE'>&quot;&quot;</span><span style=''>
+</span>53 <span style=''>      }
+</span>54 <span style=''>    }
+</span>55 <span style=''>    value
+</span>56 <span style=''>  }
+</span>57 <span style=''>
+</span>58 <span style=''>  private def convertToBoolean(fa: FunctionArg, contextNode: GraphNode, ee: ExpressionEngine, ec: ExecutionContext, np: Option[NodePreparer]): Boolean = fa match {
+</span>59 <span style=''>    case s: StringLiteralFunctionArg =&gt; </span><span style='background: #F0ADAD'>s.s == &quot;true&quot;</span><span style=''>
+</span>60 <span style=''>    case rpe: RelativePathFunctionArg =&gt; </span><span style='background: #F0ADAD'>ee.evaluate(contextNode, rpe.pe, ec, np)</span><span style=''> match {
+</span>61 <span style=''>      case Right(l) if </span><span style='background: #F0ADAD'>l.nonEmpty</span><span style=''> =&gt; </span><span style='background: #F0ADAD'>true</span><span style=''>
+</span>62 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>false</span><span style=''>
+</span>63 <span style=''>    }
+</span>64 <span style=''>  }
+</span>65 <span style=''>
+</span>66 <span style=''>}
+</span>67 <span style=''>
+</span>68 <span style=''>/**
+</span>69 <span style=''>  * Represents an XPath style function.
+</span>70 <span style=''>  */
+</span>71 <span style=''>trait Function {
+</span>72 <span style=''>
+</span>73 <span style=''>  def name: String
+</span>74 <span style=''>
+</span>75 <span style=''>  def argTypes: Seq[XPathType]
+</span>76 <span style=''>
+</span>77 <span style=''>  def invoke(convertedArgs: Seq[Any]): Any
+</span>78 <span style=''>}
+</span>79 <span style=''>
+</span>80 <span style=''>/**
+</span>81 <span style=''>  * Registry of known XPath style functions.
+</span>82 <span style=''>  */
+</span>83 <span style=''>trait FunctionRegistry {
+</span>84 <span style=''>
+</span>85 <span style=''>  /**
+</span>86 <span style=''>    * Find a function with the given name that will take these args
+</span>87 <span style=''>    */
+</span>88 <span style=''>  def find(name: String, args: Seq[FunctionArg]): Option[Function] =
+</span>89 <span style=''>  </span><span style='background: #AEF1AE'>functions.find(f =&gt; f.name == name)</span><span style=''>
+</span>90 <span style=''>
+</span>91 <span style=''>  def functions: Seq[Function]
+</span>92 <span style=''>
+</span>93 <span style=''>  override def toString: String = {
+</span>94 <span style=''>    </span><span style='background: #AEF1AE'>s&quot;${getClass.getName}\n${functions.map(f =&gt; f.name).sorted.mkString(&quot;\n&quot;)}&quot;</span><span style=''>
+</span>95 <span style=''>  }
+</span>96 <span style=''>
+</span>97 <span style=''>}
+</span>98 <span style=''>
+</span>99 <span style=''>object DefaultFunctionRegistry
+</span>100 <span style=''>  extends ReflectiveFunctionRegistry(StandardFunctions)
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          8599
+        </td>
+        <td>
+          769
+          -
+          773
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.XPathStyleFunctionPredicate.args
+        </td>
+        <td style="background: #AEF1AE">
+          XPathStyleFunctionPredicate.this.args
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          8598
+        </td>
+        <td>
+          763
+          -
+          767
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.XPathStyleFunctionPredicate.name
+        </td>
+        <td style="background: #AEF1AE">
+          XPathStyleFunctionPredicate.this.name
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          8601
+        </td>
+        <td>
+          741
+          -
+          915
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          XPathStyleFunctionPredicate.this.functionRegistry.find(XPathStyleFunctionPredicate.this.name, XPathStyleFunctionPredicate.this.args).getOrElse[com.atomist.tree.pathexpression.Function](throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;No function named [&quot;, &quot;] with args [&quot;, &quot;]: Function registry=\\n&quot;, &quot;&quot;).s(XPathStyleFunctionPredicate.this.name, XPathStyleFunctionPredicate.this.args, XPathStyleFunctionPredicate.this.functionRegistry)))
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          8600
+        </td>
+        <td>
+          790
+          -
+          911
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;No function named [&quot;, &quot;] with args [&quot;, &quot;]: Function registry=\\n&quot;, &quot;&quot;).s(XPathStyleFunctionPredicate.this.name, XPathStyleFunctionPredicate.this.args, XPathStyleFunctionPredicate.this.functionRegistry))
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          8608
+        </td>
+        <td>
+          1171
+          -
+          1298
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          XPathStyleFunctionPredicate.this.args.zipWithIndex[com.atomist.tree.pathexpression.FunctionArg, Seq[(com.atomist.tree.pathexpression.FunctionArg, Int)]](collection.this.Seq.canBuildFrom[(com.atomist.tree.pathexpression.FunctionArg, Int)]).map[Any, Seq[Any]](((tup: (com.atomist.tree.pathexpression.FunctionArg, Int)) =&gt; XPathStyleFunctionPredicate.this.convertToRequiredType(tup._1, XPathStyleFunctionPredicate.this.fun.argTypes.apply(tup._2), tn, ee, executionContext, nodePreparer)))(collection.this.Seq.canBuildFrom[Any])
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          8602
+        </td>
+        <td>
+          1176
+          -
+          1176
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[(com.atomist.tree.pathexpression.FunctionArg, Int)]
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          8607
+        </td>
+        <td>
+          1192
+          -
+          1192
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Any]
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          8603
+        </td>
+        <td>
+          1228
+          -
+          1234
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          tup._1
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          8606
+        </td>
+        <td>
+          1206
+          -
+          1297
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.XPathStyleFunctionPredicate.convertToRequiredType
+        </td>
+        <td style="background: #AEF1AE">
+          XPathStyleFunctionPredicate.this.convertToRequiredType(tup._1, XPathStyleFunctionPredicate.this.fun.argTypes.apply(tup._2), tn, ee, executionContext, nodePreparer)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          8605
+        </td>
+        <td>
+          1236
+          -
+          1256
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #AEF1AE">
+          XPathStyleFunctionPredicate.this.fun.argTypes.apply(tup._2)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          8604
+        </td>
+        <td>
+          1249
+          -
+          1255
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          tup._2
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          8609
+        </td>
+        <td>
+          1303
+          -
+          1336
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Any.==
+        </td>
+        <td style="background: #AEF1AE">
+          XPathStyleFunctionPredicate.this.fun.invoke(convertedArgs).==(true)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          8610
+        </td>
+        <td>
+          1639
+          -
+          1683
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.XPathStyleFunctionPredicate.convertToString
+        </td>
+        <td style="background: #AEF1AE">
+          XPathStyleFunctionPredicate.this.convertToString(fa, contextNode, ee, ec, np)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          8611
+        </td>
+        <td>
+          1706
+          -
+          1751
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.XPathStyleFunctionPredicate.convertToBoolean
+        </td>
+        <td style="background: #F0ADAD">
+          XPathStyleFunctionPredicate.this.convertToBoolean(fa, contextNode, ee, ec, np)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          8612
+        </td>
+        <td>
+          1768
+          -
+          1771
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          8613
+        </td>
+        <td>
+          2025
+          -
+          2028
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.StringLiteralFunctionArg.s
+        </td>
+        <td style="background: #AEF1AE">
+          s.s
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          8615
+        </td>
+        <td>
+          2072
+          -
+          2112
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExpressionEngine.evaluate
+        </td>
+        <td style="background: #AEF1AE">
+          ee.evaluate(contextNode, rpe.pe, ec, np)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          8614
+        </td>
+        <td>
+          2097
+          -
+          2103
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.RelativePathFunctionArg.pe
+        </td>
+        <td style="background: #AEF1AE">
+          rpe.pe
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          8616
+        </td>
+        <td>
+          2146
+          -
+          2156
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          l.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          8618
+        </td>
+        <td>
+          2170
+          -
+          2193
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.NodeUtils.value
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.utils.NodeUtils.value(l.head)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          8617
+        </td>
+        <td>
+          2186
+          -
+          2192
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          l.head
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          8619
+        </td>
+        <td>
+          2212
+          -
+          2214
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          8620
+        </td>
+        <td>
+          2448
+          -
+          2461
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          s.s.==(&quot;true&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          8621
+        </td>
+        <td>
+          2528
+          -
+          2534
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.RelativePathFunctionArg.pe
+        </td>
+        <td style="background: #F0ADAD">
+          rpe.pe
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          8622
+        </td>
+        <td>
+          2503
+          -
+          2543
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.pathexpression.ExpressionEngine.evaluate
+        </td>
+        <td style="background: #F0ADAD">
+          ee.evaluate(contextNode, rpe.pe, ec, np)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          8624
+        </td>
+        <td>
+          2589
+          -
+          2593
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          8623
+        </td>
+        <td>
+          2575
+          -
+          2585
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #F0ADAD">
+          l.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          8625
+        </td>
+        <td>
+          2610
+          -
+          2615
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          8627
+        </td>
+        <td>
+          3027
+          -
+          3062
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #AEF1AE">
+          FunctionRegistry.this.functions.find(((f: com.atomist.tree.pathexpression.Function) =&gt; f.name.==(name)))
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          8626
+        </td>
+        <td>
+          3047
+          -
+          3061
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          f.name.==(name)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          8630
+        </td>
+        <td>
+          3210
+          -
+          3211
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          8633
+        </td>
+        <td>
+          3136
+          -
+          3211
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;\\n&quot;, &quot;&quot;).s(FunctionRegistry.this.getClass().getName(), FunctionRegistry.this.functions.map[String, Seq[String]](((f: com.atomist.tree.pathexpression.Function) =&gt; f.name))(collection.this.Seq.canBuildFrom[String]).sorted[String](math.this.Ordering.String).mkString(&quot;\n&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          8629
+        </td>
+        <td>
+          3157
+          -
+          3160
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          8632
+        </td>
+        <td>
+          3161
+          -
+          3209
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          FunctionRegistry.this.functions.map[String, Seq[String]](((f: com.atomist.tree.pathexpression.Function) =&gt; f.name))(collection.this.Seq.canBuildFrom[String]).sorted[String](math.this.Ordering.String).mkString(&quot;\n&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          8631
+        </td>
+        <td>
+          3140
+          -
+          3156
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getName
+        </td>
+        <td style="background: #AEF1AE">
+          FunctionRegistry.this.getClass().getName()
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          8628
+        </td>
+        <td>
+          3138
+          -
+          3139
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,3762 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/js/PlanBuilder.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.js
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.param.{ParameterValue, SimpleParameterValue}
+</span>5 <span style=''>import com.atomist.rug.runtime.Rug
+</span>6 <span style=''>import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode
+</span>7 <span style=''>import com.atomist.rug.spi.Handlers.Instruction.{NonrespondableInstruction, Respond, RespondableInstruction}
+</span>8 <span style=''>import com.atomist.rug.spi.Handlers._
+</span>9 <span style=''>import com.atomist.rug.{BadPlanException, InvalidHandlerResultException}
+</span>10 <span style=''>import com.atomist.util.JsonUtils
+</span>11 <span style=''>import jdk.nashorn.api.scripting.ScriptObjectMirror
+</span>12 <span style=''>import jdk.nashorn.internal.runtime.{ScriptRuntime, Undefined}
+</span>13 <span style=''>
+</span>14 <span style=''>/**
+</span>15 <span style=''>  * Constructs plans from Nashorn response to a Handler/handle operation
+</span>16 <span style=''>  */
+</span>17 <span style=''>object ConstructPlan {
+</span>18 <span style=''>
+</span>19 <span style=''>  def apply(jsObj: Any, returningRug: Some[Rug]): Option[Plan] = {
+</span>20 <span style=''>    jsObj match {
+</span>21 <span style=''>      case o: ScriptObjectMirror =&gt; </span><span style='background: #AEF1AE'>Some(new PlanBuilder().constructPlan(o, returningRug))</span><span style=''>
+</span>22 <span style=''>      case other =&gt; </span><span style='background: #F0ADAD'>throw new InvalidHandlerResultException(s&quot;Could not construct Plan from: $other&quot;)</span><span style=''>
+</span>23 <span style=''>    }
+</span>24 <span style=''>  }
+</span>25 <span style=''>}
+</span>26 <span style=''>
+</span>27 <span style=''>class PlanBuilder {
+</span>28 <span style=''>
+</span>29 <span style=''>  def constructPlan(jsPlan: ScriptObjectMirror, returningRug: Option[Rug]): Plan = {
+</span>30 <span style=''>
+</span>31 <span style=''>    val jsMessages = </span><span style='background: #AEF1AE'>jsPlan.getMember(&quot;messages&quot;)</span><span style=''> match {
+</span>32 <span style=''>      case o: ScriptObjectMirror =&gt; </span><span style='background: #AEF1AE'>o.values().toArray.toList</span><span style=''>
+</span>33 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>Nil</span><span style=''>
+</span>34 <span style=''>    }
+</span>35 <span style=''>    val messages: Seq[Message] = </span><span style='background: #AEF1AE'>jsMessages.map { message =&gt;
+</span>36 <span style=''></span><span style='background: #AEF1AE'>      val m = message.asInstanceOf[ScriptObjectMirror]
+</span>37 <span style=''></span><span style='background: #AEF1AE'>      constructMessage(m)
+</span>38 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>39 <span style=''>    val instructions = </span><span style='background: #AEF1AE'>jsPlan.getMember(&quot;instructions&quot;)</span><span style=''> match {
+</span>40 <span style=''>      case u: Undefined =&gt; </span><span style='background: #F0ADAD'>Nil</span><span style=''>
+</span>41 <span style=''>      case jsInstructions: ScriptObjectMirror =&gt;
+</span>42 <span style=''>        </span><span style='background: #AEF1AE'>jsInstructions.values().toArray.toList.map { respondable =&gt;
+</span>43 <span style=''></span><span style='background: #AEF1AE'>          constructRespondable(respondable.asInstanceOf[ScriptObjectMirror], returningRug)
+</span>44 <span style=''></span><span style='background: #AEF1AE'>        }</span><span style=''>
+</span>45 <span style=''>    }
+</span>46 <span style=''>
+</span>47 <span style=''>    val lifecycle = </span><span style='background: #AEF1AE'>messages.collect { case o: LifecycleMessage =&gt; o }</span><span style=''>
+</span>48 <span style=''>    val local = </span><span style='background: #AEF1AE'>messages.collect { case o: LocallyRenderedMessage =&gt; o }</span><span style=''>
+</span>49 <span style=''>
+</span>50 <span style=''>    </span><span style='background: #AEF1AE'>Plan(returningRug, lifecycle, local, instructions, nativeObject = Some(jsPlan))</span><span style=''>
+</span>51 <span style=''>  }
+</span>52 <span style=''>
+</span>53 <span style=''>  def constructMessage(jsMessage: ScriptObjectMirror): Message = {
+</span>54 <span style=''>
+</span>55 <span style=''>    </span><span style='background: #AEF1AE'>jsMessage.getMember(&quot;kind&quot;)</span><span style=''> match {
+</span>56 <span style=''>      case &quot;response&quot; | &quot;directed&quot; =&gt;
+</span>57 <span style=''>        val messageBody = </span><span style='background: #AEF1AE'>jsMessage.getMember(&quot;body&quot;)</span><span style=''> match {
+</span>58 <span style=''>          case json: ScriptObjectMirror =&gt;
+</span>59 <span style=''>            </span><span style='background: #F0ADAD'>throw new UnsupportedOperationException(&quot;Message body must be a string&quot;)</span><span style=''>
+</span>60 <span style=''>          case text: String =&gt; text
+</span>61 <span style=''>          case _ =&gt;
+</span>62 <span style=''>            </span><span style='background: #F0ADAD'>throw new InvalidHandlerResultException(s&quot;Cannot determine message content from body: ${jsMessage.getMember(&quot;body&quot;)}&quot;)</span><span style=''>
+</span>63 <span style=''>        }
+</span>64 <span style=''>        val contentType = </span><span style='background: #AEF1AE'>jsMessage.getMember(&quot;contentType&quot;)</span><span style=''> match {
+</span>65 <span style=''>          case c: String =&gt; c
+</span>66 <span style=''>          case _ =&gt; </span><span style='background: #F0ADAD'>throw new InvalidHandlerResultException(s&quot;Message must have a `contentType`&quot;)</span><span style=''>
+</span>67 <span style=''>        }
+</span>68 <span style=''>        val usernames = </span><span style='background: #AEF1AE'>jsMessage.getMember(&quot;usernames&quot;)</span><span style=''> match {
+</span>69 <span style=''>          case _: Undefined =&gt; </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>70 <span style=''>          case usernames: ScriptObjectMirror =&gt;
+</span>71 <span style=''>            </span><span style='background: #AEF1AE'>usernames.values().toArray.toSeq.asInstanceOf[Seq[String]]</span><span style=''>
+</span>72 <span style=''>        }
+</span>73 <span style=''>        val channelNames = </span><span style='background: #AEF1AE'>jsMessage.getMember(&quot;channelNames&quot;)</span><span style=''> match {
+</span>74 <span style=''>          case _: Undefined =&gt; </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>75 <span style=''>          case channelNames: ScriptObjectMirror =&gt;
+</span>76 <span style=''>            </span><span style='background: #AEF1AE'>channelNames.values().toArray.toSeq.asInstanceOf[Seq[String]]</span><span style=''>
+</span>77 <span style=''>        }
+</span>78 <span style=''>        val instructions = </span><span style='background: #AEF1AE'>jsMessage.getMember(&quot;instructions&quot;)</span><span style=''> match {
+</span>79 <span style=''>          case _: Undefined =&gt; </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>80 <span style=''>          case jsInstructions: ScriptObjectMirror =&gt;
+</span>81 <span style=''>            </span><span style='background: #AEF1AE'>jsInstructions.values().toArray.toList.map { presentable =&gt;
+</span>82 <span style=''></span><span style='background: #AEF1AE'>              constructPresentable(presentable.asInstanceOf[ScriptObjectMirror])
+</span>83 <span style=''></span><span style='background: #AEF1AE'>            }</span><span style=''>
+</span>84 <span style=''>        }
+</span>85 <span style=''>        </span><span style='background: #AEF1AE'>LocallyRenderedMessage(messageBody, contentType, channelNames, usernames, instructions)</span><span style=''>
+</span>86 <span style=''>
+</span>87 <span style=''>      case &quot;lifecycle&quot; =&gt;
+</span>88 <span style=''>        val instructions = </span><span style='background: #AEF1AE'>jsMessage.getMember(&quot;instructions&quot;)</span><span style=''> match {
+</span>89 <span style=''>          case _: Undefined =&gt; </span><span style='background: #F0ADAD'>Nil</span><span style=''>
+</span>90 <span style=''>          case jsInstructions: ScriptObjectMirror =&gt;
+</span>91 <span style=''>            </span><span style='background: #AEF1AE'>jsInstructions.values().toArray.toList.map { presentable =&gt;
+</span>92 <span style=''></span><span style='background: #AEF1AE'>              constructPresentable(presentable.asInstanceOf[ScriptObjectMirror])
+</span>93 <span style=''></span><span style='background: #AEF1AE'>            }</span><span style=''>
+</span>94 <span style=''>        }
+</span>95 <span style=''>
+</span>96 <span style=''>        val node = </span><span style='background: #AEF1AE'>jsMessage.getMember(&quot;node&quot;)</span><span style=''> match {
+</span>97 <span style=''>          case t: GraphNode =&gt; t
+</span>98 <span style=''>          case som: ScriptObjectMirror =&gt;
+</span>99 <span style=''>            </span><span style='background: #AEF1AE'>NashornMapBackedGraphNode.toGraphNode(som).getOrElse(
+</span>100 <span style=''></span><span style='background: #AEF1AE'>              </span><span style='background: #F0ADAD'>throw new InvalidHandlerResultException(s&quot;Lifecycle message node script could not be converted to a GraphNode: Invalid argument: $som&quot;)</span><span style='background: #AEF1AE'>
+</span>101 <span style=''></span><span style='background: #AEF1AE'>            )</span><span style=''>
+</span>102 <span style=''>          case a =&gt;
+</span>103 <span style=''>            </span><span style='background: #F0ADAD'>throw new InvalidHandlerResultException(s&quot;Lifecycle messages must contain a GraphNode, actually: $a&quot;)</span><span style=''>
+</span>104 <span style=''>        }
+</span>105 <span style=''>
+</span>106 <span style=''>        val id = </span><span style='background: #AEF1AE'>jsMessage.getMember(&quot;lifecycleId&quot;)</span><span style=''> match {
+</span>107 <span style=''>          case s: String =&gt; s
+</span>108 <span style=''>          case _ =&gt; </span><span style='background: #F0ADAD'>throw new InvalidHandlerResultException(&quot;Lifecycle messages must contain a lifecycleId&quot;)</span><span style=''>
+</span>109 <span style=''>        }
+</span>110 <span style=''>        </span><span style='background: #AEF1AE'>LifecycleMessage(node, instructions, id)</span><span style=''>
+</span>111 <span style=''>
+</span>112 <span style=''>      case _: Undefined =&gt; </span><span style='background: #F0ADAD'>throw new InvalidHandlerResultException(s&quot;A message must have a kind: $jsMessage&quot;)</span><span style=''>
+</span>113 <span style=''>    }
+</span>114 <span style=''>  }
+</span>115 <span style=''>
+</span>116 <span style=''>  def constructPresentable(jsPresentable: ScriptObjectMirror): Presentable = {
+</span>117 <span style=''>    val instruction = </span><span style='background: #AEF1AE'>jsPresentable.getMember(&quot;instruction&quot;)</span><span style=''> match {
+</span>118 <span style=''>      case o: ScriptObjectMirror =&gt; </span><span style='background: #AEF1AE'>constructInstruction(o)</span><span style=''>
+</span>119 <span style=''>      case x =&gt; </span><span style='background: #F0ADAD'>throw new InvalidHandlerResultException(s&quot;A Message Presentable must contain an 'Instruction', actually $x&quot;)</span><span style=''>
+</span>120 <span style=''>    }
+</span>121 <span style=''>    val label = </span><span style='background: #AEF1AE'>jsPresentable.getMember(&quot;label&quot;)</span><span style=''> match {
+</span>122 <span style=''>      case x: String =&gt; </span><span style='background: #AEF1AE'>Some(x)</span><span style=''>
+</span>123 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>124 <span style=''>    }
+</span>125 <span style=''>    val id = </span><span style='background: #AEF1AE'>jsPresentable.getMember(&quot;id&quot;)</span><span style=''> match {
+</span>126 <span style=''>      case x: String =&gt; </span><span style='background: #AEF1AE'>Some(x)</span><span style=''>
+</span>127 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>128 <span style=''>    }
+</span>129 <span style=''>    </span><span style='background: #AEF1AE'>Presentable(instruction, label, id)</span><span style=''>
+</span>130 <span style=''>  }
+</span>131 <span style=''>
+</span>132 <span style=''>  def constructRespondable(jsRespondable: ScriptObjectMirror, returningRug: Option[Rug]): Plannable = {
+</span>133 <span style=''>    val instruction: Instruction = </span><span style='background: #AEF1AE'>jsRespondable.getMember(&quot;instruction&quot;)</span><span style=''> match {
+</span>134 <span style=''>      case u: Undefined =&gt;
+</span>135 <span style=''>        </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;No instruction found in $jsRespondable&quot;)</span><span style=''>
+</span>136 <span style=''>      case o: ScriptObjectMirror =&gt;
+</span>137 <span style=''>        </span><span style='background: #AEF1AE'>constructInstruction(o)</span><span style=''>
+</span>138 <span style=''>    }
+</span>139 <span style=''>    val onSuccess: Option[Callback] = </span><span style='background: #AEF1AE'>constructCallback(jsRespondable.getMember(&quot;onSuccess&quot;), returningRug)</span><span style=''>
+</span>140 <span style=''>    val onError: Option[Callback] = </span><span style='background: #AEF1AE'>constructCallback(jsRespondable.getMember(&quot;onError&quot;), returningRug)</span><span style=''>
+</span>141 <span style=''>    instruction match {
+</span>142 <span style=''>      case nr: NonrespondableInstruction =&gt; </span><span style='background: #F0ADAD'>Nonrespondable(nr)</span><span style=''>
+</span>143 <span style=''>      case r: RespondableInstruction =&gt; </span><span style='background: #AEF1AE'>Respondable(r, onSuccess, onError)</span><span style=''>
+</span>144 <span style=''>    }
+</span>145 <span style=''>  }
+</span>146 <span style=''>
+</span>147 <span style=''>  def constructInstruction(jsInstruction: ScriptObjectMirror): Instruction = {
+</span>148 <span style=''>    val jsInstructionKind = </span><span style='background: #AEF1AE'>jsInstruction.getMember(&quot;kind&quot;)</span><span style=''> match {
+</span>149 <span style=''>      case kind: String =&gt; kind
+</span>150 <span style=''>      case x =&gt; </span><span style='background: #F0ADAD'>throw new InvalidHandlerResultException(s&quot;An Instruction must have a valid 'kind', actually: $x&quot;)</span><span style=''>
+</span>151 <span style=''>    }
+</span>152 <span style=''>    val detail = </span><span style='background: #AEF1AE'>constructInstructionDetail(jsInstruction)</span><span style=''>
+</span>153 <span style=''>    </span><span style='background: #AEF1AE'>Instruction.from(jsInstructionKind, detail)</span><span style=''>
+</span>154 <span style=''>  }
+</span>155 <span style=''>
+</span>156 <span style=''>  def constructInstructionDetail(jsInstruction: ScriptObjectMirror): Instruction.Detail = {
+</span>157 <span style=''>    val parameters: Seq[ParameterValue] = </span><span style='background: #AEF1AE'>jsInstruction.getMember(&quot;parameters&quot;)</span><span style=''> match {
+</span>158 <span style=''>      case o: ScriptObjectMirror =&gt;
+</span>159 <span style=''>        val filtered = </span><span style='background: #AEF1AE'>o.keySet().toArray.filter(key =&gt; {
+</span>160 <span style=''></span><span style='background: #AEF1AE'>          val name = key.asInstanceOf[String]
+</span>161 <span style=''></span><span style='background: #AEF1AE'>          o.getMember(name) match {
+</span>162 <span style=''></span><span style='background: #AEF1AE'>            case null =&gt; false
+</span>163 <span style=''></span><span style='background: #AEF1AE'>            case ScriptRuntime.UNDEFINED =&gt; false
+</span>164 <span style=''></span><span style='background: #AEF1AE'>            case o: ScriptObjectMirror if o.isFunction =&gt; false
+</span>165 <span style=''></span><span style='background: #AEF1AE'>            case _ =&gt; true
+</span>166 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>167 <span style=''></span><span style='background: #AEF1AE'>        })</span><span style=''>
+</span>168 <span style=''>
+</span>169 <span style=''>        </span><span style='background: #AEF1AE'>filtered.map { key =&gt;
+</span>170 <span style=''></span><span style='background: #AEF1AE'>          val name = key.asInstanceOf[String]
+</span>171 <span style=''></span><span style='background: #AEF1AE'>          val value = o.getMember(name)
+</span>172 <span style=''></span><span style='background: #AEF1AE'>          SimpleParameterValue(name,
+</span>173 <span style=''></span><span style='background: #AEF1AE'>            value match {
+</span>174 <span style=''></span><span style='background: #AEF1AE'>              case s: String =&gt; s
+</span>175 <span style=''></span><span style='background: #AEF1AE'>              case o =&gt; JsonUtils.toJson(o)
+</span>176 <span style=''></span><span style='background: #AEF1AE'>            })
+</span>177 <span style=''></span><span style='background: #AEF1AE'>        }</span><span style=''>
+</span>178 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>179 <span style=''>    }
+</span>180 <span style=''>
+</span>181 <span style=''>    val (name, coordinates) = jsInstruction.getMember(&quot;name&quot;) match {
+</span>182 <span style=''>      case name: String =&gt;
+</span>183 <span style=''>        (name, None)
+</span>184 <span style=''>      case o: ScriptObjectMirror =&gt;
+</span>185 <span style=''>        val name = o.getMember(&quot;name&quot;).asInstanceOf[String]
+</span>186 <span style=''>        val coordinates = MavenCoordinate(
+</span>187 <span style=''>          o.getMember(&quot;group&quot;).asInstanceOf[String],
+</span>188 <span style=''>          o.getMember(&quot;artifact&quot;).asInstanceOf[String])
+</span>189 <span style=''>        (name, Some(coordinates))
+</span>190 <span style=''>      case x =&gt; throw new InvalidHandlerResultException(s&quot;Instruction name cannot be $x&quot;)
+</span>191 <span style=''>    }
+</span>192 <span style=''>
+</span>193 <span style=''>    val project_name = </span><span style='background: #AEF1AE'>jsInstruction.getMember(&quot;project&quot;)</span><span style=''> match {
+</span>194 <span style=''>      case project_name: String =&gt; </span><span style='background: #AEF1AE'>Some(project_name)</span><span style=''>
+</span>195 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>196 <span style=''>    }
+</span>197 <span style=''>
+</span>198 <span style=''>    val commitMessage = </span><span style='background: #AEF1AE'>jsInstruction.getMember(&quot;commitMessage&quot;)</span><span style=''> match {
+</span>199 <span style=''>      case msg: String =&gt; </span><span style='background: #AEF1AE'>Some(msg)</span><span style=''>
+</span>200 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>201 <span style=''>    }
+</span>202 <span style=''>
+</span>203 <span style=''>    val target = </span><span style='background: #AEF1AE'>jsInstruction.getMember(&quot;target&quot;)</span><span style=''> match {
+</span>204 <span style=''>      case o: ScriptObjectMirror if </span><span style='background: #AEF1AE'>o.hasMember(&quot;baseBranch&quot;)</span><span style=''> =&gt;
+</span>205 <span style=''>        val baseBranch = </span><span style='background: #AEF1AE'>o.getMember(&quot;baseBranch&quot;).asInstanceOf[String]</span><span style=''>
+</span>206 <span style=''>        </span><span style='background: #AEF1AE'>o.getMember(&quot;kind&quot;)</span><span style=''> match {
+</span>207 <span style=''>          case &quot;github-pull-request&quot; =&gt;
+</span>208 <span style=''>            val title = if (</span><span style='background: #AEF1AE'>o.hasMember(&quot;title&quot;)</span><span style=''>) </span><span style='background: #AEF1AE'>Some(o.getMember(&quot;title&quot;).asInstanceOf[String])</span><span style=''> else </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>209 <span style=''>            val body = if (</span><span style='background: #AEF1AE'>o.hasMember(&quot;body&quot;)</span><span style=''>) </span><span style='background: #AEF1AE'>Some(o.getMember(&quot;body&quot;).asInstanceOf[String])</span><span style=''> else </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>210 <span style=''>            val headBranch = if (</span><span style='background: #AEF1AE'>o.hasMember(&quot;headBranch&quot;)</span><span style=''>) </span><span style='background: #AEF1AE'>Some(o.getMember(&quot;headBranch&quot;).asInstanceOf[String])</span><span style=''> else </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>211 <span style=''>            </span><span style='background: #AEF1AE'>Some(GitHubPullRequest(baseBranch, commitMessage, headBranch, title, body))</span><span style=''>
+</span>212 <span style=''>          case &quot;github-branch&quot; =&gt;
+</span>213 <span style=''>            val headBranch = </span><span style='background: #AEF1AE'>o.getMember(&quot;headBranch&quot;)</span><span style=''> match {
+</span>214 <span style=''>              case b: String =&gt; </span><span style='background: #AEF1AE'>Some(b)</span><span style=''>
+</span>215 <span style=''>              case _ =&gt; </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>216 <span style=''>            }
+</span>217 <span style=''>            </span><span style='background: #AEF1AE'>Some(GitHubBranch(baseBranch, commitMessage, headBranch))</span><span style=''>
+</span>218 <span style=''>          case k =&gt; </span><span style='background: #F0ADAD'>throw new BadPlanException(s&quot;Unsupported EditorTarget kind: $k&quot;)</span><span style=''>
+</span>219 <span style=''>        }
+</span>220 <span style=''>      case _ =&gt;
+</span>221 <span style=''>        </span><span style='background: #AEF1AE'>Some(DefaultTarget(commitMessage))</span><span style=''>
+</span>222 <span style=''>    }
+</span>223 <span style=''>
+</span>224 <span style=''>    </span><span style='background: #AEF1AE'>Instruction.Detail(name, coordinates, parameters, project_name, target)</span><span style=''>
+</span>225 <span style=''>  }
+</span>226 <span style=''>
+</span>227 <span style=''>  def constructCallback(callback: Object, returningRug: Option[Rug]): Option[Callback] = {
+</span>228 <span style=''>    callback match {
+</span>229 <span style=''>      case jsOnSuccess: ScriptObjectMirror =&gt;
+</span>230 <span style=''>        val callback = </span><span style='background: #AEF1AE'>jsOnSuccess.getMember(&quot;kind&quot;)</span><span style=''> match {
+</span>231 <span style=''>          case &quot;response&quot; | &quot;lifecycle&quot; | &quot;directed&quot; =&gt; </span><span style='background: #AEF1AE'>constructMessage(jsOnSuccess)</span><span style=''>
+</span>232 <span style=''>          case _: String =&gt; </span><span style='background: #AEF1AE'>Respond(constructInstructionDetail(jsOnSuccess))</span><span style=''>
+</span>233 <span style=''>          case _ =&gt;
+</span>234 <span style=''>            if (</span><span style='background: #AEF1AE'>jsOnSuccess.hasMember(&quot;messages&quot;) || </span><span style='background: #F0ADAD'>jsOnSuccess.hasMember(&quot;instructions&quot;)</span><span style=''>) {
+</span>235 <span style=''>              </span><span style='background: #AEF1AE'>constructPlan(jsOnSuccess, returningRug)</span><span style=''>
+</span>236 <span style=''>            }
+</span>237 <span style=''>            else {
+</span>238 <span style=''>              </span><span style='background: #F0ADAD'>throw new InvalidHandlerResultException(s&quot;Cannot create CallBack from: $jsOnSuccess&quot;)</span><span style=''>
+</span>239 <span style=''>            }
+</span>240 <span style=''>        }
+</span>241 <span style=''>        </span><span style='background: #AEF1AE'>Option(callback)</span><span style=''>
+</span>242 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>243 <span style=''>    }
+</span>244 <span style=''>  }
+</span>245 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          3832
+        </td>
+        <td>
+          835
+          -
+          889
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.spi.Handlers.Plan](new PlanBuilder().constructPlan(o, returningRug))
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          3831
+        </td>
+        <td>
+          840
+          -
+          888
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.PlanBuilder.constructPlan
+        </td>
+        <td style="background: #AEF1AE">
+          new PlanBuilder().constructPlan(o, returningRug)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          3833
+        </td>
+        <td>
+          910
+          -
+          991
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.InvalidHandlerResultException(scala.StringContext.apply(&quot;Could not construct Plan from: &quot;, &quot;&quot;).s(other))
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          3834
+        </td>
+        <td>
+          1133
+          -
+          1161
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsPlan.getMember(&quot;messages&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3836
+        </td>
+        <td>
+          1206
+          -
+          1231
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toList
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[Object](o.values().toArray()).toList
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3835
+        </td>
+        <td>
+          1206
+          -
+          1224
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Collection.toArray
+        </td>
+        <td style="background: #AEF1AE">
+          o.values().toArray()
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          3837
+        </td>
+        <td>
+          1248
+          -
+          1251
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3841
+        </td>
+        <td>
+          1291
+          -
+          1405
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.immutable.List.map
+        </td>
+        <td style="background: #AEF1AE">
+          jsMessages.map[com.atomist.rug.spi.Handlers.Message, Seq[com.atomist.rug.spi.Handlers.Message]](((message: Object) =&gt; {
+  val m: jdk.nashorn.api.scripting.ScriptObjectMirror = message.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror];
+  PlanBuilder.this.constructMessage(m)
+}))(immutable.this.List.canBuildFrom[com.atomist.rug.spi.Handlers.Message])
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          3840
+        </td>
+        <td>
+          1306
+          -
+          1306
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[com.atomist.rug.spi.Handlers.Message]
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          3838
+        </td>
+        <td>
+          1333
+          -
+          1373
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          message.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror]
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          3839
+        </td>
+        <td>
+          1380
+          -
+          1399
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.PlanBuilder.constructMessage
+        </td>
+        <td style="background: #AEF1AE">
+          PlanBuilder.this.constructMessage(m)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          3842
+        </td>
+        <td>
+          1429
+          -
+          1461
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsPlan.getMember(&quot;instructions&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          3843
+        </td>
+        <td>
+          1497
+          -
+          1500
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          3848
+        </td>
+        <td>
+          1558
+          -
+          1718
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.immutable.List.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[Object](jsInstructions.values().toArray()).toList.map[com.atomist.rug.spi.Handlers.Plannable, List[com.atomist.rug.spi.Handlers.Plannable]](((respondable: Object) =&gt; PlanBuilder.this.constructRespondable(respondable.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror], returningRug)))(immutable.this.List.canBuildFrom[com.atomist.rug.spi.Handlers.Plannable])
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          3844
+        </td>
+        <td>
+          1558
+          -
+          1589
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Collection.toArray
+        </td>
+        <td style="background: #AEF1AE">
+          jsInstructions.values().toArray()
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          3847
+        </td>
+        <td>
+          1601
+          -
+          1601
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[com.atomist.rug.spi.Handlers.Plannable]
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          3845
+        </td>
+        <td>
+          1649
+          -
+          1693
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          respondable.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror]
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          3846
+        </td>
+        <td>
+          1628
+          -
+          1708
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.PlanBuilder.constructRespondable
+        </td>
+        <td style="background: #AEF1AE">
+          PlanBuilder.this.constructRespondable(respondable.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror], returningRug)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          3851
+        </td>
+        <td>
+          1746
+          -
+          1796
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          messages.collect[com.atomist.rug.spi.Handlers.LifecycleMessage, Seq[com.atomist.rug.spi.Handlers.LifecycleMessage]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.rug.spi.Handlers.Message,com.atomist.rug.spi.Handlers.LifecycleMessage] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.rug.spi.Handlers.Message =&gt; com.atomist.rug.spi.Handlers.LifecycleMessage&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.rug.spi.Handlers.Message, B1 &gt;: com.atomist.rug.spi.Handlers.LifecycleMessage](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[com.atomist.rug.spi.Handlers.Message]: com.atomist.rug.spi.Handlers.Message): com.atomist.rug.spi.Handlers.Message @unchecked) match {
+      case (o @ (_: com.atomist.rug.spi.Handlers.LifecycleMessage)) =&gt; o
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: com.atomist.rug.spi.Handlers.Message): Boolean = ((x1.asInstanceOf[com.atomist.rug.spi.Handlers.Message]: com.atomist.rug.spi.Handlers.Message): com.atomist.rug.spi.Handlers.Message @unchecked) match {
+      case (o @ (_: com.atomist.rug.spi.Handlers.LifecycleMessage)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.rug.spi.Handlers.Message,com.atomist.rug.spi.Handlers.LifecycleMessage]))(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.LifecycleMessage])
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          3850
+        </td>
+        <td>
+          1763
+          -
+          1763
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.LifecycleMessage]
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          3849
+        </td>
+        <td>
+          1763
+          -
+          1763
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.PlanBuilder.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          3854
+        </td>
+        <td>
+          1813
+          -
+          1869
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          messages.collect[com.atomist.rug.spi.Handlers.LocallyRenderedMessage, Seq[com.atomist.rug.spi.Handlers.LocallyRenderedMessage]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.rug.spi.Handlers.Message,com.atomist.rug.spi.Handlers.LocallyRenderedMessage] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.rug.spi.Handlers.Message =&gt; com.atomist.rug.spi.Handlers.LocallyRenderedMessage&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.rug.spi.Handlers.Message, B1 &gt;: com.atomist.rug.spi.Handlers.LocallyRenderedMessage](x2: A1, default: A1 =&gt; B1): B1 = ((x2.asInstanceOf[com.atomist.rug.spi.Handlers.Message]: com.atomist.rug.spi.Handlers.Message): com.atomist.rug.spi.Handlers.Message @unchecked) match {
+      case (o @ (_: com.atomist.rug.spi.Handlers.LocallyRenderedMessage)) =&gt; o
+      case (defaultCase$ @ _) =&gt; default.apply(x2)
+    };
+    final def isDefinedAt(x2: com.atomist.rug.spi.Handlers.Message): Boolean = ((x2.asInstanceOf[com.atomist.rug.spi.Handlers.Message]: com.atomist.rug.spi.Handlers.Message): com.atomist.rug.spi.Handlers.Message @unchecked) match {
+      case (o @ (_: com.atomist.rug.spi.Handlers.LocallyRenderedMessage)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.rug.spi.Handlers.Message,com.atomist.rug.spi.Handlers.LocallyRenderedMessage]))(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.LocallyRenderedMessage])
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          3853
+        </td>
+        <td>
+          1830
+          -
+          1830
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.LocallyRenderedMessage]
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          3852
+        </td>
+        <td>
+          1830
+          -
+          1830
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.PlanBuilder.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          3856
+        </td>
+        <td>
+          1875
+          -
+          1954
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Plan.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Plan.apply(returningRug, lifecycle, local, instructions, scala.Some.apply[jdk.nashorn.api.scripting.ScriptObjectMirror](jsPlan))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          3855
+        </td>
+        <td>
+          1941
+          -
+          1953
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[jdk.nashorn.api.scripting.ScriptObjectMirror](jsPlan)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          3857
+        </td>
+        <td>
+          2032
+          -
+          2059
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsMessage.getMember(&quot;kind&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          3858
+        </td>
+        <td>
+          2132
+          -
+          2159
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsMessage.getMember(&quot;body&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3859
+        </td>
+        <td>
+          2223
+          -
+          2295
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.UnsupportedOperationException(&quot;Message body must be a string&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          3860
+        </td>
+        <td>
+          2364
+          -
+          2482
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.InvalidHandlerResultException(scala.StringContext.apply(&quot;Cannot determine message content from body: &quot;, &quot;&quot;).s(jsMessage.getMember(&quot;body&quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          3861
+        </td>
+        <td>
+          2519
+          -
+          2553
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsMessage.getMember(&quot;contentType&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          3862
+        </td>
+        <td>
+          2612
+          -
+          2689
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.InvalidHandlerResultException(scala.StringContext.apply(&quot;Message must have a `contentType`&quot;).s())
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          3863
+        </td>
+        <td>
+          2724
+          -
+          2756
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsMessage.getMember(&quot;usernames&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          3864
+        </td>
+        <td>
+          2796
+          -
+          2799
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          3866
+        </td>
+        <td>
+          2860
+          -
+          2918
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[Object](usernames.values().toArray()).toSeq.asInstanceOf[Seq[String]]
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          3865
+        </td>
+        <td>
+          2860
+          -
+          2886
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Collection.toArray
+        </td>
+        <td style="background: #AEF1AE">
+          usernames.values().toArray()
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          3867
+        </td>
+        <td>
+          2956
+          -
+          2991
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsMessage.getMember(&quot;channelNames&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          3868
+        </td>
+        <td>
+          3031
+          -
+          3034
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          3869
+        </td>
+        <td>
+          3098
+          -
+          3127
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Collection.toArray
+        </td>
+        <td style="background: #AEF1AE">
+          channelNames.values().toArray()
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          3870
+        </td>
+        <td>
+          3098
+          -
+          3159
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[Object](channelNames.values().toArray()).toSeq.asInstanceOf[Seq[String]]
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          3871
+        </td>
+        <td>
+          3197
+          -
+          3232
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsMessage.getMember(&quot;instructions&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          3872
+        </td>
+        <td>
+          3272
+          -
+          3275
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          3877
+        </td>
+        <td>
+          3341
+          -
+          3495
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.immutable.List.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[Object](jsInstructions.values().toArray()).toList.map[com.atomist.rug.spi.Handlers.Presentable, List[com.atomist.rug.spi.Handlers.Presentable]](((presentable: Object) =&gt; PlanBuilder.this.constructPresentable(presentable.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror])))(immutable.this.List.canBuildFrom[com.atomist.rug.spi.Handlers.Presentable])
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          3876
+        </td>
+        <td>
+          3384
+          -
+          3384
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[com.atomist.rug.spi.Handlers.Presentable]
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          3873
+        </td>
+        <td>
+          3341
+          -
+          3372
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Collection.toArray
+        </td>
+        <td style="background: #AEF1AE">
+          jsInstructions.values().toArray()
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          3875
+        </td>
+        <td>
+          3415
+          -
+          3481
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.PlanBuilder.constructPresentable
+        </td>
+        <td style="background: #AEF1AE">
+          PlanBuilder.this.constructPresentable(presentable.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror])
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          3874
+        </td>
+        <td>
+          3436
+          -
+          3480
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          presentable.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror]
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          3878
+        </td>
+        <td>
+          3514
+          -
+          3601
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.LocallyRenderedMessage.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.LocallyRenderedMessage.apply(messageBody, contentType, channelNames, usernames, instructions)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          3879
+        </td>
+        <td>
+          3656
+          -
+          3691
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsMessage.getMember(&quot;instructions&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          3880
+        </td>
+        <td>
+          3731
+          -
+          3734
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          3881
+        </td>
+        <td>
+          3800
+          -
+          3831
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Collection.toArray
+        </td>
+        <td style="background: #AEF1AE">
+          jsInstructions.values().toArray()
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          3884
+        </td>
+        <td>
+          3843
+          -
+          3843
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[com.atomist.rug.spi.Handlers.Presentable]
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          3885
+        </td>
+        <td>
+          3800
+          -
+          3954
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.immutable.List.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[Object](jsInstructions.values().toArray()).toList.map[com.atomist.rug.spi.Handlers.Presentable, List[com.atomist.rug.spi.Handlers.Presentable]](((presentable: Object) =&gt; PlanBuilder.this.constructPresentable(presentable.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror])))(immutable.this.List.canBuildFrom[com.atomist.rug.spi.Handlers.Presentable])
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          3883
+        </td>
+        <td>
+          3874
+          -
+          3940
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.PlanBuilder.constructPresentable
+        </td>
+        <td style="background: #AEF1AE">
+          PlanBuilder.this.constructPresentable(presentable.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror])
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          3882
+        </td>
+        <td>
+          3895
+          -
+          3939
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          presentable.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror]
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          3886
+        </td>
+        <td>
+          3985
+          -
+          4012
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsMessage.getMember(&quot;node&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          3887
+        </td>
+        <td>
+          4134
+          -
+          4134
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.toGraphNode$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.toGraphNode$default$2
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          3889
+        </td>
+        <td>
+          4108
+          -
+          4325
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.toGraphNode(som, com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode.toGraphNode$default$2).getOrElse[com.atomist.graph.GraphNode](throw new com.atomist.rug.InvalidHandlerResultException(scala.StringContext.apply(&quot;Lifecycle message node script could not be converted to a GraphNode: Invalid argument: &quot;, &quot;&quot;).s(som)))
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          3888
+        </td>
+        <td>
+          4176
+          -
+          4311
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.InvalidHandlerResultException(scala.StringContext.apply(&quot;Lifecycle message node script could not be converted to a GraphNode: Invalid argument: &quot;, &quot;&quot;).s(som))
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          3890
+        </td>
+        <td>
+          4358
+          -
+          4459
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.InvalidHandlerResultException(scala.StringContext.apply(&quot;Lifecycle messages must contain a GraphNode, actually: &quot;, &quot;&quot;).s(a))
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          3891
+        </td>
+        <td>
+          4488
+          -
+          4522
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsMessage.getMember(&quot;lifecycleId&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          3892
+        </td>
+        <td>
+          4581
+          -
+          4669
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.InvalidHandlerResultException(&quot;Lifecycle messages must contain a lifecycleId&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          3893
+        </td>
+        <td>
+          4688
+          -
+          4728
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.LifecycleMessage.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.LifecycleMessage.apply(node, instructions, id)
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          3894
+        </td>
+        <td>
+          4757
+          -
+          4839
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.InvalidHandlerResultException(scala.StringContext.apply(&quot;A message must have a kind: &quot;, &quot;&quot;).s(jsMessage))
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          3895
+        </td>
+        <td>
+          4952
+          -
+          4990
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsPresentable.getMember(&quot;instruction&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          3896
+        </td>
+        <td>
+          5035
+          -
+          5058
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.PlanBuilder.constructInstruction
+        </td>
+        <td style="background: #AEF1AE">
+          PlanBuilder.this.constructInstruction(o)
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          3897
+        </td>
+        <td>
+          5075
+          -
+          5183
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.InvalidHandlerResultException(scala.StringContext.apply(&quot;A Message Presentable must contain an \'Instruction\', actually &quot;, &quot;&quot;).s(x))
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          3898
+        </td>
+        <td>
+          5206
+          -
+          5238
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsPresentable.getMember(&quot;label&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          3899
+        </td>
+        <td>
+          5271
+          -
+          5278
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](x)
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          3900
+        </td>
+        <td>
+          5295
+          -
+          5299
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          3901
+        </td>
+        <td>
+          5319
+          -
+          5348
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsPresentable.getMember(&quot;id&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          3902
+        </td>
+        <td>
+          5381
+          -
+          5388
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](x)
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          3903
+        </td>
+        <td>
+          5405
+          -
+          5409
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          3904
+        </td>
+        <td>
+          5420
+          -
+          5455
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Presentable.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Presentable.apply(instruction, label, id)
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          3905
+        </td>
+        <td>
+          5600
+          -
+          5638
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsRespondable.getMember(&quot;instruction&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          3906
+        </td>
+        <td>
+          5682
+          -
+          5759
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;No instruction found in &quot;, &quot;&quot;).s(jsRespondable))
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          3907
+        </td>
+        <td>
+          5804
+          -
+          5827
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.PlanBuilder.constructInstruction
+        </td>
+        <td style="background: #AEF1AE">
+          PlanBuilder.this.constructInstruction(o)
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          3908
+        </td>
+        <td>
+          5890
+          -
+          5926
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsRespondable.getMember(&quot;onSuccess&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          3909
+        </td>
+        <td>
+          5872
+          -
+          5941
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.PlanBuilder.constructCallback
+        </td>
+        <td style="background: #AEF1AE">
+          PlanBuilder.this.constructCallback(jsRespondable.getMember(&quot;onSuccess&quot;), returningRug)
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          3911
+        </td>
+        <td>
+          5978
+          -
+          6045
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.PlanBuilder.constructCallback
+        </td>
+        <td style="background: #AEF1AE">
+          PlanBuilder.this.constructCallback(jsRespondable.getMember(&quot;onError&quot;), returningRug)
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          3910
+        </td>
+        <td>
+          5996
+          -
+          6030
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsRespondable.getMember(&quot;onError&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          3912
+        </td>
+        <td>
+          6114
+          -
+          6132
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Nonrespondable.apply
+        </td>
+        <td style="background: #F0ADAD">
+          com.atomist.rug.spi.Handlers.Nonrespondable.apply(nr)
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          3913
+        </td>
+        <td>
+          6173
+          -
+          6207
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Respondable.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Respondable.apply(r, onSuccess, onError)
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          3914
+        </td>
+        <td>
+          6326
+          -
+          6357
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsInstruction.getMember(&quot;kind&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          3915
+        </td>
+        <td>
+          6414
+          -
+          6511
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.InvalidHandlerResultException(scala.StringContext.apply(&quot;An Instruction must have a valid \'kind\', actually: &quot;, &quot;&quot;).s(x))
+        </td>
+      </tr><tr>
+        <td>
+          152
+        </td>
+        <td>
+          3916
+        </td>
+        <td>
+          6535
+          -
+          6576
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.PlanBuilder.constructInstructionDetail
+        </td>
+        <td style="background: #AEF1AE">
+          PlanBuilder.this.constructInstructionDetail(jsInstruction)
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          3917
+        </td>
+        <td>
+          6581
+          -
+          6624
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.from
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Instruction.from(jsInstructionKind, detail)
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          3918
+        </td>
+        <td>
+          6764
+          -
+          6801
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsInstruction.getMember(&quot;parameters&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          3919
+        </td>
+        <td>
+          6869
+          -
+          6887
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Set.toArray
+        </td>
+        <td style="background: #AEF1AE">
+          o.keySet().toArray()
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          3927
+        </td>
+        <td>
+          6869
+          -
+          7180
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[Object](o.keySet().toArray()).filter(((key: Object) =&gt; {
+  val name: String = key.asInstanceOf[String];
+  o.getMember(name) match {
+    case null =&gt; false
+    case jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED =&gt; false
+    case (o @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror)) if o.isFunction() =&gt; false
+    case _ =&gt; true
+  }
+}))
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          3920
+        </td>
+        <td>
+          6925
+          -
+          6949
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          key.asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          3921
+        </td>
+        <td>
+          6960
+          -
+          6977
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          o.getMember(name)
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          3922
+        </td>
+        <td>
+          7011
+          -
+          7016
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          3923
+        </td>
+        <td>
+          7061
+          -
+          7066
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          3925
+        </td>
+        <td>
+          7125
+          -
+          7130
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          3924
+        </td>
+        <td>
+          7109
+          -
+          7121
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.isFunction
+        </td>
+        <td style="background: #AEF1AE">
+          o.isFunction()
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          3926
+        </td>
+        <td>
+          7153
+          -
+          7157
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          3932
+        </td>
+        <td>
+          7203
+          -
+          7203
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.DummyImplicit.dummyImplicit
+        </td>
+        <td style="background: #AEF1AE">
+          Predef.this.DummyImplicit.dummyImplicit
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          3934
+        </td>
+        <td>
+          7190
+          -
+          7463
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[Object](filtered).map[com.atomist.param.SimpleParameterValue, Seq[com.atomist.param.ParameterValue]](((key: Object) =&gt; {
+  val name: String = key.asInstanceOf[String];
+  val value: Object = o.getMember(name);
+  com.atomist.param.SimpleParameterValue.apply(name, value match {
+    case (s @ (_: String)) =&gt; s
+    case (o @ _) =&gt; com.atomist.util.JsonUtils.toJson(o)
+  })
+}))(scala.this.Array.fallbackCanBuildFrom[com.atomist.param.SimpleParameterValue](Predef.this.DummyImplicit.dummyImplicit))
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          3933
+        </td>
+        <td>
+          7203
+          -
+          7203
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.FallbackArrayBuilding.fallbackCanBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Array.fallbackCanBuildFrom[com.atomist.param.SimpleParameterValue](Predef.this.DummyImplicit.dummyImplicit)
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          3928
+        </td>
+        <td>
+          7233
+          -
+          7257
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          key.asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          3929
+        </td>
+        <td>
+          7280
+          -
+          7297
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          o.getMember(name)
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          3931
+        </td>
+        <td>
+          7308
+          -
+          7453
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValue.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.param.SimpleParameterValue.apply(name, value match {
+  case (s @ (_: String)) =&gt; s
+  case (o @ _) =&gt; com.atomist.util.JsonUtils.toJson(o)
+})
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          3930
+        </td>
+        <td>
+          7419
+          -
+          7438
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.JsonUtils.toJson
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.JsonUtils.toJson(o)
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          3935
+        </td>
+        <td>
+          7480
+          -
+          7483
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          3937
+        </td>
+        <td>
+          7506
+          -
+          7506
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          x$1._2
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          3936
+        </td>
+        <td>
+          7500
+          -
+          7500
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$1._1
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          3938
+        </td>
+        <td>
+          8011
+          -
+          8045
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsInstruction.getMember(&quot;project&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          194
+        </td>
+        <td>
+          3939
+        </td>
+        <td>
+          8089
+          -
+          8107
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](project_name)
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          3940
+        </td>
+        <td>
+          8124
+          -
+          8128
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          198
+        </td>
+        <td>
+          3941
+        </td>
+        <td>
+          8160
+          -
+          8200
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsInstruction.getMember(&quot;commitMessage&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          3942
+        </td>
+        <td>
+          8235
+          -
+          8244
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](msg)
+        </td>
+      </tr><tr>
+        <td>
+          200
+        </td>
+        <td>
+          3943
+        </td>
+        <td>
+          8261
+          -
+          8265
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          203
+        </td>
+        <td>
+          3944
+        </td>
+        <td>
+          8290
+          -
+          8323
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsInstruction.getMember(&quot;target&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          3945
+        </td>
+        <td>
+          8368
+          -
+          8393
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.hasMember
+        </td>
+        <td style="background: #AEF1AE">
+          o.hasMember(&quot;baseBranch&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          205
+        </td>
+        <td>
+          3947
+        </td>
+        <td>
+          8422
+          -
+          8468
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          o.getMember(&quot;baseBranch&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          205
+        </td>
+        <td>
+          3946
+        </td>
+        <td>
+          8434
+          -
+          8446
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;baseBranch&quot;
+        </td>
+      </tr><tr>
+        <td>
+          206
+        </td>
+        <td>
+          3948
+        </td>
+        <td>
+          8477
+          -
+          8496
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          o.getMember(&quot;kind&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          3950
+        </td>
+        <td>
+          8612
+          -
+          8619
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;title&quot;
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          3953
+        </td>
+        <td>
+          8595
+          -
+          8642
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](o.getMember(&quot;title&quot;).asInstanceOf[String])
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          3955
+        </td>
+        <td>
+          8648
+          -
+          8652
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          3949
+        </td>
+        <td>
+          8573
+          -
+          8593
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.hasMember
+        </td>
+        <td style="background: #AEF1AE">
+          o.hasMember(&quot;title&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          3952
+        </td>
+        <td>
+          8595
+          -
+          8642
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](o.getMember(&quot;title&quot;).asInstanceOf[String])
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          3951
+        </td>
+        <td>
+          8600
+          -
+          8641
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          o.getMember(&quot;title&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          3954
+        </td>
+        <td>
+          8648
+          -
+          8652
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          3959
+        </td>
+        <td>
+          8701
+          -
+          8747
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](o.getMember(&quot;body&quot;).asInstanceOf[String])
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          3962
+        </td>
+        <td>
+          8753
+          -
+          8757
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          3956
+        </td>
+        <td>
+          8680
+          -
+          8699
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.hasMember
+        </td>
+        <td style="background: #AEF1AE">
+          o.hasMember(&quot;body&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          3958
+        </td>
+        <td>
+          8706
+          -
+          8746
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          o.getMember(&quot;body&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          3961
+        </td>
+        <td>
+          8753
+          -
+          8757
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          3960
+        </td>
+        <td>
+          8701
+          -
+          8747
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](o.getMember(&quot;body&quot;).asInstanceOf[String])
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          3957
+        </td>
+        <td>
+          8718
+          -
+          8724
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;body&quot;
+        </td>
+      </tr><tr>
+        <td>
+          210
+        </td>
+        <td>
+          3968
+        </td>
+        <td>
+          8876
+          -
+          8880
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          210
+        </td>
+        <td>
+          3964
+        </td>
+        <td>
+          8835
+          -
+          8847
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;headBranch&quot;
+        </td>
+      </tr><tr>
+        <td>
+          210
+        </td>
+        <td>
+          3967
+        </td>
+        <td>
+          8818
+          -
+          8870
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](o.getMember(&quot;headBranch&quot;).asInstanceOf[String])
+        </td>
+      </tr><tr>
+        <td>
+          210
+        </td>
+        <td>
+          3969
+        </td>
+        <td>
+          8876
+          -
+          8880
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          210
+        </td>
+        <td>
+          3963
+        </td>
+        <td>
+          8791
+          -
+          8816
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.hasMember
+        </td>
+        <td style="background: #AEF1AE">
+          o.hasMember(&quot;headBranch&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          210
+        </td>
+        <td>
+          3966
+        </td>
+        <td>
+          8818
+          -
+          8870
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](o.getMember(&quot;headBranch&quot;).asInstanceOf[String])
+        </td>
+      </tr><tr>
+        <td>
+          210
+        </td>
+        <td>
+          3965
+        </td>
+        <td>
+          8823
+          -
+          8869
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          o.getMember(&quot;headBranch&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          211
+        </td>
+        <td>
+          3971
+        </td>
+        <td>
+          8893
+          -
+          8968
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.spi.Handlers.GitHubPullRequest](com.atomist.rug.spi.Handlers.GitHubPullRequest.apply(baseBranch, commitMessage, headBranch, title, body))
+        </td>
+      </tr><tr>
+        <td>
+          211
+        </td>
+        <td>
+          3970
+        </td>
+        <td>
+          8898
+          -
+          8967
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.GitHubPullRequest.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.GitHubPullRequest.apply(baseBranch, commitMessage, headBranch, title, body)
+        </td>
+      </tr><tr>
+        <td>
+          213
+        </td>
+        <td>
+          3972
+        </td>
+        <td>
+          9032
+          -
+          9057
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          o.getMember(&quot;headBranch&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          214
+        </td>
+        <td>
+          3973
+        </td>
+        <td>
+          9098
+          -
+          9105
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](b)
+        </td>
+      </tr><tr>
+        <td>
+          215
+        </td>
+        <td>
+          3974
+        </td>
+        <td>
+          9130
+          -
+          9134
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          217
+        </td>
+        <td>
+          3976
+        </td>
+        <td>
+          9161
+          -
+          9218
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.spi.Handlers.GitHubBranch](com.atomist.rug.spi.Handlers.GitHubBranch.apply(baseBranch, commitMessage, headBranch))
+        </td>
+      </tr><tr>
+        <td>
+          217
+        </td>
+        <td>
+          3975
+        </td>
+        <td>
+          9166
+          -
+          9217
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.GitHubBranch.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.GitHubBranch.apply(baseBranch, commitMessage, headBranch)
+        </td>
+      </tr><tr>
+        <td>
+          218
+        </td>
+        <td>
+          3977
+        </td>
+        <td>
+          9239
+          -
+          9303
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.BadPlanException(scala.StringContext.apply(&quot;Unsupported EditorTarget kind: &quot;, &quot;&quot;).s(k), rug.this.BadPlanException.&lt;init&gt;$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          3979
+        </td>
+        <td>
+          9338
+          -
+          9372
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.spi.Handlers.DefaultTarget](com.atomist.rug.spi.Handlers.DefaultTarget.apply(commitMessage))
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          3978
+        </td>
+        <td>
+          9343
+          -
+          9371
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.DefaultTarget.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.DefaultTarget.apply(commitMessage)
+        </td>
+      </tr><tr>
+        <td>
+          224
+        </td>
+        <td>
+          3980
+        </td>
+        <td>
+          9384
+          -
+          9455
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Instruction.Detail.apply(name, coordinates, parameters, project_name, target)
+        </td>
+      </tr><tr>
+        <td>
+          230
+        </td>
+        <td>
+          3981
+        </td>
+        <td>
+          9642
+          -
+          9671
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          jsOnSuccess.getMember(&quot;kind&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          231
+        </td>
+        <td>
+          3982
+        </td>
+        <td>
+          9736
+          -
+          9765
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.PlanBuilder.constructMessage
+        </td>
+        <td style="background: #AEF1AE">
+          PlanBuilder.this.constructMessage(jsOnSuccess)
+        </td>
+      </tr><tr>
+        <td>
+          232
+        </td>
+        <td>
+          3984
+        </td>
+        <td>
+          9794
+          -
+          9842
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Respond.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Handlers.Instruction.Respond.apply(PlanBuilder.this.constructInstructionDetail(jsOnSuccess))
+        </td>
+      </tr><tr>
+        <td>
+          232
+        </td>
+        <td>
+          3983
+        </td>
+        <td>
+          9802
+          -
+          9841
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.PlanBuilder.constructInstructionDetail
+        </td>
+        <td style="background: #AEF1AE">
+          PlanBuilder.this.constructInstructionDetail(jsOnSuccess)
+        </td>
+      </tr><tr>
+        <td>
+          234
+        </td>
+        <td>
+          3986
+        </td>
+        <td>
+          9916
+          -
+          9953
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.hasMember
+        </td>
+        <td style="background: #F0ADAD">
+          jsOnSuccess.hasMember(&quot;instructions&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          234
+        </td>
+        <td>
+          3985
+        </td>
+        <td>
+          9901
+          -
+          9911
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;messages&quot;
+        </td>
+      </tr><tr>
+        <td>
+          234
+        </td>
+        <td>
+          3987
+        </td>
+        <td>
+          9879
+          -
+          9953
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          jsOnSuccess.hasMember(&quot;messages&quot;).||(jsOnSuccess.hasMember(&quot;instructions&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          235
+        </td>
+        <td>
+          3989
+        </td>
+        <td>
+          9971
+          -
+          10011
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.PlanBuilder.constructPlan
+        </td>
+        <td style="background: #AEF1AE">
+          PlanBuilder.this.constructPlan(jsOnSuccess, returningRug)
+        </td>
+      </tr><tr>
+        <td>
+          235
+        </td>
+        <td>
+          3988
+        </td>
+        <td>
+          9971
+          -
+          10011
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.PlanBuilder.constructPlan
+        </td>
+        <td style="background: #AEF1AE">
+          PlanBuilder.this.constructPlan(jsOnSuccess, returningRug)
+        </td>
+      </tr><tr>
+        <td>
+          238
+        </td>
+        <td>
+          3991
+        </td>
+        <td>
+          10059
+          -
+          10144
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.InvalidHandlerResultException(scala.StringContext.apply(&quot;Cannot create CallBack from: &quot;, &quot;&quot;).s(jsOnSuccess))
+        </td>
+      </tr><tr>
+        <td>
+          238
+        </td>
+        <td>
+          3990
+        </td>
+        <td>
+          10059
+          -
+          10144
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.InvalidHandlerResultException(scala.StringContext.apply(&quot;Cannot create CallBack from: &quot;, &quot;&quot;).s(jsOnSuccess))
+        </td>
+      </tr><tr>
+        <td>
+          241
+        </td>
+        <td>
+          3992
+        </td>
+        <td>
+          10177
+          -
+          10193
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Option.apply[com.atomist.rug.spi.Handlers.Callback](callback)
+        </td>
+      </tr><tr>
+        <td>
+          242
+        </td>
+        <td>
+          3993
+        </td>
+        <td>
+          10210
+          -
+          10214
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,550 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/java/support/PackageFinder.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.java.support
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.kind.java.GitHubJavaParserExtractor
+</span>4 <span style=''>import com.atomist.source.{ArtifactSource, FileArtifact, StringFileArtifact}
+</span>5 <span style=''>
+</span>6 <span style=''>import scala.collection.JavaConverters._
+</span>7 <span style=''>
+</span>8 <span style=''>/**
+</span>9 <span style=''>  * Utility methods to find packages in Java files
+</span>10 <span style=''>  */
+</span>11 <span style=''>object PackageFinder {
+</span>12 <span style=''>
+</span>13 <span style=''>  def findPackage(src: String): String = {
+</span>14 <span style=''>    val cu = </span><span style='background: #AEF1AE'>GitHubJavaParserExtractor(Seq(StringFileArtifact(&quot;Src.java&quot;, src).asInstanceOf[FileArtifact]).asJava)
+</span>15 <span style=''></span><span style='background: #AEF1AE'>      .head.compilationUnit</span><span style=''>
+</span>16 <span style=''>    if (</span><span style='background: #AEF1AE'>!cu.getPackageDeclaration.isPresent</span><span style=''>) </span><span style='background: #AEF1AE'>&quot;&quot;</span><span style=''>
+</span>17 <span style=''>    else </span><span style='background: #AEF1AE'>cu.getPackageDeclaration.get.getNameAsString</span><span style=''>
+</span>18 <span style=''>  }
+</span>19 <span style=''>
+</span>20 <span style=''>  /**
+</span>21 <span style=''>    * Return all packages found in this ArtifactSource.
+</span>22 <span style=''>    *
+</span>23 <span style=''>    * @param as ArtifactSource
+</span>24 <span style=''>    * @return all identified packages
+</span>25 <span style=''>    */
+</span>26 <span style=''>  def packages(as: ArtifactSource): Seq[PackageInfo] = {
+</span>27 <span style=''>    </span><span style='background: #AEF1AE'>as.allFiles.filter(_.name.endsWith(&quot;.java&quot;))
+</span>28 <span style=''></span><span style='background: #AEF1AE'>      .map(f =&gt; (findPackage(f.content), f))
+</span>29 <span style=''></span><span style='background: #AEF1AE'>      .groupBy(_._1)
+</span>30 <span style=''></span><span style='background: #AEF1AE'>      .map {
+</span>31 <span style=''></span><span style='background: #AEF1AE'>        case (pkg, files) =&gt; PackageInfo(pkg, files.size)
+</span>32 <span style=''></span><span style='background: #AEF1AE'>      }.toSeq</span><span style=''>
+</span>33 <span style=''>  }
+</span>34 <span style=''>}
+</span>35 <span style=''>
+</span>36 <span style=''>/**
+</span>37 <span style=''>  * Information about a package.
+</span>38 <span style=''>  *
+</span>39 <span style=''>  * @param name FQN of the package
+</span>40 <span style=''>  * @param files number of Java files in the package
+</span>41 <span style=''>  */
+</span>42 <span style=''>case class PackageInfo(name: String, files: Int) {
+</span>43 <span style=''>
+</span>44 <span style=''>  def isChild(pi: PackageInfo): Boolean = </span><span style='background: #F0ADAD'>pi.name.contains(this.name)</span><span style=''>
+</span>45 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          2242
+        </td>
+        <td>
+          388
+          -
+          462
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsJava.asJava
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.seqAsJavaListConverter[com.atomist.source.FileArtifact](collection.this.Seq.apply[com.atomist.source.FileArtifact](com.atomist.source.StringFileArtifact.apply(&quot;Src.java&quot;, src).asInstanceOf[com.atomist.source.FileArtifact])).asJava
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          2239
+        </td>
+        <td>
+          411
+          -
+          421
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Src.java&quot;
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          2241
+        </td>
+        <td>
+          388
+          -
+          455
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.source.FileArtifact](com.atomist.source.StringFileArtifact.apply(&quot;Src.java&quot;, src).asInstanceOf[com.atomist.source.FileArtifact])
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          2240
+        </td>
+        <td>
+          392
+          -
+          454
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.source.StringFileArtifact.apply(&quot;Src.java&quot;, src).asInstanceOf[com.atomist.source.FileArtifact]
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          2243
+        </td>
+        <td>
+          362
+          -
+          491
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.FileAndCompilationUnit.compilationUnit
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.java.GitHubJavaParserExtractor.apply(scala.collection.JavaConverters.seqAsJavaListConverter[com.atomist.source.FileArtifact](collection.this.Seq.apply[com.atomist.source.FileArtifact](com.atomist.source.StringFileArtifact.apply(&quot;Src.java&quot;, src).asInstanceOf[com.atomist.source.FileArtifact])).asJava).head.compilationUnit
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2245
+        </td>
+        <td>
+          537
+          -
+          539
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2244
+        </td>
+        <td>
+          500
+          -
+          535
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          cu.getPackageDeclaration().isPresent().unary_!
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          2246
+        </td>
+        <td>
+          537
+          -
+          539
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2248
+        </td>
+        <td>
+          549
+          -
+          593
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.github.javaparser.ast.nodeTypes.NodeWithName.getNameAsString
+        </td>
+        <td style="background: #AEF1AE">
+          cu.getPackageDeclaration().get().getNameAsString()
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2247
+        </td>
+        <td>
+          549
+          -
+          593
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.nodeTypes.NodeWithName.getNameAsString
+        </td>
+        <td style="background: #AEF1AE">
+          cu.getPackageDeclaration().get().getNameAsString()
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          2249
+        </td>
+        <td>
+          823
+          -
+          847
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.name.endsWith(&quot;.java&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2251
+        </td>
+        <td>
+          866
+          -
+          888
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.support.PackageFinder.findPackage
+        </td>
+        <td style="background: #AEF1AE">
+          PackageFinder.this.findPackage(f.content)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2250
+        </td>
+        <td>
+          878
+          -
+          887
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          f.content
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2253
+        </td>
+        <td>
+          859
+          -
+          859
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[(String, com.atomist.source.FileArtifact)]
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2252
+        </td>
+        <td>
+          865
+          -
+          892
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple2.apply[String, com.atomist.source.FileArtifact](PackageFinder.this.findPackage(f.content), f)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          2254
+        </td>
+        <td>
+          909
+          -
+          913
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$2._1
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2257
+        </td>
+        <td>
+          926
+          -
+          926
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Iterable.canBuildFrom[com.atomist.rug.kind.java.support.PackageInfo]
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          2256
+        </td>
+        <td>
+          957
+          -
+          985
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.support.PackageInfo.apply
+        </td>
+        <td style="background: #AEF1AE">
+          PackageInfo.apply(pkg, files.size)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          2255
+        </td>
+        <td>
+          974
+          -
+          984
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #AEF1AE">
+          files.size
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          2258
+        </td>
+        <td>
+          804
+          -
+          999
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          as.allFiles.filter(((x$1: com.atomist.source.FileArtifact) =&gt; x$1.name.endsWith(&quot;.java&quot;))).map[(String, com.atomist.source.FileArtifact), Seq[(String, com.atomist.source.FileArtifact)]](((f: com.atomist.source.FileArtifact) =&gt; scala.Tuple2.apply[String, com.atomist.source.FileArtifact](PackageFinder.this.findPackage(f.content), f)))(collection.this.Seq.canBuildFrom[(String, com.atomist.source.FileArtifact)]).groupBy[String](((x$2: (String, com.atomist.source.FileArtifact)) =&gt; x$2._1)).map[com.atomist.rug.kind.java.support.PackageInfo, scala.collection.immutable.Iterable[com.atomist.rug.kind.java.support.PackageInfo]](((x0$1: (String, Seq[(String, com.atomist.source.FileArtifact)])) =&gt; x0$1 match {
+  case (_1: String, _2: Seq[(String, com.atomist.source.FileArtifact)])(String, Seq[(String, com.atomist.source.FileArtifact)])((pkg @ _), (files @ _)) =&gt; PackageInfo.apply(pkg, files.size)
+}))(immutable.this.Iterable.canBuildFrom[com.atomist.rug.kind.java.support.PackageInfo]).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2260
+        </td>
+        <td>
+          1235
+          -
+          1262
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.contains
+        </td>
+        <td style="background: #F0ADAD">
+          pi.name.contains(this.name)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2259
+        </td>
+        <td>
+          1252
+          -
+          1261
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.support.PackageInfo.name
+        </td>
+        <td style="background: #F0ADAD">
+          this.name
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,129 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/ServiceLoaderTypeRegistry.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.spi._
+</span>4 <span style=''>import com.atomist.util.ServiceLoaderBackedExtensionProvider
+</span>5 <span style=''>
+</span>6 <span style=''>/**
+</span>7 <span style=''>  * Use JDK ServiceLocator to load Type classes. Each
+</span>8 <span style=''>  * JAR files needs a META-INF/services/com.atomist.rug.spi.Typed file containing
+</span>9 <span style=''>  * the FQNs of the types it defines.
+</span>10 <span style=''>  *
+</span>11 <span style=''>  * Does not include Cortex types: Only those backed by JVM objects
+</span>12 <span style=''>  * available on the runtime classpath.
+</span>13 <span style=''>  *
+</span>14 <span style=''>  * @see [[Type]]
+</span>15 <span style=''>  */
+</span>16 <span style=''>class ServiceLoaderTypeRegistry(keyProvider: Typed =&gt; String = r =&gt; r.name)
+</span>17 <span style=''>  extends ServiceLoaderBackedExtensionProvider[Typed](keyProvider)
+</span>18 <span style=''>    with TypeRegistry {
+</span>19 <span style=''>
+</span>20 <span style=''>  override def findByName(kind: String): Option[Typed] = </span><span style='background: #AEF1AE'>providerMap.get(kind)</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>  override def typeNames: Traversable[String] = </span><span style='background: #F0ADAD'>providerMap.keys</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>  override def types: Seq[Typed] = </span><span style='background: #AEF1AE'>providerMap.values.toSeq</span><span style=''>
+</span>25 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          708
+        </td>
+        <td>
+          663
+          -
+          684
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.get
+        </td>
+        <td style="background: #AEF1AE">
+          ServiceLoaderTypeRegistry.this.providerMap.get(kind)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          709
+        </td>
+        <td>
+          734
+          -
+          750
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.MapLike.keys
+        </td>
+        <td style="background: #F0ADAD">
+          ServiceLoaderTypeRegistry.this.providerMap.keys
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          710
+        </td>
+        <td>
+          787
+          -
+          811
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          ServiceLoaderTypeRegistry.this.providerMap.values.toSeq
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,318 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/test/gherkin/GherkinReader.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.test.gherkin
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.source.{ArtifactSource, FileArtifact}
+</span>4 <span style=''>import gherkin.ast.Feature
+</span>5 <span style=''>import gherkin.{AstBuilder, Parser}
+</span>6 <span style=''>
+</span>7 <span style=''>/**
+</span>8 <span style=''>  * Parse ArtifactSources into Gherkin files
+</span>9 <span style=''>  */
+</span>10 <span style=''>object GherkinReader {
+</span>11 <span style=''>
+</span>12 <span style=''>  val FeatureExtension = </span><span style='background: #AEF1AE'>&quot;.feature&quot;</span><span style=''>
+</span>13 <span style=''>
+</span>14 <span style=''>  private val parser = </span><span style='background: #AEF1AE'>new Parser(new AstBuilder())</span><span style=''>
+</span>15 <span style=''>
+</span>16 <span style=''>  /**
+</span>17 <span style=''>    * Find Gherkin features in this ArtifactSource. Must be compiled
+</span>18 <span style=''>    * if it contained TypeScript.
+</span>19 <span style=''>    */
+</span>20 <span style=''>  def findFeatures(as: ArtifactSource): Seq[FeatureDefinition] = {
+</span>21 <span style=''>    </span><span style='background: #AEF1AE'>for {
+</span>22 <span style=''></span><span style='background: #AEF1AE'>      f &lt;- as.allFiles
+</span>23 <span style=''></span><span style='background: #AEF1AE'>      if f.name.endsWith(FeatureExtension)
+</span>24 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>25 <span style=''></span><span style='background: #AEF1AE'>      yield {
+</span>26 <span style=''></span><span style='background: #AEF1AE'>        //println(s&quot;Looking at $f&quot;)
+</span>27 <span style=''></span><span style='background: #AEF1AE'>        val gherkinDocument = parser.parse(f.content)
+</span>28 <span style=''></span><span style='background: #AEF1AE'>        FeatureDefinition(gherkinDocument.getFeature, f, as)
+</span>29 <span style=''></span><span style='background: #AEF1AE'>      }</span><span style=''>
+</span>30 <span style=''>  }
+</span>31 <span style=''>
+</span>32 <span style=''>}
+</span>33 <span style=''>
+</span>34 <span style=''>/**
+</span>35 <span style=''>  * Return the feature and supporting information
+</span>36 <span style=''>  *
+</span>37 <span style=''>  * @param definition      definition file
+</span>38 <span style=''>  * @param feature         The Feature in Gherkin AST
+</span>39 <span style=''>  */
+</span>40 <span style=''>case class FeatureDefinition(
+</span>41 <span style=''>                              feature: Feature,
+</span>42 <span style=''>                              definition: FileArtifact,
+</span>43 <span style=''>                              as: ArtifactSource)
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          5746
+        </td>
+        <td>
+          262
+          -
+          272
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;.feature&quot;
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          5747
+        </td>
+        <td>
+          308
+          -
+          324
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.AstBuilder.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new gherkin.AstBuilder()
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          5748
+        </td>
+        <td>
+          297
+          -
+          325
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.Parser.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new gherkin.Parser[gherkin.ast.GherkinDocument](new gherkin.AstBuilder())
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5756
+        </td>
+        <td>
+          514
+          -
+          764
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.generic.FilterMonadic.map
+        </td>
+        <td style="background: #AEF1AE">
+          as.allFiles.withFilter(((f: com.atomist.source.FileArtifact) =&gt; f.name.endsWith(GherkinReader.this.FeatureExtension))).map[com.atomist.rug.test.gherkin.FeatureDefinition, Seq[com.atomist.rug.test.gherkin.FeatureDefinition]](((f: com.atomist.source.FileArtifact) =&gt; {
+  val gherkinDocument: gherkin.ast.GherkinDocument = GherkinReader.this.parser.parse(f.content);
+  FeatureDefinition.apply(gherkinDocument.getFeature(), f, as)
+}))(collection.this.Seq.canBuildFrom[com.atomist.rug.test.gherkin.FeatureDefinition])
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5755
+        </td>
+        <td>
+          528
+          -
+          528
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.test.gherkin.FeatureDefinition]
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          5750
+        </td>
+        <td>
+          552
+          -
+          585
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          f.name.endsWith(GherkinReader.this.FeatureExtension)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          5749
+        </td>
+        <td>
+          568
+          -
+          584
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.GherkinReader.FeatureExtension
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinReader.this.FeatureExtension
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          5752
+        </td>
+        <td>
+          672
+          -
+          695
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.Parser.parse
+        </td>
+        <td style="background: #AEF1AE">
+          GherkinReader.this.parser.parse(f.content)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          5751
+        </td>
+        <td>
+          685
+          -
+          694
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          f.content
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          5753
+        </td>
+        <td>
+          722
+          -
+          748
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gherkin.ast.GherkinDocument.getFeature
+        </td>
+        <td style="background: #AEF1AE">
+          gherkinDocument.getFeature()
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          5754
+        </td>
+        <td>
+          704
+          -
+          756
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.FeatureDefinition.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FeatureDefinition.apply(gherkinDocument.getFeature(), f, as)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

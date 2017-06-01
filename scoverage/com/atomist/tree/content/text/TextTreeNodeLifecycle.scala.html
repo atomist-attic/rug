@@ -1,0 +1,614 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/content/text/TextTreeNodeLifecycle.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.content.text
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.kind.core.FileArtifactBackedMutableView
+</span>4 <span style=''>import com.atomist.tree.UpdatableTreeNode
+</span>5 <span style=''>
+</span>6 <span style=''>object TextTreeNodeLifecycle {
+</span>7 <span style=''>
+</span>8 <span style=''>  /**
+</span>9 <span style=''>    * This is how tree nodes progress:
+</span>10 <span style=''>    *
+</span>11 <span style=''>    * ┌───────────────────┐                    ┌───────────────────┐
+</span>12 <span style=''>    * │                   │                    │                   │
+</span>13 <span style=''>    * ───parsing────▶│PositionedTreeNode │─────makeReady─────▶│ UpdatableTreeNode │───────▶  proceed with
+</span>14 <span style=''>    * │                   │                    │                   │            updates
+</span>15 <span style=''>    * └───────────────────┘                    └───────────────────┘
+</span>16 <span style=''>    *
+</span>17 <span style=''>    * Parsing produces PositionedTreeNodes, which know their offset.
+</span>18 <span style=''>    * makeReady incorporates the original contents of the file, and also the file's MutableView,
+</span>19 <span style=''>    * so that the output UpdatableTreeNodes can report their value, accept a new value,
+</span>20 <span style=''>    * and propagate that value all the way back to the file.
+</span>21 <span style=''>    */
+</span>22 <span style=''>
+</span>23 <span style=''>  /* This is for Antlr grammars, or anything that represents the entire file in a single parsed node. */
+</span>24 <span style=''>  def makeWholeFileNodeReady(typeName: String,
+</span>25 <span style=''>                             parsed: PositionedTreeNode,
+</span>26 <span style=''>                             fileArtifact: FileArtifactBackedMutableView,
+</span>27 <span style=''>                             preprocess: String =&gt; String = identity,
+</span>28 <span style=''>                             postprocess: String =&gt; String = identity): UpdatableTreeNode = {
+</span>29 <span style=''>    val inputAsParsed = </span><span style='background: #AEF1AE'>preprocess(fileArtifact.content)</span><span style=''>
+</span>30 <span style=''>    val parsedWithWholeFileOffsets =
+</span>31 <span style=''>      </span><span style='background: #AEF1AE'>ImmutablePositionedTreeNode(parsed).copy(
+</span>32 <span style=''></span><span style='background: #AEF1AE'>        startPosition = OffsetInputPosition(0),
+</span>33 <span style=''></span><span style='background: #AEF1AE'>        endPosition = OffsetInputPosition(inputAsParsed.length))</span><span style=''>
+</span>34 <span style=''>    </span><span style='background: #AEF1AE'>makeReady(typeName, Seq(parsedWithWholeFileOffsets), fileArtifact, preprocess, postprocess).head</span><span style=''>
+</span>35 <span style=''>  }
+</span>36 <span style=''>
+</span>37 <span style=''>  /**
+</span>38 <span style=''>    * Some or all of the file has been parsed into some PositionedTreeNodes.
+</span>39 <span style=''>    * (Since microgrammars aren't here anymore, it should always be ALL afaik, unless the
+</span>40 <span style=''>    * language extension chooses to return a node or nodes representing only part of the file.
+</span>41 <span style=''>    * It could happen.)
+</span>42 <span style=''>    *
+</span>43 <span style=''>    * Before we can update any of the nodes or their children, we have to:
+</span>44 <span style=''>    *
+</span>45 <span style=''>    * Wrap these in one node that always contains the entire content of the file; fill
+</span>46 <span style=''>    * any unrepresented characters with padding.
+</span>47 <span style=''>    * Transform the PositionedTreeNodes into UpdatableTreeNodes.
+</span>48 <span style=''>    * And link that top-level node to the file, so that updates to any node propagate to the file.
+</span>49 <span style=''>    * Cascade parentage information down into all the nodes.
+</span>50 <span style=''>    * Return the new, Updatable representations of the input PositionedTreeNodes.
+</span>51 <span style=''>    */
+</span>52 <span style=''>  def makeReady(typeName: String,
+</span>53 <span style=''>                matches: Seq[PositionedTreeNode],
+</span>54 <span style=''>                fileArtifact: FileArtifactBackedMutableView,
+</span>55 <span style=''>                preprocess: String =&gt; String = identity,
+</span>56 <span style=''>                postprocess: String =&gt; String = identity): Seq[UpdatableTreeNode] = {
+</span>57 <span style=''>    val inputAsParsed = </span><span style='background: #AEF1AE'>preprocess(fileArtifact.content)</span><span style=''>
+</span>58 <span style=''>
+</span>59 <span style=''>    val ottn: OverwritableTextTreeNode =
+</span>60 <span style=''>      </span><span style='background: #AEF1AE'>ImmutablePositionedTreeNode.pad(typeName: String, matches, inputAsParsed)</span><span style=''>
+</span>61 <span style=''>
+</span>62 <span style=''>    val wrapperNodeContainingWholeFileContent =
+</span>63 <span style=''>      </span><span style='background: #AEF1AE'>new OverwritableTextInFile(typeName, ottn.allKidsIncludingPadding, postprocess)</span><span style=''>
+</span>64 <span style=''>    </span><span style='background: #AEF1AE'>wrapperNodeContainingWholeFileContent.setParent(fileArtifact)</span><span style=''>
+</span>65 <span style=''>    </span><span style='background: #AEF1AE'>wrapperNodeContainingWholeFileContent.childNodes.collect {
+</span>66 <span style=''></span><span style='background: #AEF1AE'>      case utn: UpdatableTreeNode =&gt; utn // should be all of them
+</span>67 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; </span><span style='background: #F0ADAD'>???</span><span style='background: #AEF1AE'>
+</span>68 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>69 <span style=''>  }
+</span>70 <span style=''>
+</span>71 <span style=''>
+</span>72 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          7661
+        </td>
+        <td>
+          1429
+          -
+          1461
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #AEF1AE">
+          preprocess.apply(fileArtifact.content)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          7660
+        </td>
+        <td>
+          1440
+          -
+          1460
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.content
+        </td>
+        <td style="background: #AEF1AE">
+          fileArtifact.content
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          7667
+        </td>
+        <td>
+          1541
+          -
+          1541
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.copy$default$4
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          7670
+        </td>
+        <td>
+          1505
+          -
+          1659
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.copy(x$3, x$1, x$2, x$4, x$5, x$6)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          7666
+        </td>
+        <td>
+          1541
+          -
+          1541
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.copy$default$1
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          7669
+        </td>
+        <td>
+          1541
+          -
+          1541
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$6
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.copy$default$6
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          7662
+        </td>
+        <td>
+          1505
+          -
+          1540
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ImmutablePositionedTreeNode.apply(parsed)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          7668
+        </td>
+        <td>
+          1541
+          -
+          1541
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.copy$default$5
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.copy$default$5
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          7663
+        </td>
+        <td>
+          1571
+          -
+          1593
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OffsetInputPosition.apply
+        </td>
+        <td style="background: #AEF1AE">
+          OffsetInputPosition.apply(0)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          7664
+        </td>
+        <td>
+          1637
+          -
+          1657
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.length
+        </td>
+        <td style="background: #AEF1AE">
+          inputAsParsed.length()
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          7665
+        </td>
+        <td>
+          1617
+          -
+          1658
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OffsetInputPosition.apply
+        </td>
+        <td style="background: #AEF1AE">
+          OffsetInputPosition.apply(inputAsParsed.length())
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          7672
+        </td>
+        <td>
+          1664
+          -
+          1760
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          TextTreeNodeLifecycle.this.makeReady(typeName, collection.this.Seq.apply[com.atomist.tree.content.text.ImmutablePositionedTreeNode](parsedWithWholeFileOffsets), fileArtifact, preprocess, postprocess).head
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          7671
+        </td>
+        <td>
+          1684
+          -
+          1715
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.tree.content.text.ImmutablePositionedTreeNode](parsedWithWholeFileOffsets)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          7673
+        </td>
+        <td>
+          2918
+          -
+          2938
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.content
+        </td>
+        <td style="background: #AEF1AE">
+          fileArtifact.content
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          7674
+        </td>
+        <td>
+          2907
+          -
+          2939
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #AEF1AE">
+          preprocess.apply(fileArtifact.content)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          7675
+        </td>
+        <td>
+          2988
+          -
+          3061
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.ImmutablePositionedTreeNode.pad
+        </td>
+        <td style="background: #AEF1AE">
+          ImmutablePositionedTreeNode.pad((typeName: String), matches, inputAsParsed)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          7676
+        </td>
+        <td>
+          3154
+          -
+          3182
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextTreeNode.allKidsIncludingPadding
+        </td>
+        <td style="background: #AEF1AE">
+          ottn.allKidsIncludingPadding
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          7677
+        </td>
+        <td>
+          3117
+          -
+          3196
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextInFile.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new OverwritableTextInFile(typeName, ottn.allKidsIncludingPadding, postprocess)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          7678
+        </td>
+        <td>
+          3201
+          -
+          3262
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.OverwritableTextInFile.setParent
+        </td>
+        <td style="background: #AEF1AE">
+          wrapperNodeContainingWholeFileContent.setParent(fileArtifact)
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          7682
+        </td>
+        <td>
+          3267
+          -
+          3417
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          wrapperNodeContainingWholeFileContent.childNodes.collect[com.atomist.tree.UpdatableTreeNode, Seq[com.atomist.tree.UpdatableTreeNode]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[com.atomist.tree.TreeNode,com.atomist.tree.UpdatableTreeNode] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: com.atomist.tree.TreeNode =&gt; com.atomist.tree.UpdatableTreeNode&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: com.atomist.tree.TreeNode, B1 &gt;: com.atomist.tree.UpdatableTreeNode](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[com.atomist.tree.TreeNode]: com.atomist.tree.TreeNode): com.atomist.tree.TreeNode @unchecked) match {
+      case (utn @ (_: com.atomist.tree.UpdatableTreeNode)) =&gt; utn
+      case _ =&gt; scala.this.Predef.???
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: com.atomist.tree.TreeNode): Boolean = ((x1.asInstanceOf[com.atomist.tree.TreeNode]: com.atomist.tree.TreeNode): com.atomist.tree.TreeNode @unchecked) match {
+      case (utn @ (_: com.atomist.tree.UpdatableTreeNode)) =&gt; true
+      case _ =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[com.atomist.tree.TreeNode,com.atomist.tree.UpdatableTreeNode]))(collection.this.Seq.canBuildFrom[com.atomist.tree.UpdatableTreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          7681
+        </td>
+        <td>
+          3324
+          -
+          3324
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.tree.UpdatableTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          7680
+        </td>
+        <td>
+          3324
+          -
+          3324
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.TextTreeNodeLifecycle.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          7679
+        </td>
+        <td>
+          3408
+          -
+          3411
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

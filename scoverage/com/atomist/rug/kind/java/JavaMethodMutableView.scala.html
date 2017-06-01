@@ -1,0 +1,353 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/java/JavaMethodMutableView.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.java
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.RugRuntimeException
+</span>4 <span style=''>import com.atomist.rug.spi._
+</span>5 <span style=''>import com.github.javaparser.ast.body.MethodDeclaration
+</span>6 <span style=''>
+</span>7 <span style=''>import scala.collection.JavaConverters._
+</span>8 <span style=''>
+</span>9 <span style=''>class JavaMethodTypeProvider extends TypeProvider(classOf[JavaMethodMutableView]) {
+</span>10 <span style=''>
+</span>11 <span style=''>  override def description: String = </span><span style='background: #AEF1AE'>&quot;Java method&quot;</span><span style=''>
+</span>12 <span style=''>}
+</span>13 <span style=''>
+</span>14 <span style=''>class JavaMethodMutableView(originalBackingObject: MethodDeclaration, parent: JavaClassOrInterfaceMutableView)
+</span>15 <span style=''>  extends BodyDeclarationView[MethodDeclaration](originalBackingObject, parent) {
+</span>16 <span style=''>
+</span>17 <span style=''>  override def nodeName: String = </span><span style='background: #AEF1AE'>name</span><span style=''>
+</span>18 <span style=''>
+</span>19 <span style=''>  override def nodeTags: Set[String] = </span><span style='background: #AEF1AE'>Set(JavaTypeType.MethodAlias)</span><span style=''>
+</span>20 <span style=''>
+</span>21 <span style=''>  override def childNodeNames: Set[String] = </span><span style='background: #AEF1AE'>Set(&quot;JavaParameter&quot;)</span><span style=''>
+</span>22 <span style=''>
+</span>23 <span style=''>  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
+</span>24 <span style=''>    case &quot;JavaParameter&quot; =&gt;
+</span>25 <span style=''>      </span><span style='background: #AEF1AE'>currentBackingObject.getParameters.asScala.map(</span><span style='background: #F0ADAD'>new JavaMethodParameterView(_, this)</span><span style='background: #AEF1AE'>)</span><span style=''>
+</span>26 <span style=''>    case _ =&gt; </span><span style='background: #F0ADAD'>throw new RugRuntimeException(null, s&quot;No child with name '$fieldName' in ${getClass.getSimpleName}&quot;)</span><span style=''>
+</span>27 <span style=''>  }
+</span>28 <span style=''>
+</span>29 <span style=''>  @ExportFunction(readOnly = true,
+</span>30 <span style=''>    exposeAsProperty = true,
+</span>31 <span style=''>    description = &quot;Return the name of the method&quot;)
+</span>32 <span style=''>  def name: String = </span><span style='background: #AEF1AE'>currentBackingObject.getNameAsString</span><span style=''>
+</span>33 <span style=''>
+</span>34 <span style=''>  @ExportFunction(readOnly = true,
+</span>35 <span style=''>    exposeAsProperty = true,
+</span>36 <span style=''>    description = &quot;Return the Javadoc for the method, or an empty string if there isn't any&quot;)
+</span>37 <span style=''>  def javadoc(): String =
+</span>38 <span style=''>    </span><span style='background: #F0ADAD'>DocumentableNodeUtils.javadoc(currentBackingObject)</span><span style=''>
+</span>39 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          1909
+        </td>
+        <td>
+          328
+          -
+          341
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Java method&quot;
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1910
+        </td>
+        <td>
+          573
+          -
+          577
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaMethodMutableView.name
+        </td>
+        <td style="background: #AEF1AE">
+          JavaMethodMutableView.this.name
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1912
+        </td>
+        <td>
+          618
+          -
+          647
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](JavaTypeType.MethodAlias)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1911
+        </td>
+        <td>
+          622
+          -
+          646
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaTypeType.MethodAlias
+        </td>
+        <td style="background: #AEF1AE">
+          JavaTypeType.MethodAlias
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          1913
+        </td>
+        <td>
+          694
+          -
+          714
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](&quot;JavaParameter&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1916
+        </td>
+        <td>
+          885
+          -
+          885
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Buffer.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Buffer.canBuildFrom[com.atomist.rug.kind.java.JavaMethodParameterView]
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1915
+        </td>
+        <td>
+          886
+          -
+          922
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.JavaMethodParameterView.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new JavaMethodParameterView(x$1, this)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1914
+        </td>
+        <td>
+          839
+          -
+          873
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.body.CallableDeclaration.getParameters
+        </td>
+        <td style="background: #AEF1AE">
+          JavaMethodMutableView.this.currentBackingObject.getParameters()
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1917
+        </td>
+        <td>
+          839
+          -
+          923
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.body.Parameter](JavaMethodMutableView.this.currentBackingObject.getParameters()).asScala.map[com.atomist.rug.kind.java.JavaMethodParameterView, Seq[com.atomist.rug.spi.MutableView[_]]](((x$1: com.github.javaparser.ast.body.Parameter) =&gt; new JavaMethodParameterView(x$1, this)))(mutable.this.Buffer.canBuildFrom[com.atomist.rug.kind.java.JavaMethodParameterView])
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1918
+        </td>
+        <td>
+          938
+          -
+          1038
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugRuntimeException(null, scala.StringContext.apply(&quot;No child with name \'&quot;, &quot;\' in &quot;, &quot;&quot;).s(fieldName, JavaMethodMutableView.this.getClass().getSimpleName()), rug.this.RugRuntimeException.&lt;init&gt;$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1919
+        </td>
+        <td>
+          1180
+          -
+          1216
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.nodeTypes.NodeWithSimpleName.getNameAsString
+        </td>
+        <td style="background: #AEF1AE">
+          JavaMethodMutableView.this.currentBackingObject.getNameAsString()
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1921
+        </td>
+        <td>
+          1406
+          -
+          1457
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.java.DocumentableNodeUtils.javadoc
+        </td>
+        <td style="background: #F0ADAD">
+          DocumentableNodeUtils.javadoc(JavaMethodMutableView.this.currentBackingObject)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1920
+        </td>
+        <td>
+          1436
+          -
+          1456
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #F0ADAD">
+          JavaMethodMutableView.this.currentBackingObject
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

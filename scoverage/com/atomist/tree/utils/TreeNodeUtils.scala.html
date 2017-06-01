@@ -1,0 +1,1783 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/tree/utils/TreeNodeUtils.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.tree.utils
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.tree.TreeNode
+</span>5 <span style=''>import com.atomist.tree.TreeNode.{Noise, Signal, Undeclared}
+</span>6 <span style=''>import com.atomist.tree.content.text.PositionedTreeNode
+</span>7 <span style=''>
+</span>8 <span style=''>/**
+</span>9 <span style=''>  * Utility methods for TreeNode instances
+</span>10 <span style=''>  */
+</span>11 <span style=''>object TreeNodeUtils {
+</span>12 <span style=''>
+</span>13 <span style=''>  /**
+</span>14 <span style=''>    * Replace returns in values with a character that's easier to read in a debug log
+</span>15 <span style=''>    *
+</span>16 <span style=''>    * @param s the string to replace new line characters
+</span>17 <span style=''>    * @return a string which new lines replaced
+</span>18 <span style=''>    */
+</span>19 <span style=''>  def inlineReturns(s: String): String = </span><span style='background: #AEF1AE'>s.replace(&quot;\n&quot;, &quot;ø&quot;)</span><span style=''>
+</span>20 <span style=''>
+</span>21 <span style=''>  /**
+</span>22 <span style=''>    * Return a directory tree like representation of the node, using newlines and tabs
+</span>23 <span style=''>    * to show nesting and structure. For use in diagnostics.
+</span>24 <span style=''>    *
+</span>25 <span style=''>    * @param tn node to represent
+</span>26 <span style=''>    * @return string representation of the node
+</span>27 <span style=''>    */
+</span>28 <span style=''>  def toShortString(tn: GraphNode): String = {
+</span>29 <span style=''>
+</span>30 <span style=''>    def tabs(n: Int) = </span><span style='background: #AEF1AE'>List.fill(n)(&quot;\t&quot;).mkString(&quot;&quot;)</span><span style=''>
+</span>31 <span style=''>
+</span>32 <span style=''>    def offset(fv: GraphNode): String = fv match {
+</span>33 <span style=''>      case pf: PositionedTreeNode =&gt; </span><span style='background: #F0ADAD'>s&quot;${pf.startPosition.offset}-${pf.endPosition.offset}&quot;</span><span style=''>
+</span>34 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>&quot;&quot;</span><span style=''>
+</span>35 <span style=''>    }
+</span>36 <span style=''>
+</span>37 <span style=''>    def showValue(n: GraphNode, cutoff: Int) = </span><span style='background: #AEF1AE'>inlineReturns(
+</span>38 <span style=''></span><span style='background: #AEF1AE'>      n match {
+</span>39 <span style=''></span><span style='background: #AEF1AE'>        case n: TreeNode if n.value.length &lt; cutoff =&gt; n.value
+</span>40 <span style=''></span><span style='background: #AEF1AE'>        case n: TreeNode =&gt; </span><span style='background: #F0ADAD'>n.value.take(cutoff) + &quot;...&quot;</span><span style='background: #AEF1AE'>
+</span>41 <span style=''></span><span style='background: #AEF1AE'>        case x =&gt; </span><span style='background: #F0ADAD'>x.nodeName</span><span style='background: #AEF1AE'>
+</span>42 <span style=''></span><span style='background: #AEF1AE'>      })</span><span style=''>
+</span>43 <span style=''>
+</span>44 <span style=''>    def info(f: GraphNode) = {
+</span>45 <span style=''>      val significance = f match {
+</span>46 <span style=''>        case tn: TreeNode =&gt;
+</span>47 <span style=''>          </span><span style='background: #AEF1AE'>tn.significance</span><span style=''> match {
+</span>48 <span style=''>            case Noise =&gt; </span><span style='background: #F0ADAD'>&quot;_&quot;</span><span style=''>
+</span>49 <span style=''>            case Signal =&gt; </span><span style='background: #AEF1AE'>&quot;!&quot;</span><span style=''>
+</span>50 <span style=''>            case Undeclared =&gt; </span><span style='background: #F0ADAD'>&quot;.&quot;</span><span style=''>
+</span>51 <span style=''>          }
+</span>52 <span style=''>        case _ =&gt; </span><span style='background: #F0ADAD'>&quot;&quot;</span><span style=''>
+</span>53 <span style=''>      }
+</span>54 <span style=''>
+</span>55 <span style=''>      </span><span style='background: #AEF1AE'>s&quot;$significance ${f.nodeName} (${f.getClass.getSimpleName}#${f.hashCode()}) ${offset(f)}:[${showValue(f, 50)}]&quot;</span><span style=''>
+</span>56 <span style=''>    }
+</span>57 <span style=''>
+</span>58 <span style=''>    def toShortStr(fv: GraphNode, depth: Int, shown: GraphNode =&gt; Boolean): String = fv match {
+</span>59 <span style=''>      case ctn if </span><span style='background: #AEF1AE'>ctn.relatedNodes.nonEmpty</span><span style=''> =&gt;
+</span>60 <span style=''>        def star(c: GraphNode) = if (</span><span style='background: #AEF1AE'>shown(c)</span><span style=''>) </span><span style='background: #AEF1AE'>&quot;*&quot;</span><span style=''> else </span><span style='background: #F0ADAD'>&quot;&quot;</span><span style=''>
+</span>61 <span style=''>
+</span>62 <span style=''>        </span><span style='background: #AEF1AE'>tabs(depth) + info(ctn) + (if (ctn.relatedNodes.nonEmpty) &quot;:\n&quot; else </span><span style='background: #F0ADAD'>&quot;&quot;</span><span style='background: #AEF1AE'>) + ctn.relatedNodes.map(c =&gt; star(c) + toShortStr(c, depth + 1, shown)).mkString(&quot;\n&quot;)</span><span style=''>
+</span>63 <span style=''>      case f =&gt; </span><span style='background: #AEF1AE'>tabs(depth) + info(f) + &quot;\n&quot;</span><span style=''>
+</span>64 <span style=''>    }
+</span>65 <span style=''>
+</span>66 <span style=''>    </span><span style='background: #AEF1AE'>toShortStr(tn, 0, _ =&gt; true)</span><span style=''>
+</span>67 <span style=''>  }
+</span>68 <span style=''>
+</span>69 <span style=''>  /**
+</span>70 <span style=''>    * Shows name tags of all nodes
+</span>71 <span style=''>    */
+</span>72 <span style=''>  val NameAndTagsStringifier: TreeNode =&gt; String =
+</span>73 <span style=''>    tn =&gt; </span><span style='background: #F0ADAD'>s&quot;${tn.nodeName}:[${tn.nodeTags.mkString(&quot;,&quot;)}]&quot;</span><span style=''>
+</span>74 <span style=''>
+</span>75 <span style=''>  /**
+</span>76 <span style=''>    * Shows content of terminal nodes: Tags otherwise
+</span>77 <span style=''>    */
+</span>78 <span style=''>  val NameAndContentStringifier: TreeNode =&gt; String = {
+</span>79 <span style=''>    case tn if </span><span style='background: #F0ADAD'>tn.childNodes.isEmpty</span><span style=''> =&gt;
+</span>80 <span style=''>      </span><span style='background: #F0ADAD'>s&quot;${tn.nodeName}:[${tn.value}]&quot;</span><span style=''>
+</span>81 <span style=''>    case tn =&gt; </span><span style='background: #F0ADAD'>s&quot;${tn.nodeName}:[${tn.nodeTags.mkString(&quot;, &quot;)}]&quot;</span><span style=''>
+</span>82 <span style=''>  }
+</span>83 <span style=''>
+</span>84 <span style=''>  private def toShorterStringInternal(tn: TreeNode, nodeStringifier: TreeNode =&gt; String): Seq[String] = {
+</span>85 <span style=''>    val shorterString = </span><span style='background: #F0ADAD'>nodeStringifier(tn)</span><span style=''>
+</span>86 <span style=''>    val lines = shorterString </span><span style='background: #F0ADAD'>+:
+</span>87 <span style=''></span><span style='background: #F0ADAD'>      tn.childNodes.flatMap(tn =&gt; toShorterStringInternal(tn, nodeStringifier))</span><span style=''>
+</span>88 <span style=''>    </span><span style='background: #F0ADAD'>lines.map(&quot;  &quot; + _)</span><span style=''>
+</span>89 <span style=''>  }
+</span>90 <span style=''>
+</span>91 <span style=''>  /**
+</span>92 <span style=''>    * Return a string showing the structure of the tree but not the content
+</span>93 <span style=''>    */
+</span>94 <span style=''>  def toShorterString(tn: TreeNode, nodeStringifier: TreeNode =&gt; String = NameAndTagsStringifier): String =
+</span>95 <span style=''>    </span><span style='background: #F0ADAD'>toShorterStringInternal(tn, nodeStringifier).mkString(&quot;\n&quot;)</span><span style=''>
+</span>96 <span style=''>
+</span>97 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          8758
+        </td>
+        <td>
+          545
+          -
+          565
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.replace
+        </td>
+        <td style="background: #AEF1AE">
+          s.replace(&quot;\n&quot;, &quot;ø&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          8759
+        </td>
+        <td>
+          887
+          -
+          918
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.fill[String](n)(&quot;\t&quot;).mkString(&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          8762
+        </td>
+        <td>
+          1061
+          -
+          1062
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          8761
+        </td>
+        <td>
+          1036
+          -
+          1038
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;-&quot;
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          8764
+        </td>
+        <td>
+          1039
+          -
+          1060
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #F0ADAD">
+          pf.endPosition.offset
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          8760
+        </td>
+        <td>
+          1010
+          -
+          1011
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          8763
+        </td>
+        <td>
+          1012
+          -
+          1035
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.content.text.InputPosition.offset
+        </td>
+        <td style="background: #F0ADAD">
+          pf.startPosition.offset
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          8765
+        </td>
+        <td>
+          1008
+          -
+          1062
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;-&quot;, &quot;&quot;).s(pf.startPosition.offset, pf.endPosition.offset)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          8766
+        </td>
+        <td>
+          1079
+          -
+          1081
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          8771
+        </td>
+        <td>
+          1136
+          -
+          1324
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodeUtils.inlineReturns
+        </td>
+        <td style="background: #AEF1AE">
+          TreeNodeUtils.this.inlineReturns(n match {
+  case (n @ (_: com.atomist.tree.TreeNode)) if n.value.length().&lt;(cutoff) =&gt; n.value
+  case (n @ (_: com.atomist.tree.TreeNode)) =&gt; scala.this.Predef.augmentString(n.value).take(cutoff).+(&quot;...&quot;)
+  case (x @ _) =&gt; x.nodeName
+})
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          8768
+        </td>
+        <td>
+          1222
+          -
+          1229
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.value
+        </td>
+        <td style="background: #AEF1AE">
+          n.value
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          8767
+        </td>
+        <td>
+          1195
+          -
+          1218
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          n.value.length().&lt;(cutoff)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          8769
+        </td>
+        <td>
+          1258
+          -
+          1286
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.augmentString(n.value).take(cutoff).+(&quot;...&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          8770
+        </td>
+        <td>
+          1305
+          -
+          1315
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #F0ADAD">
+          x.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          8772
+        </td>
+        <td>
+          1431
+          -
+          1446
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.significance
+        </td>
+        <td style="background: #AEF1AE">
+          tn.significance
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          8773
+        </td>
+        <td>
+          1481
+          -
+          1484
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;_&quot;
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          8774
+        </td>
+        <td>
+          1512
+          -
+          1515
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;!&quot;
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          8775
+        </td>
+        <td>
+          1547
+          -
+          1550
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;.&quot;
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          8776
+        </td>
+        <td>
+          1581
+          -
+          1583
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8777
+        </td>
+        <td>
+          1601
+          -
+          1602
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8786
+        </td>
+        <td>
+          1660
+          -
+          1672
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.hashCode
+        </td>
+        <td style="background: #AEF1AE">
+          f.hashCode()
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8780
+        </td>
+        <td>
+          1657
+          -
+          1659
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;#&quot;
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8789
+        </td>
+        <td>
+          1599
+          -
+          1710
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot; &quot;, &quot; (&quot;, &quot;#&quot;, &quot;) &quot;, &quot;:[&quot;, &quot;]&quot;).s(significance, f.nodeName, f.getClass().getSimpleName(), f.hashCode(), offset(f), showValue(f, 50))
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8779
+        </td>
+        <td>
+          1628
+          -
+          1631
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; (&quot;
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8788
+        </td>
+        <td>
+          1691
+          -
+          1707
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodeUtils.showValue
+        </td>
+        <td style="background: #AEF1AE">
+          showValue(f, 50)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8782
+        </td>
+        <td>
+          1687
+          -
+          1690
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;:[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8785
+        </td>
+        <td>
+          1632
+          -
+          1656
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getSimpleName
+        </td>
+        <td style="background: #AEF1AE">
+          f.getClass().getSimpleName()
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8784
+        </td>
+        <td>
+          1617
+          -
+          1627
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #AEF1AE">
+          f.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8787
+        </td>
+        <td>
+          1677
+          -
+          1686
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodeUtils.offset
+        </td>
+        <td style="background: #AEF1AE">
+          offset(f)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8778
+        </td>
+        <td>
+          1614
+          -
+          1616
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8781
+        </td>
+        <td>
+          1673
+          -
+          1676
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;) &quot;
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          8783
+        </td>
+        <td>
+          1708
+          -
+          1710
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          8790
+        </td>
+        <td>
+          1832
+          -
+          1857
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          ctn.relatedNodes.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          8795
+        </td>
+        <td>
+          1917
+          -
+          1919
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          8791
+        </td>
+        <td>
+          1898
+          -
+          1906
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #AEF1AE">
+          shown.apply(c)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          8794
+        </td>
+        <td>
+          1917
+          -
+          1919
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          8793
+        </td>
+        <td>
+          1908
+          -
+          1911
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;*&quot;
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          8792
+        </td>
+        <td>
+          1908
+          -
+          1911
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;*&quot;
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          8798
+        </td>
+        <td>
+          1987
+          -
+          1992
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;:\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          8797
+        </td>
+        <td>
+          1960
+          -
+          1985
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          ctn.relatedNodes.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          8800
+        </td>
+        <td>
+          1998
+          -
+          2000
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          8803
+        </td>
+        <td>
+          1929
+          -
+          2087
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          tabs(depth).+(info(ctn)).+(if (ctn.relatedNodes.nonEmpty)
+  &quot;:\n&quot;
+else
+  &quot;&quot;).+(ctn.relatedNodes.map[String, Seq[String]](((c: com.atomist.graph.GraphNode) =&gt; star(c).+(toShortStr(c, depth.+(1), shown))))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;\n&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          8802
+        </td>
+        <td>
+          2004
+          -
+          2087
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          ctn.relatedNodes.map[String, Seq[String]](((c: com.atomist.graph.GraphNode) =&gt; star(c).+(toShortStr(c, depth.+(1), shown))))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;\n&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          8796
+        </td>
+        <td>
+          1943
+          -
+          1952
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodeUtils.info
+        </td>
+        <td style="background: #AEF1AE">
+          info(ctn)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          8799
+        </td>
+        <td>
+          1987
+          -
+          1992
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;:\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          8801
+        </td>
+        <td>
+          1998
+          -
+          2000
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          8804
+        </td>
+        <td>
+          2104
+          -
+          2132
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          tabs(depth).+(info(f)).+(&quot;\n&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          8806
+        </td>
+        <td>
+          2167
+          -
+          2171
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          8805
+        </td>
+        <td>
+          2159
+          -
+          2160
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          8807
+        </td>
+        <td>
+          2144
+          -
+          2172
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodeUtils.toShortStr
+        </td>
+        <td style="background: #AEF1AE">
+          toShortStr(tn, 0, ((x$1: com.atomist.graph.GraphNode) =&gt; true))
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          8813
+        </td>
+        <td>
+          2287
+          -
+          2335
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;:[&quot;, &quot;]&quot;).s(tn.nodeName, tn.nodeTags.mkString(&quot;,&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          8809
+        </td>
+        <td>
+          2303
+          -
+          2306
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;:[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          8812
+        </td>
+        <td>
+          2307
+          -
+          2332
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          tn.nodeTags.mkString(&quot;,&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          8811
+        </td>
+        <td>
+          2291
+          -
+          2302
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #F0ADAD">
+          tn.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          8808
+        </td>
+        <td>
+          2289
+          -
+          2290
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          8810
+        </td>
+        <td>
+          2333
+          -
+          2335
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          8814
+        </td>
+        <td>
+          2475
+          -
+          2496
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #F0ADAD">
+          tn.childNodes.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          8815
+        </td>
+        <td>
+          2508
+          -
+          2509
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          8818
+        </td>
+        <td>
+          2510
+          -
+          2521
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #F0ADAD">
+          tn.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          8820
+        </td>
+        <td>
+          2506
+          -
+          2537
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;:[&quot;, &quot;]&quot;).s(tn.nodeName, tn.value)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          8817
+        </td>
+        <td>
+          2535
+          -
+          2537
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          8816
+        </td>
+        <td>
+          2522
+          -
+          2525
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;:[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          8819
+        </td>
+        <td>
+          2526
+          -
+          2534
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.tree.TreeNode.value
+        </td>
+        <td style="background: #F0ADAD">
+          tn.value
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          8822
+        </td>
+        <td>
+          2569
+          -
+          2572
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;:[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          8821
+        </td>
+        <td>
+          2555
+          -
+          2556
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          8824
+        </td>
+        <td>
+          2557
+          -
+          2568
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.graph.GraphNode.nodeName
+        </td>
+        <td style="background: #F0ADAD">
+          tn.nodeName
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          8823
+        </td>
+        <td>
+          2600
+          -
+          2602
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          8826
+        </td>
+        <td>
+          2553
+          -
+          2602
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;:[&quot;, &quot;]&quot;).s(tn.nodeName, tn.nodeTags.mkString(&quot;, &quot;))
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          8825
+        </td>
+        <td>
+          2573
+          -
+          2599
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          tn.nodeTags.mkString(&quot;, &quot;)
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          8827
+        </td>
+        <td>
+          2738
+          -
+          2757
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #F0ADAD">
+          nodeStringifier.apply(tn)
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          8831
+        </td>
+        <td>
+          2788
+          -
+          2870
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.+:
+        </td>
+        <td style="background: #F0ADAD">
+          tn.childNodes.flatMap[String, Seq[String]](((tn: com.atomist.tree.TreeNode) =&gt; TreeNodeUtils.this.toShorterStringInternal(tn, nodeStringifier)))(collection.this.Seq.canBuildFrom[String]).+:[String, Seq[String]](x$2)(collection.this.Seq.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          8830
+        </td>
+        <td>
+          2788
+          -
+          2788
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          8829
+        </td>
+        <td>
+          2818
+          -
+          2818
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          8828
+        </td>
+        <td>
+          2825
+          -
+          2869
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.utils.TreeNodeUtils.toShorterStringInternal
+        </td>
+        <td style="background: #F0ADAD">
+          TreeNodeUtils.this.toShorterStringInternal(tn, nodeStringifier)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          8833
+        </td>
+        <td>
+          2884
+          -
+          2884
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          8832
+        </td>
+        <td>
+          2885
+          -
+          2893
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;  &quot;.+(x$3)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          8834
+        </td>
+        <td>
+          2875
+          -
+          2894
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #F0ADAD">
+          lines.map[String, Seq[String]](((x$3: String) =&gt; &quot;  &quot;.+(x$3)))(collection.this.Seq.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          8835
+        </td>
+        <td>
+          3101
+          -
+          3160
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          TreeNodeUtils.this.toShorterStringInternal(tn, nodeStringifier).mkString(&quot;\n&quot;)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

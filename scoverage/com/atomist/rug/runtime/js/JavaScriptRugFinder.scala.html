@@ -1,0 +1,599 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/js/JavaScriptRugFinder.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.js
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.project.archive.RugResolver
+</span>4 <span style=''>import com.atomist.rug.runtime.Rug
+</span>5 <span style=''>import jdk.nashorn.api.scripting.ScriptObjectMirror
+</span>6 <span style=''>
+</span>7 <span style=''>import scala.collection.JavaConverters._
+</span>8 <span style=''>
+</span>9 <span style=''>/**
+</span>10 <span style=''>  * Interface for finding rugs of different types in Nashorn
+</span>11 <span style=''>  */
+</span>12 <span style=''>trait JavaScriptRugFinder[R &lt;: Rug] {
+</span>13 <span style=''>
+</span>14 <span style=''>  def find(jsc: JavaScriptContext, resolver: Option[RugResolver] = None): Seq[R] = {
+</span>15 <span style=''>    </span><span style='background: #AEF1AE'>jsc.vars.flatMap {
+</span>16 <span style=''></span><span style='background: #AEF1AE'>      case Var(_, handler) if isValidRug(handler) =&gt;
+</span>17 <span style=''></span><span style='background: #AEF1AE'>        create(jsc, handler, resolver)
+</span>18 <span style=''></span><span style='background: #AEF1AE'>      case Var(_, arr) if arr.isArray =&gt;
+</span>19 <span style=''></span><span style='background: #AEF1AE'>        arr.values().asScala.collect {
+</span>20 <span style=''></span><span style='background: #AEF1AE'>          case som: ScriptObjectMirror if isValidRug(som) =&gt; som
+</span>21 <span style=''></span><span style='background: #AEF1AE'>        }.flatMap(create(jsc, _, resolver))
+</span>22 <span style=''></span><span style='background: #AEF1AE'>      case _ =&gt; None
+</span>23 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>24 <span style=''>  }
+</span>25 <span style=''>
+</span>26 <span style=''>  /**
+</span>27 <span style=''>    * Is the supplied thing valid?
+</span>28 <span style=''>    */
+</span>29 <span style=''>  def isValidRug(obj: ScriptObjectMirror): Boolean = {
+</span>30 <span style=''>    </span><span style='background: #AEF1AE'>obj.hasMember(&quot;__kind&quot;) &amp;&amp;
+</span>31 <span style=''></span><span style='background: #AEF1AE'>      obj.hasMember(&quot;__description&quot;) &amp;&amp;
+</span>32 <span style=''></span><span style='background: #AEF1AE'>      (obj.hasMember(&quot;__name&quot;) || obj.hasMember(&quot;constructor&quot;)) &amp;&amp;
+</span>33 <span style=''></span><span style='background: #AEF1AE'>      isValid(obj)</span><span style=''>
+</span>34 <span style=''>  }
+</span>35 <span style=''>
+</span>36 <span style=''>  def isValid(obj: ScriptObjectMirror): Boolean
+</span>37 <span style=''>
+</span>38 <span style=''>  def create(jsc: JavaScriptContext, jsVar: ScriptObjectMirror, resolver: Option[RugResolver]): Option[R]
+</span>39 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          3650
+        </td>
+        <td>
+          428
+          -
+          428
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[R]
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          3651
+        </td>
+        <td>
+          411
+          -
+          737
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          jsc.vars.flatMap[R, Seq[R]](((x0$1: com.atomist.rug.runtime.js.Var) =&gt; x0$1 match {
+  case (key: String, scriptObjectMirror: jdk.nashorn.api.scripting.ScriptObjectMirror)com.atomist.rug.runtime.js.Var(_, (handler @ _)) if JavaScriptRugFinder.this.isValidRug(handler) =&gt; scala.this.Option.option2Iterable[R](JavaScriptRugFinder.this.create(jsc, handler, resolver))
+  case (key: String, scriptObjectMirror: jdk.nashorn.api.scripting.ScriptObjectMirror)com.atomist.rug.runtime.js.Var(_, (arr @ _)) if arr.isArray() =&gt; scala.collection.JavaConverters.collectionAsScalaIterableConverter[Object](arr.values()).asScala.collect[jdk.nashorn.api.scripting.ScriptObjectMirror, Iterable[jdk.nashorn.api.scripting.ScriptObjectMirror]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[Object,jdk.nashorn.api.scripting.ScriptObjectMirror] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: Object =&gt; jdk.nashorn.api.scripting.ScriptObjectMirror&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: Object, B1 &gt;: jdk.nashorn.api.scripting.ScriptObjectMirror](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[Object]: Object): Object @unchecked) match {
+      case (som @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror)) if JavaScriptRugFinder.this.isValidRug(som) =&gt; som
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: Object): Boolean = ((x1.asInstanceOf[Object]: Object): Object @unchecked) match {
+      case (som @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror)) if JavaScriptRugFinder.this.isValidRug(som) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[Object,jdk.nashorn.api.scripting.ScriptObjectMirror]))(collection.this.Iterable.canBuildFrom[jdk.nashorn.api.scripting.ScriptObjectMirror]).flatMap[R, Iterable[R]](((x$1: jdk.nashorn.api.scripting.ScriptObjectMirror) =&gt; scala.this.Option.option2Iterable[R](JavaScriptRugFinder.this.create(jsc, x$1, resolver))))(collection.this.Iterable.canBuildFrom[R])
+  case _ =&gt; scala.this.Option.option2Iterable[Nothing](scala.None)
+}))(collection.this.Seq.canBuildFrom[R])
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          3636
+        </td>
+        <td>
+          460
+          -
+          479
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptRugFinder.isValidRug
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptRugFinder.this.isValidRug(handler)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          3638
+        </td>
+        <td>
+          491
+          -
+          521
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[R](JavaScriptRugFinder.this.create(jsc, handler, resolver))
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          3637
+        </td>
+        <td>
+          491
+          -
+          521
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptRugFinder.create
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptRugFinder.this.create(jsc, handler, resolver)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          3639
+        </td>
+        <td>
+          548
+          -
+          559
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.isArray
+        </td>
+        <td style="background: #AEF1AE">
+          arr.isArray()
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          3642
+        </td>
+        <td>
+          600
+          -
+          600
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptRugFinder.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          3640
+        </td>
+        <td>
+          571
+          -
+          583
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.values
+        </td>
+        <td style="background: #AEF1AE">
+          arr.values()
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          3643
+        </td>
+        <td>
+          600
+          -
+          600
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Iterable.canBuildFrom[jdk.nashorn.api.scripting.ScriptObjectMirror]
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          3641
+        </td>
+        <td>
+          644
+          -
+          659
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptRugFinder.isValidRug
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptRugFinder.this.isValidRug(som)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          3645
+        </td>
+        <td>
+          685
+          -
+          709
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[R](JavaScriptRugFinder.this.create(jsc, x$1, resolver))
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          3644
+        </td>
+        <td>
+          685
+          -
+          709
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptRugFinder.create
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptRugFinder.this.create(jsc, x$1, resolver)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          3647
+        </td>
+        <td>
+          571
+          -
+          710
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.collectionAsScalaIterableConverter[Object](arr.values()).asScala.collect[jdk.nashorn.api.scripting.ScriptObjectMirror, Iterable[jdk.nashorn.api.scripting.ScriptObjectMirror]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[Object,jdk.nashorn.api.scripting.ScriptObjectMirror] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: Object =&gt; jdk.nashorn.api.scripting.ScriptObjectMirror&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: Object, B1 &gt;: jdk.nashorn.api.scripting.ScriptObjectMirror](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[Object]: Object): Object @unchecked) match {
+      case (som @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror)) if JavaScriptRugFinder.this.isValidRug(som) =&gt; som
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: Object): Boolean = ((x1.asInstanceOf[Object]: Object): Object @unchecked) match {
+      case (som @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror)) if JavaScriptRugFinder.this.isValidRug(som) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[Object,jdk.nashorn.api.scripting.ScriptObjectMirror]))(collection.this.Iterable.canBuildFrom[jdk.nashorn.api.scripting.ScriptObjectMirror]).flatMap[R, Iterable[R]](((x$1: jdk.nashorn.api.scripting.ScriptObjectMirror) =&gt; scala.this.Option.option2Iterable[R](JavaScriptRugFinder.this.create(jsc, x$1, resolver))))(collection.this.Iterable.canBuildFrom[R])
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          3646
+        </td>
+        <td>
+          684
+          -
+          684
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Iterable.canBuildFrom[R]
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          3648
+        </td>
+        <td>
+          727
+          -
+          731
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          3649
+        </td>
+        <td>
+          727
+          -
+          731
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[Nothing](scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          3652
+        </td>
+        <td>
+          864
+          -
+          872
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;__kind&quot;
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          3653
+        </td>
+        <td>
+          883
+          -
+          913
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.hasMember
+        </td>
+        <td style="background: #AEF1AE">
+          obj.hasMember(&quot;__description&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3654
+        </td>
+        <td>
+          938
+          -
+          946
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;__name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3656
+        </td>
+        <td>
+          924
+          -
+          979
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          obj.hasMember(&quot;__name&quot;).||(obj.hasMember(&quot;constructor&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3655
+        </td>
+        <td>
+          951
+          -
+          979
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.hasMember
+        </td>
+        <td style="background: #AEF1AE">
+          obj.hasMember(&quot;constructor&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3658
+        </td>
+        <td>
+          850
+          -
+          1002
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          obj.hasMember(&quot;__kind&quot;).&amp;&amp;(obj.hasMember(&quot;__description&quot;)).&amp;&amp;(obj.hasMember(&quot;__name&quot;).||(obj.hasMember(&quot;constructor&quot;))).&amp;&amp;(JavaScriptRugFinder.this.isValid(obj))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          3657
+        </td>
+        <td>
+          990
+          -
+          1002
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptRugFinder.isValid
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptRugFinder.this.isValid(obj)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

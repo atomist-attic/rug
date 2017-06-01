@@ -1,0 +1,297 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/param/SimpleParameterValues.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.param
+</span>2 <span style=''>
+</span>3 <span style=''>case class SimpleParameterValues(parameterValues: Seq[ParameterValue])
+</span>4 <span style=''>  extends ParameterValues
+</span>5 <span style=''>
+</span>6 <span style=''>object SimpleParameterValues {
+</span>7 <span style=''>
+</span>8 <span style=''>  def apply(pvs: ParameterValue*): ParameterValues =
+</span>9 <span style=''>    </span><span style='background: #AEF1AE'>SimpleParameterValues(pvs)</span><span style=''>
+</span>10 <span style=''>
+</span>11 <span style=''>  def apply(m: Map[String, Object]): ParameterValues = </span><span style='background: #AEF1AE'>fromMap(m)</span><span style=''>
+</span>12 <span style=''>
+</span>13 <span style=''>  def apply(k: String, o: Object) : ParameterValues = </span><span style='background: #AEF1AE'>fromMap(Map(k -&gt; o))</span><span style=''>
+</span>14 <span style=''>
+</span>15 <span style=''>  def fromMap(m: Map[String, Object]): ParameterValues =
+</span>16 <span style=''>    </span><span style='background: #AEF1AE'>SimpleParameterValues((m map {
+</span>17 <span style=''></span><span style='background: #AEF1AE'>      case (k, v) =&gt; SimpleParameterValue(k, v)
+</span>18 <span style=''></span><span style='background: #AEF1AE'>    }).toSeq)</span><span style=''>
+</span>19 <span style=''>
+</span>20 <span style=''>  val Empty = </span><span style='background: #AEF1AE'>new SimpleParameterValues(Seq())</span><span style=''>
+</span>21 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          243
+        </td>
+        <td>
+          214
+          -
+          240
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValues.apply
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleParameterValues.apply(pvs)
+        </td>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          244
+        </td>
+        <td>
+          297
+          -
+          307
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValues.fromMap
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleParameterValues.this.fromMap(m)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          245
+        </td>
+        <td>
+          375
+          -
+          381
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.ArrowAssoc[String](k).-&gt;[Object](o)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          247
+        </td>
+        <td>
+          363
+          -
+          383
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValues.fromMap
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleParameterValues.this.fromMap(scala.this.Predef.Map.apply[String, Object](scala.this.Predef.ArrowAssoc[String](k).-&gt;[Object](o)))
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          246
+        </td>
+        <td>
+          371
+          -
+          382
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenMapFactory.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Map.apply[String, Object](scala.this.Predef.ArrowAssoc[String](k).-&gt;[Object](o))
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          249
+        </td>
+        <td>
+          471
+          -
+          471
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Iterable.canBuildFrom[com.atomist.param.SimpleParameterValue]
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          251
+        </td>
+        <td>
+          446
+          -
+          538
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValues.apply
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleParameterValues.apply(m.map[com.atomist.param.SimpleParameterValue, scala.collection.immutable.Iterable[com.atomist.param.SimpleParameterValue]](((x0$1: (String, Object)) =&gt; x0$1 match {
+  case (_1: String, _2: Object)(String, Object)((k @ _), (v @ _)) =&gt; SimpleParameterValue.apply(k, v)
+}))(immutable.this.Iterable.canBuildFrom[com.atomist.param.SimpleParameterValue]).toSeq)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          248
+        </td>
+        <td>
+          498
+          -
+          524
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValue.apply
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleParameterValue.apply(k, v)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          250
+        </td>
+        <td>
+          469
+          -
+          537
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          m.map[com.atomist.param.SimpleParameterValue, scala.collection.immutable.Iterable[com.atomist.param.SimpleParameterValue]](((x0$1: (String, Object)) =&gt; x0$1 match {
+  case (_1: String, _2: Object)(String, Object)((k @ _), (v @ _)) =&gt; SimpleParameterValue.apply(k, v)
+}))(immutable.this.Iterable.canBuildFrom[com.atomist.param.SimpleParameterValue]).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          253
+        </td>
+        <td>
+          554
+          -
+          586
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValues.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new SimpleParameterValues(collection.this.Seq.apply[Nothing]())
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          252
+        </td>
+        <td>
+          580
+          -
+          585
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[Nothing]()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

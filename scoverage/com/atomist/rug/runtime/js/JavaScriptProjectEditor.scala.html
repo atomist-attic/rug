@@ -1,0 +1,402 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/js/JavaScriptProjectEditor.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.js
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.param.ParameterValues
+</span>4 <span style=''>import com.atomist.project.archive.{DefaultAtomistConfig, RugResolver}
+</span>5 <span style=''>import com.atomist.project.edit._
+</span>6 <span style=''>import com.atomist.rug.kind.core.ProjectMutableView
+</span>7 <span style=''>import com.atomist.rug.spi.InstantEditorFailureException
+</span>8 <span style=''>import com.atomist.source.ArtifactSource
+</span>9 <span style=''>import com.atomist.util.Timing._
+</span>10 <span style=''>import jdk.nashorn.api.scripting.ScriptObjectMirror
+</span>11 <span style=''>
+</span>12 <span style=''>import scala.util.control.NonFatal
+</span>13 <span style=''>
+</span>14 <span style=''>/**
+</span>15 <span style=''>  * Find Editors in a Nashorn.
+</span>16 <span style=''>  */
+</span>17 <span style=''>class JavaScriptProjectEditorFinder
+</span>18 <span style=''>  extends JavaScriptRugFinder[JavaScriptProjectEditor] {
+</span>19 <span style=''>
+</span>20 <span style=''>  /**
+</span>21 <span style=''>    * Is the supplied thing valid at all?
+</span>22 <span style=''>    */
+</span>23 <span style=''>  def isValid(obj: ScriptObjectMirror): Boolean = {
+</span>24 <span style=''>    </span><span style='background: #AEF1AE'>obj.getMember(&quot;__kind&quot;) == &quot;editor&quot; &amp;&amp;
+</span>25 <span style=''></span><span style='background: #AEF1AE'>      obj.hasMember(&quot;edit&quot;) &amp;&amp;
+</span>26 <span style=''></span><span style='background: #AEF1AE'>      obj.getMember(&quot;edit&quot;).asInstanceOf[ScriptObjectMirror].isFunction</span><span style=''>
+</span>27 <span style=''>  }
+</span>28 <span style=''>
+</span>29 <span style=''>  override def create(jsc: JavaScriptContext, fnVar: ScriptObjectMirror, resolver: Option[RugResolver]): Option[JavaScriptProjectEditor] = {
+</span>30 <span style=''>    </span><span style='background: #AEF1AE'>Some(new JavaScriptProjectEditor(jsc, fnVar, jsc.rugAs, resolver))</span><span style=''>
+</span>31 <span style=''>  }
+</span>32 <span style=''>}
+</span>33 <span style=''>
+</span>34 <span style=''>/**
+</span>35 <span style=''>  * ProjectEditor implementation that invokes a JavaScript function.
+</span>36 <span style=''>  */
+</span>37 <span style=''>class JavaScriptProjectEditor(
+</span>38 <span style=''>                               jsc: JavaScriptContext,
+</span>39 <span style=''>                               jsVar: ScriptObjectMirror,
+</span>40 <span style=''>                               rugAs: ArtifactSource,
+</span>41 <span style=''>                               resolver: Option[RugResolver])
+</span>42 <span style=''>  extends JavaScriptProjectOperation(jsc, jsVar, rugAs)
+</span>43 <span style=''>    with ProjectEditorSupport {
+</span>44 <span style=''>
+</span>45 <span style=''>  override def applicability(as: ArtifactSource): Applicability = </span><span style='background: #AEF1AE'>Applicability.OK</span><span style=''>
+</span>46 <span style=''>
+</span>47 <span style=''>  override protected def modifyInternal(
+</span>48 <span style=''>                                         targetProject: ArtifactSource,
+</span>49 <span style=''>                                         poa: ParameterValues): ModificationAttempt = {
+</span>50 <span style=''>    val validated = </span><span style='background: #AEF1AE'>addDefaultParameterValues(poa)</span><span style=''>
+</span>51 <span style=''>    </span><span style='background: #AEF1AE'>validateParameters(validated)</span><span style=''>
+</span>52 <span style=''>
+</span>53 <span style=''>    val (result, elapsedTime) = time {
+</span>54 <span style=''>      val pmv = new ProjectMutableView(rugAs,
+</span>55 <span style=''>        targetProject,
+</span>56 <span style=''>        atomistConfig = DefaultAtomistConfig,
+</span>57 <span style=''>        Some(this),
+</span>58 <span style=''>        rugResolver = resolver)
+</span>59 <span style=''>
+</span>60 <span style=''>      try {
+</span>61 <span style=''>        // Important that we don't invoke edit on the prototype as otherwise all constructor effects are lost!
+</span>62 <span style=''>        invokeMemberFunction(
+</span>63 <span style=''>          jsc,
+</span>64 <span style=''>          jsVar,
+</span>65 <span style=''>          &quot;edit&quot;,
+</span>66 <span style=''>          Some(validated),
+</span>67 <span style=''>          wrapProject(pmv))
+</span>68 <span style=''>
+</span>69 <span style=''>        if (pmv.currentBackingObject == targetProject) {
+</span>70 <span style=''>          NoModificationNeeded(&quot;OK&quot;)
+</span>71 <span style=''>        }
+</span>72 <span style=''>        else {
+</span>73 <span style=''>          SuccessfulModification(pmv.currentBackingObject, pmv.changeLogEntries)
+</span>74 <span style=''>        }
+</span>75 <span style=''>      }
+</span>76 <span style=''>      catch {
+</span>77 <span style=''>        case f: InstantEditorFailureException =&gt;
+</span>78 <span style=''>          FailedModificationAttempt(f.getMessage)
+</span>79 <span style=''>        case sle: SourceLanguageRuntimeException =&gt;
+</span>80 <span style=''>          throw sle
+</span>81 <span style=''>        case NonFatal(t) =&gt;
+</span>82 <span style=''>          throw new RuntimeException(s&quot;Editor '$name' failed due to ${t.getMessage}&quot;, t)
+</span>83 <span style=''>      }
+</span>84 <span style=''>    }
+</span>85 <span style=''>    logger.debug(s&quot;$name modifyInternal took ${elapsedTime}ms&quot;)
+</span>86 <span style=''>    result
+</span>87 <span style=''>  }
+</span>88 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          3528
+        </td>
+        <td>
+          726
+          -
+          734
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;editor&quot;
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          3527
+        </td>
+        <td>
+          713
+          -
+          721
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;__kind&quot;
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          3531
+        </td>
+        <td>
+          699
+          -
+          840
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          obj.getMember(&quot;__kind&quot;).==(&quot;editor&quot;).&amp;&amp;(obj.hasMember(&quot;edit&quot;)).&amp;&amp;(obj.getMember(&quot;edit&quot;).asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror].isFunction())
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          3529
+        </td>
+        <td>
+          744
+          -
+          765
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.hasMember
+        </td>
+        <td style="background: #AEF1AE">
+          obj.hasMember(&quot;edit&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          3530
+        </td>
+        <td>
+          775
+          -
+          840
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.isFunction
+        </td>
+        <td style="background: #AEF1AE">
+          obj.getMember(&quot;edit&quot;).asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror].isFunction()
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          3534
+        </td>
+        <td>
+          991
+          -
+          1057
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.runtime.js.JavaScriptProjectEditor](new JavaScriptProjectEditor(jsc, fnVar, jsc.rugAs, resolver))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          3533
+        </td>
+        <td>
+          996
+          -
+          1056
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptProjectEditor.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new JavaScriptProjectEditor(jsc, fnVar, jsc.rugAs, resolver)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          3532
+        </td>
+        <td>
+          1036
+          -
+          1045
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptContext.rugAs
+        </td>
+        <td style="background: #AEF1AE">
+          jsc.rugAs
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3535
+        </td>
+        <td>
+          1558
+          -
+          1574
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.edit.Applicability.OK
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.project.edit.Applicability.OK
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          3536
+        </td>
+        <td>
+          1797
+          -
+          1827
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.ParameterizedSupport.addDefaultParameterValues
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectEditor.this.addDefaultParameterValues(poa)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          3537
+        </td>
+        <td>
+          1832
+          -
+          1861
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.ParameterizedSupport.validateParameters
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptProjectEditor.this.validateParameters(validated)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          3539
+        </td>
+        <td>
+          1880
+          -
+          1880
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          x$1._2
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          3538
+        </td>
+        <td>
+          1872
+          -
+          1872
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$1._1
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

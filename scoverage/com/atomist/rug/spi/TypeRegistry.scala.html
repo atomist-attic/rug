@@ -1,0 +1,432 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/spi/TypeRegistry.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.spi
+</span>2 <span style=''>
+</span>3 <span style=''>/**
+</span>4 <span style=''>  * Allows extension to Rug functionality by understanding noun
+</span>5 <span style=''>  * kinds, such as &quot;file&quot;, &quot;line&quot; or &quot;class&quot;
+</span>6 <span style=''>  */
+</span>7 <span style=''>trait TypeRegistry {
+</span>8 <span style=''>
+</span>9 <span style=''>  def findByName(kind: String): Option[Typed]
+</span>10 <span style=''>
+</span>11 <span style=''>  def typeNames: Traversable[String]
+</span>12 <span style=''>
+</span>13 <span style=''>  def types: Seq[Typed]
+</span>14 <span style=''>
+</span>15 <span style=''>  def add(that: TypeRegistry): TypeRegistry = {
+</span>16 <span style=''>    val union = </span><span style='background: #AEF1AE'>new SimpleTypeRegistry(this.types ++ that.types)</span><span style=''>
+</span>17 <span style=''>    union
+</span>18 <span style=''>  }
+</span>19 <span style=''>
+</span>20 <span style=''>  def +(that: TypeRegistry): TypeRegistry = </span><span style='background: #AEF1AE'>this.add(that)</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>  override def toString: String = </span><span style='background: #F0ADAD'>s&quot;${getClass.getSimpleName}: Types=${typeNames.toList.sorted.mkString(&quot;,&quot;)}&quot;</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>}
+</span>25 <span style=''>
+</span>26 <span style=''>class SimpleTypeRegistry(pTypes: Traversable[Typed]) extends TypeRegistry {
+</span>27 <span style=''>
+</span>28 <span style=''>  override def findByName(kind: String): Option[Typed] = </span><span style='background: #AEF1AE'>pTypes.find(_.name == kind)</span><span style=''>
+</span>29 <span style=''>
+</span>30 <span style=''>  override def typeNames: Traversable[String] = </span><span style='background: #F0ADAD'>pTypes.map(_.name)</span><span style=''>
+</span>31 <span style=''>
+</span>32 <span style=''>  override def types: Seq[Typed] = </span><span style='background: #AEF1AE'>pTypes.toSeq</span><span style=''>
+</span>33 <span style=''>
+</span>34 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          5442
+        </td>
+        <td>
+          343
+          -
+          391
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.SimpleTypeRegistry.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new SimpleTypeRegistry(this.types.++[com.atomist.rug.spi.Typed, Traversable[com.atomist.rug.spi.Typed]](that.types)(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Typed]))
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          5439
+        </td>
+        <td>
+          380
+          -
+          390
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeRegistry.types
+        </td>
+        <td style="background: #AEF1AE">
+          that.types
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          5441
+        </td>
+        <td>
+          366
+          -
+          390
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          this.types.++[com.atomist.rug.spi.Typed, Traversable[com.atomist.rug.spi.Typed]](that.types)(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Typed])
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          5440
+        </td>
+        <td>
+          377
+          -
+          377
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Typed]
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          5443
+        </td>
+        <td>
+          451
+          -
+          465
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeRegistry.add
+        </td>
+        <td style="background: #AEF1AE">
+          this.add(that)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5445
+        </td>
+        <td>
+          528
+          -
+          537
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;: Types=&quot;
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5448
+        </td>
+        <td>
+          538
+          -
+          575
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          TypeRegistry.this.typeNames.toList.sorted[String](math.this.Ordering.String).mkString(&quot;,&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5444
+        </td>
+        <td>
+          503
+          -
+          504
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5447
+        </td>
+        <td>
+          505
+          -
+          527
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getSimpleName
+        </td>
+        <td style="background: #F0ADAD">
+          TypeRegistry.this.getClass().getSimpleName()
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5446
+        </td>
+        <td>
+          576
+          -
+          577
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          5449
+        </td>
+        <td>
+          501
+          -
+          577
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;: Types=&quot;, &quot;&quot;).s(TypeRegistry.this.getClass().getSimpleName(), TypeRegistry.this.typeNames.toList.sorted[String](math.this.Ordering.String).mkString(&quot;,&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          5451
+        </td>
+        <td>
+          716
+          -
+          743
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.find
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleTypeRegistry.this.pTypes.find(((x$1: com.atomist.rug.spi.Typed) =&gt; x$1.name.==(kind)))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          5450
+        </td>
+        <td>
+          728
+          -
+          742
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.name.==(kind)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          5454
+        </td>
+        <td>
+          793
+          -
+          811
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #F0ADAD">
+          SimpleTypeRegistry.this.pTypes.map[String, Traversable[String]](((x$2: com.atomist.rug.spi.Typed) =&gt; x$2.name))(collection.this.Traversable.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          5453
+        </td>
+        <td>
+          803
+          -
+          803
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Traversable.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Traversable.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          5452
+        </td>
+        <td>
+          804
+          -
+          810
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.name
+        </td>
+        <td style="background: #F0ADAD">
+          x$2.name
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          5455
+        </td>
+        <td>
+          848
+          -
+          860
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          SimpleTypeRegistry.this.pTypes.toSeq
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

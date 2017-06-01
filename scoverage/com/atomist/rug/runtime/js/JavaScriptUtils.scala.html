@@ -1,0 +1,4006 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/js/JavaScriptUtils.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.js
+</span>2 <span style=''>
+</span>3 <span style=''>import javax.script.{ScriptContext, SimpleBindings}
+</span>4 <span style=''>
+</span>5 <span style=''>import com.atomist.param.{Parameter, ParameterValue, ParameterValues, Tag}
+</span>6 <span style=''>import com.atomist.rug.{BadPlanException, InvalidRugParameterDefaultValue, InvalidRugParameterPatternException}
+</span>7 <span style=''>import com.atomist.rug.parser.DefaultIdentifierResolver
+</span>8 <span style=''>import com.atomist.rug.runtime.RugScopes
+</span>9 <span style=''>import com.atomist.rug.runtime.RugScopes.Scope
+</span>10 <span style=''>import com.atomist.rug.spi.Secret
+</span>11 <span style=''>import jdk.nashorn.api.scripting.{ScriptObjectMirror, ScriptUtils}
+</span>12 <span style=''>import jdk.nashorn.internal.runtime.ScriptRuntime
+</span>13 <span style=''>
+</span>14 <span style=''>import scala.collection.JavaConverters._
+</span>15 <span style=''>import scala.util.{Failure, Success, Try}
+</span>16 <span style=''>
+</span>17 <span style=''>/**
+</span>18 <span style=''>  * Stuff for all JavaScript based things
+</span>19 <span style=''>  */
+</span>20 <span style=''>trait JavaScriptUtils {
+</span>21 <span style=''>
+</span>22 <span style=''>  /**
+</span>23 <span style=''>    * Invoke the given member of the JavaScript class with these arguments, processing them as appropriate
+</span>24 <span style=''>    *
+</span>25 <span style=''>    * @param member name of the member to invoke
+</span>26 <span style=''>    * @param args   arguments to invoke with. They will be translated into
+</span>27 <span style=''>    *               appropriate JavaScript types if necessary
+</span>28 <span style=''>    * @return result of the invocation
+</span>29 <span style=''>    */
+</span>30 <span style=''>  protected def invokeMemberFunction(jsc: JavaScriptContext, jsVar: ScriptObjectMirror, member: String, params: Option[ParameterValues], args: Object*): Any = {
+</span>31 <span style=''>    </span><span style='background: #AEF1AE'>jsc.withEnhancedExceptions {
+</span>32 <span style=''></span><span style='background: #AEF1AE'>      val clone = cloneVar(jsc, jsVar)
+</span>33 <span style=''></span><span style='background: #AEF1AE'>      if (params.nonEmpty) {
+</span>34 <span style=''></span><span style='background: #AEF1AE'>        setParameters(clone, params.get.parameterValues)
+</span>35 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>36 <span style=''></span><span style='background: #AEF1AE'>      //TODO wrap parameters in safe committing proxy
+</span>37 <span style=''></span><span style='background: #AEF1AE'>      clone.asInstanceOf[ScriptObjectMirror].callMember(member, args: _*)
+</span>38 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>39 <span style=''>  }
+</span>40 <span style=''>
+</span>41 <span style=''>  /**
+</span>42 <span style=''>    * Separate for test
+</span>43 <span style=''>    */
+</span>44 <span style=''>  private[js] def cloneVar(jsc: JavaScriptContext, objToClone: ScriptObjectMirror): ScriptObjectMirror = {
+</span>45 <span style=''>    val bindings = </span><span style='background: #AEF1AE'>new SimpleBindings()</span><span style=''>
+</span>46 <span style=''>    </span><span style='background: #AEF1AE'>bindings.put(&quot;rug&quot;, objToClone)</span><span style=''>
+</span>47 <span style=''>
+</span>48 <span style=''>    //TODO - why do we need this?
+</span>49 <span style=''>    </span><span style='background: #AEF1AE'>jsc.engine.getContext.getBindings(ScriptContext.ENGINE_SCOPE).asScala.foreach {
+</span>50 <span style=''></span><span style='background: #AEF1AE'>      case (k: String, v: AnyRef) =&gt; bindings.put(k, v)
+</span>51 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>52 <span style=''>    </span><span style='background: #AEF1AE'>jsc.engine.eval(&quot;Object.create(rug);&quot;, bindings).asInstanceOf[ScriptObjectMirror]</span><span style=''>
+</span>53 <span style=''>  }
+</span>54 <span style=''>
+</span>55 <span style=''>  /**
+</span>56 <span style=''>    * Make sure we only set fields if they've been decorated with @Parameter or @MappedParameter
+</span>57 <span style=''>    */
+</span>58 <span style=''>  protected def setParameters(clone: ScriptObjectMirror, params: Seq[ParameterValue]): Unit = {
+</span>59 <span style=''>    val decoratedParamNames: Set[String] = </span><span style='background: #AEF1AE'>clone.get(&quot;__parameters&quot;)</span><span style=''> match {
+</span>60 <span style=''>      case ps: ScriptObjectMirror if </span><span style='background: #AEF1AE'>!ps.isEmpty</span><span style=''> =&gt;
+</span>61 <span style=''>        </span><span style='background: #AEF1AE'>ps.asScala.collect {
+</span>62 <span style=''></span><span style='background: #AEF1AE'>          case (_, details: ScriptObjectMirror) =&gt;
+</span>63 <span style=''></span><span style='background: #AEF1AE'>            details.get(&quot;name&quot;).asInstanceOf[String]
+</span>64 <span style=''></span><span style='background: #AEF1AE'>        }.toSet[String]</span><span style=''>
+</span>65 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>Set()</span><span style=''>
+</span>66 <span style=''>    }
+</span>67 <span style=''>
+</span>68 <span style=''>    val mappedParams: Set[String] = </span><span style='background: #AEF1AE'>clone.get(&quot;__mappedParameters&quot;)</span><span style=''> match {
+</span>69 <span style=''>      case ps: ScriptObjectMirror if </span><span style='background: #AEF1AE'>!ps.isEmpty</span><span style=''> =&gt;
+</span>70 <span style=''>        </span><span style='background: #AEF1AE'>ps.asScala.collect {
+</span>71 <span style=''></span><span style='background: #AEF1AE'>          case (_, details: ScriptObjectMirror) =&gt;
+</span>72 <span style=''></span><span style='background: #AEF1AE'>            details.get(&quot;localKey&quot;).asInstanceOf[String]
+</span>73 <span style=''></span><span style='background: #AEF1AE'>        }.toSet[String]</span><span style=''>
+</span>74 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>Set()</span><span style=''>
+</span>75 <span style=''>    }
+</span>76 <span style=''>    </span><span style='background: #AEF1AE'>params.foreach(p =&gt; {
+</span>77 <span style=''></span><span style='background: #AEF1AE'>      if (decoratedParamNames.contains(p.getName)) {
+</span>78 <span style=''></span><span style='background: #AEF1AE'>        clone.put(p.getName, p.getValue)
+</span>79 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>80 <span style=''></span><span style='background: #AEF1AE'>      if (mappedParams.contains(p.getName)) {
+</span>81 <span style=''></span><span style='background: #AEF1AE'>        clone.put(p.getName, p.getValue)
+</span>82 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>83 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
+</span>84 <span style=''>  }
+</span>85 <span style=''>
+</span>86 <span style=''>  /**
+</span>87 <span style=''>    * Fetch a member by name.
+</span>88 <span style=''>    */
+</span>89 <span style=''>  protected def getMember(someVar: ScriptObjectMirror, name: String): Option[AnyRef] = {
+</span>90 <span style=''>    </span><span style='background: #AEF1AE'>someVar.getMember(name)</span><span style=''> match {
+</span>91 <span style=''>      case value if </span><span style='background: #AEF1AE'>value != ScriptRuntime.UNDEFINED</span><span style=''> =&gt; </span><span style='background: #AEF1AE'>Some(value)</span><span style=''>
+</span>92 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>Option.empty</span><span style=''>
+</span>93 <span style=''>    }
+</span>94 <span style=''>  }
+</span>95 <span style=''>
+</span>96 <span style=''>  protected def tags(someVar: ScriptObjectMirror): Seq[Tag] = {
+</span>97 <span style=''>    </span><span style='background: #AEF1AE'>Try {
+</span>98 <span style=''></span><span style='background: #AEF1AE'>      getMember(someVar, &quot;__tags&quot;) match {
+</span>99 <span style=''></span><span style='background: #AEF1AE'>        case Some(som: ScriptObjectMirror) =&gt;
+</span>100 <span style=''></span><span style='background: #AEF1AE'>          val stringValues = som.values().asScala collect {
+</span>101 <span style=''></span><span style='background: #AEF1AE'>            case s: String =&gt; s
+</span>102 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>103 <span style=''></span><span style='background: #AEF1AE'>          stringValues.map(s =&gt; Tag(s, s)).toSeq
+</span>104 <span style=''></span><span style='background: #AEF1AE'>        case _ =&gt; Nil
+</span>105 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>106 <span style=''></span><span style='background: #AEF1AE'>    }.getOrElse(</span><span style='background: #F0ADAD'>Nil</span><span style='background: #AEF1AE'>)</span><span style=''>
+</span>107 <span style=''>  }
+</span>108 <span style=''>
+</span>109 <span style=''>  /**
+</span>110 <span style=''>    * Either read the parameters field or look for annotated parameters.
+</span>111 <span style=''>    */
+</span>112 <span style=''>  protected def parameters(someVar: ScriptObjectMirror): Seq[Parameter] = {
+</span>113 <span style=''>    </span><span style='background: #AEF1AE'>getMember(someVar, &quot;__parameters&quot;)</span><span style=''> match {
+</span>114 <span style=''>      case Some(ps: ScriptObjectMirror) if </span><span style='background: #AEF1AE'>!ps.isEmpty</span><span style=''> =&gt;
+</span>115 <span style=''>        </span><span style='background: #AEF1AE'>ps.asScala.collect {
+</span>116 <span style=''></span><span style='background: #AEF1AE'>          case (_, details: ScriptObjectMirror) =&gt; parameterVarToParameter(someVar, details)
+</span>117 <span style=''></span><span style='background: #AEF1AE'>        }.toSeq</span><span style=''>
+</span>118 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>Seq()</span><span style=''>
+</span>119 <span style=''>    }
+</span>120 <span style=''>  }
+</span>121 <span style=''>
+</span>122 <span style=''>  /**
+</span>123 <span style=''>    * Fetch any secrets decorated on the handler
+</span>124 <span style=''>    */
+</span>125 <span style=''>  protected def secrets(someVar: ScriptObjectMirror): Seq[Secret] = {
+</span>126 <span style=''>    </span><span style='background: #AEF1AE'>someVar.getMember(&quot;__secrets&quot;)</span><span style=''> match {
+</span>127 <span style=''>      case som: ScriptObjectMirror =&gt;
+</span>128 <span style=''>        </span><span style='background: #AEF1AE'>som.values().asScala.collect {
+</span>129 <span style=''></span><span style='background: #AEF1AE'>          case s: String =&gt; Secret(s, s)
+</span>130 <span style=''></span><span style='background: #AEF1AE'>        }.toSeq</span><span style=''>
+</span>131 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>132 <span style=''>    }
+</span>133 <span style=''>  }
+</span>134 <span style=''>
+</span>135 <span style=''>  private def parameterVarToParameter(rug: ScriptObjectMirror, details: ScriptObjectMirror): Parameter = {
+</span>136 <span style=''>
+</span>137 <span style=''>    val pName = </span><span style='background: #AEF1AE'>details.get(&quot;name&quot;).asInstanceOf[String]</span><span style=''>
+</span>138 <span style=''>    val pPattern = </span><span style='background: #AEF1AE'>details.get(&quot;pattern&quot;).asInstanceOf[String]</span><span style=''>
+</span>139 <span style=''>    val parameter = </span><span style='background: #AEF1AE'>Parameter(pName, pPattern)</span><span style=''>
+</span>140 <span style=''>    </span><span style='background: #AEF1AE'>parameter.setDisplayName(details.get(&quot;displayName&quot;).asInstanceOf[String])</span><span style=''>
+</span>141 <span style=''>
+</span>142 <span style=''>    </span><span style='background: #AEF1AE'>details.get(&quot;maxLength&quot;)</span><span style=''> match {
+</span>143 <span style=''>      case x: AnyRef =&gt; </span><span style='background: #AEF1AE'>parameter.setMaxLength(x.asInstanceOf[Int])</span><span style=''>
+</span>144 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>parameter.setMaxLength(-1)</span><span style=''>
+</span>145 <span style=''>    }
+</span>146 <span style=''>    </span><span style='background: #AEF1AE'>details.get(&quot;minLength&quot;)</span><span style=''> match {
+</span>147 <span style=''>      case x: AnyRef =&gt; </span><span style='background: #AEF1AE'>parameter.setMinLength(x.asInstanceOf[Int])</span><span style=''>
+</span>148 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>parameter.setMinLength(-1)</span><span style=''>
+</span>149 <span style=''>    }
+</span>150 <span style=''>
+</span>151 <span style=''>    </span><span style='background: #AEF1AE'>parameter.setDefaultRef(details.get(&quot;defaultRef&quot;).asInstanceOf[String])</span><span style=''>
+</span>152 <span style=''>    val disp = </span><span style='background: #AEF1AE'>details.get(&quot;displayable&quot;)</span><span style=''>
+</span>153 <span style=''>    </span><span style='background: #AEF1AE'>parameter.setDisplayable(if (disp != null) disp.asInstanceOf[Boolean] else true)</span><span style=''>
+</span>154 <span style=''>
+</span>155 <span style=''>    if (</span><span style='background: #AEF1AE'>details.hasMember(&quot;required&quot;)</span><span style=''>) {
+</span>156 <span style=''>      </span><span style='background: #AEF1AE'>parameter.setRequired(details.get(&quot;required&quot;).asInstanceOf[Boolean])</span><span style=''>
+</span>157 <span style=''>    } else {
+</span>158 <span style=''>      </span><span style='background: #AEF1AE'>parameter.setRequired(true)</span><span style=''>
+</span>159 <span style=''>    }
+</span>160 <span style=''>
+</span>161 <span style=''>    </span><span style='background: #AEF1AE'>parameter.addTags(tags(details))</span><span style=''>
+</span>162 <span style=''>
+</span>163 <span style=''>    </span><span style='background: #AEF1AE'>parameter.setValidInputDescription(details.get(&quot;validInput&quot;).asInstanceOf[String])</span><span style=''>
+</span>164 <span style=''>    </span><span style='background: #AEF1AE'>parameter.describedAs(details.get(&quot;description&quot;).asInstanceOf[String])</span><span style=''>
+</span>165 <span style=''>
+</span>166 <span style=''>    pPattern match {
+</span>167 <span style=''>      case s: String if </span><span style='background: #AEF1AE'>s.startsWith(&quot;@&quot;)</span><span style=''> =&gt; </span><span style='background: #AEF1AE'>DefaultIdentifierResolver.resolve(s.substring(1))</span><span style=''> match {
+</span>168 <span style=''>        case Left(_) =&gt;
+</span>169 <span style=''>          </span><span style='background: #AEF1AE'>throw new InvalidRugParameterPatternException(s&quot;Unable to recognize predefined validation pattern for parameter $pName: $s&quot;)</span><span style=''>
+</span>170 <span style=''>        case Right(pat) =&gt; </span><span style='background: #AEF1AE'>parameter.setPattern(pat)</span><span style=''>
+</span>171 <span style=''>      }
+</span>172 <span style=''>      case s: String if </span><span style='background: #AEF1AE'>!s.startsWith(&quot;^&quot;) || !s.endsWith(&quot;$&quot;)</span><span style=''> =&gt;
+</span>173 <span style=''>        </span><span style='background: #F0ADAD'>throw new InvalidRugParameterPatternException(s&quot;Parameter $pName validation pattern must contain anchors: $s&quot;)</span><span style=''>
+</span>174 <span style=''>      case s: String =&gt; </span><span style='background: #AEF1AE'>parameter.setPattern(s)</span><span style=''>
+</span>175 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>throw new InvalidRugParameterPatternException(s&quot;Parameter $pName has no valid validation pattern&quot;)</span><span style=''>
+</span>176 <span style=''>    }
+</span>177 <span style=''>
+</span>178 <span style=''>    if (</span><span style='background: #AEF1AE'>rug.hasMember(pName) &amp;&amp; rug.getMember(pName) != null</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>179 <span style=''></span><span style='background: #AEF1AE'>      val asString = rug.getMember(pName).toString
+</span>180 <span style=''></span><span style='background: #AEF1AE'>      if (!parameter.isValidValue(asString))
+</span>181 <span style=''></span><span style='background: #AEF1AE'>        if (asString == &quot;&quot;) {
+</span>182 <span style=''></span><span style='background: #AEF1AE'>           // how can we warn them??? this is deprecated
+</span>183 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>println(s&quot;WARNING: On rug ${name(rug)}, parameter '$pName' has a default value of '$asString', but that is not a valid value for this parameter. Set the parameter to null instead, please.&quot;)</span><span style='background: #AEF1AE'>
+</span>184 <span style=''></span><span style='background: #AEF1AE'>        } else {
+</span>185 <span style=''></span><span style='background: #AEF1AE'>          throw new InvalidRugParameterDefaultValue(s&quot;Parameter $pName default value ($asString) is not valid: $parameter&quot;)
+</span>186 <span style=''></span><span style='background: #AEF1AE'>        }
+</span>187 <span style=''></span><span style='background: #AEF1AE'>      parameter.setDefaultValue(rug.getMember(pName).toString)
+</span>188 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>189 <span style=''>
+</span>190 <span style=''>    parameter
+</span>191 <span style=''>  }
+</span>192 <span style=''>
+</span>193 <span style=''>  protected def name(obj: ScriptObjectMirror): String = {
+</span>194 <span style=''>    if (</span><span style='background: #AEF1AE'>obj.hasMember(&quot;__name&quot;)</span><span style=''>) {
+</span>195 <span style=''>      </span><span style='background: #AEF1AE'>obj.getMember(&quot;__name&quot;).asInstanceOf[String]</span><span style=''>
+</span>196 <span style=''>    } else {
+</span>197 <span style=''>      </span><span style='background: #AEF1AE'>Try(obj.getMember(&quot;constructor&quot;).asInstanceOf[ScriptObjectMirror].getMember(&quot;name&quot;).asInstanceOf[String]) match {
+</span>198 <span style=''></span><span style='background: #AEF1AE'>        case Success(name) =&gt; name
+</span>199 <span style=''></span><span style='background: #AEF1AE'>        case Failure(error) =&gt; </span><span style='background: #F0ADAD'>throw new BadPlanException(s&quot;Could not determine name of Rug&quot;, error)</span><span style='background: #AEF1AE'>
+</span>200 <span style=''></span><span style='background: #AEF1AE'>      }</span><span style=''>
+</span>201 <span style=''>    }
+</span>202 <span style=''>  }
+</span>203 <span style=''>
+</span>204 <span style=''>  protected def scope(obj: ScriptObjectMirror): Scope = {
+</span>205 <span style=''>    </span><span style='background: #AEF1AE'>obj.getMember(&quot;__scope&quot;)</span><span style=''> match {
+</span>206 <span style=''>      case o: String =&gt; </span><span style='background: #AEF1AE'>RugScopes.from(o)</span><span style=''>
+</span>207 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>RugScopes.DEFAULT</span><span style=''>
+</span>208 <span style=''>    }
+</span>209 <span style=''>  }
+</span>210 <span style=''>
+</span>211 <span style=''>  protected def description(obj: ScriptObjectMirror): String = </span><span style='background: #AEF1AE'>obj.getMember(&quot;__description&quot;).asInstanceOf[String]</span><span style=''>
+</span>212 <span style=''>
+</span>213 <span style=''>  protected def kind(obj: ScriptObjectMirror): String = </span><span style='background: #F0ADAD'>obj.getMember(&quot;__kind&quot;).asInstanceOf[String]</span><span style=''>
+</span>214 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          3667
+        </td>
+        <td>
+          1248
+          -
+          1543
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptContext.withEnhancedExceptions
+        </td>
+        <td style="background: #AEF1AE">
+          jsc.withEnhancedExceptions[Object]({
+  val clone: jdk.nashorn.api.scripting.ScriptObjectMirror = JavaScriptUtils.this.cloneVar(jsc, jsVar);
+  if (params.nonEmpty)
+    JavaScriptUtils.this.setParameters(clone, params.get.parameterValues)
+  else
+    ();
+  clone.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror].callMember(member, (args: _*))
+})
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          3659
+        </td>
+        <td>
+          1295
+          -
+          1315
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.cloneVar
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptUtils.this.cloneVar(jsc, jsVar)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          3665
+        </td>
+        <td>
+          1322
+          -
+          1322
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          3664
+        </td>
+        <td>
+          1322
+          -
+          1322
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          3660
+        </td>
+        <td>
+          1326
+          -
+          1341
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          params.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          3663
+        </td>
+        <td>
+          1353
+          -
+          1401
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.setParameters
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptUtils.this.setParameters(clone, params.get.parameterValues)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          3662
+        </td>
+        <td>
+          1353
+          -
+          1401
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.setParameters
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptUtils.this.setParameters(clone, params.get.parameterValues)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          3661
+        </td>
+        <td>
+          1374
+          -
+          1400
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValues.parameterValues
+        </td>
+        <td style="background: #AEF1AE">
+          params.get.parameterValues
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          3666
+        </td>
+        <td>
+          1470
+          -
+          1537
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.callMember
+        </td>
+        <td style="background: #AEF1AE">
+          clone.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror].callMember(member, (args: _*))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          3668
+        </td>
+        <td>
+          1712
+          -
+          1732
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.script.SimpleBindings.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new javax.script.SimpleBindings()
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          3669
+        </td>
+        <td>
+          1737
+          -
+          1768
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.script.SimpleBindings.put
+        </td>
+        <td style="background: #AEF1AE">
+          bindings.put(&quot;rug&quot;, objToClone)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          3672
+        </td>
+        <td>
+          1808
+          -
+          1949
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.mapAsScalaMapConverter[String, Object](jsc.engine.getContext().getBindings(100)).asScala.foreach[Object](((x0$1: (String, Object)) =&gt; x0$1 match {
+  case (_1: String, _2: Object)(String, Object)((k @ (_: String)), (v @ (_: AnyRef))) =&gt; bindings.put(k, v)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          3670
+        </td>
+        <td>
+          1808
+          -
+          1869
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.script.ScriptContext.getBindings
+        </td>
+        <td style="background: #AEF1AE">
+          jsc.engine.getContext().getBindings(100)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          3671
+        </td>
+        <td>
+          1925
+          -
+          1943
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          javax.script.SimpleBindings.put
+        </td>
+        <td style="background: #AEF1AE">
+          bindings.put(k, v)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          3674
+        </td>
+        <td>
+          1954
+          -
+          2035
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          jsc.engine.eval(&quot;Object.create(rug);&quot;, bindings).asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror]
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          3673
+        </td>
+        <td>
+          1970
+          -
+          1991
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Object.create(rug);&quot;
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          3675
+        </td>
+        <td>
+          2290
+          -
+          2315
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.get
+        </td>
+        <td style="background: #AEF1AE">
+          clone.get(&quot;__parameters&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          3676
+        </td>
+        <td>
+          2361
+          -
+          2372
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          ps.isEmpty().unary_!
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          3680
+        </td>
+        <td>
+          2403
+          -
+          2403
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Iterable.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          3679
+        </td>
+        <td>
+          2403
+          -
+          2403
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          3677
+        </td>
+        <td>
+          2480
+          -
+          2486
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          3678
+        </td>
+        <td>
+          2468
+          -
+          2508
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          details.get(&quot;name&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          3681
+        </td>
+        <td>
+          2384
+          -
+          2532
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.mapAsScalaMapConverter[String, Object](ps).asScala.collect[String, scala.collection.mutable.Iterable[String]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[(String, Object),String] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: ((String, Object)) =&gt; String&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: (String, Object), B1 &gt;: String](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[(String, Object)]: (String, Object)): (String, Object) @unchecked) match {
+      case (_1: String, _2: Object)(String, Object)(_, (details @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror))) =&gt; details.get(&quot;name&quot;).asInstanceOf[String]
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: (String, Object)): Boolean = ((x1.asInstanceOf[(String, Object)]: (String, Object)): (String, Object) @unchecked) match {
+      case (_1: String, _2: Object)(String, Object)(_, (details @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror))) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[(String, Object),String]))(mutable.this.Iterable.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          3682
+        </td>
+        <td>
+          2549
+          -
+          2554
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String]()
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          3683
+        </td>
+        <td>
+          2598
+          -
+          2629
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.get
+        </td>
+        <td style="background: #AEF1AE">
+          clone.get(&quot;__mappedParameters&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          3684
+        </td>
+        <td>
+          2675
+          -
+          2686
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          ps.isEmpty().unary_!
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          3688
+        </td>
+        <td>
+          2717
+          -
+          2717
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Iterable.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          3687
+        </td>
+        <td>
+          2717
+          -
+          2717
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          3686
+        </td>
+        <td>
+          2782
+          -
+          2826
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          details.get(&quot;localKey&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          3685
+        </td>
+        <td>
+          2794
+          -
+          2804
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;localKey&quot;
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          3689
+        </td>
+        <td>
+          2698
+          -
+          2850
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.mapAsScalaMapConverter[String, Object](ps).asScala.collect[String, scala.collection.mutable.Iterable[String]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[(String, Object),String] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: ((String, Object)) =&gt; String&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: (String, Object), B1 &gt;: String](x2: A1, default: A1 =&gt; B1): B1 = ((x2.asInstanceOf[(String, Object)]: (String, Object)): (String, Object) @unchecked) match {
+      case (_1: String, _2: Object)(String, Object)(_, (details @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror))) =&gt; details.get(&quot;localKey&quot;).asInstanceOf[String]
+      case (defaultCase$ @ _) =&gt; default.apply(x2)
+    };
+    final def isDefinedAt(x2: (String, Object)): Boolean = ((x2.asInstanceOf[(String, Object)]: (String, Object)): (String, Object) @unchecked) match {
+      case (_1: String, _2: Object)(String, Object)(_, (details @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror))) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[(String, Object),String]))(mutable.this.Iterable.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          3690
+        </td>
+        <td>
+          2867
+          -
+          2872
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String]()
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          3707
+        </td>
+        <td>
+          2883
+          -
+          3108
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          params.foreach[Any](((p: com.atomist.param.ParameterValue) =&gt; {
+  if (decoratedParamNames.contains(p.getName))
+    clone.put(p.getName, p.getValue)
+  else
+    ();
+  if (mappedParams.contains(p.getName))
+    clone.put(p.getName, p.getValue)
+  else
+    ()
+}))
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          3692
+        </td>
+        <td>
+          2915
+          -
+          2954
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          decoratedParamNames.contains(p.getName)
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          3698
+        </td>
+        <td>
+          2911
+          -
+          2911
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          3697
+        </td>
+        <td>
+          2911
+          -
+          2911
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          3691
+        </td>
+        <td>
+          2944
+          -
+          2953
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValue.getName
+        </td>
+        <td style="background: #AEF1AE">
+          p.getName
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          3693
+        </td>
+        <td>
+          2976
+          -
+          2985
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValue.getName
+        </td>
+        <td style="background: #AEF1AE">
+          p.getName
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          3695
+        </td>
+        <td>
+          2966
+          -
+          2998
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.put
+        </td>
+        <td style="background: #AEF1AE">
+          clone.put(p.getName, p.getValue)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          3694
+        </td>
+        <td>
+          2987
+          -
+          2997
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValue.getValue
+        </td>
+        <td style="background: #AEF1AE">
+          p.getValue
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          3696
+        </td>
+        <td>
+          2966
+          -
+          2998
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.put
+        </td>
+        <td style="background: #AEF1AE">
+          clone.put(p.getName, p.getValue)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          3699
+        </td>
+        <td>
+          3039
+          -
+          3048
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValue.getName
+        </td>
+        <td style="background: #AEF1AE">
+          p.getName
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          3706
+        </td>
+        <td>
+          3013
+          -
+          3013
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          3700
+        </td>
+        <td>
+          3017
+          -
+          3049
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          mappedParams.contains(p.getName)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          3705
+        </td>
+        <td>
+          3013
+          -
+          3013
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          3702
+        </td>
+        <td>
+          3082
+          -
+          3092
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValue.getValue
+        </td>
+        <td style="background: #AEF1AE">
+          p.getValue
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          3701
+        </td>
+        <td>
+          3071
+          -
+          3080
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValue.getName
+        </td>
+        <td style="background: #AEF1AE">
+          p.getName
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          3704
+        </td>
+        <td>
+          3061
+          -
+          3093
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.put
+        </td>
+        <td style="background: #AEF1AE">
+          clone.put(p.getName, p.getValue)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          3703
+        </td>
+        <td>
+          3061
+          -
+          3093
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.put
+        </td>
+        <td style="background: #AEF1AE">
+          clone.put(p.getName, p.getValue)
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          3708
+        </td>
+        <td>
+          3250
+          -
+          3273
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          someVar.getMember(name)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          3710
+        </td>
+        <td>
+          3302
+          -
+          3334
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          value.!=(jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          3709
+        </td>
+        <td>
+          3311
+          -
+          3334
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED
+        </td>
+        <td style="background: #AEF1AE">
+          jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          3711
+        </td>
+        <td>
+          3338
+          -
+          3349
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Object](value)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          3712
+        </td>
+        <td>
+          3366
+          -
+          3378
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Option.empty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Option.empty[Nothing]
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          3713
+        </td>
+        <td>
+          3470
+          -
+          3498
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptUtils.this.getMember(someVar, &quot;__tags&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          3717
+        </td>
+        <td>
+          3582
+          -
+          3656
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.collectionAsScalaIterableConverter[Object](som.values()).asScala.collect[String, Iterable[String]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[Object,String] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: Object =&gt; String&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: Object, B1 &gt;: String](x3: A1, default: A1 =&gt; B1): B1 = ((x3.asInstanceOf[Object]: Object): Object @unchecked) match {
+      case (s @ (_: String)) =&gt; s
+      case (defaultCase$ @ _) =&gt; default.apply(x3)
+    };
+    final def isDefinedAt(x3: Object): Boolean = ((x3.asInstanceOf[Object]: Object): Object @unchecked) match {
+      case (s @ (_: String)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[Object,String]))(collection.this.Iterable.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          3716
+        </td>
+        <td>
+          3603
+          -
+          3603
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Iterable.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          3715
+        </td>
+        <td>
+          3611
+          -
+          3611
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          3714
+        </td>
+        <td>
+          3582
+          -
+          3594
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.values
+        </td>
+        <td style="background: #AEF1AE">
+          som.values()
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          3719
+        </td>
+        <td>
+          3683
+          -
+          3683
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Iterable.canBuildFrom[com.atomist.param.Tag]
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          3718
+        </td>
+        <td>
+          3689
+          -
+          3698
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Tag.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.param.Tag.apply(s, s)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          3720
+        </td>
+        <td>
+          3667
+          -
+          3705
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          stringValues.map[com.atomist.param.Tag, Iterable[com.atomist.param.Tag]](((s: String) =&gt; com.atomist.param.Tag.apply(s, s)))(collection.this.Iterable.canBuildFrom[com.atomist.param.Tag]).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          3721
+        </td>
+        <td>
+          3724
+          -
+          3727
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          3722
+        </td>
+        <td>
+          3752
+          -
+          3755
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          3723
+        </td>
+        <td>
+          3458
+          -
+          3756
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.Try.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Try.apply[Seq[com.atomist.param.Tag]](JavaScriptUtils.this.getMember(someVar, &quot;__tags&quot;) match {
+  case (x: AnyRef)Some[AnyRef]((som @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror))) =&gt; {
+    val stringValues: Iterable[String] = scala.collection.JavaConverters.collectionAsScalaIterableConverter[Object](som.values()).asScala.collect[String, Iterable[String]](({
+      @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[Object,String] with Serializable {
+        def &lt;init&gt;(): &lt;$anon: Object =&gt; String&gt; = {
+          $anonfun.super.&lt;init&gt;();
+          ()
+        };
+        final override def applyOrElse[A1 &lt;: Object, B1 &gt;: String](x3: A1, default: A1 =&gt; B1): B1 = ((x3.asInstanceOf[Object]: Object): Object @unchecked) match {
+          case (s @ (_: String)) =&gt; s
+          case (defaultCase$ @ _) =&gt; default.apply(x3)
+        };
+        final def isDefinedAt(x3: Object): Boolean = ((x3.asInstanceOf[Object]: Object): Object @unchecked) match {
+          case (s @ (_: String)) =&gt; true
+          case (defaultCase$ @ _) =&gt; false
+        }
+      };
+      new $anonfun()
+    }: PartialFunction[Object,String]))(collection.this.Iterable.canBuildFrom[String]);
+    stringValues.map[com.atomist.param.Tag, Iterable[com.atomist.param.Tag]](((s: String) =&gt; com.atomist.param.Tag.apply(s, s)))(collection.this.Iterable.canBuildFrom[com.atomist.param.Tag]).toSeq
+  }
+  case _ =&gt; immutable.this.Nil
+}).getOrElse[Seq[com.atomist.param.Tag]](immutable.this.Nil)
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          3724
+        </td>
+        <td>
+          3928
+          -
+          3962
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptUtils.this.getMember(someVar, &quot;__parameters&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          3725
+        </td>
+        <td>
+          4014
+          -
+          4025
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          ps.isEmpty().unary_!
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          3728
+        </td>
+        <td>
+          4056
+          -
+          4056
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Iterable.canBuildFrom[com.atomist.param.Parameter]
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          3727
+        </td>
+        <td>
+          4056
+          -
+          4056
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          3726
+        </td>
+        <td>
+          4109
+          -
+          4150
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.parameterVarToParameter
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptUtils.this.parameterVarToParameter(someVar, details)
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          3729
+        </td>
+        <td>
+          4037
+          -
+          4166
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.mapAsScalaMapConverter[String, Object](ps).asScala.collect[com.atomist.param.Parameter, scala.collection.mutable.Iterable[com.atomist.param.Parameter]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[(String, Object),com.atomist.param.Parameter] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: ((String, Object)) =&gt; com.atomist.param.Parameter&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: (String, Object), B1 &gt;: com.atomist.param.Parameter](x4: A1, default: A1 =&gt; B1): B1 = ((x4.asInstanceOf[(String, Object)]: (String, Object)): (String, Object) @unchecked) match {
+      case (_1: String, _2: Object)(String, Object)(_, (details @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror))) =&gt; JavaScriptUtils.this.parameterVarToParameter(someVar, details)
+      case (defaultCase$ @ _) =&gt; default.apply(x4)
+    };
+    final def isDefinedAt(x4: (String, Object)): Boolean = ((x4.asInstanceOf[(String, Object)]: (String, Object)): (String, Object) @unchecked) match {
+      case (_1: String, _2: Object)(String, Object)(_, (details @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror))) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[(String, Object),com.atomist.param.Parameter]))(mutable.this.Iterable.canBuildFrom[com.atomist.param.Parameter]).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          3730
+        </td>
+        <td>
+          4183
+          -
+          4188
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          3731
+        </td>
+        <td>
+          4336
+          -
+          4366
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          someVar.getMember(&quot;__secrets&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          3735
+        </td>
+        <td>
+          4450
+          -
+          4450
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Iterable.canBuildFrom[com.atomist.rug.spi.Secret]
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          3734
+        </td>
+        <td>
+          4450
+          -
+          4450
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          3732
+        </td>
+        <td>
+          4421
+          -
+          4433
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.values
+        </td>
+        <td style="background: #AEF1AE">
+          som.values()
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          3733
+        </td>
+        <td>
+          4480
+          -
+          4492
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Secret.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Secret.apply(s, s)
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          3736
+        </td>
+        <td>
+          4421
+          -
+          4508
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.collectionAsScalaIterableConverter[Object](som.values()).asScala.collect[com.atomist.rug.spi.Secret, Iterable[com.atomist.rug.spi.Secret]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[Object,com.atomist.rug.spi.Secret] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: Object =&gt; com.atomist.rug.spi.Secret&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: Object, B1 &gt;: com.atomist.rug.spi.Secret](x5: A1, default: A1 =&gt; B1): B1 = ((x5.asInstanceOf[Object]: Object): Object @unchecked) match {
+      case (s @ (_: String)) =&gt; com.atomist.rug.spi.Secret.apply(s, s)
+      case (defaultCase$ @ _) =&gt; default.apply(x5)
+    };
+    final def isDefinedAt(x5: Object): Boolean = ((x5.asInstanceOf[Object]: Object): Object @unchecked) match {
+      case (s @ (_: String)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[Object,com.atomist.rug.spi.Secret]))(collection.this.Iterable.canBuildFrom[com.atomist.rug.spi.Secret]).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          3737
+        </td>
+        <td>
+          4525
+          -
+          4528
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          3739
+        </td>
+        <td>
+          4664
+          -
+          4704
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          details.get(&quot;name&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          3738
+        </td>
+        <td>
+          4676
+          -
+          4682
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          3740
+        </td>
+        <td>
+          4736
+          -
+          4745
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;pattern&quot;
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          3741
+        </td>
+        <td>
+          4724
+          -
+          4767
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          details.get(&quot;pattern&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          3742
+        </td>
+        <td>
+          4788
+          -
+          4814
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.param.Parameter.apply(pName, pPattern)
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          3744
+        </td>
+        <td>
+          4844
+          -
+          4891
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          details.get(&quot;displayName&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          3743
+        </td>
+        <td>
+          4856
+          -
+          4869
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;displayName&quot;
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          3745
+        </td>
+        <td>
+          4819
+          -
+          4892
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.setDisplayName
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.setDisplayName(details.get(&quot;displayName&quot;).asInstanceOf[String])
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          3746
+        </td>
+        <td>
+          4898
+          -
+          4922
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.get
+        </td>
+        <td style="background: #AEF1AE">
+          details.get(&quot;maxLength&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          3748
+        </td>
+        <td>
+          4955
+          -
+          4998
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.setMaxLength
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.setMaxLength(x.asInstanceOf[Int])
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          3747
+        </td>
+        <td>
+          4978
+          -
+          4997
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          x.asInstanceOf[Int]
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          3749
+        </td>
+        <td>
+          5015
+          -
+          5041
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.setMaxLength
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.setMaxLength(-1)
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          3750
+        </td>
+        <td>
+          5052
+          -
+          5076
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.get
+        </td>
+        <td style="background: #AEF1AE">
+          details.get(&quot;minLength&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          3752
+        </td>
+        <td>
+          5109
+          -
+          5152
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.setMinLength
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.setMinLength(x.asInstanceOf[Int])
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          3751
+        </td>
+        <td>
+          5132
+          -
+          5151
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          x.asInstanceOf[Int]
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          3753
+        </td>
+        <td>
+          5169
+          -
+          5195
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.setMinLength
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.setMinLength(-1)
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          3755
+        </td>
+        <td>
+          5231
+          -
+          5277
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          details.get(&quot;defaultRef&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          3754
+        </td>
+        <td>
+          5243
+          -
+          5255
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;defaultRef&quot;
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          3756
+        </td>
+        <td>
+          5207
+          -
+          5278
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.setDefaultRef
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.setDefaultRef(details.get(&quot;defaultRef&quot;).asInstanceOf[String])
+        </td>
+      </tr><tr>
+        <td>
+          152
+        </td>
+        <td>
+          3757
+        </td>
+        <td>
+          5294
+          -
+          5320
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.get
+        </td>
+        <td style="background: #AEF1AE">
+          details.get(&quot;displayable&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          3762
+        </td>
+        <td>
+          5400
+          -
+          5404
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          3761
+        </td>
+        <td>
+          5400
+          -
+          5404
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          3758
+        </td>
+        <td>
+          5354
+          -
+          5366
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          disp.!=(null)
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          3760
+        </td>
+        <td>
+          5368
+          -
+          5394
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          disp.asInstanceOf[Boolean]
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          3763
+        </td>
+        <td>
+          5325
+          -
+          5405
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.setDisplayable
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.setDisplayable(if (disp.!=(null))
+  disp.asInstanceOf[Boolean]
+else
+  true)
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          3759
+        </td>
+        <td>
+          5368
+          -
+          5394
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          disp.asInstanceOf[Boolean]
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          3764
+        </td>
+        <td>
+          5415
+          -
+          5444
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.hasMember
+        </td>
+        <td style="background: #AEF1AE">
+          details.hasMember(&quot;required&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          3767
+        </td>
+        <td>
+          5454
+          -
+          5522
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.setRequired
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.setRequired(details.get(&quot;required&quot;).asInstanceOf[Boolean])
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          3766
+        </td>
+        <td>
+          5476
+          -
+          5521
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          details.get(&quot;required&quot;).asInstanceOf[Boolean]
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          3765
+        </td>
+        <td>
+          5488
+          -
+          5498
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;required&quot;
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          3768
+        </td>
+        <td>
+          5454
+          -
+          5522
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.param.Parameter.setRequired
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.setRequired(details.get(&quot;required&quot;).asInstanceOf[Boolean])
+        </td>
+      </tr><tr>
+        <td>
+          158
+        </td>
+        <td>
+          3770
+        </td>
+        <td>
+          5542
+          -
+          5569
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.param.Parameter.setRequired
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.setRequired(true)
+        </td>
+      </tr><tr>
+        <td>
+          158
+        </td>
+        <td>
+          3769
+        </td>
+        <td>
+          5542
+          -
+          5569
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.setRequired
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.setRequired(true)
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          3772
+        </td>
+        <td>
+          5581
+          -
+          5613
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.addTags
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.addTags(JavaScriptUtils.this.tags(details))
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          3771
+        </td>
+        <td>
+          5599
+          -
+          5612
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.tags
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptUtils.this.tags(details)
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          3773
+        </td>
+        <td>
+          5666
+          -
+          5678
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;validInput&quot;
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          3775
+        </td>
+        <td>
+          5619
+          -
+          5701
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.setValidInputDescription
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.setValidInputDescription(details.get(&quot;validInput&quot;).asInstanceOf[String])
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          3774
+        </td>
+        <td>
+          5654
+          -
+          5700
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          details.get(&quot;validInput&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          3776
+        </td>
+        <td>
+          5740
+          -
+          5753
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;description&quot;
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          3778
+        </td>
+        <td>
+          5706
+          -
+          5776
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.describedAs
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.describedAs(details.get(&quot;description&quot;).asInstanceOf[String])
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          3777
+        </td>
+        <td>
+          5728
+          -
+          5775
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          details.get(&quot;description&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          3779
+        </td>
+        <td>
+          5823
+          -
+          5840
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.startsWith
+        </td>
+        <td style="background: #AEF1AE">
+          s.startsWith(&quot;@&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          3781
+        </td>
+        <td>
+          5844
+          -
+          5893
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.parser.DefaultIdentifierResolver.resolve
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.parser.DefaultIdentifierResolver.resolve(s.substring(1))
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          3780
+        </td>
+        <td>
+          5878
+          -
+          5892
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.substring
+        </td>
+        <td style="background: #AEF1AE">
+          s.substring(1)
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          3782
+        </td>
+        <td>
+          5936
+          -
+          6060
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new com.atomist.rug.InvalidRugParameterPatternException(scala.StringContext.apply(&quot;Unable to recognize predefined validation pattern for parameter &quot;, &quot;: &quot;, &quot;&quot;).s(pName, s))
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          3783
+        </td>
+        <td>
+          6088
+          -
+          6113
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.setPattern
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.setPattern(pat)
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          3785
+        </td>
+        <td>
+          6180
+          -
+          6183
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;$&quot;
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          3784
+        </td>
+        <td>
+          6160
+          -
+          6163
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;^&quot;
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          3787
+        </td>
+        <td>
+          6146
+          -
+          6184
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          s.startsWith(&quot;^&quot;).unary_!.||(s.endsWith(&quot;$&quot;).unary_!)
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          3786
+        </td>
+        <td>
+          6168
+          -
+          6184
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          s.endsWith(&quot;$&quot;).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          173
+        </td>
+        <td>
+          3788
+        </td>
+        <td>
+          6196
+          -
+          6306
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.InvalidRugParameterPatternException(scala.StringContext.apply(&quot;Parameter &quot;, &quot; validation pattern must contain anchors: &quot;, &quot;&quot;).s(pName, s))
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          3789
+        </td>
+        <td>
+          6331
+          -
+          6354
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.setPattern
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.setPattern(s)
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          3790
+        </td>
+        <td>
+          6371
+          -
+          6469
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.InvalidRugParameterPatternException(scala.StringContext.apply(&quot;Parameter &quot;, &quot; has no valid validation pattern&quot;).s(pName))
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          3812
+        </td>
+        <td>
+          6481
+          -
+          6481
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          3791
+        </td>
+        <td>
+          6509
+          -
+          6537
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          rug.getMember(pName).!=(null)
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          3811
+        </td>
+        <td>
+          6539
+          -
+          7143
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val asString: String = rug.getMember(pName).toString();
+  if (parameter.isValidValue(asString).unary_!)
+    if (asString.==(&quot;&quot;))
+      scala.this.Predef.println(scala.StringContext.apply(&quot;WARNING: On rug &quot;, &quot;, parameter \'&quot;, &quot;\' has a default value of \'&quot;, &quot;\', but that is not a valid value for this parameter. Set the parameter to null instead, please.&quot;).s(JavaScriptUtils.this.name(rug), pName, asString))
+    else
+      throw new com.atomist.rug.InvalidRugParameterDefaultValue(scala.StringContext.apply(&quot;Parameter &quot;, &quot; default value (&quot;, &quot;) is not valid: &quot;, &quot;&quot;).s(pName, asString, parameter))
+  else
+    ();
+  parameter.setDefaultValue(rug.getMember(pName).toString())
+}
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          3792
+        </td>
+        <td>
+          6485
+          -
+          6537
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          rug.hasMember(pName).&amp;&amp;(rug.getMember(pName).!=(null))
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          3813
+        </td>
+        <td>
+          6481
+          -
+          6481
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          179
+        </td>
+        <td>
+          3793
+        </td>
+        <td>
+          6562
+          -
+          6591
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #AEF1AE">
+          rug.getMember(pName).toString()
+        </td>
+      </tr><tr>
+        <td>
+          180
+        </td>
+        <td>
+          3794
+        </td>
+        <td>
+          6602
+          -
+          6635
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.isValidValue(asString).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          180
+        </td>
+        <td>
+          3808
+        </td>
+        <td>
+          6598
+          -
+          6598
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          180
+        </td>
+        <td>
+          3807
+        </td>
+        <td>
+          6598
+          -
+          6598
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          3806
+        </td>
+        <td>
+          6645
+          -
+          7074
+        </td>
+        <td>
+          If
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          if (asString.==(&quot;&quot;))
+  scala.this.Predef.println(scala.StringContext.apply(&quot;WARNING: On rug &quot;, &quot;, parameter \'&quot;, &quot;\' has a default value of \'&quot;, &quot;\', but that is not a valid value for this parameter. Set the parameter to null instead, please.&quot;).s(JavaScriptUtils.this.name(rug), pName, asString))
+else
+  throw new com.atomist.rug.InvalidRugParameterDefaultValue(scala.StringContext.apply(&quot;Parameter &quot;, &quot; default value (&quot;, &quot;) is not valid: &quot;, &quot;&quot;).s(pName, asString, parameter))
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          3795
+        </td>
+        <td>
+          6649
+          -
+          6663
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          asString.==(&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          3803
+        </td>
+        <td>
+          6734
+          -
+          6923
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.println(scala.StringContext.apply(&quot;WARNING: On rug &quot;, &quot;, parameter \'&quot;, &quot;\' has a default value of \'&quot;, &quot;\', but that is not a valid value for this parameter. Set the parameter to null instead, please.&quot;).s(JavaScriptUtils.this.name(rug), pName, asString))
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          3797
+        </td>
+        <td>
+          6772
+          -
+          6786
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;, parameter \'&quot;
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          3800
+        </td>
+        <td>
+          6762
+          -
+          6771
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.name
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptUtils.this.name(rug)
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          3802
+        </td>
+        <td>
+          6734
+          -
+          6923
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.println(scala.StringContext.apply(&quot;WARNING: On rug &quot;, &quot;, parameter \'&quot;, &quot;\' has a default value of \'&quot;, &quot;\', but that is not a valid value for this parameter. Set the parameter to null instead, please.&quot;).s(JavaScriptUtils.this.name(rug), pName, asString))
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          3796
+        </td>
+        <td>
+          6744
+          -
+          6761
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;WARNING: On rug &quot;
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          3799
+        </td>
+        <td>
+          6826
+          -
+          6922
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;\', but that is not a valid value for this parameter. Set the parameter to null instead, please.&quot;
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          3798
+        </td>
+        <td>
+          6791
+          -
+          6818
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;\' has a default value of \'&quot;
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          3801
+        </td>
+        <td>
+          6742
+          -
+          6922
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;WARNING: On rug &quot;, &quot;, parameter \'&quot;, &quot;\' has a default value of \'&quot;, &quot;\', but that is not a valid value for this parameter. Set the parameter to null instead, please.&quot;).s(JavaScriptUtils.this.name(rug), pName, asString)
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          3805
+        </td>
+        <td>
+          6951
+          -
+          7064
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new com.atomist.rug.InvalidRugParameterDefaultValue(scala.StringContext.apply(&quot;Parameter &quot;, &quot; default value (&quot;, &quot;) is not valid: &quot;, &quot;&quot;).s(pName, asString, parameter))
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          3804
+        </td>
+        <td>
+          6951
+          -
+          7064
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          throw new com.atomist.rug.InvalidRugParameterDefaultValue(scala.StringContext.apply(&quot;Parameter &quot;, &quot; default value (&quot;, &quot;) is not valid: &quot;, &quot;&quot;).s(pName, asString, parameter))
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          3809
+        </td>
+        <td>
+          7107
+          -
+          7136
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #AEF1AE">
+          rug.getMember(pName).toString()
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          3810
+        </td>
+        <td>
+          7081
+          -
+          7137
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.Parameter.setDefaultValue
+        </td>
+        <td style="background: #AEF1AE">
+          parameter.setDefaultValue(rug.getMember(pName).toString())
+        </td>
+      </tr><tr>
+        <td>
+          194
+        </td>
+        <td>
+          3814
+        </td>
+        <td>
+          7230
+          -
+          7253
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.hasMember
+        </td>
+        <td style="background: #AEF1AE">
+          obj.hasMember(&quot;__name&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          3815
+        </td>
+        <td>
+          7277
+          -
+          7285
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;__name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          3817
+        </td>
+        <td>
+          7263
+          -
+          7307
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          obj.getMember(&quot;__name&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          3816
+        </td>
+        <td>
+          7263
+          -
+          7307
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          obj.getMember(&quot;__name&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          197
+        </td>
+        <td>
+          3821
+        </td>
+        <td>
+          7327
+          -
+          7432
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.Try.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Try.apply[String](obj.getMember(&quot;constructor&quot;).asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror].getMember(&quot;name&quot;).asInstanceOf[String])
+        </td>
+      </tr><tr>
+        <td>
+          197
+        </td>
+        <td>
+          3818
+        </td>
+        <td>
+          7345
+          -
+          7358
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;constructor&quot;
+        </td>
+      </tr><tr>
+        <td>
+          197
+        </td>
+        <td>
+          3820
+        </td>
+        <td>
+          7331
+          -
+          7431
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          obj.getMember(&quot;constructor&quot;).asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror].getMember(&quot;name&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          197
+        </td>
+        <td>
+          3823
+        </td>
+        <td>
+          7327
+          -
+          7584
+        </td>
+        <td>
+          Match
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Try.apply[String](obj.getMember(&quot;constructor&quot;).asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror].getMember(&quot;name&quot;).asInstanceOf[String]) match {
+  case (value: String)scala.util.Success[String]((name @ _)) =&gt; name
+  case (exception: Throwable)scala.util.Failure[String]((error @ _)) =&gt; throw new com.atomist.rug.BadPlanException(scala.StringContext.apply(&quot;Could not determine name of Rug&quot;).s(), error)
+}
+        </td>
+      </tr><tr>
+        <td>
+          197
+        </td>
+        <td>
+          3819
+        </td>
+        <td>
+          7403
+          -
+          7409
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          3822
+        </td>
+        <td>
+          7507
+          -
+          7576
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.BadPlanException(scala.StringContext.apply(&quot;Could not determine name of Rug&quot;).s(), error)
+        </td>
+      </tr><tr>
+        <td>
+          205
+        </td>
+        <td>
+          3824
+        </td>
+        <td>
+          7658
+          -
+          7682
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          obj.getMember(&quot;__scope&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          206
+        </td>
+        <td>
+          3825
+        </td>
+        <td>
+          7715
+          -
+          7732
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.RugScopes.from
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.RugScopes.from(o)
+        </td>
+      </tr><tr>
+        <td>
+          207
+        </td>
+        <td>
+          3826
+        </td>
+        <td>
+          7749
+          -
+          7766
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.RugScopes.DEFAULT
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.RugScopes.DEFAULT
+        </td>
+      </tr><tr>
+        <td>
+          211
+        </td>
+        <td>
+          3827
+        </td>
+        <td>
+          7855
+          -
+          7870
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;__description&quot;
+        </td>
+      </tr><tr>
+        <td>
+          211
+        </td>
+        <td>
+          3828
+        </td>
+        <td>
+          7841
+          -
+          7892
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          obj.getMember(&quot;__description&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          213
+        </td>
+        <td>
+          3830
+        </td>
+        <td>
+          7950
+          -
+          7994
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          obj.getMember(&quot;__kind&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          213
+        </td>
+        <td>
+          3829
+        </td>
+        <td>
+          7964
+          -
+          7972
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;__kind&quot;
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

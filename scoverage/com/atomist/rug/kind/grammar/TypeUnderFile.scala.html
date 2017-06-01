@@ -1,0 +1,762 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/grammar/TypeUnderFile.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.grammar
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.rug.kind.core._
+</span>5 <span style=''>import com.atomist.rug.spi.{ReflectivelyTypedType, Type}
+</span>6 <span style=''>import com.atomist.source.FileArtifact
+</span>7 <span style=''>import com.atomist.tree.content.text._
+</span>8 <span style=''>import com.atomist.tree.{TreeNode, UpdatableTreeNode}
+</span>9 <span style=''>
+</span>10 <span style=''>import scala.collection.JavaConverters._
+</span>11 <span style=''>
+</span>12 <span style=''>/**
+</span>13 <span style=''>  * Convenient superclass for types that parse file content and can
+</span>14 <span style=''>  * be resolved from files and projects.
+</span>15 <span style=''>  */
+</span>16 <span style=''>abstract class TypeUnderFile
+</span>17 <span style=''>  extends Type
+</span>18 <span style=''>    with ReflectivelyTypedType {
+</span>19 <span style=''>
+</span>20 <span style=''>  /**
+</span>21 <span style=''>    * Is this file of interest to this type? Typically will involve an extension check.
+</span>22 <span style=''>    *
+</span>23 <span style=''>    * @param f file to test
+</span>24 <span style=''>    * @return whether we should try to parse the file with our parser
+</span>25 <span style=''>    */
+</span>26 <span style=''>  def isOfType(f: FileArtifact): Boolean
+</span>27 <span style=''>
+</span>28 <span style=''>  override def runtimeClass: Class[_ &lt;: GraphNode] = </span><span style='background: #AEF1AE'>classOf[OverwritableTextTreeNode]</span><span style=''>
+</span>29 <span style=''>
+</span>30 <span style=''>  override def findAllIn(context: GraphNode): Option[Seq[TreeNode]] = context match {
+</span>31 <span style=''>    case pmv: ProjectMutableView =&gt;
+</span>32 <span style=''>      </span><span style='background: #AEF1AE'>Some(pmv
+</span>33 <span style=''></span><span style='background: #AEF1AE'>        .files
+</span>34 <span style=''></span><span style='background: #AEF1AE'>        .asScala
+</span>35 <span style=''></span><span style='background: #AEF1AE'>        .filter(f =&gt; isOfType(f.currentBackingObject))
+</span>36 <span style=''></span><span style='background: #AEF1AE'>        .flatMap(toView)
+</span>37 <span style=''></span><span style='background: #AEF1AE'>      )</span><span style=''>
+</span>38 <span style=''>    case f: FileMutableView if </span><span style='background: #AEF1AE'>isOfType(f.currentBackingObject)</span><span style=''> =&gt;
+</span>39 <span style=''>      </span><span style='background: #AEF1AE'>Some(toView(f).toSeq)</span><span style=''>
+</span>40 <span style=''>    case _ =&gt; </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>41 <span style=''>  }
+</span>42 <span style=''>
+</span>43 <span style=''>  private def toView(f: FileArtifactBackedMutableView): Option[TreeNode] = {
+</span>44 <span style=''>    val preprocessedFile = </span><span style='background: #AEF1AE'>f.currentBackingObject.withContent(preprocess(f.content))</span><span style=''>
+</span>45 <span style=''>    val inner = </span><span style='background: #AEF1AE'>fileToRawNode(preprocessedFile)</span><span style=''> match {
+</span>46 <span style=''>      case Some(ptn: ParsedNode) =&gt;
+</span>47 <span style=''>        </span><span style='background: #AEF1AE'>Some(TextTreeNodeLifecycle.makeWholeFileNodeReady(name,
+</span>48 <span style=''></span><span style='background: #AEF1AE'>          PositionedTreeNode.fromParsedNode(ptn),
+</span>49 <span style=''></span><span style='background: #AEF1AE'>          f,
+</span>50 <span style=''></span><span style='background: #AEF1AE'>          preprocess, postprocess))</span><span style=''>
+</span>51 <span style=''>      case None =&gt; </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>52 <span style=''>      case x =&gt; </span><span style='background: #F0ADAD'>throw new RuntimeException(s&quot;What is $x&quot;)</span><span style=''>
+</span>53 <span style=''>    }
+</span>54 <span style=''>    </span><span style='background: #AEF1AE'>inner.map(createView(_, f))</span><span style=''>
+</span>55 <span style=''>  }
+</span>56 <span style=''>
+</span>57 <span style=''>
+</span>58 <span style=''>  /**
+</span>59 <span style=''>    * Subclasses can override this if they want to customize the top level node created:
+</span>60 <span style=''>    * for example, to add verbs that can be used instead of drilling into path expressions.
+</span>61 <span style=''>    *
+</span>62 <span style=''>    * @return new mutable view
+</span>63 <span style=''>    */
+</span>64 <span style=''>  protected def createView(tn: UpdatableTreeNode, f: FileArtifactBackedMutableView): TreeNode = tn match {
+</span>65 <span style=''>    case ottn: OverwritableTextTreeNode =&gt; ottn
+</span>66 <span style=''>  }
+</span>67 <span style=''>
+</span>68 <span style=''>  /**
+</span>69 <span style=''>    * Return a parsed node. Useful to validate content, for example in tests.
+</span>70 <span style=''>    *
+</span>71 <span style=''>    * @param f file with content to parse
+</span>72 <span style=''>    * @return a PositionedTreeNode
+</span>73 <span style=''>    */
+</span>74 <span style=''>  def fileToRawNode(f: FileArtifact): Option[ParsedNode]
+</span>75 <span style=''>
+</span>76 <span style=''>  def preprocess(originalContent: String): String = originalContent
+</span>77 <span style=''>
+</span>78 <span style=''>  def postprocess(preprocessedContent: String): String = preprocessedContent
+</span>79 <span style=''>
+</span>80 <span style=''>}
+</span>81 <span style=''>
+</span>82 <span style=''>/**
+</span>83 <span style=''>  * minimum information a Rug Language Extension needs to provide
+</span>84 <span style=''>  * in order for us to construct the TextTreeNodes that let us drill
+</span>85 <span style=''>  * into the file in a path expression.
+</span>86 <span style=''>  */
+</span>87 <span style=''>trait ParsedNode {
+</span>88 <span style=''>  def nodeName: String
+</span>89 <span style=''>
+</span>90 <span style=''>  def parsedNodes: Seq[ParsedNode]
+</span>91 <span style=''>
+</span>92 <span style=''>  def startOffset: Int
+</span>93 <span style=''>
+</span>94 <span style=''>  def endOffset: Int
+</span>95 <span style=''>}
+</span>96 <span style=''>
+</span>97 <span style=''>case class SimpleParsedNode(override val nodeName: String,
+</span>98 <span style=''>                            override val startOffset: Int,
+</span>99 <span style=''>                            override val endOffset: Int,
+</span>100 <span style=''>                            override val parsedNodes: Seq[ParsedNode] = Seq()) extends ParsedNode
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1548
+        </td>
+        <td>
+          836
+          -
+          869
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          classOf[com.atomist.tree.content.text.OverwritableTextTreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1556
+        </td>
+        <td>
+          999
+          -
+          1127
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Seq[com.atomist.tree.TreeNode]](scala.collection.JavaConverters.asScalaBufferConverter[com.atomist.rug.kind.core.FileMutableView](pmv.files).asScala.filter(((f: com.atomist.rug.kind.core.FileMutableView) =&gt; TypeUnderFile.this.isOfType(f.currentBackingObject))).flatMap[com.atomist.tree.TreeNode, Seq[com.atomist.tree.TreeNode]]({
+  ((f: com.atomist.rug.kind.core.FileArtifactBackedMutableView) =&gt; scala.this.Option.option2Iterable[com.atomist.tree.TreeNode](TypeUnderFile.this.toView(f)))
+})(mutable.this.Buffer.canBuildFrom[com.atomist.tree.TreeNode]))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1549
+        </td>
+        <td>
+          1004
+          -
+          1022
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ProjectMutableView.files
+        </td>
+        <td style="background: #AEF1AE">
+          pmv.files
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1551
+        </td>
+        <td>
+          1061
+          -
+          1093
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.TypeUnderFile.isOfType
+        </td>
+        <td style="background: #AEF1AE">
+          TypeUnderFile.this.isOfType(f.currentBackingObject)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1550
+        </td>
+        <td>
+          1070
+          -
+          1092
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          f.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1554
+        </td>
+        <td>
+          1111
+          -
+          1111
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Buffer.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Buffer.canBuildFrom[com.atomist.tree.TreeNode]
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1553
+        </td>
+        <td>
+          1112
+          -
+          1118
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[com.atomist.tree.TreeNode](TypeUnderFile.this.toView(f))
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1555
+        </td>
+        <td>
+          1004
+          -
+          1119
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.atomist.rug.kind.core.FileMutableView](pmv.files).asScala.filter(((f: com.atomist.rug.kind.core.FileMutableView) =&gt; TypeUnderFile.this.isOfType(f.currentBackingObject))).flatMap[com.atomist.tree.TreeNode, Seq[com.atomist.tree.TreeNode]]({
+  ((f: com.atomist.rug.kind.core.FileArtifactBackedMutableView) =&gt; scala.this.Option.option2Iterable[com.atomist.tree.TreeNode](TypeUnderFile.this.toView(f)))
+})(mutable.this.Buffer.canBuildFrom[com.atomist.tree.TreeNode])
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1552
+        </td>
+        <td>
+          1112
+          -
+          1118
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.TypeUnderFile.toView
+        </td>
+        <td style="background: #AEF1AE">
+          TypeUnderFile.this.toView(f)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1557
+        </td>
+        <td>
+          1168
+          -
+          1190
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ViewSupport.currentBackingObject
+        </td>
+        <td style="background: #AEF1AE">
+          f.currentBackingObject
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1558
+        </td>
+        <td>
+          1159
+          -
+          1191
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.TypeUnderFile.isOfType
+        </td>
+        <td style="background: #AEF1AE">
+          TypeUnderFile.this.isOfType(f.currentBackingObject)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1560
+        </td>
+        <td>
+          1206
+          -
+          1221
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[com.atomist.tree.TreeNode](TypeUnderFile.this.toView(f)).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1559
+        </td>
+        <td>
+          1206
+          -
+          1215
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.TypeUnderFile.toView
+        </td>
+        <td style="background: #AEF1AE">
+          TypeUnderFile.this.toView(f)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1561
+        </td>
+        <td>
+          1201
+          -
+          1222
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[Seq[com.atomist.tree.TreeNode]](scala.this.Option.option2Iterable[com.atomist.tree.TreeNode](TypeUnderFile.this.toView(f)).toSeq)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1562
+        </td>
+        <td>
+          1237
+          -
+          1241
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1563
+        </td>
+        <td>
+          1397
+          -
+          1406
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.core.FileArtifactBackedMutableView.content
+        </td>
+        <td style="background: #AEF1AE">
+          f.content
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1565
+        </td>
+        <td>
+          1351
+          -
+          1408
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.withContent
+        </td>
+        <td style="background: #AEF1AE">
+          f.currentBackingObject.withContent(TypeUnderFile.this.preprocess(f.content))
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1564
+        </td>
+        <td>
+          1386
+          -
+          1407
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.TypeUnderFile.preprocess
+        </td>
+        <td style="background: #AEF1AE">
+          TypeUnderFile.this.preprocess(f.content)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1566
+        </td>
+        <td>
+          1425
+          -
+          1456
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.TypeUnderFile.fileToRawNode
+        </td>
+        <td style="background: #AEF1AE">
+          TypeUnderFile.this.fileToRawNode(preprocessedFile)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1572
+        </td>
+        <td>
+          1509
+          -
+          1663
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.tree.UpdatableTreeNode](com.atomist.tree.content.text.TextTreeNodeLifecycle.makeWholeFileNodeReady(TypeUnderFile.this.name, com.atomist.tree.content.text.PositionedTreeNode.fromParsedNode(ptn), f, {
+  ((originalContent: String) =&gt; TypeUnderFile.this.preprocess(originalContent))
+}, {
+  ((preprocessedContent: String) =&gt; TypeUnderFile.this.postprocess(preprocessedContent))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1571
+        </td>
+        <td>
+          1514
+          -
+          1662
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.TextTreeNodeLifecycle.makeWholeFileNodeReady
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.content.text.TextTreeNodeLifecycle.makeWholeFileNodeReady(TypeUnderFile.this.name, com.atomist.tree.content.text.PositionedTreeNode.fromParsedNode(ptn), f, {
+  ((originalContent: String) =&gt; TypeUnderFile.this.preprocess(originalContent))
+}, {
+  ((preprocessedContent: String) =&gt; TypeUnderFile.this.postprocess(preprocessedContent))
+})
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1567
+        </td>
+        <td>
+          1559
+          -
+          1563
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.name
+        </td>
+        <td style="background: #AEF1AE">
+          TypeUnderFile.this.name
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1568
+        </td>
+        <td>
+          1575
+          -
+          1613
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.tree.content.text.PositionedTreeNode.fromParsedNode
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.tree.content.text.PositionedTreeNode.fromParsedNode(ptn)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1569
+        </td>
+        <td>
+          1638
+          -
+          1648
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.TypeUnderFile.preprocess
+        </td>
+        <td style="background: #AEF1AE">
+          TypeUnderFile.this.preprocess(originalContent)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1570
+        </td>
+        <td>
+          1650
+          -
+          1661
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.TypeUnderFile.postprocess
+        </td>
+        <td style="background: #AEF1AE">
+          TypeUnderFile.this.postprocess(preprocessedContent)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          1573
+        </td>
+        <td>
+          1683
+          -
+          1687
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          1574
+        </td>
+        <td>
+          1704
+          -
+          1745
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.RuntimeException(scala.StringContext.apply(&quot;What is &quot;, &quot;&quot;).s(x))
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1575
+        </td>
+        <td>
+          1766
+          -
+          1782
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.grammar.TypeUnderFile.createView
+        </td>
+        <td style="background: #AEF1AE">
+          TypeUnderFile.this.createView(x$1, f)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1576
+        </td>
+        <td>
+          1756
+          -
+          1783
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.map
+        </td>
+        <td style="background: #AEF1AE">
+          inner.map[com.atomist.tree.TreeNode](((x$1: com.atomist.tree.UpdatableTreeNode) =&gt; TypeUnderFile.this.createView(x$1, f)))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,312 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/spi/UsageSpecificTypeRegistry.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.spi
+</span>2 <span style=''>
+</span>3 <span style=''>/**
+</span>4 <span style=''>  * Decorating TypeRegistry
+</span>5 <span style=''>  * Try to resolve from the new types first, then fallback to the shared delegate.
+</span>6 <span style=''>  * One of these is instantiated per usage.
+</span>7 <span style=''>  */
+</span>8 <span style=''>class UsageSpecificTypeRegistry(delegate: TypeRegistry,
+</span>9 <span style=''>                                newTypes: Seq[Typed]) extends TypeRegistry {
+</span>10 <span style=''>
+</span>11 <span style=''>  override def findByName(kind: String): Option[Typed] =
+</span>12 <span style=''>    </span><span style='background: #AEF1AE'>newTypes.find(t =&gt; kind == t.name).orElse(delegate.findByName(kind))</span><span style=''>
+</span>13 <span style=''>
+</span>14 <span style=''>  override def typeNames: Traversable[String] =
+</span>15 <span style=''>    </span><span style='background: #F0ADAD'>newTypes.map(_.name) ++ delegate.typeNames</span><span style=''>
+</span>16 <span style=''>
+</span>17 <span style=''>  override def types: Seq[Typed] =
+</span>18 <span style=''>    </span><span style='background: #F0ADAD'>newTypes ++ types</span><span style=''>
+</span>19 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          5502
+        </td>
+        <td>
+          407
+          -
+          421
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          kind.==(t.name)
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          5501
+        </td>
+        <td>
+          415
+          -
+          421
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.name
+        </td>
+        <td style="background: #AEF1AE">
+          t.name
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          5504
+        </td>
+        <td>
+          388
+          -
+          456
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.orElse
+        </td>
+        <td style="background: #AEF1AE">
+          UsageSpecificTypeRegistry.this.newTypes.find(((t: com.atomist.rug.spi.Typed) =&gt; kind.==(t.name))).orElse[com.atomist.rug.spi.Typed](UsageSpecificTypeRegistry.this.delegate.findByName(kind))
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          5503
+        </td>
+        <td>
+          430
+          -
+          455
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeRegistry.findByName
+        </td>
+        <td style="background: #AEF1AE">
+          UsageSpecificTypeRegistry.this.delegate.findByName(kind)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          5505
+        </td>
+        <td>
+          523
+          -
+          529
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.name
+        </td>
+        <td style="background: #F0ADAD">
+          x$1.name
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          5508
+        </td>
+        <td>
+          531
+          -
+          531
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          5507
+        </td>
+        <td>
+          534
+          -
+          552
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeRegistry.typeNames
+        </td>
+        <td style="background: #F0ADAD">
+          UsageSpecificTypeRegistry.this.delegate.typeNames
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          5506
+        </td>
+        <td>
+          522
+          -
+          522
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          5509
+        </td>
+        <td>
+          510
+          -
+          552
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #F0ADAD">
+          UsageSpecificTypeRegistry.this.newTypes.map[String, Seq[String]](((x$1: com.atomist.rug.spi.Typed) =&gt; x$1.name))(collection.this.Seq.canBuildFrom[String]).++[String, Traversable[String]](UsageSpecificTypeRegistry.this.delegate.typeNames)(collection.this.Seq.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          5511
+        </td>
+        <td>
+          602
+          -
+          602
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Typed]
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          5510
+        </td>
+        <td>
+          605
+          -
+          610
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.UsageSpecificTypeRegistry.types
+        </td>
+        <td style="background: #F0ADAD">
+          UsageSpecificTypeRegistry.this.types
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          5512
+        </td>
+        <td>
+          593
+          -
+          610
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #F0ADAD">
+          UsageSpecificTypeRegistry.this.newTypes.++[com.atomist.rug.spi.Typed, Seq[com.atomist.rug.spi.Typed]](UsageSpecificTypeRegistry.this.types)(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Typed])
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

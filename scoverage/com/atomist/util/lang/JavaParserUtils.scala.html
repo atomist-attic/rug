@@ -1,0 +1,1231 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/util/lang/JavaParserUtils.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.util.lang
+</span>2 <span style=''>
+</span>3 <span style=''>import com.github.javaparser.ast.`type`.{ClassOrInterfaceType, ReferenceType}
+</span>4 <span style=''>import com.github.javaparser.ast.body._
+</span>5 <span style=''>import com.github.javaparser.ast.expr._
+</span>6 <span style=''>import com.github.javaparser.ast.{CompilationUnit, ImportDeclaration, Modifier}
+</span>7 <span style=''>
+</span>8 <span style=''>import scala.collection.JavaConverters._
+</span>9 <span style=''>
+</span>10 <span style=''>/**
+</span>11 <span style=''>  * Utility methods to simplify working with JavaParser.
+</span>12 <span style=''>  */
+</span>13 <span style=''>object JavaParserUtils {
+</span>14 <span style=''>
+</span>15 <span style=''>  import scala.language.implicitConversions
+</span>16 <span style=''>
+</span>17 <span style=''>  // From https://docs.oracle.com/javase/tutorial/java/nutsandbolts/_keywords.html
+</span>18 <span style=''>  val reservedWords = </span><span style='background: #AEF1AE'>Set(
+</span>19 <span style=''></span><span style='background: #AEF1AE'>    &quot;abstract&quot;,
+</span>20 <span style=''></span><span style='background: #AEF1AE'>    &quot;assert&quot;,
+</span>21 <span style=''></span><span style='background: #AEF1AE'>    &quot;boolean&quot;,
+</span>22 <span style=''></span><span style='background: #AEF1AE'>    &quot;break&quot;,
+</span>23 <span style=''></span><span style='background: #AEF1AE'>    &quot;byte&quot;,
+</span>24 <span style=''></span><span style='background: #AEF1AE'>    &quot;case&quot;,
+</span>25 <span style=''></span><span style='background: #AEF1AE'>    &quot;catch&quot;,
+</span>26 <span style=''></span><span style='background: #AEF1AE'>    &quot;char&quot;,
+</span>27 <span style=''></span><span style='background: #AEF1AE'>    &quot;class&quot;,
+</span>28 <span style=''></span><span style='background: #AEF1AE'>    &quot;const&quot;,
+</span>29 <span style=''></span><span style='background: #AEF1AE'>    &quot;continue&quot;,
+</span>30 <span style=''></span><span style='background: #AEF1AE'>    &quot;default&quot;,
+</span>31 <span style=''></span><span style='background: #AEF1AE'>    &quot;do&quot;,
+</span>32 <span style=''></span><span style='background: #AEF1AE'>    &quot;double&quot;,
+</span>33 <span style=''></span><span style='background: #AEF1AE'>    &quot;else&quot;,
+</span>34 <span style=''></span><span style='background: #AEF1AE'>    &quot;enum&quot;,
+</span>35 <span style=''></span><span style='background: #AEF1AE'>    &quot;extends&quot;,
+</span>36 <span style=''></span><span style='background: #AEF1AE'>    &quot;final&quot;,
+</span>37 <span style=''></span><span style='background: #AEF1AE'>    &quot;finally&quot;,
+</span>38 <span style=''></span><span style='background: #AEF1AE'>    &quot;float&quot;,
+</span>39 <span style=''></span><span style='background: #AEF1AE'>    &quot;for&quot;,
+</span>40 <span style=''></span><span style='background: #AEF1AE'>    &quot;goto&quot;,
+</span>41 <span style=''></span><span style='background: #AEF1AE'>    &quot;if&quot;,
+</span>42 <span style=''></span><span style='background: #AEF1AE'>    &quot;implements&quot;,
+</span>43 <span style=''></span><span style='background: #AEF1AE'>    &quot;import&quot;,
+</span>44 <span style=''></span><span style='background: #AEF1AE'>    &quot;instanceof&quot;,
+</span>45 <span style=''></span><span style='background: #AEF1AE'>    &quot;int&quot;,
+</span>46 <span style=''></span><span style='background: #AEF1AE'>    &quot;interface&quot;,
+</span>47 <span style=''></span><span style='background: #AEF1AE'>    &quot;long&quot;,
+</span>48 <span style=''></span><span style='background: #AEF1AE'>    &quot;native&quot;,
+</span>49 <span style=''></span><span style='background: #AEF1AE'>    &quot;new&quot;,
+</span>50 <span style=''></span><span style='background: #AEF1AE'>    &quot;package&quot;,
+</span>51 <span style=''></span><span style='background: #AEF1AE'>    &quot;private&quot;,
+</span>52 <span style=''></span><span style='background: #AEF1AE'>    &quot;protected&quot;,
+</span>53 <span style=''></span><span style='background: #AEF1AE'>    &quot;public&quot;,
+</span>54 <span style=''></span><span style='background: #AEF1AE'>    &quot;return&quot;,
+</span>55 <span style=''></span><span style='background: #AEF1AE'>    &quot;short&quot;,
+</span>56 <span style=''></span><span style='background: #AEF1AE'>    &quot;static&quot;,
+</span>57 <span style=''></span><span style='background: #AEF1AE'>    &quot;strictfp&quot;,
+</span>58 <span style=''></span><span style='background: #AEF1AE'>    &quot;super&quot;,
+</span>59 <span style=''></span><span style='background: #AEF1AE'>    &quot;switch&quot;,
+</span>60 <span style=''></span><span style='background: #AEF1AE'>    &quot;synchronized&quot;,
+</span>61 <span style=''></span><span style='background: #AEF1AE'>    &quot;this&quot;,
+</span>62 <span style=''></span><span style='background: #AEF1AE'>    &quot;throw&quot;,
+</span>63 <span style=''></span><span style='background: #AEF1AE'>    &quot;throws&quot;,
+</span>64 <span style=''></span><span style='background: #AEF1AE'>    &quot;transient&quot;,
+</span>65 <span style=''></span><span style='background: #AEF1AE'>    &quot;try&quot;,
+</span>66 <span style=''></span><span style='background: #AEF1AE'>    &quot;void&quot;,
+</span>67 <span style=''></span><span style='background: #AEF1AE'>    &quot;volatile&quot;,
+</span>68 <span style=''></span><span style='background: #AEF1AE'>    &quot;while&quot;
+</span>69 <span style=''></span><span style='background: #AEF1AE'>  )</span><span style=''>
+</span>70 <span style=''>
+</span>71 <span style=''>  // Make calling JavaParser methods less verbose
+</span>72 <span style=''>  implicit def stringToNameExpr(s: String): NameExpr = </span><span style='background: #F0ADAD'>new NameExpr(s)</span><span style=''>
+</span>73 <span style=''>
+</span>74 <span style=''>  // TODO why doesn't a structural type seem to work here?
+</span>75 <span style=''>  def getAnnotation[T &lt;: BodyDeclaration[T]](bd: BodyDeclaration[T], name: String): Option[AnnotationExpr] =
+</span>76 <span style=''>    </span><span style='background: #F0ADAD'>bd.getAnnotations.asScala.find(_.getNameAsString equals name)</span><span style=''>
+</span>77 <span style=''>
+</span>78 <span style=''>  def getAnnotationValueAsString(an: AnnotationExpr): Option[String] = {
+</span>79 <span style=''>    an match {
+</span>80 <span style=''>      case s: SingleMemberAnnotationExpr =&gt; </span><span style='background: #F0ADAD'>s.getMemberValue</span><span style=''> match {
+</span>81 <span style=''>        case sl: StringLiteralExpr =&gt; </span><span style='background: #F0ADAD'>Some(sl.getValue)</span><span style=''>
+</span>82 <span style=''>      }
+</span>83 <span style=''>      // TODO fragile
+</span>84 <span style=''>      case mm: NormalAnnotationExpr =&gt; </span><span style='background: #F0ADAD'>Some(mm.getPairs.get(0).getValue.asInstanceOf[StringLiteralExpr].getValue)</span><span style=''>
+</span>85 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>86 <span style=''>    }
+</span>87 <span style=''>  }
+</span>88 <span style=''>
+</span>89 <span style=''>  def getAnnotation(p: Parameter, name: String): Option[AnnotationExpr] =
+</span>90 <span style=''>    </span><span style='background: #F0ADAD'>p.getAnnotations.asScala.find(_.getNameAsString equals name)</span><span style=''>
+</span>91 <span style=''>
+</span>92 <span style=''>  import scala.language.reflectiveCalls
+</span>93 <span style=''>
+</span>94 <span style=''>  // Structural type makes this work across method declarations and types
+</span>95 <span style=''>  def isPublic(modifiable: {def getModifiers: Int}) =
+</span>96 <span style=''>    </span><span style='background: #F0ADAD'>java.lang.reflect.Modifier.isPublic(modifiable.getModifiers)</span><span style=''>
+</span>97 <span style=''>
+</span>98 <span style=''>  def getUnderlyingType(rt: ReferenceType): ClassOrInterfaceType =
+</span>99 <span style=''>    </span><span style='background: #F0ADAD'>rt.getElementType</span><span style=''> match {
+</span>100 <span style=''>      case cit: ClassOrInterfaceType =&gt; cit
+</span>101 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>???</span><span style=''>
+</span>102 <span style=''>    }
+</span>103 <span style=''>
+</span>104 <span style=''>  def isPublicField(f: FieldDeclaration): Boolean =
+</span>105 <span style=''>    </span><span style='background: #F0ADAD'>f.getModifiers.contains(Modifier.PUBLIC) &amp;&amp; !f.getModifiers.contains(Modifier.STATIC) &amp;&amp;
+</span>106 <span style=''></span><span style='background: #F0ADAD'>      f.getVariables.size == 1</span><span style=''>
+</span>107 <span style=''>
+</span>108 <span style=''>  def isReservedWord(name: String): Boolean =
+</span>109 <span style=''>    </span><span style='background: #AEF1AE'>name != null &amp;&amp; name.length &gt; 0 &amp;&amp; reservedWords.contains(name)</span><span style=''>
+</span>110 <span style=''>
+</span>111 <span style=''>  def addImportsIfNeeded(fqns: Seq[String], cu: CompilationUnit): Unit = {
+</span>112 <span style=''>    </span><span style='background: #AEF1AE'>fqns.foreach(fqn =&gt; {
+</span>113 <span style=''></span><span style='background: #AEF1AE'>      val importDefinition = cu.getImports.asScala.find(_.toString contains fqn)
+</span>114 <span style=''></span><span style='background: #AEF1AE'>      if (importDefinition.isEmpty) {
+</span>115 <span style=''></span><span style='background: #AEF1AE'>        cu.getImports.add(new ImportDeclaration(new Name(fqn), false, false))
+</span>116 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>117 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
+</span>118 <span style=''>  }
+</span>119 <span style=''>
+</span>120 <span style=''>  def removeImportsIfNeeded(fqns: Seq[String], cu: CompilationUnit): Unit = {
+</span>121 <span style=''>    </span><span style='background: #AEF1AE'>fqns.foreach(fqn =&gt; {
+</span>122 <span style=''></span><span style='background: #AEF1AE'>      val importDefinition = cu.getImports.asScala.find(_.toString contains fqn)
+</span>123 <span style=''></span><span style='background: #AEF1AE'>      if (importDefinition.isDefined) {
+</span>124 <span style=''></span><span style='background: #AEF1AE'>        cu.getImports.remove(importDefinition.get)
+</span>125 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>126 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
+</span>127 <span style=''>  }
+</span>128 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          8889
+        </td>
+        <td>
+          554
+          -
+          1250
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Set.apply[String](&quot;abstract&quot;, &quot;assert&quot;, &quot;boolean&quot;, &quot;break&quot;, &quot;byte&quot;, &quot;case&quot;, &quot;catch&quot;, &quot;char&quot;, &quot;class&quot;, &quot;const&quot;, &quot;continue&quot;, &quot;default&quot;, &quot;do&quot;, &quot;double&quot;, &quot;else&quot;, &quot;enum&quot;, &quot;extends&quot;, &quot;final&quot;, &quot;finally&quot;, &quot;float&quot;, &quot;for&quot;, &quot;goto&quot;, &quot;if&quot;, &quot;implements&quot;, &quot;import&quot;, &quot;instanceof&quot;, &quot;int&quot;, &quot;interface&quot;, &quot;long&quot;, &quot;native&quot;, &quot;new&quot;, &quot;package&quot;, &quot;private&quot;, &quot;protected&quot;, &quot;public&quot;, &quot;return&quot;, &quot;short&quot;, &quot;static&quot;, &quot;strictfp&quot;, &quot;super&quot;, &quot;switch&quot;, &quot;synchronized&quot;, &quot;this&quot;, &quot;throw&quot;, &quot;throws&quot;, &quot;transient&quot;, &quot;try&quot;, &quot;void&quot;, &quot;volatile&quot;, &quot;while&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          8890
+        </td>
+        <td>
+          1357
+          -
+          1372
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.expr.NameExpr.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new com.github.javaparser.ast.expr.NameExpr(s)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          8893
+        </td>
+        <td>
+          1546
+          -
+          1607
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.expr.AnnotationExpr](bd.getAnnotations()).asScala.find(((x$1: com.github.javaparser.ast.expr.AnnotationExpr) =&gt; x$1.getNameAsString().equals(name)))
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          8892
+        </td>
+        <td>
+          1577
+          -
+          1606
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #F0ADAD">
+          x$1.getNameAsString().equals(name)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          8891
+        </td>
+        <td>
+          1546
+          -
+          1563
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.body.BodyDeclaration.getAnnotations
+        </td>
+        <td style="background: #F0ADAD">
+          bd.getAnnotations()
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          8894
+        </td>
+        <td>
+          1741
+          -
+          1757
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.expr.SingleMemberAnnotationExpr.getMemberValue
+        </td>
+        <td style="background: #F0ADAD">
+          s.getMemberValue()
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          8896
+        </td>
+        <td>
+          1804
+          -
+          1821
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](sl.getValue())
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          8895
+        </td>
+        <td>
+          1809
+          -
+          1820
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.expr.LiteralStringValueExpr.getValue
+        </td>
+        <td style="background: #F0ADAD">
+          sl.getValue()
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          8898
+        </td>
+        <td>
+          1891
+          -
+          1965
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](mm.getPairs().get(0).getValue().asInstanceOf[com.github.javaparser.ast.expr.StringLiteralExpr].getValue())
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          8897
+        </td>
+        <td>
+          1896
+          -
+          1964
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.expr.LiteralStringValueExpr.getValue
+        </td>
+        <td style="background: #F0ADAD">
+          mm.getPairs().get(0).getValue().asInstanceOf[com.github.javaparser.ast.expr.StringLiteralExpr].getValue()
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          8899
+        </td>
+        <td>
+          1982
+          -
+          1986
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          8902
+        </td>
+        <td>
+          2076
+          -
+          2136
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.expr.AnnotationExpr](p.getAnnotations()).asScala.find(((x$2: com.github.javaparser.ast.expr.AnnotationExpr) =&gt; x$2.getNameAsString().equals(name)))
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          8901
+        </td>
+        <td>
+          2106
+          -
+          2135
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #F0ADAD">
+          x$2.getNameAsString().equals(name)
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          8900
+        </td>
+        <td>
+          2076
+          -
+          2092
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.body.Parameter.getAnnotations
+        </td>
+        <td style="background: #F0ADAD">
+          p.getAnnotations()
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          8904
+        </td>
+        <td>
+          2311
+          -
+          2371
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.reflect.Modifier.isPublic
+        </td>
+        <td style="background: #F0ADAD">
+          java.lang.reflect.Modifier.isPublic(modifiable.getModifiers)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          8903
+        </td>
+        <td>
+          2347
+          -
+          2370
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.lang.JavaParserUtils.&lt;refinement&gt;.getModifiers
+        </td>
+        <td style="background: #F0ADAD">
+          modifiable.getModifiers
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          8905
+        </td>
+        <td>
+          2444
+          -
+          2461
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.type.Type.getElementType
+        </td>
+        <td style="background: #F0ADAD">
+          rt.getElementType()
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          8906
+        </td>
+        <td>
+          2530
+          -
+          2533
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          8908
+        </td>
+        <td>
+          2666
+          -
+          2681
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          STATIC
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          8911
+        </td>
+        <td>
+          2597
+          -
+          2716
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #F0ADAD">
+          f.getModifiers().contains(PUBLIC).&amp;&amp;(f.getModifiers().contains(STATIC).unary_!).&amp;&amp;(f.getVariables().size().==(1))
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          8907
+        </td>
+        <td>
+          2621
+          -
+          2636
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          PUBLIC
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          8909
+        </td>
+        <td>
+          2641
+          -
+          2682
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #F0ADAD">
+          f.getModifiers().contains(STATIC).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          8910
+        </td>
+        <td>
+          2692
+          -
+          2716
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #F0ADAD">
+          f.getVariables().size().==(1)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          8914
+        </td>
+        <td>
+          2803
+          -
+          2831
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          JavaParserUtils.this.reservedWords.contains(name)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          8913
+        </td>
+        <td>
+          2784
+          -
+          2799
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          name.length().&gt;(0)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          8912
+        </td>
+        <td>
+          2776
+          -
+          2780
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          null
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          8915
+        </td>
+        <td>
+          2768
+          -
+          2831
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          name.!=(null).&amp;&amp;(name.length().&gt;(0)).&amp;&amp;(JavaParserUtils.this.reservedWords.contains(name))
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          8928
+        </td>
+        <td>
+          2912
+          -
+          3145
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          fqns.foreach[AnyVal](((fqn: String) =&gt; {
+  val importDefinition: Option[com.github.javaparser.ast.ImportDeclaration] = scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.ImportDeclaration](cu.getImports()).asScala.find(((x$3: com.github.javaparser.ast.ImportDeclaration) =&gt; x$3.toString().contains(fqn)));
+  if (importDefinition.isEmpty)
+    cu.getImports().add(new com.github.javaparser.ast.ImportDeclaration(new com.github.javaparser.ast.expr.Name(fqn), false, false))
+  else
+    ()
+}))
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          8917
+        </td>
+        <td>
+          2990
+          -
+          3013
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.contains
+        </td>
+        <td style="background: #AEF1AE">
+          x$3.toString().contains(fqn)
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          8916
+        </td>
+        <td>
+          2963
+          -
+          2976
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.CompilationUnit.getImports
+        </td>
+        <td style="background: #AEF1AE">
+          cu.getImports()
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          8918
+        </td>
+        <td>
+          2963
+          -
+          3014
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.ImportDeclaration](cu.getImports()).asScala.find(((x$3: com.github.javaparser.ast.ImportDeclaration) =&gt; x$3.toString().contains(fqn)))
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          8926
+        </td>
+        <td>
+          3021
+          -
+          3021
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          8919
+        </td>
+        <td>
+          3025
+          -
+          3049
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          importDefinition.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          8927
+        </td>
+        <td>
+          3021
+          -
+          3021
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          8920
+        </td>
+        <td>
+          3101
+          -
+          3114
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.expr.Name.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.github.javaparser.ast.expr.Name(fqn)
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          8923
+        </td>
+        <td>
+          3079
+          -
+          3129
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.ImportDeclaration.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.github.javaparser.ast.ImportDeclaration(new com.github.javaparser.ast.expr.Name(fqn), false, false)
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          8922
+        </td>
+        <td>
+          3123
+          -
+          3128
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          8925
+        </td>
+        <td>
+          3061
+          -
+          3130
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.github.javaparser.ast.NodeList.add
+        </td>
+        <td style="background: #AEF1AE">
+          cu.getImports().add(new com.github.javaparser.ast.ImportDeclaration(new com.github.javaparser.ast.expr.Name(fqn), false, false))
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          8921
+        </td>
+        <td>
+          3116
+          -
+          3121
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          8924
+        </td>
+        <td>
+          3061
+          -
+          3130
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.NodeList.add
+        </td>
+        <td style="background: #AEF1AE">
+          cu.getImports().add(new com.github.javaparser.ast.ImportDeclaration(new com.github.javaparser.ast.expr.Name(fqn), false, false))
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          8938
+        </td>
+        <td>
+          3233
+          -
+          3441
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          fqns.foreach[AnyVal](((fqn: String) =&gt; {
+  val importDefinition: Option[com.github.javaparser.ast.ImportDeclaration] = scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.ImportDeclaration](cu.getImports()).asScala.find(((x$4: com.github.javaparser.ast.ImportDeclaration) =&gt; x$4.toString().contains(fqn)));
+  if (importDefinition.isDefined)
+    cu.getImports().remove(importDefinition.get)
+  else
+    ()
+}))
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          8929
+        </td>
+        <td>
+          3284
+          -
+          3297
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.CompilationUnit.getImports
+        </td>
+        <td style="background: #AEF1AE">
+          cu.getImports()
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          8931
+        </td>
+        <td>
+          3284
+          -
+          3335
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaBufferConverter[com.github.javaparser.ast.ImportDeclaration](cu.getImports()).asScala.find(((x$4: com.github.javaparser.ast.ImportDeclaration) =&gt; x$4.toString().contains(fqn)))
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          8930
+        </td>
+        <td>
+          3311
+          -
+          3334
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.contains
+        </td>
+        <td style="background: #AEF1AE">
+          x$4.toString().contains(fqn)
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          8932
+        </td>
+        <td>
+          3346
+          -
+          3372
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #AEF1AE">
+          importDefinition.isDefined
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          8937
+        </td>
+        <td>
+          3342
+          -
+          3342
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          8936
+        </td>
+        <td>
+          3342
+          -
+          3342
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          8935
+        </td>
+        <td>
+          3384
+          -
+          3426
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.github.javaparser.ast.NodeList.remove
+        </td>
+        <td style="background: #AEF1AE">
+          cu.getImports().remove(importDefinition.get)
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          8934
+        </td>
+        <td>
+          3384
+          -
+          3426
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.github.javaparser.ast.NodeList.remove
+        </td>
+        <td style="background: #AEF1AE">
+          cu.getImports().remove(importDefinition.get)
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          8933
+        </td>
+        <td>
+          3405
+          -
+          3425
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #AEF1AE">
+          importDefinition.get
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

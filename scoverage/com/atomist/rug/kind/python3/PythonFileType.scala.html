@@ -1,0 +1,150 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/python3/PythonFileType.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.python3
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.kind.grammar.AntlrRawFileType
+</span>4 <span style=''>import com.atomist.source.FileArtifact
+</span>5 <span style=''>import com.atomist.tree.content.text.grammar.antlr.FromGrammarAstNodeCreationStrategy
+</span>6 <span style=''>
+</span>7 <span style=''>object PythonFileType {
+</span>8 <span style=''>
+</span>9 <span style=''>  val PythonExtension = </span><span style='background: #AEF1AE'>&quot;.py&quot;</span><span style=''>
+</span>10 <span style=''>
+</span>11 <span style=''>}
+</span>12 <span style=''>
+</span>13 <span style=''>class PythonFileType
+</span>14 <span style=''>  extends AntlrRawFileType(&quot;file_input&quot;,
+</span>15 <span style=''>    FromGrammarAstNodeCreationStrategy,
+</span>16 <span style=''>    &quot;classpath:grammars/antlr/Python3.g4&quot;) {
+</span>17 <span style=''>
+</span>18 <span style=''>  import PythonFileType._
+</span>19 <span style=''>
+</span>20 <span style=''>  override def description = </span><span style='background: #AEF1AE'>&quot;Python file&quot;</span><span style=''>
+</span>21 <span style=''>
+</span>22 <span style=''>  override def isOfType(f: FileArtifact): Boolean =
+</span>23 <span style=''>    </span><span style='background: #AEF1AE'>f.name.endsWith(PythonExtension)</span><span style=''>
+</span>24 <span style=''>
+</span>25 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          2864
+        </td>
+        <td>
+          266
+          -
+          271
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;.py&quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          2865
+        </td>
+        <td>
+          480
+          -
+          493
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Python file&quot;
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2867
+        </td>
+        <td>
+          551
+          -
+          583
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.endsWith
+        </td>
+        <td style="background: #AEF1AE">
+          f.name.endsWith(PythonFileType.PythonExtension)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2866
+        </td>
+        <td>
+          567
+          -
+          582
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.python3.PythonFileType.PythonExtension
+        </td>
+        <td style="background: #AEF1AE">
+          PythonFileType.PythonExtension
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

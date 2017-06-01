@@ -1,0 +1,1402 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/spi/Handlers.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.spi
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.graph.GraphNode
+</span>4 <span style=''>import com.atomist.param.ParameterValue
+</span>5 <span style=''>import com.atomist.rug.runtime.Rug
+</span>6 <span style=''>import com.atomist.rug.spi.Handlers.Instruction.{Detail, NonrespondableInstruction, RespondableInstruction}
+</span>7 <span style=''>
+</span>8 <span style=''>import scala.concurrent.Future
+</span>9 <span style=''>
+</span>10 <span style=''>/**
+</span>11 <span style=''>  * Beans that map to the @atomist/rug/operations/operations/Handlers
+</span>12 <span style=''>  */
+</span>13 <span style=''>object Handlers {
+</span>14 <span style=''>
+</span>15 <span style=''>  /**
+</span>16 <span style=''>    * A plan in response to this event
+</span>17 <span style=''>    *
+</span>18 <span style=''>    * @param returningRug - the rug that returned this plan
+</span>19 <span style=''>    * @param lifecycle    messages in the plan
+</span>20 <span style=''>    * @param local        messages in the plan
+</span>21 <span style=''>    * @param instructions instructions in the plan
+</span>22 <span style=''>    * @param nativeObject native object (such as a Nashorn ScriptObjectMirror)
+</span>23 <span style=''>    *                     if one is available
+</span>24 <span style=''>    */
+</span>25 <span style=''>  case class Plan(returningRug: Option[Rug],
+</span>26 <span style=''>                  lifecycle: Seq[LifecycleMessage],
+</span>27 <span style=''>                  local: Seq[LocallyRenderedMessage],
+</span>28 <span style=''>                  instructions: Seq[Plannable],
+</span>29 <span style=''>                  nativeObject: Option[AnyRef] = None) extends Callback {
+</span>30 <span style=''>
+</span>31 <span style=''>    def messages: Seq[Message] = </span><span style='background: #AEF1AE'>local ++ lifecycle</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>    override def toDisplay: String = {
+</span>34 <span style=''>      </span><span style='background: #AEF1AE'>s&quot;Plan[${(messages.map(_.toDisplay) ++ instructions.map(_.toDisplay)).mkString(&quot;, &quot;)}]&quot;</span><span style=''>
+</span>35 <span style=''>    }
+</span>36 <span style=''>  }
+</span>37 <span style=''>
+</span>38 <span style=''>  trait Message extends Callback {}
+</span>39 <span style=''>
+</span>40 <span style=''>  case class LifecycleMessage(
+</span>41 <span style=''>                               node: GraphNode,
+</span>42 <span style=''>                               actions: Seq[Presentable],
+</span>43 <span style=''>                               lifecycleId: String)
+</span>44 <span style=''>    extends Callback
+</span>45 <span style=''>      with Message {
+</span>46 <span style=''>
+</span>47 <span style=''>    override def toDisplay: String = {
+</span>48 <span style=''>      </span><span style='background: #F0ADAD'>s&quot;tags: ${node.nodeTags.mkString}, actions: ${actions.mkString}&quot;</span><span style=''>
+</span>49 <span style=''>    }
+</span>50 <span style=''>  }
+</span>51 <span style=''>
+</span>52 <span style=''>  /**
+</span>53 <span style=''>    * Rendering/correlation is done in the handler
+</span>54 <span style=''>    * Directed &amp; Response messages become these.
+</span>55 <span style=''>    */
+</span>56 <span style=''>  case class LocallyRenderedMessage(body: String,
+</span>57 <span style=''>                                    contentType: String,
+</span>58 <span style=''>                                    channelNames: Seq[String] = Nil,
+</span>59 <span style=''>                                    usernames: Seq[String] = Nil,
+</span>60 <span style=''>                                    instructions: Seq[Presentable] = Nil)
+</span>61 <span style=''>    extends Callback
+</span>62 <span style=''>      with Message {
+</span>63 <span style=''>
+</span>64 <span style=''>    override def toDisplay: String = {
+</span>65 <span style=''>      </span><span style='background: #AEF1AE'>s&quot;channels: ${channelNames.mkString}, usernames: ${usernames.mkString}, type: $contentType, body: $body&quot;</span><span style=''>
+</span>66 <span style=''>    }
+</span>67 <span style=''>  }
+</span>68 <span style=''>
+</span>69 <span style=''>  sealed trait Callback {
+</span>70 <span style=''>    def toDisplay: String
+</span>71 <span style=''>  }
+</span>72 <span style=''>
+</span>73 <span style=''>  sealed trait Plannable {
+</span>74 <span style=''>    def instruction: Instruction
+</span>75 <span style=''>
+</span>76 <span style=''>    def toDisplay: String = </span><span style='background: #AEF1AE'>instruction.toDisplay</span><span style=''>
+</span>77 <span style=''>  }
+</span>78 <span style=''>
+</span>79 <span style=''>  case class Respondable(instruction: RespondableInstruction,
+</span>80 <span style=''>                         onSuccess: Option[Callback],
+</span>81 <span style=''>                         onFailure: Option[Callback]) extends Plannable
+</span>82 <span style=''>
+</span>83 <span style=''>  case class Nonrespondable(instruction: NonrespondableInstruction) extends Plannable
+</span>84 <span style=''>
+</span>85 <span style=''>  case class Presentable(instruction: Instruction, label: Option[String], id: Option[String])
+</span>86 <span style=''>
+</span>87 <span style=''>  //likely to change
+</span>88 <span style=''>
+</span>89 <span style=''>  sealed trait Instruction {
+</span>90 <span style=''>    def detail: Detail
+</span>91 <span style=''>
+</span>92 <span style=''>    def toDisplay: String = {
+</span>93 <span style=''>      val name = </span><span style='background: #AEF1AE'>this.getClass.getName.split('$').last</span><span style=''>
+</span>94 <span style=''>      </span><span style='background: #AEF1AE'>s&quot;$name ${detail.name}(${detail.parameters.mkString(&quot;, &quot;)})&quot;</span><span style=''>
+</span>95 <span style=''>    }
+</span>96 <span style=''>  }
+</span>97 <span style=''>
+</span>98 <span style=''>  /**
+</span>99 <span style=''>    * Name of the target branch for an Edit
+</span>100 <span style=''>    */
+</span>101 <span style=''>  trait EditorTarget {
+</span>102 <span style=''>    def baseBranch: String
+</span>103 <span style=''>    def commitMessage: Option[String]
+</span>104 <span style=''>  }
+</span>105 <span style=''>
+</span>106 <span style=''>  case class DefaultTarget(override val commitMessage: Option[String] = None)
+</span>107 <span style=''>    extends EditorTarget {
+</span>108 <span style=''>    override def baseBranch: String = </span><span style='background: #F0ADAD'>&quot;master&quot;</span><span style=''>
+</span>109 <span style=''>  }
+</span>110 <span style=''>
+</span>111 <span style=''>  /**
+</span>112 <span style=''>    * A GitHub Pull Request for Edits.
+</span>113 <span style=''>    */
+</span>114 <span style=''>  case class GitHubPullRequest(
+</span>115 <span style=''>                                override val baseBranch: String,
+</span>116 <span style=''>                                override val commitMessage: Option[String] = None,
+</span>117 <span style=''>                                headBranch: Option[String] = None,
+</span>118 <span style=''>                                title: Option[String] = None,
+</span>119 <span style=''>                                body: Option[String] = None
+</span>120 <span style=''>                              )
+</span>121 <span style=''>    extends EditorTarget
+</span>122 <span style=''>
+</span>123 <span style=''>  /**
+</span>124 <span style=''>    * A GitHub Branch for Edits.
+</span>125 <span style=''>    */
+</span>126 <span style=''>  case class GitHubBranch(
+</span>127 <span style=''>                           override val baseBranch: String,
+</span>128 <span style=''>                           override val commitMessage: Option[String] = None,
+</span>129 <span style=''>                           headBranch: Option[String] = None
+</span>130 <span style=''>                         )
+</span>131 <span style=''>    extends EditorTarget
+</span>132 <span style=''>
+</span>133 <span style=''>  object Instruction {
+</span>134 <span style=''>
+</span>135 <span style=''>    // Probably makes more sense to put project_name elsewhere
+</span>136 <span style=''>    case class Detail(name: String,
+</span>137 <span style=''>                      coordinates: Option[MavenCoordinate],
+</span>138 <span style=''>                      parameters: Seq[ParameterValue],
+</span>139 <span style=''>                      projectName: Option[String],
+</span>140 <span style=''>                      editorTarget: Option[EditorTarget] = None)
+</span>141 <span style=''>
+</span>142 <span style=''>    def from(name: String, detail: Detail): Instruction = {
+</span>143 <span style=''>      name match {
+</span>144 <span style=''>        case &quot;generate&quot; =&gt; </span><span style='background: #AEF1AE'>Generate(detail)</span><span style=''>
+</span>145 <span style=''>        case &quot;edit&quot; =&gt; </span><span style='background: #AEF1AE'>Edit(detail)</span><span style=''>
+</span>146 <span style=''>        case &quot;execute&quot; =&gt; </span><span style='background: #AEF1AE'>Execute(detail)</span><span style=''>
+</span>147 <span style=''>        case &quot;respond&quot; =&gt; </span><span style='background: #F0ADAD'>Respond(detail)</span><span style=''>
+</span>148 <span style=''>        case &quot;command&quot; =&gt; </span><span style='background: #AEF1AE'>Command(detail)</span><span style=''>
+</span>149 <span style=''>        case _ =&gt; </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Cannot derive Instruction from '$name'.&quot;)</span><span style=''>
+</span>150 <span style=''>      }
+</span>151 <span style=''>    }
+</span>152 <span style=''>
+</span>153 <span style=''>    sealed trait RespondableInstruction extends Instruction
+</span>154 <span style=''>
+</span>155 <span style=''>    sealed trait NonrespondableInstruction extends Instruction
+</span>156 <span style=''>
+</span>157 <span style=''>    case class Generate(detail: Detail) extends RespondableInstruction
+</span>158 <span style=''>
+</span>159 <span style=''>    case class Edit(detail: Detail) extends RespondableInstruction
+</span>160 <span style=''>
+</span>161 <span style=''>    case class Execute(detail: Detail) extends RespondableInstruction
+</span>162 <span style=''>
+</span>163 <span style=''>    case class Command(detail: Detail) extends NonrespondableInstruction
+</span>164 <span style=''>
+</span>165 <span style=''>    case class Respond(detail: Detail) extends NonrespondableInstruction with Callback
+</span>166 <span style=''>
+</span>167 <span style=''>  }
+</span>168 <span style=''>
+</span>169 <span style=''>  case class MavenCoordinate(group: String,
+</span>170 <span style=''>                             artifact: String) {
+</span>171 <span style=''>  }
+</span>172 <span style=''>
+</span>173 <span style=''>  case class Response(status: Status,
+</span>174 <span style=''>                      msg: Option[String] = None,
+</span>175 <span style=''>                      code: Option[Int] = None,
+</span>176 <span style=''>                      body: Option[AnyRef] = None) {
+</span>177 <span style=''>    def toDisplay: String = {
+</span>178 <span style=''>      val name = </span><span style='background: #AEF1AE'>status.getClass.getName.split('$').last</span><span style=''>
+</span>179 <span style=''>      val value = (msg, code) match {
+</span>180 <span style=''>        case (Some(m), Some(c)) =&gt; </span><span style='background: #AEF1AE'>s&quot;:$c:$m&quot;</span><span style=''>
+</span>181 <span style=''>        case (Some(m), None) =&gt; </span><span style='background: #AEF1AE'>s&quot;:$m&quot;</span><span style=''>
+</span>182 <span style=''>        case (None, Some(c)) =&gt; </span><span style='background: #F0ADAD'>s&quot;:${c.toString}&quot;</span><span style=''>
+</span>183 <span style=''>        case _ =&gt; </span><span style='background: #AEF1AE'>&quot;&quot;</span><span style=''>
+</span>184 <span style=''>      }
+</span>185 <span style=''>      </span><span style='background: #AEF1AE'>s&quot;$name$value&quot;</span><span style=''>
+</span>186 <span style=''>    }
+</span>187 <span style=''>  }
+</span>188 <span style=''>
+</span>189 <span style=''>  case class PlanResult(log: Seq[PlanLogEvent])
+</span>190 <span style=''>
+</span>191 <span style=''>  sealed trait PlanLogEvent
+</span>192 <span style=''>
+</span>193 <span style=''>  sealed trait PlanLogError extends PlanLogEvent {
+</span>194 <span style=''>    def error: Throwable
+</span>195 <span style=''>  }
+</span>196 <span style=''>
+</span>197 <span style=''>  case class InstructionResult(instruction: Instruction, response: Response) extends PlanLogEvent
+</span>198 <span style=''>
+</span>199 <span style=''>  case class NestedPlanRun(plan: Plan, planResult: Future[PlanResult]) extends PlanLogEvent
+</span>200 <span style=''>
+</span>201 <span style=''>  case class InstructionError(instruction: Instruction, error: Throwable) extends PlanLogError
+</span>202 <span style=''>
+</span>203 <span style=''>  case class MessageDeliveryError(message: Message, error: Throwable) extends PlanLogError
+</span>204 <span style=''>
+</span>205 <span style=''>  case class CallbackError(callback: Callback, error: Throwable) extends PlanLogError
+</span>206 <span style=''>
+</span>207 <span style=''>  sealed trait Status
+</span>208 <span style=''>
+</span>209 <span style=''>  object Status {
+</span>210 <span style=''>
+</span>211 <span style=''>    case object Success extends Status
+</span>212 <span style=''>
+</span>213 <span style=''>    case object Failure extends Status
+</span>214 <span style=''>
+</span>215 <span style=''>    case object Handled extends Status
+</span>216 <span style=''>
+</span>217 <span style=''>    def from(name: String): Status = {
+</span>218 <span style=''>      name match {
+</span>219 <span style=''>        case &quot;success&quot; =&gt; </span><span style='background: #F0ADAD'>Success</span><span style=''>
+</span>220 <span style=''>        case &quot;failure&quot; =&gt; </span><span style='background: #F0ADAD'>Failure</span><span style=''>
+</span>221 <span style=''>        case &quot;handled&quot; =&gt; </span><span style='background: #F0ADAD'>Handled</span><span style=''>
+</span>222 <span style=''>        case _ =&gt; </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Cannot derive Status from '$name'.&quot;)</span><span style=''>
+</span>223 <span style=''>      }
+</span>224 <span style=''>    }
+</span>225 <span style=''>  }
+</span>226 <span style=''>
+</span>227 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          5224
+        </td>
+        <td>
+          1079
+          -
+          1079
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.Message with Product with Serializable]
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          5223
+        </td>
+        <td>
+          1082
+          -
+          1091
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Plan.lifecycle
+        </td>
+        <td style="background: #AEF1AE">
+          Plan.this.lifecycle
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          5225
+        </td>
+        <td>
+          1073
+          -
+          1091
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          Plan.this.local.++[com.atomist.rug.spi.Handlers.Message with Product with Serializable, Seq[com.atomist.rug.spi.Handlers.Message]](Plan.this.lifecycle)(collection.this.Seq.canBuildFrom[com.atomist.rug.spi.Handlers.Message with Product with Serializable])
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          5227
+        </td>
+        <td>
+          1223
+          -
+          1225
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;]&quot;
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          5229
+        </td>
+        <td>
+          1138
+          -
+          1225
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Plan[&quot;, &quot;]&quot;).s(Plan.this.messages.map[String, Seq[String]](((x$1: com.atomist.rug.spi.Handlers.Message) =&gt; x$1.toDisplay))(collection.this.Seq.canBuildFrom[String]).++[String, Seq[String]](Plan.this.instructions.map[String, Seq[String]](((x$2: com.atomist.rug.spi.Handlers.Plannable) =&gt; x$2.toDisplay))(collection.this.Seq.canBuildFrom[String]))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;, &quot;))
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          5226
+        </td>
+        <td>
+          1140
+          -
+          1146
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Plan[&quot;
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          5228
+        </td>
+        <td>
+          1148
+          -
+          1222
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          Plan.this.messages.map[String, Seq[String]](((x$1: com.atomist.rug.spi.Handlers.Message) =&gt; x$1.toDisplay))(collection.this.Seq.canBuildFrom[String]).++[String, Seq[String]](Plan.this.instructions.map[String, Seq[String]](((x$2: com.atomist.rug.spi.Handlers.Plannable) =&gt; x$2.toDisplay))(collection.this.Seq.canBuildFrom[String]))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;, &quot;)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          5233
+        </td>
+        <td>
+          1561
+          -
+          1583
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          LifecycleMessage.this.node.nodeTags.mkString
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          5230
+        </td>
+        <td>
+          1553
+          -
+          1560
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;tags: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          5232
+        </td>
+        <td>
+          1614
+          -
+          1615
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          5235
+        </td>
+        <td>
+          1551
+          -
+          1615
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;tags: &quot;, &quot;, actions: &quot;, &quot;&quot;).s(LifecycleMessage.this.node.nodeTags.mkString, LifecycleMessage.this.actions.mkString)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          5234
+        </td>
+        <td>
+          1597
+          -
+          1613
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          LifecycleMessage.this.actions.mkString
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          5231
+        </td>
+        <td>
+          1584
+          -
+          1596
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;, actions: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          5242
+        </td>
+        <td>
+          2195
+          -
+          2213
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          LocallyRenderedMessage.this.usernames.mkString
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          5236
+        </td>
+        <td>
+          2146
+          -
+          2157
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;channels: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          5245
+        </td>
+        <td>
+          2144
+          -
+          2248
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;channels: &quot;, &quot;, usernames: &quot;, &quot;, type: &quot;, &quot;, body: &quot;, &quot;&quot;).s(LocallyRenderedMessage.this.channelNames.mkString, LocallyRenderedMessage.this.usernames.mkString, LocallyRenderedMessage.this.contentType, LocallyRenderedMessage.this.body)
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          5238
+        </td>
+        <td>
+          2214
+          -
+          2223
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;, type: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          5241
+        </td>
+        <td>
+          2158
+          -
+          2179
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          LocallyRenderedMessage.this.channelNames.mkString
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          5244
+        </td>
+        <td>
+          2243
+          -
+          2247
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.LocallyRenderedMessage.body
+        </td>
+        <td style="background: #AEF1AE">
+          LocallyRenderedMessage.this.body
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          5243
+        </td>
+        <td>
+          2223
+          -
+          2234
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.LocallyRenderedMessage.contentType
+        </td>
+        <td style="background: #AEF1AE">
+          LocallyRenderedMessage.this.contentType
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          5237
+        </td>
+        <td>
+          2180
+          -
+          2194
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;, usernames: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          5240
+        </td>
+        <td>
+          2247
+          -
+          2248
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          5239
+        </td>
+        <td>
+          2234
+          -
+          2243
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;, body: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          5246
+        </td>
+        <td>
+          2406
+          -
+          2427
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.toDisplay
+        </td>
+        <td style="background: #AEF1AE">
+          Plannable.this.instruction.toDisplay
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          5247
+        </td>
+        <td>
+          2926
+          -
+          2958
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.split
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(this.getClass().getName()).split('$')
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          5248
+        </td>
+        <td>
+          2926
+          -
+          2963
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.last
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[String](scala.this.Predef.augmentString(this.getClass().getName()).split('$')).last
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          5251
+        </td>
+        <td>
+          2992
+          -
+          2994
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;(&quot;
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          5254
+        </td>
+        <td>
+          2995
+          -
+          3027
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          Instruction.this.detail.parameters.mkString(&quot;, &quot;)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          5250
+        </td>
+        <td>
+          2977
+          -
+          2979
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          5253
+        </td>
+        <td>
+          2980
+          -
+          2991
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Detail.name
+        </td>
+        <td style="background: #AEF1AE">
+          Instruction.this.detail.name
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          5252
+        </td>
+        <td>
+          3028
+          -
+          3030
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;)&quot;
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          5255
+        </td>
+        <td>
+          2970
+          -
+          3030
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot; &quot;, &quot;(&quot;, &quot;)&quot;).s(name, Instruction.this.detail.name, Instruction.this.detail.parameters.mkString(&quot;, &quot;))
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          5249
+        </td>
+        <td>
+          2972
+          -
+          2973
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          5256
+        </td>
+        <td>
+          3335
+          -
+          3343
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;master&quot;
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          5257
+        </td>
+        <td>
+          4614
+          -
+          4630
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Generate.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Instruction.this.Generate.apply(detail)
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          5258
+        </td>
+        <td>
+          4654
+          -
+          4666
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Edit.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Instruction.this.Edit.apply(detail)
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          5259
+        </td>
+        <td>
+          4693
+          -
+          4708
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Execute.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Instruction.this.Execute.apply(detail)
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          5260
+        </td>
+        <td>
+          4735
+          -
+          4750
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Respond.apply
+        </td>
+        <td style="background: #F0ADAD">
+          Instruction.this.Respond.apply(detail)
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          5261
+        </td>
+        <td>
+          4777
+          -
+          4792
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Instruction.Command.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Instruction.this.Command.apply(detail)
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          5262
+        </td>
+        <td>
+          4811
+          -
+          4889
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Cannot derive Instruction from \'&quot;, &quot;\'.&quot;).s(name))
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          5263
+        </td>
+        <td>
+          5742
+          -
+          5776
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.split
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(Response.this.status.getClass().getName()).split('$')
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          5264
+        </td>
+        <td>
+          5742
+          -
+          5781
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.last
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[String](scala.this.Predef.augmentString(Response.this.status.getClass().getName()).split('$')).last
+        </td>
+      </tr><tr>
+        <td>
+          180
+        </td>
+        <td>
+          5265
+        </td>
+        <td>
+          5855
+          -
+          5864
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;:&quot;, &quot;:&quot;, &quot;&quot;).s(c, m)
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          5266
+        </td>
+        <td>
+          5897
+          -
+          5903
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;:&quot;, &quot;&quot;).s(m)
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          5269
+        </td>
+        <td>
+          5941
+          -
+          5951
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Any.toString
+        </td>
+        <td style="background: #F0ADAD">
+          c.toString()
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          5268
+        </td>
+        <td>
+          5952
+          -
+          5953
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          5270
+        </td>
+        <td>
+          5936
+          -
+          5953
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;:&quot;, &quot;&quot;).s(c.toString())
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          5267
+        </td>
+        <td>
+          5938
+          -
+          5940
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;:&quot;
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          5271
+        </td>
+        <td>
+          5972
+          -
+          5974
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          5272
+        </td>
+        <td>
+          5989
+          -
+          6003
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;&quot;, &quot;&quot;).s(name, value)
+        </td>
+      </tr><tr>
+        <td>
+          219
+        </td>
+        <td>
+          5273
+        </td>
+        <td>
+          6887
+          -
+          6894
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Status.Success
+        </td>
+        <td style="background: #F0ADAD">
+          Status.this.Success
+        </td>
+      </tr><tr>
+        <td>
+          220
+        </td>
+        <td>
+          5274
+        </td>
+        <td>
+          6921
+          -
+          6928
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Status.Failure
+        </td>
+        <td style="background: #F0ADAD">
+          Status.this.Failure
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          5275
+        </td>
+        <td>
+          6955
+          -
+          6962
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Handlers.Status.Handled
+        </td>
+        <td style="background: #F0ADAD">
+          Status.this.Handled
+        </td>
+      </tr><tr>
+        <td>
+          222
+        </td>
+        <td>
+          5276
+        </td>
+        <td>
+          6981
+          -
+          7054
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Cannot derive Status from \'&quot;, &quot;\'.&quot;).s(name))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

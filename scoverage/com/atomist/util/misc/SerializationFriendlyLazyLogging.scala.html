@@ -1,0 +1,124 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/util/misc/SerializationFriendlyLazyLogging.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.util.misc
+</span>2 <span style=''>
+</span>3 <span style=''>import java.beans.Transient
+</span>4 <span style=''>
+</span>5 <span style=''>import com.fasterxml.jackson.annotation.JsonIgnore
+</span>6 <span style=''>import com.typesafe.scalalogging.Logger
+</span>7 <span style=''>import org.slf4j.LoggerFactory
+</span>8 <span style=''>
+</span>9 <span style=''>/**
+</span>10 <span style=''>  * Use as an alternative to TypeSafe LazyLogging to avoid
+</span>11 <span style=''>  * blowing up JSON and other serialization.
+</span>12 <span style=''>  */
+</span>13 <span style=''>trait SerializationFriendlyLazyLogging {
+</span>14 <span style=''>
+</span>15 <span style=''>  @Transient
+</span>16 <span style=''>  @JsonIgnore
+</span>17 <span style=''>  protected lazy val logger: Logger =
+</span>18 <span style=''>    </span><span style='background: #AEF1AE'>Logger(LoggerFactory.getLogger(getClass.getName))</span><span style=''>
+</span>19 <span style=''>
+</span>20 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          9399
+        </td>
+        <td>
+          438
+          -
+          454
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getName
+        </td>
+        <td style="background: #AEF1AE">
+          SerializationFriendlyLazyLogging.this.getClass().getName()
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          9401
+        </td>
+        <td>
+          407
+          -
+          456
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.typesafe.scalalogging.Logger.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.typesafe.scalalogging.Logger.apply(org.slf4j.LoggerFactory.getLogger(SerializationFriendlyLazyLogging.this.getClass().getName()))
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          9400
+        </td>
+        <td>
+          414
+          -
+          455
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.LoggerFactory.getLogger
+        </td>
+        <td style="background: #AEF1AE">
+          org.slf4j.LoggerFactory.getLogger(SerializationFriendlyLazyLogging.this.getClass().getName())
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

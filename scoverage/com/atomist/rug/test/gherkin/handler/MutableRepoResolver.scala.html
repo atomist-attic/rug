@@ -1,0 +1,326 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/test/gherkin/handler/MutableRepoResolver.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.test.gherkin.handler
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.kind.core.RepoResolver
+</span>4 <span style=''>import com.atomist.source.ArtifactSource
+</span>5 <span style=''>
+</span>6 <span style=''>/**
+</span>7 <span style=''>  * Used in testing infrastructure and the test suite
+</span>8 <span style=''>  */
+</span>9 <span style=''>class MutableRepoResolver extends RepoResolver {
+</span>10 <span style=''>
+</span>11 <span style=''>  private case class ProjectId(owner: String, repoName: String, sha: String)
+</span>12 <span style=''>
+</span>13 <span style=''>  private var definedRepos: Map[ProjectId, ArtifactSource] = </span><span style='background: #AEF1AE'>Map()</span><span style=''>
+</span>14 <span style=''>
+</span>15 <span style=''>  def defineRepo(owner: String, name: String, branchOrSha: String, as: ArtifactSource): Unit = {
+</span>16 <span style=''>    </span><span style='background: #AEF1AE'>definedRepos += (ProjectId(owner, name, branchOrSha) -&gt; as)</span><span style=''>
+</span>17 <span style=''>  }
+</span>18 <span style=''>
+</span>19 <span style=''>  override def resolveBranch(owner: String, repoName: String, branch: String): ArtifactSource = {
+</span>20 <span style=''>    val pid = </span><span style='background: #AEF1AE'>ProjectId(owner, repoName, branch)</span><span style=''>
+</span>21 <span style=''>    </span><span style='background: #AEF1AE'>definedRepos.getOrElse(ProjectId(owner, repoName, branch),
+</span>22 <span style=''></span><span style='background: #AEF1AE'>      </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Repo not found by branch: [$pid]: Known repos are ${definedRepos.keySet}&quot;)</span><span style='background: #AEF1AE'>
+</span>23 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>24 <span style=''>  }
+</span>25 <span style=''>
+</span>26 <span style=''>  override def resolveSha(owner: String, repoName: String, sha: String): ArtifactSource = {
+</span>27 <span style=''>    val pid = </span><span style='background: #AEF1AE'>ProjectId(owner, repoName, sha)</span><span style=''>
+</span>28 <span style=''>    </span><span style='background: #AEF1AE'>definedRepos.getOrElse(ProjectId(owner, repoName, sha),
+</span>29 <span style=''></span><span style='background: #AEF1AE'>      </span><span style='background: #F0ADAD'>throw new IllegalArgumentException(s&quot;Repo not found by sha: [$pid]; Known repos are ${definedRepos.keySet}&quot;)</span><span style='background: #AEF1AE'>
+</span>30 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>31 <span style=''>  }
+</span>32 <span style=''>
+</span>33 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          5999
+        </td>
+        <td>
+          386
+          -
+          391
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenMapFactory.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Map.apply[MutableRepoResolver.this.ProjectId, Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          6001
+        </td>
+        <td>
+          494
+          -
+          553
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Map.+
+        </td>
+        <td style="background: #AEF1AE">
+          MutableRepoResolver.this.definedRepos.+[com.atomist.source.ArtifactSource](scala.this.Predef.ArrowAssoc[MutableRepoResolver.this.ProjectId](MutableRepoResolver.this.ProjectId.apply(owner, name, branchOrSha)).-&gt;[com.atomist.source.ArtifactSource](as))
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          6000
+        </td>
+        <td>
+          511
+          -
+          552
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.ArrowAssoc[MutableRepoResolver.this.ProjectId](MutableRepoResolver.this.ProjectId.apply(owner, name, branchOrSha)).-&gt;[com.atomist.source.ArtifactSource](as)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          6002
+        </td>
+        <td>
+          494
+          -
+          553
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.MutableRepoResolver.definedRepos_=
+        </td>
+        <td style="background: #AEF1AE">
+          MutableRepoResolver.this.definedRepos_=(MutableRepoResolver.this.definedRepos.+[com.atomist.source.ArtifactSource](scala.this.Predef.ArrowAssoc[MutableRepoResolver.this.ProjectId](MutableRepoResolver.this.ProjectId.apply(owner, name, branchOrSha)).-&gt;[com.atomist.source.ArtifactSource](as)))
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          6003
+        </td>
+        <td>
+          671
+          -
+          705
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.MutableRepoResolver.ProjectId.apply
+        </td>
+        <td style="background: #AEF1AE">
+          MutableRepoResolver.this.ProjectId.apply(owner, repoName, branch)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          6004
+        </td>
+        <td>
+          733
+          -
+          767
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.MutableRepoResolver.ProjectId.apply
+        </td>
+        <td style="background: #AEF1AE">
+          MutableRepoResolver.this.ProjectId.apply(owner, repoName, branch)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          6006
+        </td>
+        <td>
+          710
+          -
+          892
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          MutableRepoResolver.this.definedRepos.getOrElse[com.atomist.source.ArtifactSource](MutableRepoResolver.this.ProjectId.apply(owner, repoName, branch), throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Repo not found by branch: [&quot;, &quot;]: Known repos are &quot;, &quot;&quot;).s(pid, MutableRepoResolver.this.definedRepos.keySet)))
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          6005
+        </td>
+        <td>
+          775
+          -
+          886
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Repo not found by branch: [&quot;, &quot;]: Known repos are &quot;, &quot;&quot;).s(pid, MutableRepoResolver.this.definedRepos.keySet))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          6007
+        </td>
+        <td>
+          1004
+          -
+          1035
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.MutableRepoResolver.ProjectId.apply
+        </td>
+        <td style="background: #AEF1AE">
+          MutableRepoResolver.this.ProjectId.apply(owner, repoName, sha)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          6010
+        </td>
+        <td>
+          1040
+          -
+          1216
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          MutableRepoResolver.this.definedRepos.getOrElse[com.atomist.source.ArtifactSource](MutableRepoResolver.this.ProjectId.apply(owner, repoName, sha), throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Repo not found by sha: [&quot;, &quot;]; Known repos are &quot;, &quot;&quot;).s(pid, MutableRepoResolver.this.definedRepos.keySet)))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          6008
+        </td>
+        <td>
+          1063
+          -
+          1094
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.test.gherkin.handler.MutableRepoResolver.ProjectId.apply
+        </td>
+        <td style="background: #AEF1AE">
+          MutableRepoResolver.this.ProjectId.apply(owner, repoName, sha)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          6009
+        </td>
+        <td>
+          1102
+          -
+          1210
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.IllegalArgumentException(scala.StringContext.apply(&quot;Repo not found by sha: [&quot;, &quot;]; Known repos are &quot;, &quot;&quot;).s(pid, MutableRepoResolver.this.definedRepos.keySet))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

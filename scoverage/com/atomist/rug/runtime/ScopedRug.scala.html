@@ -1,0 +1,195 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/ScopedRug.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.rug.InvalidRugScopeException
+</span>4 <span style=''>import com.atomist.rug.runtime.RugScopes.Scope
+</span>5 <span style=''>
+</span>6 <span style=''>/**
+</span>7 <span style=''>  * Used to describe the visibility of a Rug
+</span>8 <span style=''>  */
+</span>9 <span style=''>trait ScopedRug {
+</span>10 <span style=''>  def scope: Scope
+</span>11 <span style=''>}
+</span>12 <span style=''>
+</span>13 <span style=''>object RugScopes {
+</span>14 <span style=''>
+</span>15 <span style=''>  sealed abstract class Scope(name: String)
+</span>16 <span style=''>  case object ARCHIVE extends Scope(&quot;archive&quot;)
+</span>17 <span style=''>  case object DEFAULT extends Scope(&quot;default&quot;)
+</span>18 <span style=''>
+</span>19 <span style=''>  def allScopes: Seq[Scope] = </span><span style='background: #F0ADAD'>Seq(ARCHIVE, DEFAULT)</span><span style=''>
+</span>20 <span style=''>
+</span>21 <span style=''>  def from(name: String): Scope = {
+</span>22 <span style=''>    name match {
+</span>23 <span style=''>      case &quot;archive&quot; =&gt; </span><span style='background: #AEF1AE'>ARCHIVE</span><span style=''>
+</span>24 <span style=''>      case &quot;default&quot; =&gt; </span><span style='background: #F0ADAD'>DEFAULT</span><span style=''>
+</span>25 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>throw new InvalidRugScopeException(s&quot;'$name' is not a known scope&quot;, allScopes)</span><span style=''>
+</span>26 <span style=''>    }
+</span>27 <span style=''>  }
+</span>28 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          3238
+        </td>
+        <td>
+          425
+          -
+          432
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.RugScopes.DEFAULT
+        </td>
+        <td style="background: #F0ADAD">
+          RugScopes.this.DEFAULT
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          3237
+        </td>
+        <td>
+          416
+          -
+          423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.RugScopes.ARCHIVE
+        </td>
+        <td style="background: #F0ADAD">
+          RugScopes.this.ARCHIVE
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          3239
+        </td>
+        <td>
+          412
+          -
+          433
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.apply[Product with Serializable with com.atomist.rug.runtime.RugScopes.Scope](RugScopes.this.ARCHIVE, RugScopes.this.DEFAULT)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          3240
+        </td>
+        <td>
+          512
+          -
+          519
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.RugScopes.ARCHIVE
+        </td>
+        <td style="background: #AEF1AE">
+          RugScopes.this.ARCHIVE
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          3241
+        </td>
+        <td>
+          544
+          -
+          551
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.RugScopes.DEFAULT
+        </td>
+        <td style="background: #F0ADAD">
+          RugScopes.this.DEFAULT
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          3242
+        </td>
+        <td>
+          568
+          -
+          646
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.InvalidRugScopeException(scala.StringContext.apply(&quot;\'&quot;, &quot;\' is not a known scope&quot;).s(name), RugScopes.this.allScopes)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

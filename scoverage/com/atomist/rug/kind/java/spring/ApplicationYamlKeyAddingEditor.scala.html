@@ -1,0 +1,472 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/kind/java/spring/ApplicationYamlKeyAddingEditor.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.kind.java.spring
+</span>2 <span style=''>
+</span>3 <span style=''>import java.util
+</span>4 <span style=''>
+</span>5 <span style=''>import com.atomist.param.{ParameterValues, Tag}
+</span>6 <span style=''>import com.atomist.project.edit._
+</span>7 <span style=''>import com.atomist.project.edit.ProjectEditorSupport
+</span>8 <span style=''>import com.atomist.project.edit.ProjectEditorUtils._
+</span>9 <span style=''>import com.atomist.rug.kind.core.ChangeLogEntry
+</span>10 <span style=''>import com.atomist.source.ArtifactSource
+</span>11 <span style=''>import com.atomist.util.yaml.{MapToYamlStringSerializer, PropertiesToMapStructureParser}
+</span>12 <span style=''>
+</span>13 <span style=''>/**
+</span>14 <span style=''>  * No parameters are required. All key-value pairs will be added to the
+</span>15 <span style=''>  * application YAML file.
+</span>16 <span style=''>  */
+</span>17 <span style=''>object ApplicationYamlKeyAddingEditor extends ProjectEditorSupport {
+</span>18 <span style=''>
+</span>19 <span style=''>  import ApplicationPropertiesToApplicationYamlEditor.ApplicationYamlPath
+</span>20 <span style=''>
+</span>21 <span style=''>  val YamlHeader = </span><span style='background: #AEF1AE'>&quot;# Created by Atomist\n\n&quot;</span><span style=''>
+</span>22 <span style=''>
+</span>23 <span style=''>  override protected def modifyInternal(as: ArtifactSource, pmi: ParameterValues): ModificationAttempt = {
+</span>24 <span style=''>    val yamlMap = </span><span style='background: #AEF1AE'>new util.HashMap[String, Object]()</span><span style=''>
+</span>25 <span style=''>    val yamlFile = </span><span style='background: #AEF1AE'>newOrExistingFile(as, ApplicationYamlPath, YamlHeader)</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>    </span><span style='background: #AEF1AE'>for {
+</span>28 <span style=''></span><span style='background: #AEF1AE'>      pv &lt;- pmi.parameterValues
+</span>29 <span style=''></span><span style='background: #AEF1AE'>    } {
+</span>30 <span style=''></span><span style='background: #AEF1AE'>      PropertiesToMapStructureParser.populateYamlForPeriodScopedProperty(pv.getName, pv.getValue.toString, yamlMap)</span><span style=''>
+</span>31 <span style=''>    }
+</span>32 <span style=''>
+</span>33 <span style=''>    val stringifiedYamlEntries = </span><span style='background: #AEF1AE'>MapToYamlStringSerializer.toYamlString(yamlMap)</span><span style=''>
+</span>34 <span style=''>
+</span>35 <span style=''>    val result = </span><span style='background: #AEF1AE'>appendToFile(as, yamlFile, stringifiedYamlEntries)</span><span style=''>
+</span>36 <span style=''>    </span><span style='background: #AEF1AE'>SuccessfulModification(
+</span>37 <span style=''></span><span style='background: #AEF1AE'>      result,
+</span>38 <span style=''></span><span style='background: #AEF1AE'>      Seq(ChangeLogEntry(&quot;Added keys to yaml file&quot;, result)))</span><span style=''>
+</span>39 <span style=''>  }
+</span>40 <span style=''>
+</span>41 <span style=''>  /**
+</span>42 <span style=''>    * We can apply to anything. If a YAML file doesn't exist, we'll create one.
+</span>43 <span style=''>    *
+</span>44 <span style=''>    * @param as The Artifact Source we're working on
+</span>45 <span style=''>    */
+</span>46 <span style=''>  override def applicability(as: ArtifactSource): Applicability = </span><span style='background: #AEF1AE'>Applicability.OK</span><span style=''>
+</span>47 <span style=''>
+</span>48 <span style=''>  override def description: String = </span><span style='background: #F0ADAD'>&quot;Atomist Core Editor: Add key to application YAML&quot;</span><span style=''>
+</span>49 <span style=''>
+</span>50 <span style=''>  override def name: String = </span><span style='background: #F0ADAD'>&quot;ApplicationYamlKeyAddingEditor&quot;</span><span style=''>
+</span>51 <span style=''>
+</span>52 <span style=''>  override def tags: Seq[Tag] = </span><span style='background: #F0ADAD'>Nil</span><span style=''>
+</span>53 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          2195
+        </td>
+        <td>
+          700
+          -
+          726
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;# Created by Atomist\n\n&quot;
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          2196
+        </td>
+        <td>
+          853
+          -
+          887
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.HashMap.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.util.HashMap[String,Object]()
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          2197
+        </td>
+        <td>
+          929
+          -
+          948
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.spring.ApplicationPropertiesToApplicationYamlEditor.ApplicationYamlPath
+        </td>
+        <td style="background: #AEF1AE">
+          ApplicationPropertiesToApplicationYamlEditor.ApplicationYamlPath
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          2199
+        </td>
+        <td>
+          907
+          -
+          961
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.ProjectEditorUtils.newOrExistingFile
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.project.edit.ProjectEditorUtils.newOrExistingFile(as, ApplicationPropertiesToApplicationYamlEditor.ApplicationYamlPath, ApplicationYamlKeyAddingEditor.this.YamlHeader)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          2198
+        </td>
+        <td>
+          950
+          -
+          960
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.kind.java.spring.ApplicationYamlKeyAddingEditor.YamlHeader
+        </td>
+        <td style="background: #AEF1AE">
+          ApplicationYamlKeyAddingEditor.this.YamlHeader
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          2203
+        </td>
+        <td>
+          967
+          -
+          1128
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          pmi.parameterValues.foreach[Unit](((pv: com.atomist.param.ParameterValue) =&gt; com.atomist.util.yaml.PropertiesToMapStructureParser.populateYamlForPeriodScopedProperty(pv.getName, pv.getValue.toString(), yamlMap)))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2200
+        </td>
+        <td>
+          1086
+          -
+          1096
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.param.ParameterValue.getName
+        </td>
+        <td style="background: #AEF1AE">
+          pv.getName
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2202
+        </td>
+        <td>
+          1019
+          -
+          1128
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.yaml.PropertiesToMapStructureParser.populateYamlForPeriodScopedProperty
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.yaml.PropertiesToMapStructureParser.populateYamlForPeriodScopedProperty(pv.getName, pv.getValue.toString(), yamlMap)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2201
+        </td>
+        <td>
+          1098
+          -
+          1118
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #AEF1AE">
+          pv.getValue.toString()
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          2204
+        </td>
+        <td>
+          1169
+          -
+          1216
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.yaml.MapToYamlStringSerializer.toYamlString
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.yaml.MapToYamlStringSerializer.toYamlString(yamlMap)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          2205
+        </td>
+        <td>
+          1235
+          -
+          1285
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.ProjectEditorUtils.appendToFile
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.project.edit.ProjectEditorUtils.appendToFile(as, yamlFile, stringifiedYamlEntries)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2208
+        </td>
+        <td>
+          1290
+          -
+          1389
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.project.edit.SuccessfulModification.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.project.edit.SuccessfulModification.apply(result, collection.this.Seq.apply[com.atomist.rug.kind.core.ChangeLogEntry[com.atomist.source.ArtifactSource]](com.atomist.rug.kind.core.ChangeLogEntry.apply[com.atomist.source.ArtifactSource](&quot;Added keys to yaml file&quot;, result)))
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2206
+        </td>
+        <td>
+          1338
+          -
+          1387
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.kind.core.ChangeLogEntry.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.kind.core.ChangeLogEntry.apply[com.atomist.source.ArtifactSource](&quot;Added keys to yaml file&quot;, result)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2207
+        </td>
+        <td>
+          1334
+          -
+          1388
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[com.atomist.rug.kind.core.ChangeLogEntry[com.atomist.source.ArtifactSource]](com.atomist.rug.kind.core.ChangeLogEntry.apply[com.atomist.source.ArtifactSource](&quot;Added keys to yaml file&quot;, result))
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          2209
+        </td>
+        <td>
+          1613
+          -
+          1629
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.edit.Applicability.OK
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.project.edit.Applicability.OK
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          2210
+        </td>
+        <td>
+          1668
+          -
+          1718
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Atomist Core Editor: Add key to application YAML&quot;
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2211
+        </td>
+        <td>
+          1750
+          -
+          1782
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;ApplicationYamlKeyAddingEditor&quot;
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          2212
+        </td>
+        <td>
+          1816
+          -
+          1819
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Nil
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

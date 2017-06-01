@@ -1,0 +1,1303 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/runtime/js/JavaScriptCommandHandler.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.runtime.js
+</span>2 <span style=''>
+</span>3 <span style=''>import com.atomist.param._
+</span>4 <span style=''>import com.atomist.project.archive.RugResolver
+</span>5 <span style=''>import com.atomist.rug.{InvalidHandlerResultException, InvalidTestDescriptorException, RugRuntimeException}
+</span>6 <span style=''>import com.atomist.rug.runtime.{CommandHandler, TestDescriptor}
+</span>7 <span style=''>import com.atomist.rug.runtime.js.interop.{jsSafeCommittingProxy, jsScalaHidingProxy}
+</span>8 <span style=''>import com.atomist.rug.runtime.plans.MappedParameterSupport
+</span>9 <span style=''>import com.atomist.rug.spi.Handlers.Plan
+</span>10 <span style=''>import com.atomist.rug.spi.Secret
+</span>11 <span style=''>import jdk.nashorn.api.scripting.ScriptObjectMirror
+</span>12 <span style=''>
+</span>13 <span style=''>import scala.collection.JavaConverters._
+</span>14 <span style=''>
+</span>15 <span style=''>/**
+</span>16 <span style=''>  * Finds JavaScriptCommandHandlers in Nashorn vars
+</span>17 <span style=''>  */
+</span>18 <span style=''>class JavaScriptCommandHandlerFinder
+</span>19 <span style=''>  extends JavaScriptRugFinder[JavaScriptCommandHandler]
+</span>20 <span style=''>    with JavaScriptUtils {
+</span>21 <span style=''>
+</span>22 <span style=''>  /**
+</span>23 <span style=''>    * Is the supplied thing valid at all?
+</span>24 <span style=''>    */
+</span>25 <span style=''>  def isValid(obj: ScriptObjectMirror): Boolean = {
+</span>26 <span style=''>    </span><span style='background: #AEF1AE'>obj.getMember(&quot;__kind&quot;) == &quot;command-handler&quot; &amp;&amp;
+</span>27 <span style=''></span><span style='background: #AEF1AE'>      obj.hasMember(&quot;handle&quot;) &amp;&amp;
+</span>28 <span style=''></span><span style='background: #AEF1AE'>      obj.getMember(&quot;handle&quot;).asInstanceOf[ScriptObjectMirror].isFunction</span><span style=''>
+</span>29 <span style=''>  }
+</span>30 <span style=''>
+</span>31 <span style=''>  override def create(jsc: JavaScriptContext,
+</span>32 <span style=''>                      handler: ScriptObjectMirror,
+</span>33 <span style=''>                      resolver: Option[RugResolver]): Option[JavaScriptCommandHandler] = {
+</span>34 <span style=''>    </span><span style='background: #AEF1AE'>Some(new JavaScriptCommandHandler(
+</span>35 <span style=''></span><span style='background: #AEF1AE'>      jsc,
+</span>36 <span style=''></span><span style='background: #AEF1AE'>      handler,
+</span>37 <span style=''></span><span style='background: #AEF1AE'>      name(handler),
+</span>38 <span style=''></span><span style='background: #AEF1AE'>      description(handler),
+</span>39 <span style=''></span><span style='background: #AEF1AE'>      parameters(handler),
+</span>40 <span style=''></span><span style='background: #AEF1AE'>      mappedParameters(handler),
+</span>41 <span style=''></span><span style='background: #AEF1AE'>      tags(handler),
+</span>42 <span style=''></span><span style='background: #AEF1AE'>      secrets(handler),
+</span>43 <span style=''></span><span style='background: #AEF1AE'>      intent(handler),
+</span>44 <span style=''></span><span style='background: #AEF1AE'>      testDescriptor(handler)))</span><span style=''>
+</span>45 <span style=''>  }
+</span>46 <span style=''>
+</span>47 <span style=''>  /**
+</span>48 <span style=''>    * Extract any test related metadata - if any.
+</span>49 <span style=''>    */
+</span>50 <span style=''>  protected def testDescriptor(someVar: ScriptObjectMirror): Option[TestDescriptor] = {
+</span>51 <span style=''>    </span><span style='background: #AEF1AE'>someVar.getMember(&quot;__test&quot;)</span><span style=''> match {
+</span>52 <span style=''>      case som: ScriptObjectMirror =&gt; (som.getMember(&quot;description&quot;), som.getMember(&quot;kind&quot;)) match {
+</span>53 <span style=''>        case (description: String, kind: String) =&gt; </span><span style='background: #AEF1AE'>Some(TestDescriptor(kind, description))</span><span style=''>
+</span>54 <span style=''>        case _ =&gt; </span><span style='background: #F0ADAD'>throw new InvalidTestDescriptorException(&quot;A test must have a 'kind' and a 'description'&quot;)</span><span style=''>
+</span>55 <span style=''>      }
+</span>56 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>57 <span style=''>    }
+</span>58 <span style=''>  }
+</span>59 <span style=''>  /**
+</span>60 <span style=''>    * Extract intent from a var.
+</span>61 <span style=''>    */
+</span>62 <span style=''>  protected def intent(someVar: ScriptObjectMirror): Seq[String] = {
+</span>63 <span style=''>    </span><span style='background: #AEF1AE'>someVar.getMember(&quot;__intent&quot;)</span><span style=''> match {
+</span>64 <span style=''>      case som: ScriptObjectMirror =&gt;
+</span>65 <span style=''>        val stringValues = </span><span style='background: #AEF1AE'>som.values().asScala collect {
+</span>66 <span style=''></span><span style='background: #AEF1AE'>          case s: String =&gt; s
+</span>67 <span style=''></span><span style='background: #AEF1AE'>        }</span><span style=''>
+</span>68 <span style=''>        </span><span style='background: #AEF1AE'>stringValues.toSeq</span><span style=''>
+</span>69 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>Nil</span><span style=''>
+</span>70 <span style=''>    }
+</span>71 <span style=''>  }
+</span>72 <span style=''>
+</span>73 <span style=''>  /**
+</span>74 <span style=''>    * Look for mapped parameters (i.e. defined by the bot).
+</span>75 <span style=''>    *
+</span>76 <span style=''>    * See MappedParameters in Handlers.ts for examples.
+</span>77 <span style=''>    */
+</span>78 <span style=''>  protected def mappedParameters(someVar: ScriptObjectMirror): Seq[MappedParameter] = {
+</span>79 <span style=''>    </span><span style='background: #AEF1AE'>getMember(someVar, &quot;__mappedParameters&quot;)</span><span style=''> match {
+</span>80 <span style=''>      case Some(ps: ScriptObjectMirror) if </span><span style='background: #AEF1AE'>!ps.isEmpty</span><span style=''> =&gt;
+</span>81 <span style=''>        </span><span style='background: #AEF1AE'>ps.asScala.collect {
+</span>82 <span style=''></span><span style='background: #AEF1AE'>          case (_, details: ScriptObjectMirror) =&gt;
+</span>83 <span style=''></span><span style='background: #AEF1AE'>            val localKey = details.getMember(&quot;localKey&quot;).asInstanceOf[String]
+</span>84 <span style=''></span><span style='background: #AEF1AE'>            val foreignKey = details.getMember(&quot;foreignKey&quot;).asInstanceOf[String]
+</span>85 <span style=''></span><span style='background: #AEF1AE'>            MappedParameter(localKey, foreignKey)
+</span>86 <span style=''></span><span style='background: #AEF1AE'>        }.toSeq</span><span style=''>
+</span>87 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>Seq()</span><span style=''>
+</span>88 <span style=''>    }
+</span>89 <span style=''>  }
+</span>90 <span style=''>}
+</span>91 <span style=''>
+</span>92 <span style=''>/**
+</span>93 <span style=''>  * Runs a CommandHandler in Nashorn.
+</span>94 <span style=''>  */
+</span>95 <span style=''>class JavaScriptCommandHandler(jsc: JavaScriptContext,
+</span>96 <span style=''>                               handler: ScriptObjectMirror,
+</span>97 <span style=''>                               override val name: String,
+</span>98 <span style=''>                               override val description: String,
+</span>99 <span style=''>                               override val parameters: Seq[Parameter],
+</span>100 <span style=''>                               override val mappedParameters: Seq[MappedParameter],
+</span>101 <span style=''>                               override val tags: Seq[Tag],
+</span>102 <span style=''>                               override val secrets: Seq[Secret],
+</span>103 <span style=''>                               override val intent: Seq[String] = Seq(),
+</span>104 <span style=''>                               val testDescriptor: Option[TestDescriptor] = None)
+</span>105 <span style=''>  extends CommandHandler
+</span>106 <span style=''>    with MappedParameterSupport
+</span>107 <span style=''>    with JavaScriptUtils {
+</span>108 <span style=''>
+</span>109 <span style=''>  /**
+</span>110 <span style=''>    * We expect all mapped parameters to also be passed in with the normal params
+</span>111 <span style=''>    */
+</span>112 <span style=''>  override def handle(ctx: RugContext, params: ParameterValues): Option[Plan] = {
+</span>113 <span style=''>    val validated = </span><span style='background: #AEF1AE'>addDefaultParameterValues(params)</span><span style=''>
+</span>114 <span style=''>    </span><span style='background: #AEF1AE'>validateParameters(validated)</span><span style=''>
+</span>115 <span style=''>    // We need to proxy the context to allow for property access
+</span>116 <span style=''>    </span><span style='background: #AEF1AE'>invokeMemberFunction(
+</span>117 <span style=''></span><span style='background: #AEF1AE'>      jsc,
+</span>118 <span style=''></span><span style='background: #AEF1AE'>      handler,
+</span>119 <span style=''></span><span style='background: #AEF1AE'>      &quot;handle&quot;,
+</span>120 <span style=''></span><span style='background: #AEF1AE'>      Some(validated),
+</span>121 <span style=''></span><span style='background: #AEF1AE'>      jsScalaHidingProxy(ctx, returnNotToProxy = jsSafeCommittingProxy.DoNotProxy))</span><span style=''> match {
+</span>122 <span style=''>      case plan: ScriptObjectMirror =&gt;
+</span>123 <span style=''>        </span><span style='background: #AEF1AE'>ConstructPlan(plan, Some(this))</span><span style=''>
+</span>124 <span style=''>      case other =&gt;
+</span>125 <span style=''>        </span><span style='background: #F0ADAD'>throw new InvalidHandlerResultException(s&quot;$name CommandHandler did not return a recognized response ($other) when invoked with ${params.toString()}&quot;)</span><span style=''>
+</span>126 <span style=''>    }
+</span>127 <span style=''>  }
+</span>128 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          3312
+        </td>
+        <td>
+          918
+          -
+          935
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;command-handler&quot;
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          3311
+        </td>
+        <td>
+          905
+          -
+          913
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;__kind&quot;
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          3313
+        </td>
+        <td>
+          945
+          -
+          968
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.hasMember
+        </td>
+        <td style="background: #AEF1AE">
+          obj.hasMember(&quot;handle&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          3315
+        </td>
+        <td>
+          891
+          -
+          1045
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          obj.getMember(&quot;__kind&quot;).==(&quot;command-handler&quot;).&amp;&amp;(obj.hasMember(&quot;handle&quot;)).&amp;&amp;(obj.getMember(&quot;handle&quot;).asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror].isFunction())
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          3314
+        </td>
+        <td>
+          978
+          -
+          1045
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.isFunction
+        </td>
+        <td style="background: #AEF1AE">
+          obj.getMember(&quot;handle&quot;).asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror].isFunction()
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          3325
+        </td>
+        <td>
+          1243
+          -
+          1512
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.runtime.js.JavaScriptCommandHandler](new JavaScriptCommandHandler(jsc, handler, JavaScriptCommandHandlerFinder.this.name(handler), JavaScriptCommandHandlerFinder.this.description(handler), JavaScriptCommandHandlerFinder.this.parameters(handler), JavaScriptCommandHandlerFinder.this.mappedParameters(handler), JavaScriptCommandHandlerFinder.this.tags(handler), JavaScriptCommandHandlerFinder.this.secrets(handler), JavaScriptCommandHandlerFinder.this.intent(handler), JavaScriptCommandHandlerFinder.this.testDescriptor(handler)))
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          3324
+        </td>
+        <td>
+          1248
+          -
+          1511
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptCommandHandler.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new JavaScriptCommandHandler(jsc, handler, JavaScriptCommandHandlerFinder.this.name(handler), JavaScriptCommandHandlerFinder.this.description(handler), JavaScriptCommandHandlerFinder.this.parameters(handler), JavaScriptCommandHandlerFinder.this.mappedParameters(handler), JavaScriptCommandHandlerFinder.this.tags(handler), JavaScriptCommandHandlerFinder.this.secrets(handler), JavaScriptCommandHandlerFinder.this.intent(handler), JavaScriptCommandHandlerFinder.this.testDescriptor(handler))
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          3316
+        </td>
+        <td>
+          1310
+          -
+          1323
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.name
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptCommandHandlerFinder.this.name(handler)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          3317
+        </td>
+        <td>
+          1331
+          -
+          1351
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.description
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptCommandHandlerFinder.this.description(handler)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          3318
+        </td>
+        <td>
+          1359
+          -
+          1378
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.parameters
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptCommandHandlerFinder.this.parameters(handler)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          3319
+        </td>
+        <td>
+          1386
+          -
+          1411
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptCommandHandlerFinder.mappedParameters
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptCommandHandlerFinder.this.mappedParameters(handler)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          3320
+        </td>
+        <td>
+          1419
+          -
+          1432
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.tags
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptCommandHandlerFinder.this.tags(handler)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          3321
+        </td>
+        <td>
+          1440
+          -
+          1456
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.secrets
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptCommandHandlerFinder.this.secrets(handler)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          3322
+        </td>
+        <td>
+          1464
+          -
+          1479
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptCommandHandlerFinder.intent
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptCommandHandlerFinder.this.intent(handler)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          3323
+        </td>
+        <td>
+          1487
+          -
+          1510
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptCommandHandlerFinder.testDescriptor
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptCommandHandlerFinder.this.testDescriptor(handler)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          3326
+        </td>
+        <td>
+          1673
+          -
+          1700
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          someVar.getMember(&quot;__test&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          3327
+        </td>
+        <td>
+          1866
+          -
+          1899
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.TestDescriptor.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.TestDescriptor.apply(kind, description)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          3328
+        </td>
+        <td>
+          1861
+          -
+          1900
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.runtime.TestDescriptor](com.atomist.rug.runtime.TestDescriptor.apply(kind, description))
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          3329
+        </td>
+        <td>
+          1919
+          -
+          2008
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.InvalidTestDescriptorException(&quot;A test must have a \'kind\' and a \'description\'&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          3330
+        </td>
+        <td>
+          2033
+          -
+          2037
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          3331
+        </td>
+        <td>
+          2167
+          -
+          2196
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          someVar.getMember(&quot;__intent&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          3334
+        </td>
+        <td>
+          2291
+          -
+          2291
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Iterable.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          3333
+        </td>
+        <td>
+          2299
+          -
+          2299
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptCommandHandlerFinder.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          3332
+        </td>
+        <td>
+          2270
+          -
+          2282
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.values
+        </td>
+        <td style="background: #AEF1AE">
+          som.values()
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          3335
+        </td>
+        <td>
+          2270
+          -
+          2340
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.collectionAsScalaIterableConverter[Object](som.values()).asScala.collect[String, Iterable[String]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[Object,String] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: Object =&gt; String&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: Object, B1 &gt;: String](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[Object]: Object): Object @unchecked) match {
+      case (s @ (_: String)) =&gt; s
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: Object): Boolean = ((x1.asInstanceOf[Object]: Object): Object @unchecked) match {
+      case (s @ (_: String)) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[Object,String]))(collection.this.Iterable.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          3336
+        </td>
+        <td>
+          2349
+          -
+          2367
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          stringValues.toSeq
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          3337
+        </td>
+        <td>
+          2384
+          -
+          2387
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Nil
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          3338
+        </td>
+        <td>
+          2626
+          -
+          2666
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.getMember
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptCommandHandlerFinder.this.getMember(someVar, &quot;__mappedParameters&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          3339
+        </td>
+        <td>
+          2718
+          -
+          2729
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          ps.isEmpty().unary_!
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          3345
+        </td>
+        <td>
+          2760
+          -
+          2760
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptCommandHandlerFinder.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          3346
+        </td>
+        <td>
+          2760
+          -
+          2760
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.mutable.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          mutable.this.Iterable.canBuildFrom[com.atomist.param.MappedParameter]
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          3340
+        </td>
+        <td>
+          2858
+          -
+          2868
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;localKey&quot;
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          3341
+        </td>
+        <td>
+          2840
+          -
+          2890
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          details.getMember(&quot;localKey&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          3343
+        </td>
+        <td>
+          2920
+          -
+          2972
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          details.getMember(&quot;foreignKey&quot;).asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          3342
+        </td>
+        <td>
+          2938
+          -
+          2950
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;foreignKey&quot;
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          3344
+        </td>
+        <td>
+          2985
+          -
+          3022
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.MappedParameter.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.param.MappedParameter.apply(localKey, foreignKey)
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          3347
+        </td>
+        <td>
+          2741
+          -
+          3038
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.mapAsScalaMapConverter[String, Object](ps).asScala.collect[com.atomist.param.MappedParameter, scala.collection.mutable.Iterable[com.atomist.param.MappedParameter]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[(String, Object),com.atomist.param.MappedParameter] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: ((String, Object)) =&gt; com.atomist.param.MappedParameter&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: (String, Object), B1 &gt;: com.atomist.param.MappedParameter](x2: A1, default: A1 =&gt; B1): B1 = ((x2.asInstanceOf[(String, Object)]: (String, Object)): (String, Object) @unchecked) match {
+      case (_1: String, _2: Object)(String, Object)(_, (details @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror))) =&gt; {
+        val localKey: String = details.getMember(&quot;localKey&quot;).asInstanceOf[String];
+        val foreignKey: String = details.getMember(&quot;foreignKey&quot;).asInstanceOf[String];
+        com.atomist.param.MappedParameter.apply(localKey, foreignKey)
+      }
+      case (defaultCase$ @ _) =&gt; default.apply(x2)
+    };
+    final def isDefinedAt(x2: (String, Object)): Boolean = ((x2.asInstanceOf[(String, Object)]: (String, Object)): (String, Object) @unchecked) match {
+      case (_1: String, _2: Object)(String, Object)(_, (details @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror))) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[(String, Object),com.atomist.param.MappedParameter]))(mutable.this.Iterable.canBuildFrom[com.atomist.param.MappedParameter]).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          3348
+        </td>
+        <td>
+          3055
+          -
+          3060
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          3349
+        </td>
+        <td>
+          4078
+          -
+          4111
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.ParameterizedSupport.addDefaultParameterValues
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptCommandHandler.this.addDefaultParameterValues(params)
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          3350
+        </td>
+        <td>
+          4116
+          -
+          4145
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.plans.MappedParameterSupport.validateParameters
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptCommandHandler.this.validateParameters(validated)
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          3359
+        </td>
+        <td>
+          4215
+          -
+          4385
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptUtils.invokeMemberFunction
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptCommandHandler.this.invokeMemberFunction(JavaScriptCommandHandler.this.jsc, JavaScriptCommandHandler.this.handler, &quot;handle&quot;, scala.Some.apply[com.atomist.param.ParameterValues](validated), {
+  &lt;artifact&gt; val x$1: com.atomist.rug.runtime.js.RugContext = ctx;
+  &lt;artifact&gt; val x$2: Any =&gt; Boolean @scala.reflect.internal.annotations.uncheckedBounds = com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.DoNotProxy;
+  &lt;artifact&gt; val x$3: Set[String] @scala.reflect.internal.annotations.uncheckedBounds = com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$2;
+  &lt;artifact&gt; val x$4: com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.MethodValidator = com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$3;
+  com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply(x$1, x$3, x$4, x$2)
+})
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          3351
+        </td>
+        <td>
+          4243
+          -
+          4246
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptCommandHandler.jsc
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptCommandHandler.this.jsc
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          3352
+        </td>
+        <td>
+          4254
+          -
+          4261
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.JavaScriptCommandHandler.handler
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptCommandHandler.this.handler
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          3353
+        </td>
+        <td>
+          4269
+          -
+          4277
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;handle&quot;
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          3354
+        </td>
+        <td>
+          4285
+          -
+          4300
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.param.ParameterValues](validated)
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          3358
+        </td>
+        <td>
+          4308
+          -
+          4384
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply(x$1, x$3, x$4, x$2)
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          3357
+        </td>
+        <td>
+          4308
+          -
+          4308
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          3356
+        </td>
+        <td>
+          4308
+          -
+          4308
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          3355
+        </td>
+        <td>
+          4351
+          -
+          4383
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.DoNotProxy
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy.DoNotProxy
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          3361
+        </td>
+        <td>
+          4441
+          -
+          4472
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.runtime.js.ConstructPlan.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ConstructPlan.apply(plan, scala.Some.apply[com.atomist.rug.runtime.js.JavaScriptCommandHandler](this))
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          3360
+        </td>
+        <td>
+          4461
+          -
+          4471
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[com.atomist.rug.runtime.js.JavaScriptCommandHandler](this)
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          3362
+        </td>
+        <td>
+          4501
+          -
+          4650
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.InvalidHandlerResultException(scala.StringContext.apply(&quot;&quot;, &quot; CommandHandler did not return a recognized response (&quot;, &quot;) when invoked with &quot;, &quot;&quot;).s(JavaScriptCommandHandler.this.name, other, params.toString()))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

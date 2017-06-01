@@ -1,0 +1,3641 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/ts/TypeScriptInterfaceGenerator.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.ts
+</span>2 <span style=''>
+</span>3 <span style=''>import java.io.PrintWriter
+</span>4 <span style=''>
+</span>5 <span style=''>import com.atomist.param.{SimpleParameterValues, Tag}
+</span>6 <span style=''>import com.atomist.rug.kind.DefaultTypeRegistry
+</span>7 <span style=''>import com.atomist.rug.spi._
+</span>8 <span style=''>import com.atomist.util.Utils
+</span>9 <span style=''>
+</span>10 <span style=''>import scala.collection.mutable.ListBuffer
+</span>11 <span style=''>
+</span>12 <span style=''>object TypeScriptInterfaceGenerator extends App {
+</span>13 <span style=''>
+</span>14 <span style=''>  import AbstractTypeScriptGenerator._
+</span>15 <span style=''>
+</span>16 <span style=''>  val DefaultRugDir = </span><span style='background: #AEF1AE'>&quot;rug&quot;</span><span style=''>
+</span>17 <span style=''>
+</span>18 <span style=''>  val target = if (</span><span style='background: #AEF1AE'>args.length &lt; 1</span><span style=''>) </span><span style='background: #F0ADAD'>&quot;target/.atomist/node_modules/@atomist&quot;</span><span style=''> else </span><span style='background: #AEF1AE'>args.head</span><span style=''>
+</span>19 <span style=''>  val generator = </span><span style='background: #AEF1AE'>new TypeScriptInterfaceGenerator</span><span style=''>
+</span>20 <span style=''>  val output = </span><span style='background: #AEF1AE'>generator.generate(&quot;rug-ts-interfaces&quot;,
+</span>21 <span style=''></span><span style='background: #AEF1AE'>    SimpleParameterValues(OutputPathParam, DefaultFilename)).withPathAbove(DefaultRugDir)</span><span style=''>
+</span>22 <span style=''>  </span><span style='background: #AEF1AE'>output.allFiles.foreach(f =&gt; Utils.withCloseable(new PrintWriter(target + &quot;/&quot; + f.path))(_.write(f.content)))</span><span style=''>
+</span>23 <span style=''>}
+</span>24 <span style=''>
+</span>25 <span style=''>/**
+</span>26 <span style=''>  * Generate interface types for documents.
+</span>27 <span style=''>  *
+</span>28 <span style=''>  * @param typeRegistry registry of known Rug Types.
+</span>29 <span style=''>  */
+</span>30 <span style=''>class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegistry,
+</span>31 <span style=''>                                   config: TypeGenerationConfig = TypeGenerationConfig(),
+</span>32 <span style=''>                                   override val tags: Seq[Tag] = Nil,
+</span>33 <span style=''>                                   root: String = &quot;TreeNode&quot;)
+</span>34 <span style=''>  extends AbstractTypeScriptGenerator(typeRegistry, config, tags) {
+</span>35 <span style=''>
+</span>36 <span style=''>  private case class InterfaceGeneratedType(name: String,
+</span>37 <span style=''>                                            description: String,
+</span>38 <span style=''>                                            methods: Seq[MethodInfo],
+</span>39 <span style=''>                                            parent: Seq[String] = Seq(root))
+</span>40 <span style=''>    extends GeneratedType {
+</span>41 <span style=''>
+</span>42 <span style=''>    override def root: String = </span><span style='background: #AEF1AE'>TypeScriptInterfaceGenerator.this.root</span><span style=''>
+</span>43 <span style=''>
+</span>44 <span style=''>    override def toString: String = {
+</span>45 <span style=''>      val output = </span><span style='background: #AEF1AE'>new StringBuilder</span><span style=''>
+</span>46 <span style=''>      </span><span style='background: #AEF1AE'>output ++= helper.toJsDoc(description)</span><span style=''>
+</span>47 <span style=''>      if (</span><span style='background: #AEF1AE'>parent.isEmpty</span><span style=''>)
+</span>48 <span style=''>        </span><span style='background: #AEF1AE'>output ++= s&quot;\ninterface $name {${config.separator}&quot;</span><span style=''>
+</span>49 <span style=''>      else
+</span>50 <span style=''>        </span><span style='background: #AEF1AE'>output ++= s&quot;\ninterface $name extends ${parent.mkString(&quot;, &quot;)} {${config.separator}&quot;</span><span style=''>
+</span>51 <span style=''>
+</span>52 <span style=''>      </span><span style='background: #AEF1AE'>output ++= methods.map(_.toString).mkString(config.separator)</span><span style=''>
+</span>53 <span style=''>      </span><span style='background: #AEF1AE'>output ++= s&quot;${if (methods.isEmpty) &quot;&quot; else config.separator}}${indent.dropRight(1)}&quot;</span><span style=''>
+</span>54 <span style=''>      </span><span style='background: #AEF1AE'>output.toString</span><span style=''>
+</span>55 <span style=''>    }
+</span>56 <span style=''>  }
+</span>57 <span style=''>
+</span>58 <span style=''>  private case class InterfaceMethodInfo(typeName: String,
+</span>59 <span style=''>                                         name: String,
+</span>60 <span style=''>                                         params: Seq[MethodParam],
+</span>61 <span style=''>                                         returnType: String,
+</span>62 <span style=''>                                         description: Option[String],
+</span>63 <span style=''>                                         exposeAsProperty: Boolean,
+</span>64 <span style=''>                                         deprecated: Boolean)
+</span>65 <span style=''>    extends MethodInfo {
+</span>66 <span style=''>
+</span>67 <span style=''>    override def toString: String = {
+</span>68 <span style=''>      if (</span><span style='background: #AEF1AE'>exposeAsProperty</span><span style=''>) {
+</span>69 <span style=''>        // Emit property only
+</span>70 <span style=''>        </span><span style='background: #AEF1AE'>s&quot;${comment(indent)}${indent}readonly $name: $returnType;&quot;</span><span style=''>
+</span>71 <span style=''>      } else {
+</span>72 <span style=''>        // Emit function
+</span>73 <span style=''>        </span><span style='background: #AEF1AE'>s&quot;${comment(indent)}$indent$name(${params.mkString(&quot;, &quot;)}): $returnType;&quot;</span><span style=''>
+</span>74 <span style=''>      }
+</span>75 <span style=''>    }
+</span>76 <span style=''>  }
+</span>77 <span style=''>
+</span>78 <span style=''>  protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo =
+</span>79 <span style=''>    </span><span style='background: #AEF1AE'>InterfaceMethodInfo(typeName, op.name, params, helper.rugTypeToTypeScriptType(op.returnType, typeRegistry),
+</span>80 <span style=''></span><span style='background: #AEF1AE'>      Some(op.description), op.exposeAsProperty, op.deprecated)</span><span style=''>
+</span>81 <span style=''>
+</span>82 <span style=''>  override def getGeneratedTypes(t: Typed, op: TypeOperation): Seq[GeneratedType] = {
+</span>83 <span style=''>    val generatedTypes = </span><span style='background: #AEF1AE'>new ListBuffer[GeneratedType]</span><span style=''>
+</span>84 <span style=''>    val alreadyAddedMethods = </span><span style='background: #AEF1AE'>new ListBuffer[MethodInfo]</span><span style=''>
+</span>85 <span style=''>
+</span>86 <span style=''>    // Get super classes
+</span>87 <span style=''>    val superClasses = </span><span style='background: #AEF1AE'>getSuperClasses(op)</span><span style=''>
+</span>88 <span style=''>    </span><span style='background: #AEF1AE'>for (i &lt;- superClasses.indices) {
+</span>89 <span style=''></span><span style='background: #AEF1AE'>      val name = Typed.typeToTypeName(superClasses(i).parent)
+</span>90 <span style=''></span><span style='background: #AEF1AE'>      val parent = if (i == superClasses.size - 1) Seq(root) else Seq(Typed.typeToTypeName(superClasses(i + 1).parent))
+</span>91 <span style=''></span><span style='background: #AEF1AE'>      val methods = superClasses(i).exportedMethods
+</span>92 <span style=''></span><span style='background: #AEF1AE'>      generatedTypes += InterfaceGeneratedType(name, name, methods, parent)
+</span>93 <span style=''></span><span style='background: #AEF1AE'>      alreadyAddedMethods ++= methods
+</span>94 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>95 <span style=''>
+</span>96 <span style=''>    // Get super interfaces
+</span>97 <span style=''>    val superInterfaces = </span><span style='background: #AEF1AE'>getSuperInterfaces(op)</span><span style=''>
+</span>98 <span style=''>    </span><span style='background: #AEF1AE'>for (i &lt;- superInterfaces.size to 1 by -1) {
+</span>99 <span style=''></span><span style='background: #AEF1AE'>      val name = Typed.typeToTypeName(superInterfaces(i - 1).parent)
+</span>100 <span style=''></span><span style='background: #AEF1AE'>      val methods = superInterfaces(i - 1).exportedMethods
+</span>101 <span style=''></span><span style='background: #AEF1AE'>      generatedTypes += InterfaceGeneratedType(name, name, methods, Seq())
+</span>102 <span style=''></span><span style='background: #AEF1AE'>      alreadyAddedMethods ++= methods
+</span>103 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>104 <span style=''>
+</span>105 <span style=''>    // Add leaf class
+</span>106 <span style=''>    val parent =
+</span>107 <span style=''>      if (</span><span style='background: #AEF1AE'>superClasses.isEmpty &amp;&amp; superInterfaces.isEmpty</span><span style=''>) </span><span style='background: #AEF1AE'>Seq(root)</span><span style=''>
+</span>108 <span style=''>      else </span><span style='background: #AEF1AE'>Seq(Typed.typeToTypeName(superClasses.head.parent)) ++ superInterfaces.map(i =&gt; Typed.typeToTypeName(i.parent))</span><span style=''>
+</span>109 <span style=''>
+</span>110 <span style=''>    val methods = </span><span style='background: #AEF1AE'>allMethods(t.name, t.operations).filterNot(alreadyAddedMethods.contains(_))</span><span style=''>
+</span>111 <span style=''>    </span><span style='background: #AEF1AE'>generatedTypes += InterfaceGeneratedType(t.name, t.description, methods, parent)</span><span style=''>
+</span>112 <span style=''>
+</span>113 <span style=''>    generatedTypes
+</span>114 <span style=''>  }
+</span>115 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          6568
+        </td>
+        <td>
+          375
+          -
+          380
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;rug&quot;
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          6570
+        </td>
+        <td>
+          418
+          -
+          457
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;target/.atomist/node_modules/@atomist&quot;
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          6572
+        </td>
+        <td>
+          463
+          -
+          467
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.App.args
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.args
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          6569
+        </td>
+        <td>
+          401
+          -
+          416
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.args.length.&lt;(1)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          6571
+        </td>
+        <td>
+          418
+          -
+          457
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;target/.atomist/node_modules/@atomist&quot;
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          6574
+        </td>
+        <td>
+          463
+          -
+          472
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.head
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[String](TypeScriptInterfaceGenerator.this.args).head
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          6573
+        </td>
+        <td>
+          463
+          -
+          472
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.head
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.refArrayOps[String](TypeScriptInterfaceGenerator.this.args).head
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          6579
+        </td>
+        <td>
+          491
+          -
+          523
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new TypeScriptInterfaceGenerator(ts.this.TypeScriptInterfaceGenerator.&lt;init&gt;$default$1, ts.this.TypeScriptInterfaceGenerator.&lt;init&gt;$default$2, ts.this.TypeScriptInterfaceGenerator.&lt;init&gt;$default$3, ts.this.TypeScriptInterfaceGenerator.&lt;init&gt;$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          6575
+        </td>
+        <td>
+          491
+          -
+          491
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.&lt;init&gt;$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          ts.this.TypeScriptInterfaceGenerator.&lt;init&gt;$default$1
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          6578
+        </td>
+        <td>
+          491
+          -
+          491
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.&lt;init&gt;$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          ts.this.TypeScriptInterfaceGenerator.&lt;init&gt;$default$4
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          6577
+        </td>
+        <td>
+          491
+          -
+          491
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.&lt;init&gt;$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          ts.this.TypeScriptInterfaceGenerator.&lt;init&gt;$default$3
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          6576
+        </td>
+        <td>
+          491
+          -
+          491
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.&lt;init&gt;$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          ts.this.TypeScriptInterfaceGenerator.&lt;init&gt;$default$2
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          6584
+        </td>
+        <td>
+          549
+          -
+          549
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.project.generate.ProjectGenerator.generate$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.generator.generate$default$3
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          6580
+        </td>
+        <td>
+          558
+          -
+          577
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;rug-ts-interfaces&quot;
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          6581
+        </td>
+        <td>
+          605
+          -
+          620
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.OutputPathParam
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.OutputPathParam
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          6586
+        </td>
+        <td>
+          539
+          -
+          668
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.source.ArtifactSource.withPathAbove
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.generator.generate(&quot;rug-ts-interfaces&quot;, com.atomist.param.SimpleParameterValues.apply(AbstractTypeScriptGenerator.OutputPathParam, AbstractTypeScriptGenerator.DefaultFilename), TypeScriptInterfaceGenerator.this.generator.generate$default$3).withPathAbove(TypeScriptInterfaceGenerator.this.DefaultRugDir)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          6583
+        </td>
+        <td>
+          583
+          -
+          638
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.param.SimpleParameterValues.apply
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.param.SimpleParameterValues.apply(AbstractTypeScriptGenerator.OutputPathParam, AbstractTypeScriptGenerator.DefaultFilename)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          6582
+        </td>
+        <td>
+          622
+          -
+          637
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.DefaultFilename
+        </td>
+        <td style="background: #AEF1AE">
+          AbstractTypeScriptGenerator.DefaultFilename
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          6585
+        </td>
+        <td>
+          654
+          -
+          667
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.DefaultRugDir
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.DefaultRugDir
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          6588
+        </td>
+        <td>
+          751
+          -
+          757
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.path
+        </td>
+        <td style="background: #AEF1AE">
+          f.path
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          6590
+        </td>
+        <td>
+          720
+          -
+          758
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.PrintWriter.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.io.PrintWriter(TypeScriptInterfaceGenerator.this.target.+(&quot;/&quot;).+(f.path))
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          6593
+        </td>
+        <td>
+          700
+          -
+          779
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.Utils.withCloseable
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.util.Utils.withCloseable[java.io.PrintWriter, Unit](new java.io.PrintWriter(TypeScriptInterfaceGenerator.this.target.+(&quot;/&quot;).+(f.path)))(((x$1: java.io.PrintWriter) =&gt; x$1.write(f.content)))
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          6587
+        </td>
+        <td>
+          745
+          -
+          748
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;/&quot;
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          6589
+        </td>
+        <td>
+          736
+          -
+          757
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.target.+(&quot;/&quot;).+(f.path)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          6592
+        </td>
+        <td>
+          760
+          -
+          778
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.PrintWriter.write
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.write(f.content)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          6591
+        </td>
+        <td>
+          768
+          -
+          777
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.source.FileArtifact.content
+        </td>
+        <td style="background: #AEF1AE">
+          f.content
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          6594
+        </td>
+        <td>
+          671
+          -
+          780
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.output.allFiles.foreach[Unit](((f: com.atomist.source.FileArtifact) =&gt; com.atomist.util.Utils.withCloseable[java.io.PrintWriter, Unit](new java.io.PrintWriter(TypeScriptInterfaceGenerator.this.target.+(&quot;/&quot;).+(f.path)))(((x$1: java.io.PrintWriter) =&gt; x$1.write(f.content)))))
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          6595
+        </td>
+        <td>
+          1601
+          -
+          1639
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.root
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.root
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          6596
+        </td>
+        <td>
+          1698
+          -
+          1715
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.`package`.StringBuilder()
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          6597
+        </td>
+        <td>
+          1748
+          -
+          1759
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.InterfaceGeneratedType.description
+        </td>
+        <td style="background: #AEF1AE">
+          InterfaceGeneratedType.this.description
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          6599
+        </td>
+        <td>
+          1722
+          -
+          1760
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(TypeScriptInterfaceGenerator.this.helper.toJsDoc(InterfaceGeneratedType.this.description))
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          6598
+        </td>
+        <td>
+          1733
+          -
+          1760
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.TypeScriptGenerationHelper.toJsDoc
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.helper.toJsDoc(InterfaceGeneratedType.this.description)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          6600
+        </td>
+        <td>
+          1771
+          -
+          1785
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          InterfaceGeneratedType.this.parent.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          6606
+        </td>
+        <td>
+          1806
+          -
+          1847
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;\\ninterface &quot;, &quot; {&quot;, &quot;&quot;).s(InterfaceGeneratedType.this.name, TypeScriptInterfaceGenerator.this.config.separator)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          6605
+        </td>
+        <td>
+          1829
+          -
+          1845
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeGenerationConfig.separator
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.config.separator
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          6608
+        </td>
+        <td>
+          1795
+          -
+          1847
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(scala.StringContext.apply(&quot;\\ninterface &quot;, &quot; {&quot;, &quot;&quot;).s(InterfaceGeneratedType.this.name, TypeScriptInterfaceGenerator.this.config.separator))
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          6602
+        </td>
+        <td>
+          1825
+          -
+          1828
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; {&quot;
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          6604
+        </td>
+        <td>
+          1821
+          -
+          1825
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.InterfaceGeneratedType.name
+        </td>
+        <td style="background: #AEF1AE">
+          InterfaceGeneratedType.this.name
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          6607
+        </td>
+        <td>
+          1795
+          -
+          1847
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(scala.StringContext.apply(&quot;\\ninterface &quot;, &quot; {&quot;, &quot;&quot;).s(InterfaceGeneratedType.this.name, TypeScriptInterfaceGenerator.this.config.separator))
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          6601
+        </td>
+        <td>
+          1808
+          -
+          1821
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\\ninterface &quot;
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          6603
+        </td>
+        <td>
+          1846
+          -
+          1847
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          6615
+        </td>
+        <td>
+          1934
+          -
+          1950
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeGenerationConfig.separator
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.config.separator
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          6614
+        </td>
+        <td>
+          1908
+          -
+          1929
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          InterfaceGeneratedType.this.parent.mkString(&quot;, &quot;)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          6617
+        </td>
+        <td>
+          1867
+          -
+          1952
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(scala.StringContext.apply(&quot;\\ninterface &quot;, &quot; extends &quot;, &quot; {&quot;, &quot;&quot;).s(InterfaceGeneratedType.this.name, InterfaceGeneratedType.this.parent.mkString(&quot;, &quot;), TypeScriptInterfaceGenerator.this.config.separator))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          6611
+        </td>
+        <td>
+          1930
+          -
+          1933
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; {&quot;
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          6610
+        </td>
+        <td>
+          1897
+          -
+          1907
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; extends &quot;
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          6613
+        </td>
+        <td>
+          1893
+          -
+          1897
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.InterfaceGeneratedType.name
+        </td>
+        <td style="background: #AEF1AE">
+          InterfaceGeneratedType.this.name
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          6616
+        </td>
+        <td>
+          1878
+          -
+          1952
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;\\ninterface &quot;, &quot; extends &quot;, &quot; {&quot;, &quot;&quot;).s(InterfaceGeneratedType.this.name, InterfaceGeneratedType.this.parent.mkString(&quot;, &quot;), TypeScriptInterfaceGenerator.this.config.separator)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          6609
+        </td>
+        <td>
+          1880
+          -
+          1893
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\\ninterface &quot;
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          6618
+        </td>
+        <td>
+          1867
+          -
+          1952
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(scala.StringContext.apply(&quot;\\ninterface &quot;, &quot; extends &quot;, &quot; {&quot;, &quot;&quot;).s(InterfaceGeneratedType.this.name, InterfaceGeneratedType.this.parent.mkString(&quot;, &quot;), TypeScriptInterfaceGenerator.this.config.separator))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          6612
+        </td>
+        <td>
+          1951
+          -
+          1952
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          6623
+        </td>
+        <td>
+          1960
+          -
+          2021
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(InterfaceGeneratedType.this.methods.map[String, Seq[String]](((x$2: TypeScriptInterfaceGenerator.this.MethodInfo) =&gt; x$2.toString()))(collection.this.Seq.canBuildFrom[String]).mkString(TypeScriptInterfaceGenerator.this.config.separator))
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          6620
+        </td>
+        <td>
+          1982
+          -
+          1982
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          6619
+        </td>
+        <td>
+          1983
+          -
+          1993
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.toString()
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          6622
+        </td>
+        <td>
+          1971
+          -
+          2021
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          InterfaceGeneratedType.this.methods.map[String, Seq[String]](((x$2: TypeScriptInterfaceGenerator.this.MethodInfo) =&gt; x$2.toString()))(collection.this.Seq.canBuildFrom[String]).mkString(TypeScriptInterfaceGenerator.this.config.separator)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          6621
+        </td>
+        <td>
+          2004
+          -
+          2020
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeGenerationConfig.separator
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.config.separator
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          6624
+        </td>
+        <td>
+          2041
+          -
+          2042
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          6632
+        </td>
+        <td>
+          2092
+          -
+          2111
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.dropRight
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(TypeScriptInterfaceGenerator.this.indent).dropRight(1)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          6626
+        </td>
+        <td>
+          2112
+          -
+          2113
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          6629
+        </td>
+        <td>
+          2064
+          -
+          2066
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          6628
+        </td>
+        <td>
+          2064
+          -
+          2066
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          6631
+        </td>
+        <td>
+          2072
+          -
+          2088
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeGenerationConfig.separator
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.config.separator
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          6625
+        </td>
+        <td>
+          2089
+          -
+          2091
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;}&quot;
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          6634
+        </td>
+        <td>
+          2028
+          -
+          2113
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.++=
+        </td>
+        <td style="background: #AEF1AE">
+          output.++=(scala.StringContext.apply(&quot;&quot;, &quot;}&quot;, &quot;&quot;).s(if (InterfaceGeneratedType.this.methods.isEmpty)
+  &quot;&quot;
+else
+  TypeScriptInterfaceGenerator.this.config.separator, scala.this.Predef.augmentString(TypeScriptInterfaceGenerator.this.indent).dropRight(1)))
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          6633
+        </td>
+        <td>
+          2039
+          -
+          2113
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;}&quot;, &quot;&quot;).s(if (InterfaceGeneratedType.this.methods.isEmpty)
+  &quot;&quot;
+else
+  TypeScriptInterfaceGenerator.this.config.separator, scala.this.Predef.augmentString(TypeScriptInterfaceGenerator.this.indent).dropRight(1))
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          6627
+        </td>
+        <td>
+          2047
+          -
+          2062
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          InterfaceGeneratedType.this.methods.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          6630
+        </td>
+        <td>
+          2072
+          -
+          2088
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeGenerationConfig.separator
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.config.separator
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          6635
+        </td>
+        <td>
+          2120
+          -
+          2135
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.StringBuilder.toString
+        </td>
+        <td style="background: #AEF1AE">
+          output.toString()
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          6636
+        </td>
+        <td>
+          2663
+          -
+          2679
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.InterfaceMethodInfo.exposeAsProperty
+        </td>
+        <td style="background: #AEF1AE">
+          InterfaceMethodInfo.this.exposeAsProperty
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          6641
+        </td>
+        <td>
+          2777
+          -
+          2779
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          6644
+        </td>
+        <td>
+          2743
+          -
+          2749
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.indent
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.indent
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          6638
+        </td>
+        <td>
+          2741
+          -
+          2742
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          6647
+        </td>
+        <td>
+          2721
+          -
+          2779
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;&quot;, &quot;readonly &quot;, &quot;: &quot;, &quot;;&quot;).s(InterfaceMethodInfo.this.comment(TypeScriptInterfaceGenerator.this.indent), TypeScriptInterfaceGenerator.this.indent, InterfaceMethodInfo.this.name, InterfaceMethodInfo.this.returnType)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          6646
+        </td>
+        <td>
+          2767
+          -
+          2777
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.InterfaceMethodInfo.returnType
+        </td>
+        <td style="background: #AEF1AE">
+          InterfaceMethodInfo.this.returnType
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          6637
+        </td>
+        <td>
+          2723
+          -
+          2724
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          6640
+        </td>
+        <td>
+          2764
+          -
+          2767
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          6643
+        </td>
+        <td>
+          2725
+          -
+          2740
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodInfo.comment
+        </td>
+        <td style="background: #AEF1AE">
+          InterfaceMethodInfo.this.comment(TypeScriptInterfaceGenerator.this.indent)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          6642
+        </td>
+        <td>
+          2733
+          -
+          2739
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.indent
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.indent
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          6645
+        </td>
+        <td>
+          2760
+          -
+          2764
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.InterfaceMethodInfo.name
+        </td>
+        <td style="background: #AEF1AE">
+          InterfaceMethodInfo.this.name
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          6639
+        </td>
+        <td>
+          2750
+          -
+          2760
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;readonly &quot;
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          6648
+        </td>
+        <td>
+          2721
+          -
+          2779
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;&quot;, &quot;readonly &quot;, &quot;: &quot;, &quot;;&quot;).s(InterfaceMethodInfo.this.comment(TypeScriptInterfaceGenerator.this.indent), TypeScriptInterfaceGenerator.this.indent, InterfaceMethodInfo.this.name, InterfaceMethodInfo.this.returnType)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6656
+        </td>
+        <td>
+          2832
+          -
+          2847
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.MethodInfo.comment
+        </td>
+        <td style="background: #AEF1AE">
+          InterfaceMethodInfo.this.comment(TypeScriptInterfaceGenerator.this.indent)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6650
+        </td>
+        <td>
+          2848
+          -
+          2849
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6659
+        </td>
+        <td>
+          2863
+          -
+          2884
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          InterfaceMethodInfo.this.params.mkString(&quot;, &quot;)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6653
+        </td>
+        <td>
+          2885
+          -
+          2889
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;): &quot;
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6662
+        </td>
+        <td>
+          2828
+          -
+          2901
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;(&quot;, &quot;): &quot;, &quot;;&quot;).s(InterfaceMethodInfo.this.comment(TypeScriptInterfaceGenerator.this.indent), TypeScriptInterfaceGenerator.this.indent, InterfaceMethodInfo.this.name, InterfaceMethodInfo.this.params.mkString(&quot;, &quot;), InterfaceMethodInfo.this.returnType)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6655
+        </td>
+        <td>
+          2840
+          -
+          2846
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.indent
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.indent
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6658
+        </td>
+        <td>
+          2856
+          -
+          2860
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.InterfaceMethodInfo.name
+        </td>
+        <td style="background: #AEF1AE">
+          InterfaceMethodInfo.this.name
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6649
+        </td>
+        <td>
+          2830
+          -
+          2831
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6652
+        </td>
+        <td>
+          2860
+          -
+          2862
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;(&quot;
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6661
+        </td>
+        <td>
+          2828
+          -
+          2901
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;(&quot;, &quot;): &quot;, &quot;;&quot;).s(InterfaceMethodInfo.this.comment(TypeScriptInterfaceGenerator.this.indent), TypeScriptInterfaceGenerator.this.indent, InterfaceMethodInfo.this.name, InterfaceMethodInfo.this.params.mkString(&quot;, &quot;), InterfaceMethodInfo.this.returnType)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6651
+        </td>
+        <td>
+          2855
+          -
+          2856
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6660
+        </td>
+        <td>
+          2889
+          -
+          2899
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.InterfaceMethodInfo.returnType
+        </td>
+        <td style="background: #AEF1AE">
+          InterfaceMethodInfo.this.returnType
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6654
+        </td>
+        <td>
+          2899
+          -
+          2901
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          6657
+        </td>
+        <td>
+          2849
+          -
+          2855
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.indent
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.indent
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          6665
+        </td>
+        <td>
+          3125
+          -
+          3137
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.typeRegistry
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.typeRegistry
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          6671
+        </td>
+        <td>
+          3032
+          -
+          3203
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.InterfaceMethodInfo.apply
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.InterfaceMethodInfo.apply(typeName, op.name, params, TypeScriptInterfaceGenerator.this.helper.rugTypeToTypeScriptType(op.returnType, TypeScriptInterfaceGenerator.this.typeRegistry), scala.Some.apply[String](op.description), op.exposeAsProperty, op.deprecated)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          6664
+        </td>
+        <td>
+          3110
+          -
+          3123
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.returnType
+        </td>
+        <td style="background: #AEF1AE">
+          op.returnType
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          6663
+        </td>
+        <td>
+          3062
+          -
+          3069
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.name
+        </td>
+        <td style="background: #AEF1AE">
+          op.name
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          6666
+        </td>
+        <td>
+          3079
+          -
+          3138
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.TypeScriptGenerationHelper.rugTypeToTypeScriptType
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.helper.rugTypeToTypeScriptType(op.returnType, TypeScriptInterfaceGenerator.this.typeRegistry)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          6668
+        </td>
+        <td>
+          3146
+          -
+          3166
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](op.description)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          6670
+        </td>
+        <td>
+          3189
+          -
+          3202
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.deprecated
+        </td>
+        <td style="background: #AEF1AE">
+          op.deprecated
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          6667
+        </td>
+        <td>
+          3151
+          -
+          3165
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.description
+        </td>
+        <td style="background: #AEF1AE">
+          op.description
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          6669
+        </td>
+        <td>
+          3168
+          -
+          3187
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.exposeAsProperty
+        </td>
+        <td style="background: #AEF1AE">
+          op.exposeAsProperty
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          6672
+        </td>
+        <td>
+          3316
+          -
+          3345
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.collection.mutable.ListBuffer[TypeScriptInterfaceGenerator.this.GeneratedType]()
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          6673
+        </td>
+        <td>
+          3376
+          -
+          3402
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.collection.mutable.ListBuffer[TypeScriptInterfaceGenerator.this.MethodInfo]()
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          6674
+        </td>
+        <td>
+          3452
+          -
+          3471
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.getSuperClasses
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.getSuperClasses(op)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          6693
+        </td>
+        <td>
+          3476
+          -
+          3863
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Range.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          superClasses.indices.foreach[scala.collection.mutable.ListBuffer[TypeScriptInterfaceGenerator.this.MethodInfo]](((i: Int) =&gt; {
+  val name: String = com.atomist.rug.spi.Typed.typeToTypeName(superClasses.apply(i).parent, com.atomist.rug.spi.Typed.typeToTypeName$default$2);
+  val parent: Seq[String] = if (i.==(superClasses.size.-(1)))
+    collection.this.Seq.apply[String](TypeScriptInterfaceGenerator.this.root)
+  else
+    collection.this.Seq.apply[String](com.atomist.rug.spi.Typed.typeToTypeName(superClasses.apply(i.+(1)).parent, com.atomist.rug.spi.Typed.typeToTypeName$default$2));
+  val methods: Seq[TypeScriptInterfaceGenerator.this.MethodInfo] = superClasses.apply(i).exportedMethods;
+  generatedTypes.+=(TypeScriptInterfaceGenerator.this.InterfaceGeneratedType.apply(name, name, methods, parent));
+  alreadyAddedMethods.++=(methods)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          6677
+        </td>
+        <td>
+          3527
+          -
+          3571
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName(superClasses.apply(i).parent, com.atomist.rug.spi.Typed.typeToTypeName$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          6676
+        </td>
+        <td>
+          3533
+          -
+          3533
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          6675
+        </td>
+        <td>
+          3548
+          -
+          3570
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.ParentClassHolder.parent
+        </td>
+        <td style="background: #AEF1AE">
+          superClasses.apply(i).parent
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          6683
+        </td>
+        <td>
+          3676
+          -
+          3681
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          i.+(1)
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          6686
+        </td>
+        <td>
+          3642
+          -
+          3690
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName(superClasses.apply(i.+(1)).parent, com.atomist.rug.spi.Typed.typeToTypeName$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          6680
+        </td>
+        <td>
+          3627
+          -
+          3631
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.root
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.root
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          6688
+        </td>
+        <td>
+          3638
+          -
+          3691
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[String](com.atomist.rug.spi.Typed.typeToTypeName(superClasses.apply(i.+(1)).parent, com.atomist.rug.spi.Typed.typeToTypeName$default$2))
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          6679
+        </td>
+        <td>
+          3595
+          -
+          3621
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          i.==(superClasses.size.-(1))
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          6682
+        </td>
+        <td>
+          3623
+          -
+          3632
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[String](TypeScriptInterfaceGenerator.this.root)
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          6685
+        </td>
+        <td>
+          3648
+          -
+          3648
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          6678
+        </td>
+        <td>
+          3600
+          -
+          3621
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          superClasses.size.-(1)
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          6687
+        </td>
+        <td>
+          3638
+          -
+          3691
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[String](com.atomist.rug.spi.Typed.typeToTypeName(superClasses.apply(i.+(1)).parent, com.atomist.rug.spi.Typed.typeToTypeName$default$2))
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          6681
+        </td>
+        <td>
+          3623
+          -
+          3632
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[String](TypeScriptInterfaceGenerator.this.root)
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          6684
+        </td>
+        <td>
+          3663
+          -
+          3689
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.ParentClassHolder.parent
+        </td>
+        <td style="background: #AEF1AE">
+          superClasses.apply(i.+(1)).parent
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          6689
+        </td>
+        <td>
+          3712
+          -
+          3743
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.ParentClassHolder.exportedMethods
+        </td>
+        <td style="background: #AEF1AE">
+          superClasses.apply(i).exportedMethods
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          6691
+        </td>
+        <td>
+          3750
+          -
+          3819
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.+=
+        </td>
+        <td style="background: #AEF1AE">
+          generatedTypes.+=(TypeScriptInterfaceGenerator.this.InterfaceGeneratedType.apply(name, name, methods, parent))
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          6690
+        </td>
+        <td>
+          3768
+          -
+          3819
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.InterfaceGeneratedType.apply
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.InterfaceGeneratedType.apply(name, name, methods, parent)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          6692
+        </td>
+        <td>
+          3826
+          -
+          3857
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.++=
+        </td>
+        <td style="background: #AEF1AE">
+          alreadyAddedMethods.++=(methods)
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          6694
+        </td>
+        <td>
+          3919
+          -
+          3941
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.getSuperInterfaces
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.getSuperInterfaces(op)
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          6695
+        </td>
+        <td>
+          3956
+          -
+          3976
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #AEF1AE">
+          superInterfaces.size
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          6697
+        </td>
+        <td>
+          3986
+          -
+          3987
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          -1
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          6696
+        </td>
+        <td>
+          3980
+          -
+          3981
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          6708
+        </td>
+        <td>
+          3946
+          -
+          4237
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Range.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.intWrapper(superInterfaces.size).to(1).by(-1).foreach[scala.collection.mutable.ListBuffer[TypeScriptInterfaceGenerator.this.MethodInfo]](((i: Int) =&gt; {
+  val name: String = com.atomist.rug.spi.Typed.typeToTypeName(superInterfaces.apply(i.-(1)).parent, com.atomist.rug.spi.Typed.typeToTypeName$default$2);
+  val methods: Seq[TypeScriptInterfaceGenerator.this.MethodInfo] = superInterfaces.apply(i.-(1)).exportedMethods;
+  generatedTypes.+=(TypeScriptInterfaceGenerator.this.InterfaceGeneratedType.apply(name, name, methods, collection.this.Seq.apply[Nothing]()));
+  alreadyAddedMethods.++=(methods)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          6701
+        </td>
+        <td>
+          4008
+          -
+          4059
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName(superInterfaces.apply(i.-(1)).parent, com.atomist.rug.spi.Typed.typeToTypeName$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          6698
+        </td>
+        <td>
+          4045
+          -
+          4050
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          i.-(1)
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          6700
+        </td>
+        <td>
+          4014
+          -
+          4014
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          6699
+        </td>
+        <td>
+          4029
+          -
+          4058
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.ParentClassHolder.parent
+        </td>
+        <td style="background: #AEF1AE">
+          superInterfaces.apply(i.-(1)).parent
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          6703
+        </td>
+        <td>
+          4080
+          -
+          4118
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.ParentClassHolder.exportedMethods
+        </td>
+        <td style="background: #AEF1AE">
+          superInterfaces.apply(i.-(1)).exportedMethods
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          6702
+        </td>
+        <td>
+          4096
+          -
+          4101
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          i.-(1)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          6704
+        </td>
+        <td>
+          4187
+          -
+          4192
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          6706
+        </td>
+        <td>
+          4125
+          -
+          4193
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.+=
+        </td>
+        <td style="background: #AEF1AE">
+          generatedTypes.+=(TypeScriptInterfaceGenerator.this.InterfaceGeneratedType.apply(name, name, methods, collection.this.Seq.apply[Nothing]()))
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          6705
+        </td>
+        <td>
+          4143
+          -
+          4193
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.InterfaceGeneratedType.apply
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.InterfaceGeneratedType.apply(name, name, methods, collection.this.Seq.apply[Nothing]())
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          6707
+        </td>
+        <td>
+          4200
+          -
+          4231
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.++=
+        </td>
+        <td style="background: #AEF1AE">
+          alreadyAddedMethods.++=(methods)
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          6710
+        </td>
+        <td>
+          4288
+          -
+          4335
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          superClasses.isEmpty.&amp;&amp;(superInterfaces.isEmpty)
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          6713
+        </td>
+        <td>
+          4337
+          -
+          4346
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[String](TypeScriptInterfaceGenerator.this.root)
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          6709
+        </td>
+        <td>
+          4312
+          -
+          4335
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          superInterfaces.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          6712
+        </td>
+        <td>
+          4337
+          -
+          4346
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[String](TypeScriptInterfaceGenerator.this.root)
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          6711
+        </td>
+        <td>
+          4341
+          -
+          4345
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.root
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.root
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          6716
+        </td>
+        <td>
+          4362
+          -
+          4408
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName(superClasses.head.parent, com.atomist.rug.spi.Typed.typeToTypeName$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          6719
+        </td>
+        <td>
+          4438
+          -
+          4468
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName(i.parent, com.atomist.rug.spi.Typed.typeToTypeName$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          6722
+        </td>
+        <td>
+          4410
+          -
+          4410
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          6715
+        </td>
+        <td>
+          4368
+          -
+          4368
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          6724
+        </td>
+        <td>
+          4358
+          -
+          4469
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[String](com.atomist.rug.spi.Typed.typeToTypeName(superClasses.head.parent, com.atomist.rug.spi.Typed.typeToTypeName$default$2)).++[String, Seq[String]](superInterfaces.map[String, List[String]](((i: TypeScriptInterfaceGenerator.this.ParentClassHolder) =&gt; com.atomist.rug.spi.Typed.typeToTypeName(i.parent, com.atomist.rug.spi.Typed.typeToTypeName$default$2)))(immutable.this.List.canBuildFrom[String]))(collection.this.Seq.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          6718
+        </td>
+        <td>
+          4444
+          -
+          4444
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          6721
+        </td>
+        <td>
+          4413
+          -
+          4469
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.immutable.List.map
+        </td>
+        <td style="background: #AEF1AE">
+          superInterfaces.map[String, List[String]](((i: TypeScriptInterfaceGenerator.this.ParentClassHolder) =&gt; com.atomist.rug.spi.Typed.typeToTypeName(i.parent, com.atomist.rug.spi.Typed.typeToTypeName$default$2)))(immutable.this.List.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          6720
+        </td>
+        <td>
+          4432
+          -
+          4432
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          6714
+        </td>
+        <td>
+          4383
+          -
+          4407
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.ParentClassHolder.parent
+        </td>
+        <td style="background: #AEF1AE">
+          superClasses.head.parent
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          6723
+        </td>
+        <td>
+          4358
+          -
+          4469
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.apply[String](com.atomist.rug.spi.Typed.typeToTypeName(superClasses.head.parent, com.atomist.rug.spi.Typed.typeToTypeName$default$2)).++[String, Seq[String]](superInterfaces.map[String, List[String]](((i: TypeScriptInterfaceGenerator.this.ParentClassHolder) =&gt; com.atomist.rug.spi.Typed.typeToTypeName(i.parent, com.atomist.rug.spi.Typed.typeToTypeName$default$2)))(immutable.this.List.canBuildFrom[String]))(collection.this.Seq.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          6717
+        </td>
+        <td>
+          4459
+          -
+          4467
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.ts.AbstractTypeScriptGenerator.ParentClassHolder.parent
+        </td>
+        <td style="background: #AEF1AE">
+          i.parent
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          6725
+        </td>
+        <td>
+          4500
+          -
+          4506
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.name
+        </td>
+        <td style="background: #AEF1AE">
+          t.name
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          6728
+        </td>
+        <td>
+          4489
+          -
+          4564
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filterNot
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.allMethods(t.name, t.operations).filterNot(((x$3: TypeScriptInterfaceGenerator.this.MethodInfo) =&gt; alreadyAddedMethods.contains[TypeScriptInterfaceGenerator.this.MethodInfo](x$3)))
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          6727
+        </td>
+        <td>
+          4532
+          -
+          4563
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.SeqForwarder.contains
+        </td>
+        <td style="background: #AEF1AE">
+          alreadyAddedMethods.contains[TypeScriptInterfaceGenerator.this.MethodInfo](x$3)
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          6726
+        </td>
+        <td>
+          4508
+          -
+          4520
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.operations
+        </td>
+        <td style="background: #AEF1AE">
+          t.operations
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          6731
+        </td>
+        <td>
+          4587
+          -
+          4649
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.ts.TypeScriptInterfaceGenerator.InterfaceGeneratedType.apply
+        </td>
+        <td style="background: #AEF1AE">
+          TypeScriptInterfaceGenerator.this.InterfaceGeneratedType.apply(t.name, t.description, methods, parent)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          6730
+        </td>
+        <td>
+          4618
+          -
+          4631
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.description
+        </td>
+        <td style="background: #AEF1AE">
+          t.description
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          6729
+        </td>
+        <td>
+          4610
+          -
+          4616
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.name
+        </td>
+        <td style="background: #AEF1AE">
+          t.name
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          6732
+        </td>
+        <td>
+          4569
+          -
+          4649
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.+=
+        </td>
+        <td style="background: #AEF1AE">
+          generatedTypes.+=(TypeScriptInterfaceGenerator.this.InterfaceGeneratedType.apply(t.name, t.description, methods, parent))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

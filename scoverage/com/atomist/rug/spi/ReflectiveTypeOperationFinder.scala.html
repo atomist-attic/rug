@@ -1,0 +1,534 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/rug/spi/ReflectiveTypeOperationFinder.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.rug.spi
+</span>2 <span style=''>
+</span>3 <span style=''>/**
+</span>4 <span style=''>  * Uses reflection to export type information about a type.
+</span>5 <span style=''>  * Types with methods with @ExportFunction annotations should
+</span>6 <span style=''>  * return this type, passing their own class as argument.
+</span>7 <span style=''>  *
+</span>8 <span style=''>  * @param classToExamine class to look for annotated operations on
+</span>9 <span style=''>  * @see ExportFunction
+</span>10 <span style=''>  */
+</span>11 <span style=''>class ReflectiveTypeOperationFinder(classToExamine: Class[_]) {
+</span>12 <span style=''>
+</span>13 <span style=''>  val allOperations: Seq[TypeOperation] =
+</span>14 <span style=''>    </span><span style='background: #AEF1AE'>ReflectiveFunctionExport.allExportedOperations(classToExamine)
+</span>15 <span style=''></span><span style='background: #AEF1AE'>      .sortWith((a, b) =&gt; a.name &lt; b.name)</span><span style=''>
+</span>16 <span style=''>
+</span>17 <span style=''>  val operations: Seq[TypeOperation] =
+</span>18 <span style=''>    </span><span style='background: #AEF1AE'>ReflectiveFunctionExport.exportedOperations(classToExamine)
+</span>19 <span style=''></span><span style='background: #AEF1AE'>      .sortWith((a, b) =&gt; a.name &lt; b.name)</span><span style=''>
+</span>20 <span style=''>}
+</span>21 <span style=''>
+</span>22 <span style=''>trait ReflectivelyTypedType extends Type {
+</span>23 <span style=''>
+</span>24 <span style=''>  /**
+</span>25 <span style=''>    * Expose type information. Return an instance of StaticTypeInformation if
+</span>26 <span style=''>    * operations are known to help with compile time validation and tooling.
+</span>27 <span style=''>    *
+</span>28 <span style=''>    * @return type information.
+</span>29 <span style=''>    */
+</span>30 <span style=''>  final override val allOperations: Seq[TypeOperation] =
+</span>31 <span style=''>    </span><span style='background: #AEF1AE'>new ReflectiveTypeOperationFinder(runtimeClass).allOperations</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>  final override val operations: Seq[TypeOperation] =
+</span>34 <span style=''>    </span><span style='background: #AEF1AE'>new ReflectiveTypeOperationFinder(runtimeClass).operations</span><span style=''>
+</span>35 <span style=''>}
+</span>36 <span style=''>
+</span>37 <span style=''>/**
+</span>38 <span style=''>  * Extended by classes that can describe existing types that aren't exposed to
+</span>39 <span style=''>  * top level navigation
+</span>40 <span style=''>  *
+</span>41 <span style=''>  * @param c class to expose
+</span>42 <span style=''>  */
+</span>43 <span style=''>abstract class TypeProvider(c: Class[_]) extends Typed {
+</span>44 <span style=''>
+</span>45 <span style=''>  override val name: String = </span><span style='background: #AEF1AE'>Typed.typeToTypeName(c)</span><span style=''>
+</span>46 <span style=''>
+</span>47 <span style=''>  override def allOperations: Seq[TypeOperation] =
+</span>48 <span style=''>    </span><span style='background: #AEF1AE'>new ReflectiveTypeOperationFinder(c).allOperations</span><span style=''>
+</span>49 <span style=''>
+</span>50 <span style=''>  override def operations: Seq[TypeOperation] =
+</span>51 <span style=''>    </span><span style='background: #AEF1AE'>new ReflectiveTypeOperationFinder(c).operations</span><span style=''>
+</span>52 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          5343
+        </td>
+        <td>
+          475
+          -
+          489
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ReflectiveTypeOperationFinder.classToExamine
+        </td>
+        <td style="background: #AEF1AE">
+          ReflectiveTypeOperationFinder.this.classToExamine
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          5346
+        </td>
+        <td>
+          517
+          -
+          532
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.math.Ordered.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(a.name).&lt;(b.name)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          5345
+        </td>
+        <td>
+          526
+          -
+          532
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.name
+        </td>
+        <td style="background: #AEF1AE">
+          b.name
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          5344
+        </td>
+        <td>
+          517
+          -
+          523
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.name
+        </td>
+        <td style="background: #AEF1AE">
+          a.name
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          5347
+        </td>
+        <td>
+          428
+          -
+          533
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.sortWith
+        </td>
+        <td style="background: #AEF1AE">
+          ReflectiveFunctionExport.allExportedOperations(ReflectiveTypeOperationFinder.this.classToExamine).sortWith(((a: com.atomist.rug.spi.TypeOperation, b: com.atomist.rug.spi.TypeOperation) =&gt; scala.this.Predef.augmentString(a.name).&lt;(b.name)))
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          5348
+        </td>
+        <td>
+          622
+          -
+          636
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ReflectiveTypeOperationFinder.classToExamine
+        </td>
+        <td style="background: #AEF1AE">
+          ReflectiveTypeOperationFinder.this.classToExamine
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          5350
+        </td>
+        <td>
+          673
+          -
+          679
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.name
+        </td>
+        <td style="background: #AEF1AE">
+          b.name
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          5349
+        </td>
+        <td>
+          664
+          -
+          670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeOperation.name
+        </td>
+        <td style="background: #AEF1AE">
+          a.name
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          5352
+        </td>
+        <td>
+          578
+          -
+          680
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.sortWith
+        </td>
+        <td style="background: #AEF1AE">
+          ReflectiveFunctionExport.exportedOperations(ReflectiveTypeOperationFinder.this.classToExamine).sortWith(((a: com.atomist.rug.spi.TypeOperation, b: com.atomist.rug.spi.TypeOperation) =&gt; scala.this.Predef.augmentString(a.name).&lt;(b.name)))
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          5351
+        </td>
+        <td>
+          664
+          -
+          679
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.math.Ordered.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.augmentString(a.name).&lt;(b.name)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          5354
+        </td>
+        <td>
+          995
+          -
+          1056
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ReflectiveTypeOperationFinder.allOperations
+        </td>
+        <td style="background: #AEF1AE">
+          new ReflectiveTypeOperationFinder(ReflectivelyTypedType.this.runtimeClass).allOperations
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          5353
+        </td>
+        <td>
+          1029
+          -
+          1041
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Type.runtimeClass
+        </td>
+        <td style="background: #AEF1AE">
+          ReflectivelyTypedType.this.runtimeClass
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          5355
+        </td>
+        <td>
+          1150
+          -
+          1162
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Type.runtimeClass
+        </td>
+        <td style="background: #AEF1AE">
+          ReflectivelyTypedType.this.runtimeClass
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          5356
+        </td>
+        <td>
+          1116
+          -
+          1174
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ReflectiveTypeOperationFinder.operations
+        </td>
+        <td style="background: #AEF1AE">
+          new ReflectiveTypeOperationFinder(ReflectivelyTypedType.this.runtimeClass).operations
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          5358
+        </td>
+        <td>
+          1419
+          -
+          1419
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          Typed.typeToTypeName$default$2
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          5357
+        </td>
+        <td>
+          1434
+          -
+          1435
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeProvider.c
+        </td>
+        <td style="background: #AEF1AE">
+          TypeProvider.this.c
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          5359
+        </td>
+        <td>
+          1413
+          -
+          1436
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.rug.spi.Typed.typeToTypeName
+        </td>
+        <td style="background: #AEF1AE">
+          Typed.typeToTypeName(TypeProvider.this.c, Typed.typeToTypeName$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          5361
+        </td>
+        <td>
+          1493
+          -
+          1543
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ReflectiveTypeOperationFinder.allOperations
+        </td>
+        <td style="background: #AEF1AE">
+          new ReflectiveTypeOperationFinder(TypeProvider.this.c).allOperations
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          5360
+        </td>
+        <td>
+          1527
+          -
+          1528
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeProvider.c
+        </td>
+        <td style="background: #AEF1AE">
+          TypeProvider.this.c
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          5363
+        </td>
+        <td>
+          1597
+          -
+          1644
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.ReflectiveTypeOperationFinder.operations
+        </td>
+        <td style="background: #AEF1AE">
+          new ReflectiveTypeOperationFinder(TypeProvider.this.c).operations
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          5362
+        </td>
+        <td>
+          1631
+          -
+          1632
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.rug.spi.TypeProvider.c
+        </td>
+        <td style="background: #AEF1AE">
+          TypeProvider.this.c
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,270 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/util/ServiceLoaderBackedExtensionProvider.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.util
+</span>2 <span style=''>
+</span>3 <span style=''>import java.util.ServiceLoader
+</span>4 <span style=''>
+</span>5 <span style=''>import com.atomist.rug.RugRuntimeException
+</span>6 <span style=''>import com.typesafe.scalalogging.LazyLogging
+</span>7 <span style=''>
+</span>8 <span style=''>import scala.collection.JavaConverters._
+</span>9 <span style=''>import scala.reflect.{ClassTag, _}
+</span>10 <span style=''>
+</span>11 <span style=''>/**
+</span>12 <span style=''>  * Provider of instances of type [[T]]. Instances are loaded via JDK [[ServiceLoader]] and cached; keyed by their
+</span>13 <span style=''>  * respective [[ClassLoader]]s.
+</span>14 <span style=''>  */
+</span>15 <span style=''>class ServiceLoaderBackedExtensionProvider[T: ClassTag](val keyProvider: T =&gt; String)
+</span>16 <span style=''>  extends LazyLogging {
+</span>17 <span style=''>
+</span>18 <span style=''>  // The following can be cached as it creates issues in shared class loader hiarchies
+</span>19 <span style=''>  def providerMap: Map[String, T] = {
+</span>20 <span style=''>    logger.debug(s&quot;Loading providers of type ${classTag[T].runtimeClass.getName} and class loader ${Thread.currentThread().getContextClassLoader}&quot;)
+</span>21 <span style=''>    </span><span style='background: #AEF1AE'>ServiceLoader.load(classTag[T].runtimeClass).asScala.map {
+</span>22 <span style=''></span><span style='background: #AEF1AE'>      case t: T =&gt;
+</span>23 <span style=''></span><span style='background: #AEF1AE'>        val key = keyProvider.apply(t)
+</span>24 <span style=''></span><span style='background: #AEF1AE'>        logger.debug(s&quot;Registered provider '$key' with class '${t.getClass}'&quot;)
+</span>25 <span style=''></span><span style='background: #AEF1AE'>        key -&gt; t
+</span>26 <span style=''></span><span style='background: #AEF1AE'>      case wtf =&gt;
+</span>27 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>throw new RugRuntimeException(&quot;Extension&quot;, s&quot;Provider class ${wtf.getClass} must implement ${classTag[T].runtimeClass.getName} interface&quot;, null)</span><span style='background: #AEF1AE'>
+</span>28 <span style=''></span><span style='background: #AEF1AE'>    }.toMap</span><span style=''>
+</span>29 <span style=''>  }
+</span>30 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          8869
+        </td>
+        <td>
+          826
+          -
+          826
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Iterable.canBuildFrom[(String, T)]
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          8863
+        </td>
+        <td>
+          796
+          -
+          796
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.ServiceLoaderBackedExtensionProvider.evidence$1
+        </td>
+        <td style="background: #AEF1AE">
+          ServiceLoaderBackedExtensionProvider.this.evidence$1
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          8865
+        </td>
+        <td>
+          769
+          -
+          813
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ServiceLoader.load
+        </td>
+        <td style="background: #AEF1AE">
+          java.util.ServiceLoader.load[_$1](scala.reflect.`package`.classTag[T](ServiceLoaderBackedExtensionProvider.this.evidence$1).runtimeClass)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          8864
+        </td>
+        <td>
+          788
+          -
+          812
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.reflect.ClassTag.runtimeClass
+        </td>
+        <td style="background: #AEF1AE">
+          scala.reflect.`package`.classTag[T](ServiceLoaderBackedExtensionProvider.this.evidence$1).runtimeClass
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          8866
+        </td>
+        <td>
+          865
+          -
+          885
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ServiceLoaderBackedExtensionProvider.this.keyProvider.apply(t)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          8867
+        </td>
+        <td>
+          973
+          -
+          981
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.ArrowAssoc[String](key).-&gt;[T](t)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          8868
+        </td>
+        <td>
+          1008
+          -
+          1152
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new com.atomist.rug.RugRuntimeException(&quot;Extension&quot;, scala.StringContext.apply(&quot;Provider class &quot;, &quot; must implement &quot;, &quot; interface&quot;).s(wtf.getClass(), scala.reflect.`package`.classTag[T](ServiceLoaderBackedExtensionProvider.this.evidence$1).runtimeClass.getName()), null)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8871
+        </td>
+        <td>
+          769
+          -
+          1164
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toMap
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.iterableAsScalaIterableConverter[_$1](java.util.ServiceLoader.load[_$1](scala.reflect.`package`.classTag[T](ServiceLoaderBackedExtensionProvider.this.evidence$1).runtimeClass)).asScala.map[(String, T), Iterable[(String, T)]](((x0$1: _$1) =&gt; x0$1 match {
+  case (t @ ServiceLoaderBackedExtensionProvider.this.evidence$1.unapply(&lt;unapply-selector&gt;) &lt;unapply&gt; ((_: T))) =&gt; {
+    val key: String = ServiceLoaderBackedExtensionProvider.this.keyProvider.apply(t);
+    (if (ServiceLoaderBackedExtensionProvider.this.logger.underlying.isDebugEnabled())
+      ServiceLoaderBackedExtensionProvider.this.logger.underlying.debug(scala.StringContext.apply(&quot;Registered provider \'&quot;, &quot;\' with class \'&quot;, &quot;\'&quot;).s(key, t.getClass()))
+    else
+      (): Unit);
+    scala.this.Predef.ArrowAssoc[String](key).-&gt;[T](t)
+  }
+  case (wtf @ _) =&gt; throw new com.atomist.rug.RugRuntimeException(&quot;Extension&quot;, scala.StringContext.apply(&quot;Provider class &quot;, &quot; must implement &quot;, &quot; interface&quot;).s(wtf.getClass(), scala.reflect.`package`.classTag[T](ServiceLoaderBackedExtensionProvider.this.evidence$1).runtimeClass.getName()), null)
+}))(collection.this.Iterable.canBuildFrom[(String, T)]).toMap[String, T](scala.this.Predef.$conforms[(String, T)])
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8870
+        </td>
+        <td>
+          1159
+          -
+          1159
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.$conforms[(String, T)]
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

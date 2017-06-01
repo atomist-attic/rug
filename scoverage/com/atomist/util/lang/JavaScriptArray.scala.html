@@ -1,0 +1,7253 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/util/lang/JavaScriptArray.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.util.lang
+</span>2 <span style=''>
+</span>3 <span style=''>import java.util
+</span>4 <span style=''>import java.util.Comparator
+</span>5 <span style=''>
+</span>6 <span style=''>import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
+</span>7 <span style=''>import jdk.nashorn.internal.runtime.ScriptFunction
+</span>8 <span style=''>
+</span>9 <span style=''>object JavaScriptArray {
+</span>10 <span style=''>
+</span>11 <span style=''>  import scala.collection.JavaConverters._
+</span>12 <span style=''>
+</span>13 <span style=''>  def fromSeq[T](l: Seq[T]) = </span><span style='background: #AEF1AE'>new JavaScriptArray[T](l.asJava)</span><span style=''>
+</span>14 <span style=''>}
+</span>15 <span style=''>
+</span>16 <span style=''>/**
+</span>17 <span style=''>  * Decorate a java.util.List instance with anything required to implement the JS array methods
+</span>18 <span style=''>  */
+</span>19 <span style=''>class JavaScriptArray[T](val toProxy: java.util.List[T])
+</span>20 <span style=''>  extends AbstractJSObject
+</span>21 <span style=''>    with java.util.List[T] {
+</span>22 <span style=''>
+</span>23 <span style=''>  // Let's create a new mutable list as operating on an immutable array from JS is kinda pointless - can't even filter!
+</span>24 <span style=''>  //TODO - is there a way to check if collection is immutable? Would be nice if we could just pass the reference here for mutable lists
+</span>25 <span style=''>  val lyst = </span><span style='background: #AEF1AE'>new util.ArrayList[T](toProxy)</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>  override def removeAll(collection: util.Collection[_]): Boolean = {
+</span>28 <span style=''>    </span><span style='background: #F0ADAD'>lyst.removeAll(collection)</span><span style=''>
+</span>29 <span style=''>  }
+</span>30 <span style=''>
+</span>31 <span style=''>  override def subList(i: Int, i1: Int): util.List[T] = {
+</span>32 <span style=''>    </span><span style='background: #F0ADAD'>lyst.subList(i, i1)</span><span style=''>
+</span>33 <span style=''>  }
+</span>34 <span style=''>
+</span>35 <span style=''>  override def set(i: Int, e: T): T = {
+</span>36 <span style=''>    </span><span style='background: #AEF1AE'>lyst.set(i, e)</span><span style=''>
+</span>37 <span style=''>  }
+</span>38 <span style=''>
+</span>39 <span style=''>  override def indexOf(o: scala.Any): Int = {
+</span>40 <span style=''>    </span><span style='background: #F0ADAD'>lyst.indexOf(o)</span><span style=''>
+</span>41 <span style=''>  }
+</span>42 <span style=''>
+</span>43 <span style=''>  override def get(i: Int): T = {
+</span>44 <span style=''>    </span><span style='background: #AEF1AE'>lyst.get(i)</span><span style=''>
+</span>45 <span style=''>  }
+</span>46 <span style=''>
+</span>47 <span style=''>  override def lastIndexOf(o: scala.Any): Int = {
+</span>48 <span style=''>    </span><span style='background: #F0ADAD'>lyst.lastIndexOf(o)</span><span style=''>
+</span>49 <span style=''>  }
+</span>50 <span style=''>
+</span>51 <span style=''>  override def retainAll(collection: util.Collection[_]): Boolean = {
+</span>52 <span style=''>    </span><span style='background: #F0ADAD'>lyst.retainAll(collection)</span><span style=''>
+</span>53 <span style=''>  }
+</span>54 <span style=''>
+</span>55 <span style=''>  override def clear(): Unit = {
+</span>56 <span style=''>    </span><span style='background: #F0ADAD'>lyst.clear()</span><span style=''>
+</span>57 <span style=''>  }
+</span>58 <span style=''>
+</span>59 <span style=''>  override def toArray: Array[AnyRef] = {
+</span>60 <span style=''>    </span><span style='background: #F0ADAD'>lyst.toArray()</span><span style=''>
+</span>61 <span style=''>  }
+</span>62 <span style=''>
+</span>63 <span style=''>  override def listIterator(): util.ListIterator[T] = {
+</span>64 <span style=''>    </span><span style='background: #F0ADAD'>lyst.listIterator()</span><span style=''>
+</span>65 <span style=''>  }
+</span>66 <span style=''>
+</span>67 <span style=''>  override def listIterator(i: Int): util.ListIterator[T] = {
+</span>68 <span style=''>    </span><span style='background: #F0ADAD'>lyst.listIterator(i)</span><span style=''>
+</span>69 <span style=''>  }
+</span>70 <span style=''>
+</span>71 <span style=''>  override def size(): Int = {
+</span>72 <span style=''>    </span><span style='background: #AEF1AE'>lyst.size()</span><span style=''>
+</span>73 <span style=''>  }
+</span>74 <span style=''>
+</span>75 <span style=''>  override def remove(o: scala.Any): Boolean = {
+</span>76 <span style=''>    </span><span style='background: #F0ADAD'>lyst.remove(o)</span><span style=''>
+</span>77 <span style=''>  }
+</span>78 <span style=''>
+</span>79 <span style=''>  override def remove(i: Int): T = {
+</span>80 <span style=''>    </span><span style='background: #F0ADAD'>lyst.remove(i)</span><span style=''>
+</span>81 <span style=''>  }
+</span>82 <span style=''>
+</span>83 <span style=''>  override def contains(o: scala.Any): Boolean = {
+</span>84 <span style=''>    </span><span style='background: #F0ADAD'>lyst.contains(o)</span><span style=''>
+</span>85 <span style=''>  }
+</span>86 <span style=''>
+</span>87 <span style=''>  override def iterator(): util.Iterator[T] = {
+</span>88 <span style=''>    </span><span style='background: #AEF1AE'>lyst.iterator()</span><span style=''>
+</span>89 <span style=''>  }
+</span>90 <span style=''>
+</span>91 <span style=''>  override def addAll(collection: util.Collection[_ &lt;: T]): Boolean = {
+</span>92 <span style=''>    </span><span style='background: #F0ADAD'>lyst.addAll(collection)</span><span style=''>
+</span>93 <span style=''>  }
+</span>94 <span style=''>
+</span>95 <span style=''>  override def addAll(i: Int, collection: util.Collection[_ &lt;: T]): Boolean = {
+</span>96 <span style=''>    </span><span style='background: #F0ADAD'>lyst.addAll(i, collection)</span><span style=''>
+</span>97 <span style=''>  }
+</span>98 <span style=''>
+</span>99 <span style=''>  override def isEmpty: Boolean = {
+</span>100 <span style=''>    </span><span style='background: #F0ADAD'>lyst.isEmpty</span><span style=''>
+</span>101 <span style=''>  }
+</span>102 <span style=''>
+</span>103 <span style=''>  override def containsAll(collection: util.Collection[_]): Boolean = {
+</span>104 <span style=''>    </span><span style='background: #F0ADAD'>lyst.containsAll(collection)</span><span style=''>
+</span>105 <span style=''>  }
+</span>106 <span style=''>
+</span>107 <span style=''>  override def add(e: T): Boolean = {
+</span>108 <span style=''>    </span><span style='background: #AEF1AE'>lyst.add(e)</span><span style=''>
+</span>109 <span style=''>  }
+</span>110 <span style=''>
+</span>111 <span style=''>  override def add(i: Int, e: T): Unit = {
+</span>112 <span style=''>    </span><span style='background: #F0ADAD'>lyst.add(i, e)</span><span style=''>
+</span>113 <span style=''>  }
+</span>114 <span style=''>
+</span>115 <span style=''>  // TODO - odd that intellij doesn't like this, but generates a guff implementation by default...
+</span>116 <span style=''>  override def toArray[X](ts: Array[X with Object]): Array[X with Object] = {
+</span>117 <span style=''>    </span><span style='background: #F0ADAD'>lyst.toArray[X](ts)</span><span style=''>
+</span>118 <span style=''>  }
+</span>119 <span style=''>
+</span>120 <span style=''>  override def getMember(name: String): AnyRef = {
+</span>121 <span style=''>    name match {
+</span>122 <span style=''>      case &quot;filter&quot; =&gt;
+</span>123 <span style=''>        </span><span style='background: #AEF1AE'>new</span><span style=''> AbstractJSObject {
+</span>124 <span style=''>          override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>125 <span style=''>            val res = </span><span style='background: #AEF1AE'>new util.ArrayList[T](lyst)</span><span style=''>
+</span>126 <span style=''>            val iter = </span><span style='background: #AEF1AE'>res.listIterator()</span><span style=''>
+</span>127 <span style=''>            while (</span><span style='background: #AEF1AE'>iter.hasNext</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>128 <span style=''></span><span style='background: #AEF1AE'>              val thing = iter.next()
+</span>129 <span style=''></span><span style='background: #AEF1AE'>              val thisArg = if (args.length &gt; 1) </span><span style='background: #F0ADAD'>args(1)</span><span style='background: #AEF1AE'> else thiz
+</span>130 <span style=''></span><span style='background: #AEF1AE'>              args.head match {
+</span>131 <span style=''></span><span style='background: #AEF1AE'>                case filterfn: ScriptObjectMirror =&gt;
+</span>132 <span style=''></span><span style='background: #AEF1AE'>                  if (!filterfn.call(thisArg, thing.asInstanceOf[Object]).asInstanceOf[Boolean]) {
+</span>133 <span style=''></span><span style='background: #AEF1AE'>                    iter.remove()
+</span>134 <span style=''></span><span style='background: #AEF1AE'>                  }
+</span>135 <span style=''></span><span style='background: #AEF1AE'>                case sf: ScriptFunction =&gt;
+</span>136 <span style=''></span><span style='background: #AEF1AE'>                  </span><span style='background: #F0ADAD'>???</span><span style='background: #AEF1AE'>
+</span>137 <span style=''></span><span style='background: #AEF1AE'>              }
+</span>138 <span style=''></span><span style='background: #AEF1AE'>            }</span><span style=''>
+</span>139 <span style=''>            </span><span style='background: #AEF1AE'>new JavaScriptArray[T](res)</span><span style=''>
+</span>140 <span style=''>          }
+</span>141 <span style=''>        }
+</span>142 <span style=''>      case &quot;length&quot; =&gt; </span><span style='background: #AEF1AE'>lyst.size().asInstanceOf[AnyRef]</span><span style=''>
+</span>143 <span style=''>      case &quot;toString&quot; =&gt; </span><span style='background: #F0ADAD'>new</span><span style=''> AbstractJSObject {
+</span>144 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>145 <span style=''>          </span><span style='background: #F0ADAD'>lyst.toString</span><span style=''>
+</span>146 <span style=''>        }
+</span>147 <span style=''>      }
+</span>148 <span style=''>      case &quot;toLocaleString&quot; =&gt; </span><span style='background: #F0ADAD'>new</span><span style=''> AbstractJSObject {
+</span>149 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>150 <span style=''>          </span><span style='background: #F0ADAD'>lyst.toString</span><span style=''>
+</span>151 <span style=''>        }
+</span>152 <span style=''>      }
+</span>153 <span style=''>      case &quot;push&quot; =&gt; </span><span style='background: #AEF1AE'>new</span><span style=''> AbstractJSObject {
+</span>154 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>155 <span style=''>          </span><span style='background: #AEF1AE'>args.foreach(a =&gt; lyst.add(a.asInstanceOf[T]))</span><span style=''>
+</span>156 <span style=''>          </span><span style='background: #AEF1AE'>lyst.size().asInstanceOf[AnyRef]</span><span style=''>
+</span>157 <span style=''>        }
+</span>158 <span style=''>      }
+</span>159 <span style=''>      case &quot;concat&quot; =&gt; </span><span style='background: #AEF1AE'>new</span><span style=''> AbstractJSObject {
+</span>160 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>161 <span style=''>          val newList = </span><span style='background: #AEF1AE'>new util.ArrayList[T]()</span><span style=''>
+</span>162 <span style=''>          //ensure we can add util.List as well as pure JS arrays
+</span>163 <span style=''>          </span><span style='background: #AEF1AE'>args.foreach {
+</span>164 <span style=''></span><span style='background: #AEF1AE'>            case ts: util.Collection[T] =&gt;
+</span>165 <span style=''></span><span style='background: #AEF1AE'>              </span><span style='background: #F0ADAD'>newList.addAll(ts)</span><span style='background: #AEF1AE'>
+</span>166 <span style=''></span><span style='background: #AEF1AE'>            case a =&gt;
+</span>167 <span style=''></span><span style='background: #AEF1AE'>              newList.addAll(a.asInstanceOf[ScriptObjectMirror].values().asInstanceOf[util.Collection[T]])
+</span>168 <span style=''></span><span style='background: #AEF1AE'>          }</span><span style=''>
+</span>169 <span style=''>
+</span>170 <span style=''>          </span><span style='background: #AEF1AE'>newList.addAll(lyst)</span><span style=''>
+</span>171 <span style=''>          </span><span style='background: #AEF1AE'>new JavaScriptArray(newList)</span><span style=''>
+</span>172 <span style=''>        }
+</span>173 <span style=''>      }
+</span>174 <span style=''>      case &quot;pop&quot; =&gt; </span><span style='background: #AEF1AE'>new</span><span style=''> AbstractJSObject {
+</span>175 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>176 <span style=''>          </span><span style='background: #AEF1AE'>lyst.remove(lyst.size() - 1).asInstanceOf[AnyRef]</span><span style=''>
+</span>177 <span style=''>        }
+</span>178 <span style=''>      }
+</span>179 <span style=''>      case &quot;join&quot; =&gt; </span><span style='background: #AEF1AE'>new</span><span style=''> AbstractJSObject {
+</span>180 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>181 <span style=''>          val sep = if (</span><span style='background: #AEF1AE'>args.nonEmpty</span><span style=''>) </span><span style='background: #AEF1AE'>args.head.asInstanceOf[String]</span><span style=''> else </span><span style='background: #F0ADAD'>&quot;,&quot;</span><span style=''>
+</span>182 <span style=''>          import scala.collection.JavaConverters._
+</span>183 <span style=''>          </span><span style='background: #AEF1AE'>lyst.iterator().asScala.mkString(sep)</span><span style=''>
+</span>184 <span style=''>        }
+</span>185 <span style=''>      }
+</span>186 <span style=''>      case &quot;reverse&quot; =&gt; </span><span style='background: #AEF1AE'>new</span><span style=''> AbstractJSObject {
+</span>187 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>188 <span style=''>          </span><span style='background: #AEF1AE'>util.Collections.reverse(lyst)</span><span style=''>
+</span>189 <span style=''>          this
+</span>190 <span style=''>        }
+</span>191 <span style=''>      }
+</span>192 <span style=''>      case &quot;shift&quot; =&gt; </span><span style='background: #AEF1AE'>new</span><span style=''> AbstractJSObject {
+</span>193 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>194 <span style=''>          </span><span style='background: #AEF1AE'>lyst.remove(0).asInstanceOf[AnyRef]</span><span style=''>
+</span>195 <span style=''>        }
+</span>196 <span style=''>      }
+</span>197 <span style=''>      case &quot;slice&quot; =&gt; </span><span style='background: #AEF1AE'>new</span><span style=''> AbstractJSObject {
+</span>198 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>199 <span style=''>
+</span>200 <span style=''>          </span><span style='background: #AEF1AE'>args.length</span><span style=''> match {
+</span>201 <span style=''>            case 0 =&gt; </span><span style='background: #F0ADAD'>new util.ArrayList[T](lyst)</span><span style=''>
+</span>202 <span style=''>            case _ =&gt;
+</span>203 <span style=''>              val head = </span><span style='background: #AEF1AE'>args.head.asInstanceOf[Int]</span><span style=''>
+</span>204 <span style=''>              val begin = if (</span><span style='background: #AEF1AE'>head &gt;= 0</span><span style=''>) </span><span style='background: #AEF1AE'>head</span><span style=''> else </span><span style='background: #AEF1AE'>lyst.size() + head</span><span style=''>
+</span>205 <span style=''>              </span><span style='background: #AEF1AE'>args.length</span><span style=''> match {
+</span>206 <span style=''>                case 1 =&gt; </span><span style='background: #AEF1AE'>new JavaScriptArray[T](lyst.subList(begin, lyst.size()))</span><span style=''>
+</span>207 <span style=''>                case _ =&gt;
+</span>208 <span style=''>                  val theEnd = </span><span style='background: #AEF1AE'>args(1).asInstanceOf[Int]</span><span style=''>
+</span>209 <span style=''>                  val end = if (</span><span style='background: #AEF1AE'>theEnd &gt;= 0</span><span style=''>) </span><span style='background: #AEF1AE'>theEnd</span><span style=''> else </span><span style='background: #AEF1AE'>lyst.size() + theEnd</span><span style=''>
+</span>210 <span style=''>                  </span><span style='background: #AEF1AE'>new JavaScriptArray[T](lyst.subList(begin, end))</span><span style=''>
+</span>211 <span style=''>              }
+</span>212 <span style=''>          }
+</span>213 <span style=''>        }
+</span>214 <span style=''>      }
+</span>215 <span style=''>      case &quot;sort&quot; =&gt; </span><span style='background: #AEF1AE'>new</span><span style=''> AbstractJSObject {
+</span>216 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>217 <span style=''>          </span><span style='background: #AEF1AE'>args.length</span><span style=''> match {
+</span>218 <span style=''>            case 0 =&gt;
+</span>219 <span style=''>              </span><span style='background: #AEF1AE'>lyst.sort(new Comparator[T]() {
+</span>220 <span style=''></span><span style='background: #AEF1AE'>                override def compare(t: T, t1: T): Int = {
+</span>221 <span style=''></span><span style='background: #AEF1AE'>                  t.toString.compareTo(t1.toString)
+</span>222 <span style=''></span><span style='background: #AEF1AE'>                }
+</span>223 <span style=''></span><span style='background: #AEF1AE'>              })</span><span style=''>
+</span>224 <span style=''>              JavaScriptArray.this
+</span>225 <span style=''>            case 1 =&gt;
+</span>226 <span style=''>              val filterfn = </span><span style='background: #AEF1AE'>args.head.asInstanceOf[ScriptObjectMirror]</span><span style=''>
+</span>227 <span style=''>              </span><span style='background: #AEF1AE'>lyst.sort(new Comparator[T] {
+</span>228 <span style=''></span><span style='background: #AEF1AE'>                override def compare(t: T, t1: T): Int = {
+</span>229 <span style=''></span><span style='background: #AEF1AE'>                  val ret = filterfn.call(thiz, t.asInstanceOf[Object], t1.asInstanceOf[Object])
+</span>230 <span style=''></span><span style='background: #AEF1AE'>                  ret match {
+</span>231 <span style=''></span><span style='background: #AEF1AE'>                    case d: java.lang.Double =&gt; </span><span style='background: #F0ADAD'>d.toInt</span><span style='background: #AEF1AE'>
+</span>232 <span style=''></span><span style='background: #AEF1AE'>                    case i: Integer =&gt; i.toInt
+</span>233 <span style=''></span><span style='background: #AEF1AE'>                    case _ =&gt; </span><span style='background: #F0ADAD'>throw new RuntimeException(&quot;Unrecognised return type from comparator: &quot; + ret.getClass.getName)</span><span style='background: #AEF1AE'>
+</span>234 <span style=''></span><span style='background: #AEF1AE'>                  }
+</span>235 <span style=''></span><span style='background: #AEF1AE'>                }
+</span>236 <span style=''></span><span style='background: #AEF1AE'>              })</span><span style=''>
+</span>237 <span style=''>              JavaScriptArray.this
+</span>238 <span style=''>          }
+</span>239 <span style=''>        }
+</span>240 <span style=''>      }
+</span>241 <span style=''>      case &quot;splice&quot; =&gt; </span><span style='background: #AEF1AE'>new</span><span style=''> AbstractJSObject {
+</span>242 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>243 <span style=''>          </span><span style='background: #AEF1AE'>args.length</span><span style=''> match {
+</span>244 <span style=''>            case 0 =&gt; </span><span style='background: #F0ADAD'>throw new RuntimeException(&quot;splice requires at least one parameter&quot;)</span><span style=''>
+</span>245 <span style=''>            case _ =&gt;
+</span>246 <span style=''>              val head = </span><span style='background: #AEF1AE'>args.head.asInstanceOf[Int]</span><span style=''>
+</span>247 <span style=''>              val begin = if (</span><span style='background: #AEF1AE'>head &gt;= lyst.size()</span><span style=''>) </span><span style='background: #F0ADAD'>lyst.size()</span><span style=''> else </span><span style='background: #AEF1AE'>if (head &lt; 0) lyst.size() + head - 1 else head</span><span style=''>
+</span>248 <span style=''>              </span><span style='background: #AEF1AE'>args.length</span><span style=''> match {
+</span>249 <span style=''>                case 1 =&gt;
+</span>250 <span style=''>                  val deleteCount = </span><span style='background: #AEF1AE'>lyst.size() - begin</span><span style=''>
+</span>251 <span style=''>                  val result = </span><span style='background: #AEF1AE'>new JavaScriptArray[T](new util.ArrayList[T])</span><span style=''>
+</span>252 <span style=''>                  </span><span style='background: #AEF1AE'>for (i &lt;- 1 to deleteCount) {
+</span>253 <span style=''></span><span style='background: #AEF1AE'>                    result.add(lyst.remove(begin))</span><span style=''>
+</span>254 <span style=''>                  }
+</span>255 <span style=''>                  result
+</span>256 <span style=''>                case _ =&gt;
+</span>257 <span style=''>                  val deleteCount = </span><span style='background: #AEF1AE'>Math.min(args(1).asInstanceOf[Int], lyst.size())</span><span style=''>
+</span>258 <span style=''>                  val result = </span><span style='background: #AEF1AE'>new JavaScriptArray[T](new util.ArrayList[T])</span><span style=''>
+</span>259 <span style=''>
+</span>260 <span style=''>                  </span><span style='background: #AEF1AE'>for (i &lt;- 1 to deleteCount) {
+</span>261 <span style=''></span><span style='background: #AEF1AE'>                    result.add(lyst.remove(begin))</span><span style=''>
+</span>262 <span style=''>                  }
+</span>263 <span style=''>                  </span><span style='background: #AEF1AE'>args.length</span><span style=''> match {
+</span>264 <span style=''>                    case 2 =&gt; result
+</span>265 <span style=''>                    case _ =&gt;
+</span>266 <span style=''>                      </span><span style='background: #AEF1AE'>args.drop(2).foreach(t =&gt; lyst.add(t.asInstanceOf[T]))</span><span style=''>
+</span>267 <span style=''>                      result
+</span>268 <span style=''>                  }
+</span>269 <span style=''>              }
+</span>270 <span style=''>          }
+</span>271 <span style=''>        }
+</span>272 <span style=''>      }
+</span>273 <span style=''>      case &quot;unshift&quot; =&gt; </span><span style='background: #AEF1AE'>new</span><span style=''> AbstractJSObject {
+</span>274 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>275 <span style=''>          </span><span style='background: #AEF1AE'>args.reverse.foreach(t =&gt; lyst.add(0, t.asInstanceOf[T]))</span><span style=''>
+</span>276 <span style=''>          </span><span style='background: #AEF1AE'>lyst.size().asInstanceOf[AnyRef]</span><span style=''>
+</span>277 <span style=''>        }
+</span>278 <span style=''>      }
+</span>279 <span style=''>      case &quot;indexOf&quot; =&gt; </span><span style='background: #AEF1AE'>new</span><span style=''> AbstractJSObject {
+</span>280 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>281 <span style=''>          val item = </span><span style='background: #AEF1AE'>args.head.asInstanceOf[T]</span><span style=''>
+</span>282 <span style=''>          </span><span style='background: #AEF1AE'>args.length</span><span style=''> match {
+</span>283 <span style=''>            case 1 =&gt;
+</span>284 <span style=''>              </span><span style='background: #AEF1AE'>lyst.indexOf(item).asInstanceOf[AnyRef]</span><span style=''>
+</span>285 <span style=''>            case _ =&gt;
+</span>286 <span style=''>              val start = </span><span style='background: #AEF1AE'>args(1).asInstanceOf[Int]</span><span style=''>
+</span>287 <span style=''>              val res = </span><span style='background: #AEF1AE'>lyst.subList(start, lyst.size()).indexOf(item)</span><span style=''>
+</span>288 <span style=''>              if (</span><span style='background: #AEF1AE'>res &gt;= 0</span><span style=''>) {
+</span>289 <span style=''>                (</span><span style='background: #AEF1AE'>res + start).asInstanceOf[AnyRef]</span><span style=''>
+</span>290 <span style=''>              } else {
+</span>291 <span style=''>                </span><span style='background: #F0ADAD'>res.asInstanceOf[AnyRef]</span><span style=''>
+</span>292 <span style=''>              }
+</span>293 <span style=''>          }
+</span>294 <span style=''>        }
+</span>295 <span style=''>      }
+</span>296 <span style=''>      case &quot;lastIndexOf&quot; =&gt; </span><span style='background: #AEF1AE'>new</span><span style=''> AbstractJSObject {
+</span>297 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>298 <span style=''>          val item = </span><span style='background: #AEF1AE'>args.head.asInstanceOf[T]</span><span style=''>
+</span>299 <span style=''>          </span><span style='background: #AEF1AE'>args.length</span><span style=''> match {
+</span>300 <span style=''>            case 1 =&gt;
+</span>301 <span style=''>              </span><span style='background: #AEF1AE'>lyst.lastIndexOf(item).asInstanceOf[AnyRef]</span><span style=''>
+</span>302 <span style=''>            case _ =&gt;
+</span>303 <span style=''>              val start = </span><span style='background: #F0ADAD'>args(1).asInstanceOf[Int]</span><span style=''>
+</span>304 <span style=''>              val res = </span><span style='background: #F0ADAD'>lyst.subList(start, lyst.size()).lastIndexOf(item)</span><span style=''>
+</span>305 <span style=''>              if (</span><span style='background: #F0ADAD'>res &gt;= 0</span><span style=''>) {
+</span>306 <span style=''>                (</span><span style='background: #F0ADAD'>res + start).asInstanceOf[AnyRef]</span><span style=''>
+</span>307 <span style=''>              } else {
+</span>308 <span style=''>                </span><span style='background: #F0ADAD'>res.asInstanceOf[AnyRef]</span><span style=''>
+</span>309 <span style=''>              }
+</span>310 <span style=''>          }
+</span>311 <span style=''>        }
+</span>312 <span style=''>      }
+</span>313 <span style=''>
+</span>314 <span style=''>      case &quot;every&quot; =&gt; </span><span style='background: #AEF1AE'>new</span><span style=''> AbstractJSObject {
+</span>315 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>316 <span style=''>          val everyfn = </span><span style='background: #AEF1AE'>args.head.asInstanceOf[ScriptObjectMirror]</span><span style=''>
+</span>317 <span style=''>
+</span>318 <span style=''>          //where's the every in scala?
+</span>319 <span style=''>          val iter = </span><span style='background: #AEF1AE'>lyst.listIterator()</span><span style=''>
+</span>320 <span style=''>          var ret = </span><span style='background: #AEF1AE'>true</span><span style=''>
+</span>321 <span style=''>          while (</span><span style='background: #AEF1AE'>iter.hasNext</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>322 <span style=''></span><span style='background: #AEF1AE'>            val thing = iter.next()
+</span>323 <span style=''></span><span style='background: #AEF1AE'>            val thisArg = if (args.length &gt; 1) </span><span style='background: #F0ADAD'>args(1)</span><span style='background: #AEF1AE'> else thiz
+</span>324 <span style=''></span><span style='background: #AEF1AE'>            if (!everyfn.call(thisArg, thing.asInstanceOf[Object]).asInstanceOf[Boolean]) {
+</span>325 <span style=''></span><span style='background: #AEF1AE'>              return false.asInstanceOf[AnyRef]
+</span>326 <span style=''></span><span style='background: #AEF1AE'>            }
+</span>327 <span style=''></span><span style='background: #AEF1AE'>          }</span><span style=''>
+</span>328 <span style=''>          </span><span style='background: #AEF1AE'>true.asInstanceOf[AnyRef]</span><span style=''>
+</span>329 <span style=''>        }
+</span>330 <span style=''>      }
+</span>331 <span style=''>
+</span>332 <span style=''>      case &quot;some&quot; =&gt; </span><span style='background: #AEF1AE'>new</span><span style=''> AbstractJSObject {
+</span>333 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>334 <span style=''>          val some = </span><span style='background: #AEF1AE'>args.head.asInstanceOf[ScriptObjectMirror]</span><span style=''>
+</span>335 <span style=''>          val iter = </span><span style='background: #AEF1AE'>lyst.listIterator()</span><span style=''>
+</span>336 <span style=''>          var ret = </span><span style='background: #AEF1AE'>true</span><span style=''>
+</span>337 <span style=''>          while (</span><span style='background: #AEF1AE'>iter.hasNext</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>338 <span style=''></span><span style='background: #AEF1AE'>            val thing = iter.next()
+</span>339 <span style=''></span><span style='background: #AEF1AE'>            val thisArg = if (args.length &gt; 1) </span><span style='background: #F0ADAD'>args(1)</span><span style='background: #AEF1AE'> else thiz
+</span>340 <span style=''></span><span style='background: #AEF1AE'>            if (some.call(thisArg, thing.asInstanceOf[Object]).asInstanceOf[Boolean]) {
+</span>341 <span style=''></span><span style='background: #AEF1AE'>              return true.asInstanceOf[AnyRef]
+</span>342 <span style=''></span><span style='background: #AEF1AE'>            }
+</span>343 <span style=''></span><span style='background: #AEF1AE'>          }</span><span style=''>
+</span>344 <span style=''>          </span><span style='background: #AEF1AE'>false.asInstanceOf[AnyRef]</span><span style=''>
+</span>345 <span style=''>        }
+</span>346 <span style=''>      }
+</span>347 <span style=''>
+</span>348 <span style=''>      case &quot;forEach&quot; =&gt; </span><span style='background: #AEF1AE'>new</span><span style=''> AbstractJSObject {
+</span>349 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>350 <span style=''>          val forEach = </span><span style='background: #AEF1AE'>args.head.asInstanceOf[ScriptObjectMirror]</span><span style=''>
+</span>351 <span style=''>          val iter = </span><span style='background: #AEF1AE'>lyst.listIterator()</span><span style=''>
+</span>352 <span style=''>          while (</span><span style='background: #AEF1AE'>iter.hasNext</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>353 <span style=''></span><span style='background: #AEF1AE'>            val thing = iter.next()
+</span>354 <span style=''></span><span style='background: #AEF1AE'>            val thisArg = if (args.length &gt; 1) </span><span style='background: #F0ADAD'>args(1)</span><span style='background: #AEF1AE'> else thiz
+</span>355 <span style=''></span><span style='background: #AEF1AE'>            forEach.call(thisArg, thing.asInstanceOf[Object])
+</span>356 <span style=''></span><span style='background: #AEF1AE'>          }</span><span style=''>
+</span>357 <span style=''>          </span><span style='background: #AEF1AE'>None.asInstanceOf[AnyRef]</span><span style=''>
+</span>358 <span style=''>        }
+</span>359 <span style=''>      }
+</span>360 <span style=''>      case &quot;map&quot; =&gt; </span><span style='background: #AEF1AE'>new</span><span style=''> AbstractJSObject {
+</span>361 <span style=''>        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>362 <span style=''>          val map = </span><span style='background: #AEF1AE'>args.head.asInstanceOf[ScriptObjectMirror]</span><span style=''>
+</span>363 <span style=''>          val iter = </span><span style='background: #AEF1AE'>lyst.listIterator()</span><span style=''>
+</span>364 <span style=''>          val res = </span><span style='background: #AEF1AE'>new JavaScriptArray[AnyRef](new util.ArrayList[AnyRef]())</span><span style=''>
+</span>365 <span style=''>          while (</span><span style='background: #AEF1AE'>iter.hasNext</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>366 <span style=''></span><span style='background: #AEF1AE'>            val thing = iter.next()
+</span>367 <span style=''></span><span style='background: #AEF1AE'>            val thisArg = if (args.length &gt; 1) </span><span style='background: #F0ADAD'>args(1)</span><span style='background: #AEF1AE'> else thiz
+</span>368 <span style=''></span><span style='background: #AEF1AE'>            res.add(map.call(thisArg, thing.asInstanceOf[Object]))
+</span>369 <span style=''></span><span style='background: #AEF1AE'>          }</span><span style=''>
+</span>370 <span style=''>          res
+</span>371 <span style=''>        }
+</span>372 <span style=''>      }
+</span>373 <span style=''>
+</span>374 <span style=''>      case &quot;reduce&quot; =&gt; </span><span style='background: #AEF1AE'>new ReducerJSObject[T](lyst)</span><span style=''>
+</span>375 <span style=''>
+</span>376 <span style=''>      case &quot;reduceRight&quot; =&gt;
+</span>377 <span style=''>        val reversed = </span><span style='background: #AEF1AE'>new JavaScriptArray[T](new util.ArrayList[T](lyst))</span><span style=''>
+</span>378 <span style=''>        </span><span style='background: #AEF1AE'>util.Collections.reverse(reversed)</span><span style=''>
+</span>379 <span style=''>        </span><span style='background: #AEF1AE'>new ReducerJSObject[T](reversed)</span><span style=''>
+</span>380 <span style=''>
+</span>381 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>super.getMember(name)</span><span style=''>
+</span>382 <span style=''>    }
+</span>383 <span style=''>  }
+</span>384 <span style=''>
+</span>385 <span style=''>  override def isArray: Boolean = </span><span style='background: #F0ADAD'>true</span><span style=''>
+</span>386 <span style=''>
+</span>387 <span style=''>  override def getSlot(index: Int): AnyRef = </span><span style='background: #AEF1AE'>lyst.get(index).asInstanceOf[AnyRef]</span><span style=''>
+</span>388 <span style=''>
+</span>389 <span style=''>  override def getDefaultValue(hint: Class[_]): AnyRef = {
+</span>390 <span style=''>    </span><span style='background: #F0ADAD'>lyst.toString</span><span style=''>
+</span>391 <span style=''>  }
+</span>392 <span style=''>}
+</span>393 <span style=''>
+</span>394 <span style=''>class ReducerJSObject[Y](lst: util.List[Y]) extends AbstractJSObject {
+</span>395 <span style=''>
+</span>396 <span style=''>  override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+</span>397 <span style=''>
+</span>398 <span style=''>    // as per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce
+</span>399 <span style=''>
+</span>400 <span style=''>    if (</span><span style='background: #AEF1AE'>lst.size() == 0 &amp;&amp; </span><span style='background: #F0ADAD'>args.length &lt; 2</span><span style=''>) {
+</span>401 <span style=''>      </span><span style='background: #F0ADAD'>throw new RuntimeException(&quot;TypeError: empty array and no initialValue&quot;)</span><span style=''>
+</span>402 <span style=''>    }
+</span>403 <span style=''>
+</span>404 <span style=''>    if (</span><span style='background: #AEF1AE'>lst.size() == 1 &amp;&amp; </span><span style='background: #F0ADAD'>args.length &lt; 2</span><span style=''>) {
+</span>405 <span style=''>      </span><span style='background: #F0ADAD'>return lst.get(0).asInstanceOf[AnyRef]</span><span style=''>
+</span>406 <span style=''>    }
+</span>407 <span style=''>    if (</span><span style='background: #AEF1AE'>lst.size() == 0 &amp;&amp; </span><span style='background: #F0ADAD'>args.length &gt; 1</span><span style=''>) {
+</span>408 <span style=''>      </span><span style='background: #F0ADAD'>return args(1)</span><span style=''>
+</span>409 <span style=''>    }
+</span>410 <span style=''>
+</span>411 <span style=''>    val reduceFn = </span><span style='background: #AEF1AE'>args.head.asInstanceOf[ScriptObjectMirror]</span><span style=''>
+</span>412 <span style=''>    var acc = if (</span><span style='background: #AEF1AE'>args.length &gt; 1</span><span style=''>) </span><span style='background: #AEF1AE'>args(1)</span><span style=''> else </span><span style='background: #AEF1AE'>lst.get(0)</span><span style=''>
+</span>413 <span style=''>    val idx = if (</span><span style='background: #AEF1AE'>args.length &gt; 1</span><span style=''>) </span><span style='background: #AEF1AE'>0</span><span style=''> else </span><span style='background: #AEF1AE'>1</span><span style=''>
+</span>414 <span style=''>
+</span>415 <span style=''>    </span><span style='background: #AEF1AE'>for (i &lt;- idx until lst.size()) {
+</span>416 <span style=''></span><span style='background: #AEF1AE'>      acc = reduceFn.call(thiz, acc.asInstanceOf[AnyRef], lst.get(i).asInstanceOf[AnyRef], i.asInstanceOf[AnyRef], lst)</span><span style=''>
+</span>417 <span style=''>    }
+</span>418 <span style=''>    </span><span style='background: #AEF1AE'>acc.asInstanceOf[AnyRef]</span><span style=''>
+</span>419 <span style=''>  }
+</span>420 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          8940
+        </td>
+        <td>
+          301
+          -
+          333
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.JavaScriptArray[T](scala.collection.JavaConverters.seqAsJavaListConverter[T](l).asJava)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          8939
+        </td>
+        <td>
+          324
+          -
+          332
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsJava.asJava
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.seqAsJavaListConverter[T](l).asJava
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          8941
+        </td>
+        <td>
+          847
+          -
+          854
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.toProxy
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.toProxy
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          8942
+        </td>
+        <td>
+          825
+          -
+          855
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.util.ArrayList[T](JavaScriptArray.this.toProxy)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          8943
+        </td>
+        <td>
+          931
+          -
+          957
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.removeAll
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.removeAll(collection)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          8944
+        </td>
+        <td>
+          1025
+          -
+          1044
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.subList
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.subList(i, i1)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          8945
+        </td>
+        <td>
+          1094
+          -
+          1108
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.set
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.set(i, e)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          8946
+        </td>
+        <td>
+          1164
+          -
+          1179
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.indexOf
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.indexOf(o)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          8947
+        </td>
+        <td>
+          1223
+          -
+          1234
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.get
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.get(i)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          8948
+        </td>
+        <td>
+          1294
+          -
+          1313
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.lastIndexOf
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.lastIndexOf(o)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          8949
+        </td>
+        <td>
+          1393
+          -
+          1419
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.retainAll
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.retainAll(collection)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          8950
+        </td>
+        <td>
+          1462
+          -
+          1474
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.clear
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.clear()
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          8951
+        </td>
+        <td>
+          1526
+          -
+          1540
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.toArray
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.toArray()
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          8952
+        </td>
+        <td>
+          1606
+          -
+          1625
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.listIterator
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.listIterator()
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          8953
+        </td>
+        <td>
+          1697
+          -
+          1717
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.listIterator
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.listIterator(i)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          8954
+        </td>
+        <td>
+          1758
+          -
+          1769
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.size
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.size()
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          8955
+        </td>
+        <td>
+          1828
+          -
+          1842
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.remove
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.remove(o)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          8956
+        </td>
+        <td>
+          1889
+          -
+          1903
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.remove
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.remove(i)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          8957
+        </td>
+        <td>
+          1964
+          -
+          1980
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.contains
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.contains(o)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          8958
+        </td>
+        <td>
+          2038
+          -
+          2053
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.iterator
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.iterator()
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          8959
+        </td>
+        <td>
+          2135
+          -
+          2158
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.addAll
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.addAll(collection)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          8960
+        </td>
+        <td>
+          2248
+          -
+          2274
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.addAll
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.addAll(i, collection)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          8961
+        </td>
+        <td>
+          2320
+          -
+          2332
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.isEmpty
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.isEmpty()
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          8962
+        </td>
+        <td>
+          2414
+          -
+          2442
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.AbstractCollection.containsAll
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.containsAll(collection)
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          8963
+        </td>
+        <td>
+          2490
+          -
+          2501
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.add
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.add(e)
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          8964
+        </td>
+        <td>
+          2554
+          -
+          2568
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.add
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.add(i, e)
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          8965
+        </td>
+        <td>
+          2755
+          -
+          2774
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.toArray
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.toArray[X](ts)
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          8988
+        </td>
+        <td>
+          2879
+          -
+          2882
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          8967
+        </td>
+        <td>
+          2996
+          -
+          3023
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.util.ArrayList[T](JavaScriptArray.this.lyst)
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          8966
+        </td>
+        <td>
+          3018
+          -
+          3022
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.lyst
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          8968
+        </td>
+        <td>
+          3047
+          -
+          3065
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.listIterator
+        </td>
+        <td style="background: #AEF1AE">
+          res.listIterator()
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          8986
+        </td>
+        <td>
+          3078
+          -
+          3078
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          8983
+        </td>
+        <td>
+          3099
+          -
+          3099
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.while$1
+        </td>
+        <td style="background: #AEF1AE">
+          while$1()
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          8985
+        </td>
+        <td>
+          3078
+          -
+          3078
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          8984
+        </td>
+        <td>
+          3099
+          -
+          3538
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  {
+    val thing: T = iter.next();
+    val thisArg: Any = if (args.length.&gt;(1))
+      args.apply(1)
+    else
+      thiz;
+    args.head match {
+      case (filterfn @ (_: jdk.nashorn.api.scripting.ScriptObjectMirror)) =&gt; if (filterfn.call(thisArg, thing.asInstanceOf[Object]).asInstanceOf[Boolean].unary_!)
+        iter.remove()
+      else
+        ()
+      case (sf @ (_: jdk.nashorn.internal.runtime.ScriptFunction)) =&gt; scala.this.Predef.???
+    }
+  };
+  while$1()
+}
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          8969
+        </td>
+        <td>
+          3085
+          -
+          3097
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ListIterator.hasNext
+        </td>
+        <td style="background: #AEF1AE">
+          iter.hasNext()
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          8970
+        </td>
+        <td>
+          3127
+          -
+          3138
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ListIterator.next
+        </td>
+        <td style="background: #AEF1AE">
+          iter.next()
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          8971
+        </td>
+        <td>
+          3171
+          -
+          3186
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          args.length.&gt;(1)
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          8974
+        </td>
+        <td>
+          3201
+          -
+          3205
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.thiz
+        </td>
+        <td style="background: #AEF1AE">
+          thiz
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          8973
+        </td>
+        <td>
+          3188
+          -
+          3195
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #F0ADAD">
+          args.apply(1)
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          8972
+        </td>
+        <td>
+          3188
+          -
+          3195
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #F0ADAD">
+          args.apply(1)
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          8975
+        </td>
+        <td>
+          3220
+          -
+          3229
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          args.head
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          8977
+        </td>
+        <td>
+          3313
+          -
+          3386
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          filterfn.call(thisArg, thing.asInstanceOf[Object]).asInstanceOf[Boolean].unary_!
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          8980
+        </td>
+        <td>
+          3309
+          -
+          3309
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          8976
+        </td>
+        <td>
+          3337
+          -
+          3363
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          thing.asInstanceOf[Object]
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          8981
+        </td>
+        <td>
+          3309
+          -
+          3309
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          8979
+        </td>
+        <td>
+          3410
+          -
+          3423
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          java.util.Iterator.remove
+        </td>
+        <td style="background: #AEF1AE">
+          iter.remove()
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          8978
+        </td>
+        <td>
+          3410
+          -
+          3423
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Iterator.remove
+        </td>
+        <td style="background: #AEF1AE">
+          iter.remove()
+        </td>
+      </tr><tr>
+        <td>
+          136
+        </td>
+        <td>
+          8982
+        </td>
+        <td>
+          3505
+          -
+          3508
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Predef.???
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.???
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          8987
+        </td>
+        <td>
+          3551
+          -
+          3578
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.JavaScriptArray[T](res)
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          8989
+        </td>
+        <td>
+          3624
+          -
+          3656
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.size().asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          8991
+        </td>
+        <td>
+          3682
+          -
+          3685
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          8990
+        </td>
+        <td>
+          3785
+          -
+          3798
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.AbstractCollection.toString
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.toString()
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          8993
+        </td>
+        <td>
+          3848
+          -
+          3851
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          8992
+        </td>
+        <td>
+          3951
+          -
+          3964
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.AbstractCollection.toString
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.toString()
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          8998
+        </td>
+        <td>
+          4004
+          -
+          4007
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          8995
+        </td>
+        <td>
+          4125
+          -
+          4152
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.add
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.add(a.asInstanceOf[T])
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          8994
+        </td>
+        <td>
+          4134
+          -
+          4151
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          a.asInstanceOf[T]
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          8996
+        </td>
+        <td>
+          4107
+          -
+          4153
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          args.foreach[Boolean](((a: AnyRef) =&gt; JavaScriptArray.this.lyst.add(a.asInstanceOf[T])))
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          8997
+        </td>
+        <td>
+          4164
+          -
+          4196
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.size().asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          9007
+        </td>
+        <td>
+          4238
+          -
+          4241
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          8999
+        </td>
+        <td>
+          4355
+          -
+          4378
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.util.ArrayList[T]()
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          9003
+        </td>
+        <td>
+          4455
+          -
+          4686
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          args.foreach[Boolean](((x0$1: AnyRef) =&gt; x0$1 match {
+  case (ts @ (_: java.util.Collection[T])) =&gt; newList.addAll(ts)
+  case (a @ _) =&gt; newList.addAll(a.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror].values().asInstanceOf[java.util.Collection[T]])
+}))
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          9000
+        </td>
+        <td>
+          4527
+          -
+          4545
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.addAll
+        </td>
+        <td style="background: #F0ADAD">
+          newList.addAll(ts)
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          9001
+        </td>
+        <td>
+          4597
+          -
+          4673
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          a.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror].values().asInstanceOf[java.util.Collection[T]]
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          9002
+        </td>
+        <td>
+          4582
+          -
+          4674
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.addAll
+        </td>
+        <td style="background: #AEF1AE">
+          newList.addAll(a.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror].values().asInstanceOf[java.util.Collection[T]])
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          9004
+        </td>
+        <td>
+          4713
+          -
+          4717
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.lyst
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          9005
+        </td>
+        <td>
+          4698
+          -
+          4718
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.addAll
+        </td>
+        <td style="background: #AEF1AE">
+          newList.addAll(JavaScriptArray.this.lyst)
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          9006
+        </td>
+        <td>
+          4729
+          -
+          4757
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.JavaScriptArray[T](newList)
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          9010
+        </td>
+        <td>
+          4796
+          -
+          4799
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          176
+        </td>
+        <td>
+          9009
+        </td>
+        <td>
+          4899
+          -
+          4948
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.remove(JavaScriptArray.this.lyst.size().-(1)).asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          176
+        </td>
+        <td>
+          9008
+        </td>
+        <td>
+          4911
+          -
+          4926
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.size().-(1)
+        </td>
+      </tr><tr>
+        <td>
+          179
+        </td>
+        <td>
+          9017
+        </td>
+        <td>
+          4988
+          -
+          4991
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          9013
+        </td>
+        <td>
+          5120
+          -
+          5150
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          args.head.asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          9012
+        </td>
+        <td>
+          5120
+          -
+          5150
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          args.head.asInstanceOf[String]
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          9015
+        </td>
+        <td>
+          5156
+          -
+          5159
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;,&quot;
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          9014
+        </td>
+        <td>
+          5156
+          -
+          5159
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;,&quot;
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          9011
+        </td>
+        <td>
+          5105
+          -
+          5118
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.nonEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          args.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          9016
+        </td>
+        <td>
+          5221
+          -
+          5258
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.asScalaIteratorConverter[T](JavaScriptArray.this.lyst.iterator()).asScala.mkString(sep)
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          9020
+        </td>
+        <td>
+          5301
+          -
+          5304
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          9019
+        </td>
+        <td>
+          5404
+          -
+          5434
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Collections.reverse
+        </td>
+        <td style="background: #AEF1AE">
+          java.util.Collections.reverse(JavaScriptArray.this.lyst)
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          9018
+        </td>
+        <td>
+          5429
+          -
+          5433
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.lyst
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          9023
+        </td>
+        <td>
+          5490
+          -
+          5493
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          194
+        </td>
+        <td>
+          9022
+        </td>
+        <td>
+          5593
+          -
+          5628
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.remove(0).asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          194
+        </td>
+        <td>
+          9021
+        </td>
+        <td>
+          5605
+          -
+          5606
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          197
+        </td>
+        <td>
+          9044
+        </td>
+        <td>
+          5669
+          -
+          5672
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          200
+        </td>
+        <td>
+          9024
+        </td>
+        <td>
+          5773
+          -
+          5784
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.length
+        </td>
+        <td style="background: #AEF1AE">
+          args.length
+        </td>
+      </tr><tr>
+        <td>
+          201
+        </td>
+        <td>
+          9025
+        </td>
+        <td>
+          5837
+          -
+          5841
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.lyst
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst
+        </td>
+      </tr><tr>
+        <td>
+          201
+        </td>
+        <td>
+          9026
+        </td>
+        <td>
+          5815
+          -
+          5842
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new java.util.ArrayList[T](JavaScriptArray.this.lyst)
+        </td>
+      </tr><tr>
+        <td>
+          203
+        </td>
+        <td>
+          9027
+        </td>
+        <td>
+          5890
+          -
+          5917
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          args.head.asInstanceOf[Int]
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          9028
+        </td>
+        <td>
+          5948
+          -
+          5957
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;=
+        </td>
+        <td style="background: #AEF1AE">
+          head.&gt;=(0)
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          9031
+        </td>
+        <td>
+          5969
+          -
+          5987
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.size().+(head)
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          9030
+        </td>
+        <td>
+          5969
+          -
+          5987
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.size().+(head)
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          9029
+        </td>
+        <td>
+          5959
+          -
+          5963
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.head
+        </td>
+        <td style="background: #AEF1AE">
+          head
+        </td>
+      </tr><tr>
+        <td>
+          205
+        </td>
+        <td>
+          9032
+        </td>
+        <td>
+          6002
+          -
+          6013
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.length
+        </td>
+        <td style="background: #AEF1AE">
+          args.length
+        </td>
+      </tr><tr>
+        <td>
+          206
+        </td>
+        <td>
+          9034
+        </td>
+        <td>
+          6071
+          -
+          6103
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.subList
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.subList(begin, JavaScriptArray.this.lyst.size())
+        </td>
+      </tr><tr>
+        <td>
+          206
+        </td>
+        <td>
+          9033
+        </td>
+        <td>
+          6091
+          -
+          6102
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.size
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.size()
+        </td>
+      </tr><tr>
+        <td>
+          206
+        </td>
+        <td>
+          9035
+        </td>
+        <td>
+          6048
+          -
+          6104
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.JavaScriptArray[T](JavaScriptArray.this.lyst.subList(begin, JavaScriptArray.this.lyst.size()))
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          9037
+        </td>
+        <td>
+          6162
+          -
+          6187
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          args.apply(1).asInstanceOf[Int]
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          9036
+        </td>
+        <td>
+          6167
+          -
+          6168
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          9040
+        </td>
+        <td>
+          6245
+          -
+          6265
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.size().+(theEnd)
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          9039
+        </td>
+        <td>
+          6233
+          -
+          6239
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.theEnd
+        </td>
+        <td style="background: #AEF1AE">
+          theEnd
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          9041
+        </td>
+        <td>
+          6245
+          -
+          6265
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.size().+(theEnd)
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          9038
+        </td>
+        <td>
+          6220
+          -
+          6231
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;=
+        </td>
+        <td style="background: #AEF1AE">
+          theEnd.&gt;=(0)
+        </td>
+      </tr><tr>
+        <td>
+          210
+        </td>
+        <td>
+          9043
+        </td>
+        <td>
+          6284
+          -
+          6332
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.JavaScriptArray[T](JavaScriptArray.this.lyst.subList(begin, end))
+        </td>
+      </tr><tr>
+        <td>
+          210
+        </td>
+        <td>
+          9042
+        </td>
+        <td>
+          6307
+          -
+          6331
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.subList
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.subList(begin, end)
+        </td>
+      </tr><tr>
+        <td>
+          215
+        </td>
+        <td>
+          9059
+        </td>
+        <td>
+          6400
+          -
+          6403
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          217
+        </td>
+        <td>
+          9045
+        </td>
+        <td>
+          6503
+          -
+          6514
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.length
+        </td>
+        <td style="background: #AEF1AE">
+          args.length
+        </td>
+      </tr><tr>
+        <td>
+          219
+        </td>
+        <td>
+          9049
+        </td>
+        <td>
+          6559
+          -
+          6736
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.sort
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.sort({
+  final class $anon extends Object with java.util.Comparator[T] {
+    def &lt;init&gt;(): &lt;$anon: java.util.Comparator[T]&gt; = {
+      $anon.super.&lt;init&gt;();
+      ()
+    };
+    override def compare(t: T, t1: T): Int = t.toString().compareTo(t1.toString())
+  };
+  new $anon()
+})
+        </td>
+      </tr><tr>
+        <td>
+          219
+        </td>
+        <td>
+          9048
+        </td>
+        <td>
+          6569
+          -
+          6572
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          9046
+        </td>
+        <td>
+          6689
+          -
+          6700
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Any.toString
+        </td>
+        <td style="background: #AEF1AE">
+          t1.toString()
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          9047
+        </td>
+        <td>
+          6668
+          -
+          6701
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.compareTo
+        </td>
+        <td style="background: #AEF1AE">
+          t.toString().compareTo(t1.toString())
+        </td>
+      </tr><tr>
+        <td>
+          226
+        </td>
+        <td>
+          9050
+        </td>
+        <td>
+          6823
+          -
+          6865
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          args.head.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror]
+        </td>
+      </tr><tr>
+        <td>
+          227
+        </td>
+        <td>
+          9058
+        </td>
+        <td>
+          6880
+          -
+          7379
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.sort
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.sort({
+  final class $anon extends Object with java.util.Comparator[T] {
+    def &lt;init&gt;(): &lt;$anon: java.util.Comparator[T]&gt; = {
+      $anon.super.&lt;init&gt;();
+      ()
+    };
+    override def compare(t: T, t1: T): Int = {
+      val ret: Object = filterfn.call(thiz, t.asInstanceOf[Object], t1.asInstanceOf[Object]);
+      ret match {
+        case (d @ (_: Double)) =&gt; scala.this.Predef.Double2double(d).toInt
+        case (i @ (_: Integer)) =&gt; scala.this.Predef.Integer2int(i).toInt
+        case _ =&gt; throw new scala.`package`.RuntimeException(&quot;Unrecognised return type from comparator: &quot;.+(ret.getClass().getName()))
+      }
+    }
+  };
+  new $anon()
+})
+        </td>
+      </tr><tr>
+        <td>
+          227
+        </td>
+        <td>
+          9057
+        </td>
+        <td>
+          6890
+          -
+          6893
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          229
+        </td>
+        <td>
+          9052
+        </td>
+        <td>
+          7041
+          -
+          7064
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          t1.asInstanceOf[Object]
+        </td>
+      </tr><tr>
+        <td>
+          229
+        </td>
+        <td>
+          9051
+        </td>
+        <td>
+          7017
+          -
+          7039
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          t.asInstanceOf[Object]
+        </td>
+      </tr><tr>
+        <td>
+          229
+        </td>
+        <td>
+          9053
+        </td>
+        <td>
+          6997
+          -
+          7065
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.call
+        </td>
+        <td style="background: #AEF1AE">
+          filterfn.call(thiz, t.asInstanceOf[Object], t1.asInstanceOf[Object])
+        </td>
+      </tr><tr>
+        <td>
+          231
+        </td>
+        <td>
+          9054
+        </td>
+        <td>
+          7144
+          -
+          7151
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Double.toInt
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.Double2double(d).toInt
+        </td>
+      </tr><tr>
+        <td>
+          232
+        </td>
+        <td>
+          9055
+        </td>
+        <td>
+          7191
+          -
+          7198
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Int.toInt
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.Integer2int(i).toInt
+        </td>
+      </tr><tr>
+        <td>
+          233
+        </td>
+        <td>
+          9056
+        </td>
+        <td>
+          7229
+          -
+          7324
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.RuntimeException(&quot;Unrecognised return type from comparator: &quot;.+(ret.getClass().getName()))
+        </td>
+      </tr><tr>
+        <td>
+          241
+        </td>
+        <td>
+          9095
+        </td>
+        <td>
+          7468
+          -
+          7471
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          243
+        </td>
+        <td>
+          9060
+        </td>
+        <td>
+          7571
+          -
+          7582
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.length
+        </td>
+        <td style="background: #AEF1AE">
+          args.length
+        </td>
+      </tr><tr>
+        <td>
+          244
+        </td>
+        <td>
+          9061
+        </td>
+        <td>
+          7613
+          -
+          7681
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.RuntimeException(&quot;splice requires at least one parameter&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          246
+        </td>
+        <td>
+          9062
+        </td>
+        <td>
+          7729
+          -
+          7756
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          args.head.asInstanceOf[Int]
+        </td>
+      </tr><tr>
+        <td>
+          247
+        </td>
+        <td>
+          9064
+        </td>
+        <td>
+          7787
+          -
+          7806
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;=
+        </td>
+        <td style="background: #AEF1AE">
+          head.&gt;=(JavaScriptArray.this.lyst.size())
+        </td>
+      </tr><tr>
+        <td>
+          247
+        </td>
+        <td>
+          9067
+        </td>
+        <td>
+          7829
+          -
+          7837
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          head.&lt;(0)
+        </td>
+      </tr><tr>
+        <td>
+          247
+        </td>
+        <td>
+          9069
+        </td>
+        <td>
+          7839
+          -
+          7861
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.size().+(head).-(1)
+        </td>
+      </tr><tr>
+        <td>
+          247
+        </td>
+        <td>
+          9063
+        </td>
+        <td>
+          7795
+          -
+          7806
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.size
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.size()
+        </td>
+      </tr><tr>
+        <td>
+          247
+        </td>
+        <td>
+          9066
+        </td>
+        <td>
+          7808
+          -
+          7819
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          java.util.ArrayList.size
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.size()
+        </td>
+      </tr><tr>
+        <td>
+          247
+        </td>
+        <td>
+          9065
+        </td>
+        <td>
+          7808
+          -
+          7819
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.size
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.size()
+        </td>
+      </tr><tr>
+        <td>
+          247
+        </td>
+        <td>
+          9068
+        </td>
+        <td>
+          7839
+          -
+          7861
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.size().+(head).-(1)
+        </td>
+      </tr><tr>
+        <td>
+          247
+        </td>
+        <td>
+          9071
+        </td>
+        <td>
+          7825
+          -
+          7871
+        </td>
+        <td>
+          If
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          if (head.&lt;(0))
+  JavaScriptArray.this.lyst.size().+(head).-(1)
+else
+  head
+        </td>
+      </tr><tr>
+        <td>
+          247
+        </td>
+        <td>
+          9070
+        </td>
+        <td>
+          7867
+          -
+          7871
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.head
+        </td>
+        <td style="background: #AEF1AE">
+          head
+        </td>
+      </tr><tr>
+        <td>
+          248
+        </td>
+        <td>
+          9072
+        </td>
+        <td>
+          7886
+          -
+          7897
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.length
+        </td>
+        <td style="background: #AEF1AE">
+          args.length
+        </td>
+      </tr><tr>
+        <td>
+          250
+        </td>
+        <td>
+          9073
+        </td>
+        <td>
+          7968
+          -
+          7987
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.size().-(begin)
+        </td>
+      </tr><tr>
+        <td>
+          251
+        </td>
+        <td>
+          9075
+        </td>
+        <td>
+          8019
+          -
+          8064
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.JavaScriptArray[T](new java.util.ArrayList[T]())
+        </td>
+      </tr><tr>
+        <td>
+          251
+        </td>
+        <td>
+          9074
+        </td>
+        <td>
+          8042
+          -
+          8063
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.util.ArrayList[T]()
+        </td>
+      </tr><tr>
+        <td>
+          252
+        </td>
+        <td>
+          9076
+        </td>
+        <td>
+          8093
+          -
+          8094
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          252
+        </td>
+        <td>
+          9079
+        </td>
+        <td>
+          8083
+          -
+          8163
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Range.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.intWrapper(1).to(deleteCount).foreach[Boolean](((i: Int) =&gt; result.add(JavaScriptArray.this.lyst.remove(begin))))
+        </td>
+      </tr><tr>
+        <td>
+          253
+        </td>
+        <td>
+          9078
+        </td>
+        <td>
+          8133
+          -
+          8163
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.add
+        </td>
+        <td style="background: #AEF1AE">
+          result.add(JavaScriptArray.this.lyst.remove(begin))
+        </td>
+      </tr><tr>
+        <td>
+          253
+        </td>
+        <td>
+          9077
+        </td>
+        <td>
+          8144
+          -
+          8162
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.remove
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.remove(begin)
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          9082
+        </td>
+        <td>
+          8307
+          -
+          8318
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.size
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.size()
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          9081
+        </td>
+        <td>
+          8280
+          -
+          8305
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          args.apply(1).asInstanceOf[Int]
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          9083
+        </td>
+        <td>
+          8271
+          -
+          8319
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Math.min
+        </td>
+        <td style="background: #AEF1AE">
+          java.this.lang.Math.min(args.apply(1).asInstanceOf[Int], JavaScriptArray.this.lyst.size())
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          9080
+        </td>
+        <td>
+          8285
+          -
+          8286
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          258
+        </td>
+        <td>
+          9085
+        </td>
+        <td>
+          8351
+          -
+          8396
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.JavaScriptArray[T](new java.util.ArrayList[T]())
+        </td>
+      </tr><tr>
+        <td>
+          258
+        </td>
+        <td>
+          9084
+        </td>
+        <td>
+          8374
+          -
+          8395
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.util.ArrayList[T]()
+        </td>
+      </tr><tr>
+        <td>
+          260
+        </td>
+        <td>
+          9086
+        </td>
+        <td>
+          8426
+          -
+          8427
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          260
+        </td>
+        <td>
+          9089
+        </td>
+        <td>
+          8416
+          -
+          8496
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Range.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.intWrapper(1).to(deleteCount).foreach[Boolean](((i: Int) =&gt; result.add(JavaScriptArray.this.lyst.remove(begin))))
+        </td>
+      </tr><tr>
+        <td>
+          261
+        </td>
+        <td>
+          9087
+        </td>
+        <td>
+          8477
+          -
+          8495
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.remove
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.remove(begin)
+        </td>
+      </tr><tr>
+        <td>
+          261
+        </td>
+        <td>
+          9088
+        </td>
+        <td>
+          8466
+          -
+          8496
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.add
+        </td>
+        <td style="background: #AEF1AE">
+          result.add(JavaScriptArray.this.lyst.remove(begin))
+        </td>
+      </tr><tr>
+        <td>
+          263
+        </td>
+        <td>
+          9090
+        </td>
+        <td>
+          8535
+          -
+          8546
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.length
+        </td>
+        <td style="background: #AEF1AE">
+          args.length
+        </td>
+      </tr><tr>
+        <td>
+          266
+        </td>
+        <td>
+          9091
+        </td>
+        <td>
+          8654
+          -
+          8655
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          2
+        </td>
+      </tr><tr>
+        <td>
+          266
+        </td>
+        <td>
+          9094
+        </td>
+        <td>
+          8644
+          -
+          8698
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          args.drop(2).foreach[Boolean](((t: AnyRef) =&gt; JavaScriptArray.this.lyst.add(t.asInstanceOf[T])))
+        </td>
+      </tr><tr>
+        <td>
+          266
+        </td>
+        <td>
+          9093
+        </td>
+        <td>
+          8670
+          -
+          8697
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.add
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.add(t.asInstanceOf[T])
+        </td>
+      </tr><tr>
+        <td>
+          266
+        </td>
+        <td>
+          9092
+        </td>
+        <td>
+          8679
+          -
+          8696
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          t.asInstanceOf[T]
+        </td>
+      </tr><tr>
+        <td>
+          273
+        </td>
+        <td>
+          9101
+        </td>
+        <td>
+          8818
+          -
+          8821
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          275
+        </td>
+        <td>
+          9096
+        </td>
+        <td>
+          8956
+          -
+          8957
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          275
+        </td>
+        <td>
+          9099
+        </td>
+        <td>
+          8921
+          -
+          8978
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          args.reverse.foreach[Unit](((t: AnyRef) =&gt; JavaScriptArray.this.lyst.add(0, t.asInstanceOf[T])))
+        </td>
+      </tr><tr>
+        <td>
+          275
+        </td>
+        <td>
+          9098
+        </td>
+        <td>
+          8947
+          -
+          8977
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.add
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.add(0, t.asInstanceOf[T])
+        </td>
+      </tr><tr>
+        <td>
+          275
+        </td>
+        <td>
+          9097
+        </td>
+        <td>
+          8959
+          -
+          8976
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          t.asInstanceOf[T]
+        </td>
+      </tr><tr>
+        <td>
+          276
+        </td>
+        <td>
+          9100
+        </td>
+        <td>
+          8989
+          -
+          9021
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.size().asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          279
+        </td>
+        <td>
+          9113
+        </td>
+        <td>
+          9064
+          -
+          9067
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          281
+        </td>
+        <td>
+          9102
+        </td>
+        <td>
+          9178
+          -
+          9203
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          args.head.asInstanceOf[T]
+        </td>
+      </tr><tr>
+        <td>
+          282
+        </td>
+        <td>
+          9103
+        </td>
+        <td>
+          9214
+          -
+          9225
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.length
+        </td>
+        <td style="background: #AEF1AE">
+          args.length
+        </td>
+      </tr><tr>
+        <td>
+          284
+        </td>
+        <td>
+          9104
+        </td>
+        <td>
+          9270
+          -
+          9309
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.indexOf(item).asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          286
+        </td>
+        <td>
+          9105
+        </td>
+        <td>
+          9363
+          -
+          9364
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          286
+        </td>
+        <td>
+          9106
+        </td>
+        <td>
+          9358
+          -
+          9383
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          args.apply(1).asInstanceOf[Int]
+        </td>
+      </tr><tr>
+        <td>
+          287
+        </td>
+        <td>
+          9107
+        </td>
+        <td>
+          9408
+          -
+          9454
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.List.indexOf
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.subList(start, JavaScriptArray.this.lyst.size()).indexOf(item)
+        </td>
+      </tr><tr>
+        <td>
+          288
+        </td>
+        <td>
+          9108
+        </td>
+        <td>
+          9473
+          -
+          9481
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;=
+        </td>
+        <td style="background: #AEF1AE">
+          res.&gt;=(0)
+        </td>
+      </tr><tr>
+        <td>
+          289
+        </td>
+        <td>
+          9109
+        </td>
+        <td>
+          9502
+          -
+          9535
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          res.+(start).asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          289
+        </td>
+        <td>
+          9110
+        </td>
+        <td>
+          9502
+          -
+          9535
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          res.+(start).asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          291
+        </td>
+        <td>
+          9112
+        </td>
+        <td>
+          9575
+          -
+          9599
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          res.asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          291
+        </td>
+        <td>
+          9111
+        </td>
+        <td>
+          9575
+          -
+          9599
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          res.asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          296
+        </td>
+        <td>
+          9125
+        </td>
+        <td>
+          9674
+          -
+          9677
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          298
+        </td>
+        <td>
+          9114
+        </td>
+        <td>
+          9788
+          -
+          9813
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          args.head.asInstanceOf[T]
+        </td>
+      </tr><tr>
+        <td>
+          299
+        </td>
+        <td>
+          9115
+        </td>
+        <td>
+          9824
+          -
+          9835
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.length
+        </td>
+        <td style="background: #AEF1AE">
+          args.length
+        </td>
+      </tr><tr>
+        <td>
+          301
+        </td>
+        <td>
+          9116
+        </td>
+        <td>
+          9880
+          -
+          9923
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.lastIndexOf(item).asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          303
+        </td>
+        <td>
+          9118
+        </td>
+        <td>
+          9972
+          -
+          9997
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          args.apply(1).asInstanceOf[Int]
+        </td>
+      </tr><tr>
+        <td>
+          303
+        </td>
+        <td>
+          9117
+        </td>
+        <td>
+          9977
+          -
+          9978
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          304
+        </td>
+        <td>
+          9119
+        </td>
+        <td>
+          10022
+          -
+          10072
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.List.lastIndexOf
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.subList(start, JavaScriptArray.this.lyst.size()).lastIndexOf(item)
+        </td>
+      </tr><tr>
+        <td>
+          305
+        </td>
+        <td>
+          9120
+        </td>
+        <td>
+          10091
+          -
+          10099
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;=
+        </td>
+        <td style="background: #F0ADAD">
+          res.&gt;=(0)
+        </td>
+      </tr><tr>
+        <td>
+          306
+        </td>
+        <td>
+          9122
+        </td>
+        <td>
+          10120
+          -
+          10153
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          res.+(start).asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          306
+        </td>
+        <td>
+          9121
+        </td>
+        <td>
+          10120
+          -
+          10153
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          res.+(start).asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          308
+        </td>
+        <td>
+          9123
+        </td>
+        <td>
+          10193
+          -
+          10217
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          res.asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          308
+        </td>
+        <td>
+          9124
+        </td>
+        <td>
+          10193
+          -
+          10217
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          res.asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          314
+        </td>
+        <td>
+          9148
+        </td>
+        <td>
+          10287
+          -
+          10290
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          316
+        </td>
+        <td>
+          9126
+        </td>
+        <td>
+          10404
+          -
+          10446
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          args.head.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror]
+        </td>
+      </tr><tr>
+        <td>
+          319
+        </td>
+        <td>
+          9127
+        </td>
+        <td>
+          10509
+          -
+          10528
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.listIterator
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.listIterator()
+        </td>
+      </tr><tr>
+        <td>
+          320
+        </td>
+        <td>
+          9128
+        </td>
+        <td>
+          10549
+          -
+          10553
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          321
+        </td>
+        <td>
+          9145
+        </td>
+        <td>
+          10564
+          -
+          10564
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          321
+        </td>
+        <td>
+          9144
+        </td>
+        <td>
+          10564
+          -
+          10564
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          321
+        </td>
+        <td>
+          9129
+        </td>
+        <td>
+          10571
+          -
+          10583
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ListIterator.hasNext
+        </td>
+        <td style="background: #AEF1AE">
+          iter.hasNext()
+        </td>
+      </tr><tr>
+        <td>
+          321
+        </td>
+        <td>
+          9143
+        </td>
+        <td>
+          10585
+          -
+          10853
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  {
+    val thing: T = iter.next();
+    val thisArg: Any = if (args.length.&gt;(1))
+      args.apply(1)
+    else
+      thiz;
+    if (everyfn.call(thisArg, thing.asInstanceOf[Object]).asInstanceOf[Boolean].unary_!)
+      return false.asInstanceOf[AnyRef]
+    else
+      ()
+  };
+  while$2()
+}
+        </td>
+      </tr><tr>
+        <td>
+          321
+        </td>
+        <td>
+          9142
+        </td>
+        <td>
+          10585
+          -
+          10585
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.while$2
+        </td>
+        <td style="background: #AEF1AE">
+          while$2()
+        </td>
+      </tr><tr>
+        <td>
+          322
+        </td>
+        <td>
+          9130
+        </td>
+        <td>
+          10611
+          -
+          10622
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ListIterator.next
+        </td>
+        <td style="background: #AEF1AE">
+          iter.next()
+        </td>
+      </tr><tr>
+        <td>
+          323
+        </td>
+        <td>
+          9132
+        </td>
+        <td>
+          10670
+          -
+          10677
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #F0ADAD">
+          args.apply(1)
+        </td>
+      </tr><tr>
+        <td>
+          323
+        </td>
+        <td>
+          9134
+        </td>
+        <td>
+          10683
+          -
+          10687
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.thiz
+        </td>
+        <td style="background: #AEF1AE">
+          thiz
+        </td>
+      </tr><tr>
+        <td>
+          323
+        </td>
+        <td>
+          9131
+        </td>
+        <td>
+          10653
+          -
+          10668
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          args.length.&gt;(1)
+        </td>
+      </tr><tr>
+        <td>
+          323
+        </td>
+        <td>
+          9133
+        </td>
+        <td>
+          10670
+          -
+          10677
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #F0ADAD">
+          args.apply(1)
+        </td>
+      </tr><tr>
+        <td>
+          324
+        </td>
+        <td>
+          9136
+        </td>
+        <td>
+          10704
+          -
+          10776
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          everyfn.call(thisArg, thing.asInstanceOf[Object]).asInstanceOf[Boolean].unary_!
+        </td>
+      </tr><tr>
+        <td>
+          324
+        </td>
+        <td>
+          9141
+        </td>
+        <td>
+          10700
+          -
+          10700
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          324
+        </td>
+        <td>
+          9135
+        </td>
+        <td>
+          10727
+          -
+          10753
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          thing.asInstanceOf[Object]
+        </td>
+      </tr><tr>
+        <td>
+          324
+        </td>
+        <td>
+          9140
+        </td>
+        <td>
+          10700
+          -
+          10700
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          325
+        </td>
+        <td>
+          9138
+        </td>
+        <td>
+          10801
+          -
+          10827
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          false.asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          325
+        </td>
+        <td>
+          9137
+        </td>
+        <td>
+          10801
+          -
+          10806
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          325
+        </td>
+        <td>
+          9139
+        </td>
+        <td>
+          10794
+          -
+          10827
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.call
+        </td>
+        <td style="background: #AEF1AE">
+          return false.asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          328
+        </td>
+        <td>
+          9147
+        </td>
+        <td>
+          10864
+          -
+          10889
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          true.asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          328
+        </td>
+        <td>
+          9146
+        </td>
+        <td>
+          10864
+          -
+          10868
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          332
+        </td>
+        <td>
+          9171
+        </td>
+        <td>
+          10930
+          -
+          10933
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          334
+        </td>
+        <td>
+          9149
+        </td>
+        <td>
+          11044
+          -
+          11086
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          args.head.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror]
+        </td>
+      </tr><tr>
+        <td>
+          335
+        </td>
+        <td>
+          9150
+        </td>
+        <td>
+          11108
+          -
+          11127
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.listIterator
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.listIterator()
+        </td>
+      </tr><tr>
+        <td>
+          336
+        </td>
+        <td>
+          9151
+        </td>
+        <td>
+          11148
+          -
+          11152
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          337
+        </td>
+        <td>
+          9165
+        </td>
+        <td>
+          11184
+          -
+          11184
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.while$3
+        </td>
+        <td style="background: #AEF1AE">
+          while$3()
+        </td>
+      </tr><tr>
+        <td>
+          337
+        </td>
+        <td>
+          9168
+        </td>
+        <td>
+          11163
+          -
+          11163
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          337
+        </td>
+        <td>
+          9167
+        </td>
+        <td>
+          11163
+          -
+          11163
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          337
+        </td>
+        <td>
+          9152
+        </td>
+        <td>
+          11170
+          -
+          11182
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ListIterator.hasNext
+        </td>
+        <td style="background: #AEF1AE">
+          iter.hasNext()
+        </td>
+      </tr><tr>
+        <td>
+          337
+        </td>
+        <td>
+          9166
+        </td>
+        <td>
+          11184
+          -
+          11447
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  {
+    val thing: T = iter.next();
+    val thisArg: Any = if (args.length.&gt;(1))
+      args.apply(1)
+    else
+      thiz;
+    if (some.call(thisArg, thing.asInstanceOf[Object]).asInstanceOf[Boolean])
+      return true.asInstanceOf[AnyRef]
+    else
+      ()
+  };
+  while$3()
+}
+        </td>
+      </tr><tr>
+        <td>
+          338
+        </td>
+        <td>
+          9153
+        </td>
+        <td>
+          11210
+          -
+          11221
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ListIterator.next
+        </td>
+        <td style="background: #AEF1AE">
+          iter.next()
+        </td>
+      </tr><tr>
+        <td>
+          339
+        </td>
+        <td>
+          9154
+        </td>
+        <td>
+          11252
+          -
+          11267
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          args.length.&gt;(1)
+        </td>
+      </tr><tr>
+        <td>
+          339
+        </td>
+        <td>
+          9156
+        </td>
+        <td>
+          11269
+          -
+          11276
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #F0ADAD">
+          args.apply(1)
+        </td>
+      </tr><tr>
+        <td>
+          339
+        </td>
+        <td>
+          9155
+        </td>
+        <td>
+          11269
+          -
+          11276
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #F0ADAD">
+          args.apply(1)
+        </td>
+      </tr><tr>
+        <td>
+          339
+        </td>
+        <td>
+          9157
+        </td>
+        <td>
+          11282
+          -
+          11286
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.thiz
+        </td>
+        <td style="background: #AEF1AE">
+          thiz
+        </td>
+      </tr><tr>
+        <td>
+          340
+        </td>
+        <td>
+          9163
+        </td>
+        <td>
+          11299
+          -
+          11299
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          340
+        </td>
+        <td>
+          9159
+        </td>
+        <td>
+          11303
+          -
+          11371
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          some.call(thisArg, thing.asInstanceOf[Object]).asInstanceOf[Boolean]
+        </td>
+      </tr><tr>
+        <td>
+          340
+        </td>
+        <td>
+          9164
+        </td>
+        <td>
+          11299
+          -
+          11299
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          340
+        </td>
+        <td>
+          9158
+        </td>
+        <td>
+          11322
+          -
+          11348
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          thing.asInstanceOf[Object]
+        </td>
+      </tr><tr>
+        <td>
+          341
+        </td>
+        <td>
+          9162
+        </td>
+        <td>
+          11389
+          -
+          11421
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.call
+        </td>
+        <td style="background: #AEF1AE">
+          return true.asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          341
+        </td>
+        <td>
+          9161
+        </td>
+        <td>
+          11396
+          -
+          11421
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          true.asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          341
+        </td>
+        <td>
+          9160
+        </td>
+        <td>
+          11396
+          -
+          11400
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          344
+        </td>
+        <td>
+          9170
+        </td>
+        <td>
+          11458
+          -
+          11484
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          false.asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          344
+        </td>
+        <td>
+          9169
+        </td>
+        <td>
+          11458
+          -
+          11463
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          348
+        </td>
+        <td>
+          9187
+        </td>
+        <td>
+          11528
+          -
+          11531
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          350
+        </td>
+        <td>
+          9172
+        </td>
+        <td>
+          11645
+          -
+          11687
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          args.head.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror]
+        </td>
+      </tr><tr>
+        <td>
+          351
+        </td>
+        <td>
+          9173
+        </td>
+        <td>
+          11709
+          -
+          11728
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.listIterator
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.listIterator()
+        </td>
+      </tr><tr>
+        <td>
+          352
+        </td>
+        <td>
+          9174
+        </td>
+        <td>
+          11746
+          -
+          11758
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ListIterator.hasNext
+        </td>
+        <td style="background: #AEF1AE">
+          iter.hasNext()
+        </td>
+      </tr><tr>
+        <td>
+          352
+        </td>
+        <td>
+          9183
+        </td>
+        <td>
+          11760
+          -
+          11936
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  {
+    val thing: T = iter.next();
+    val thisArg: Any = if (args.length.&gt;(1))
+      args.apply(1)
+    else
+      thiz;
+    forEach.call(thisArg, thing.asInstanceOf[Object])
+  };
+  while$4()
+}
+        </td>
+      </tr><tr>
+        <td>
+          352
+        </td>
+        <td>
+          9185
+        </td>
+        <td>
+          11739
+          -
+          11739
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          352
+        </td>
+        <td>
+          9182
+        </td>
+        <td>
+          11760
+          -
+          11760
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.while$4
+        </td>
+        <td style="background: #AEF1AE">
+          while$4()
+        </td>
+      </tr><tr>
+        <td>
+          352
+        </td>
+        <td>
+          9184
+        </td>
+        <td>
+          11739
+          -
+          11739
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          353
+        </td>
+        <td>
+          9175
+        </td>
+        <td>
+          11786
+          -
+          11797
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ListIterator.next
+        </td>
+        <td style="background: #AEF1AE">
+          iter.next()
+        </td>
+      </tr><tr>
+        <td>
+          354
+        </td>
+        <td>
+          9177
+        </td>
+        <td>
+          11845
+          -
+          11852
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #F0ADAD">
+          args.apply(1)
+        </td>
+      </tr><tr>
+        <td>
+          354
+        </td>
+        <td>
+          9176
+        </td>
+        <td>
+          11828
+          -
+          11843
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          args.length.&gt;(1)
+        </td>
+      </tr><tr>
+        <td>
+          354
+        </td>
+        <td>
+          9179
+        </td>
+        <td>
+          11858
+          -
+          11862
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.thiz
+        </td>
+        <td style="background: #AEF1AE">
+          thiz
+        </td>
+      </tr><tr>
+        <td>
+          354
+        </td>
+        <td>
+          9178
+        </td>
+        <td>
+          11845
+          -
+          11852
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #F0ADAD">
+          args.apply(1)
+        </td>
+      </tr><tr>
+        <td>
+          355
+        </td>
+        <td>
+          9180
+        </td>
+        <td>
+          11897
+          -
+          11923
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          thing.asInstanceOf[Object]
+        </td>
+      </tr><tr>
+        <td>
+          355
+        </td>
+        <td>
+          9181
+        </td>
+        <td>
+          11875
+          -
+          11924
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.call
+        </td>
+        <td style="background: #AEF1AE">
+          forEach.call(thisArg, thing.asInstanceOf[Object])
+        </td>
+      </tr><tr>
+        <td>
+          357
+        </td>
+        <td>
+          9186
+        </td>
+        <td>
+          11947
+          -
+          11972
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None.asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          360
+        </td>
+        <td>
+          9205
+        </td>
+        <td>
+          12011
+          -
+          12014
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          362
+        </td>
+        <td>
+          9188
+        </td>
+        <td>
+          12124
+          -
+          12166
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          args.head.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror]
+        </td>
+      </tr><tr>
+        <td>
+          363
+        </td>
+        <td>
+          9189
+        </td>
+        <td>
+          12188
+          -
+          12207
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.listIterator
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.listIterator()
+        </td>
+      </tr><tr>
+        <td>
+          364
+        </td>
+        <td>
+          9191
+        </td>
+        <td>
+          12228
+          -
+          12285
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.JavaScriptArray[AnyRef](new java.util.ArrayList[AnyRef]())
+        </td>
+      </tr><tr>
+        <td>
+          364
+        </td>
+        <td>
+          9190
+        </td>
+        <td>
+          12256
+          -
+          12284
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.util.ArrayList[AnyRef]()
+        </td>
+      </tr><tr>
+        <td>
+          365
+        </td>
+        <td>
+          9204
+        </td>
+        <td>
+          12296
+          -
+          12296
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          365
+        </td>
+        <td>
+          9192
+        </td>
+        <td>
+          12303
+          -
+          12315
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ListIterator.hasNext
+        </td>
+        <td style="background: #AEF1AE">
+          iter.hasNext()
+        </td>
+      </tr><tr>
+        <td>
+          365
+        </td>
+        <td>
+          9201
+        </td>
+        <td>
+          12317
+          -
+          12317
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.while$5
+        </td>
+        <td style="background: #AEF1AE">
+          while$5()
+        </td>
+      </tr><tr>
+        <td>
+          365
+        </td>
+        <td>
+          9203
+        </td>
+        <td>
+          12296
+          -
+          12296
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          365
+        </td>
+        <td>
+          9202
+        </td>
+        <td>
+          12317
+          -
+          12498
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  {
+    val thing: T = iter.next();
+    val thisArg: Any = if (args.length.&gt;(1))
+      args.apply(1)
+    else
+      thiz;
+    res.add(map.call(thisArg, thing.asInstanceOf[Object]))
+  };
+  while$5()
+}
+        </td>
+      </tr><tr>
+        <td>
+          366
+        </td>
+        <td>
+          9193
+        </td>
+        <td>
+          12343
+          -
+          12354
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ListIterator.next
+        </td>
+        <td style="background: #AEF1AE">
+          iter.next()
+        </td>
+      </tr><tr>
+        <td>
+          367
+        </td>
+        <td>
+          9195
+        </td>
+        <td>
+          12402
+          -
+          12409
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #F0ADAD">
+          args.apply(1)
+        </td>
+      </tr><tr>
+        <td>
+          367
+        </td>
+        <td>
+          9194
+        </td>
+        <td>
+          12385
+          -
+          12400
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          args.length.&gt;(1)
+        </td>
+      </tr><tr>
+        <td>
+          367
+        </td>
+        <td>
+          9197
+        </td>
+        <td>
+          12415
+          -
+          12419
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.$anon.thiz
+        </td>
+        <td style="background: #AEF1AE">
+          thiz
+        </td>
+      </tr><tr>
+        <td>
+          367
+        </td>
+        <td>
+          9196
+        </td>
+        <td>
+          12402
+          -
+          12409
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #F0ADAD">
+          args.apply(1)
+        </td>
+      </tr><tr>
+        <td>
+          368
+        </td>
+        <td>
+          9198
+        </td>
+        <td>
+          12458
+          -
+          12484
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          thing.asInstanceOf[Object]
+        </td>
+      </tr><tr>
+        <td>
+          368
+        </td>
+        <td>
+          9200
+        </td>
+        <td>
+          12432
+          -
+          12486
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.add
+        </td>
+        <td style="background: #AEF1AE">
+          res.add(map.call(thisArg, thing.asInstanceOf[Object]))
+        </td>
+      </tr><tr>
+        <td>
+          368
+        </td>
+        <td>
+          9199
+        </td>
+        <td>
+          12440
+          -
+          12485
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.call
+        </td>
+        <td style="background: #AEF1AE">
+          map.call(thisArg, thing.asInstanceOf[Object])
+        </td>
+      </tr><tr>
+        <td>
+          374
+        </td>
+        <td>
+          9207
+        </td>
+        <td>
+          12555
+          -
+          12583
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.ReducerJSObject.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.ReducerJSObject[T](JavaScriptArray.this.lyst)
+        </td>
+      </tr><tr>
+        <td>
+          374
+        </td>
+        <td>
+          9206
+        </td>
+        <td>
+          12578
+          -
+          12582
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.lyst
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst
+        </td>
+      </tr><tr>
+        <td>
+          377
+        </td>
+        <td>
+          9210
+        </td>
+        <td>
+          12636
+          -
+          12687
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.JavaScriptArray[T](new java.util.ArrayList[T](JavaScriptArray.this.lyst))
+        </td>
+      </tr><tr>
+        <td>
+          377
+        </td>
+        <td>
+          9209
+        </td>
+        <td>
+          12659
+          -
+          12686
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.ArrayList.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.util.ArrayList[T](JavaScriptArray.this.lyst)
+        </td>
+      </tr><tr>
+        <td>
+          377
+        </td>
+        <td>
+          9208
+        </td>
+        <td>
+          12681
+          -
+          12685
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.lang.JavaScriptArray.lyst
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst
+        </td>
+      </tr><tr>
+        <td>
+          378
+        </td>
+        <td>
+          9211
+        </td>
+        <td>
+          12696
+          -
+          12730
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Collections.reverse
+        </td>
+        <td style="background: #AEF1AE">
+          java.util.Collections.reverse(reversed)
+        </td>
+      </tr><tr>
+        <td>
+          379
+        </td>
+        <td>
+          9212
+        </td>
+        <td>
+          12739
+          -
+          12771
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.lang.ReducerJSObject.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.atomist.util.lang.ReducerJSObject[T](reversed)
+        </td>
+      </tr><tr>
+        <td>
+          381
+        </td>
+        <td>
+          9213
+        </td>
+        <td>
+          12789
+          -
+          12810
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.AbstractJSObject.getMember
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.super.getMember(name)
+        </td>
+      </tr><tr>
+        <td>
+          385
+        </td>
+        <td>
+          9214
+        </td>
+        <td>
+          12856
+          -
+          12860
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          387
+        </td>
+        <td>
+          9215
+        </td>
+        <td>
+          12907
+          -
+          12943
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          JavaScriptArray.this.lyst.get(index).asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          390
+        </td>
+        <td>
+          9216
+        </td>
+        <td>
+          13008
+          -
+          13021
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.AbstractCollection.toString
+        </td>
+        <td style="background: #F0ADAD">
+          JavaScriptArray.this.lyst.toString()
+        </td>
+      </tr><tr>
+        <td>
+          400
+        </td>
+        <td>
+          9222
+        </td>
+        <td>
+          13279
+          -
+          13279
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          400
+        </td>
+        <td>
+          9219
+        </td>
+        <td>
+          13283
+          -
+          13317
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          ReducerJSObject.this.lst.size().==(0).&amp;&amp;(args.length.&lt;(2))
+        </td>
+      </tr><tr>
+        <td>
+          400
+        </td>
+        <td>
+          9218
+        </td>
+        <td>
+          13302
+          -
+          13317
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #F0ADAD">
+          args.length.&lt;(2)
+        </td>
+      </tr><tr>
+        <td>
+          400
+        </td>
+        <td>
+          9217
+        </td>
+        <td>
+          13297
+          -
+          13298
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          400
+        </td>
+        <td>
+          9223
+        </td>
+        <td>
+          13279
+          -
+          13279
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          401
+        </td>
+        <td>
+          9221
+        </td>
+        <td>
+          13327
+          -
+          13399
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.RuntimeException(&quot;TypeError: empty array and no initialValue&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          401
+        </td>
+        <td>
+          9220
+        </td>
+        <td>
+          13327
+          -
+          13399
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new scala.`package`.RuntimeException(&quot;TypeError: empty array and no initialValue&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          404
+        </td>
+        <td>
+          9231
+        </td>
+        <td>
+          13411
+          -
+          13411
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          404
+        </td>
+        <td>
+          9225
+        </td>
+        <td>
+          13434
+          -
+          13449
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #F0ADAD">
+          args.length.&lt;(2)
+        </td>
+      </tr><tr>
+        <td>
+          404
+        </td>
+        <td>
+          9230
+        </td>
+        <td>
+          13411
+          -
+          13411
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          404
+        </td>
+        <td>
+          9224
+        </td>
+        <td>
+          13429
+          -
+          13430
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          404
+        </td>
+        <td>
+          9226
+        </td>
+        <td>
+          13415
+          -
+          13449
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          ReducerJSObject.this.lst.size().==(1).&amp;&amp;(args.length.&lt;(2))
+        </td>
+      </tr><tr>
+        <td>
+          405
+        </td>
+        <td>
+          9228
+        </td>
+        <td>
+          13466
+          -
+          13497
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #F0ADAD">
+          ReducerJSObject.this.lst.get(0).asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          405
+        </td>
+        <td>
+          9227
+        </td>
+        <td>
+          13474
+          -
+          13475
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          405
+        </td>
+        <td>
+          9229
+        </td>
+        <td>
+          13459
+          -
+          13497
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          com.atomist.util.lang.ReducerJSObject.call
+        </td>
+        <td style="background: #F0ADAD">
+          return ReducerJSObject.this.lst.get(0).asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          407
+        </td>
+        <td>
+          9234
+        </td>
+        <td>
+          13512
+          -
+          13546
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          ReducerJSObject.this.lst.size().==(0).&amp;&amp;(args.length.&gt;(1))
+        </td>
+      </tr><tr>
+        <td>
+          407
+        </td>
+        <td>
+          9237
+        </td>
+        <td>
+          13508
+          -
+          13508
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          407
+        </td>
+        <td>
+          9233
+        </td>
+        <td>
+          13531
+          -
+          13546
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          args.length.&gt;(1)
+        </td>
+      </tr><tr>
+        <td>
+          407
+        </td>
+        <td>
+          9238
+        </td>
+        <td>
+          13508
+          -
+          13508
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          407
+        </td>
+        <td>
+          9232
+        </td>
+        <td>
+          13526
+          -
+          13527
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          408
+        </td>
+        <td>
+          9236
+        </td>
+        <td>
+          13556
+          -
+          13570
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          com.atomist.util.lang.ReducerJSObject.call
+        </td>
+        <td style="background: #F0ADAD">
+          return args.apply(1)
+        </td>
+      </tr><tr>
+        <td>
+          408
+        </td>
+        <td>
+          9235
+        </td>
+        <td>
+          13563
+          -
+          13570
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #F0ADAD">
+          args.apply(1)
+        </td>
+      </tr><tr>
+        <td>
+          411
+        </td>
+        <td>
+          9239
+        </td>
+        <td>
+          13597
+          -
+          13639
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          args.head.asInstanceOf[jdk.nashorn.api.scripting.ScriptObjectMirror]
+        </td>
+      </tr><tr>
+        <td>
+          412
+        </td>
+        <td>
+          9240
+        </td>
+        <td>
+          13658
+          -
+          13673
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          args.length.&gt;(1)
+        </td>
+      </tr><tr>
+        <td>
+          412
+        </td>
+        <td>
+          9243
+        </td>
+        <td>
+          13688
+          -
+          13698
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.List.get
+        </td>
+        <td style="background: #AEF1AE">
+          ReducerJSObject.this.lst.get(0)
+        </td>
+      </tr><tr>
+        <td>
+          412
+        </td>
+        <td>
+          9242
+        </td>
+        <td>
+          13675
+          -
+          13682
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #AEF1AE">
+          args.apply(1)
+        </td>
+      </tr><tr>
+        <td>
+          412
+        </td>
+        <td>
+          9241
+        </td>
+        <td>
+          13675
+          -
+          13682
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #AEF1AE">
+          args.apply(1)
+        </td>
+      </tr><tr>
+        <td>
+          412
+        </td>
+        <td>
+          9244
+        </td>
+        <td>
+          13688
+          -
+          13698
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          java.util.List.get
+        </td>
+        <td style="background: #AEF1AE">
+          ReducerJSObject.this.lst.get(0)
+        </td>
+      </tr><tr>
+        <td>
+          413
+        </td>
+        <td>
+          9249
+        </td>
+        <td>
+          13741
+          -
+          13742
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          413
+        </td>
+        <td>
+          9246
+        </td>
+        <td>
+          13734
+          -
+          13735
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          413
+        </td>
+        <td>
+          9245
+        </td>
+        <td>
+          13717
+          -
+          13732
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          args.length.&gt;(1)
+        </td>
+      </tr><tr>
+        <td>
+          413
+        </td>
+        <td>
+          9248
+        </td>
+        <td>
+          13741
+          -
+          13742
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          413
+        </td>
+        <td>
+          9247
+        </td>
+        <td>
+          13734
+          -
+          13735
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          415
+        </td>
+        <td>
+          9250
+        </td>
+        <td>
+          13768
+          -
+          13778
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.List.size
+        </td>
+        <td style="background: #AEF1AE">
+          ReducerJSObject.this.lst.size()
+        </td>
+      </tr><tr>
+        <td>
+          415
+        </td>
+        <td>
+          9256
+        </td>
+        <td>
+          13748
+          -
+          13901
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Range.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Predef.intWrapper(idx).until(ReducerJSObject.this.lst.size()).foreach[Unit](((i: Int) =&gt; acc = reduceFn.call(thiz, acc.asInstanceOf[AnyRef], ReducerJSObject.this.lst.get(i).asInstanceOf[AnyRef], i.asInstanceOf[AnyRef], ReducerJSObject.this.lst)))
+        </td>
+      </tr><tr>
+        <td>
+          416
+        </td>
+        <td>
+          9252
+        </td>
+        <td>
+          13840
+          -
+          13871
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          ReducerJSObject.this.lst.get(i).asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          416
+        </td>
+        <td>
+          9255
+        </td>
+        <td>
+          13794
+          -
+          13901
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          jdk.nashorn.api.scripting.ScriptObjectMirror.call
+        </td>
+        <td style="background: #AEF1AE">
+          reduceFn.call(thiz, acc.asInstanceOf[AnyRef], ReducerJSObject.this.lst.get(i).asInstanceOf[AnyRef], i.asInstanceOf[AnyRef], ReducerJSObject.this.lst)
+        </td>
+      </tr><tr>
+        <td>
+          416
+        </td>
+        <td>
+          9254
+        </td>
+        <td>
+          13897
+          -
+          13900
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.lang.ReducerJSObject.lst
+        </td>
+        <td style="background: #AEF1AE">
+          ReducerJSObject.this.lst
+        </td>
+      </tr><tr>
+        <td>
+          416
+        </td>
+        <td>
+          9251
+        </td>
+        <td>
+          13814
+          -
+          13838
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          acc.asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          416
+        </td>
+        <td>
+          9253
+        </td>
+        <td>
+          13873
+          -
+          13895
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          i.asInstanceOf[AnyRef]
+        </td>
+      </tr><tr>
+        <td>
+          418
+        </td>
+        <td>
+          9257
+        </td>
+        <td>
+          13912
+          -
+          13936
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Any.asInstanceOf
+        </td>
+        <td style="background: #AEF1AE">
+          acc.asInstanceOf[AnyRef]
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

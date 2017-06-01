@@ -1,0 +1,657 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          com/atomist/util/JsonUtils.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package com.atomist.util
+</span>2 <span style=''>
+</span>3 <span style=''>import java.io.InputStream
+</span>4 <span style=''>import java.text.SimpleDateFormat
+</span>5 <span style=''>
+</span>6 <span style=''>import com.fasterxml.jackson.annotation.JsonInclude.Include
+</span>7 <span style=''>import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
+</span>8 <span style=''>import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
+</span>9 <span style=''>import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+</span>10 <span style=''>import com.fasterxml.jackson.module.scala.DefaultScalaModule
+</span>11 <span style=''>import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+</span>12 <span style=''>
+</span>13 <span style=''>/**
+</span>14 <span style=''>  * Serialize objects to Json.
+</span>15 <span style=''>  */
+</span>16 <span style=''>object JsonUtils {
+</span>17 <span style=''>
+</span>18 <span style=''>  private val Mapper = </span><span style='background: #AEF1AE'>getObjectMapper</span><span style=''>
+</span>19 <span style=''>  private val Wrapper = </span><span style='background: #AEF1AE'>getObjectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true)</span><span style=''>
+</span>20 <span style=''>
+</span>21 <span style=''>  // Wrap should be the default to avoid breaking a bunch of stuff outside rug that use it!
+</span>22 <span style=''>  def toJson(value: Any): String = </span><span style='background: #AEF1AE'>Mapper.writeValueAsString(value)</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>  def toJson(ref: Option[AnyRef]): Option[String] =
+</span>25 <span style=''>    if (</span><span style='background: #F0ADAD'>ref.isDefined</span><span style=''>) </span><span style='background: #F0ADAD'>Some(toJson(ref.get))</span><span style=''> else </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>  def toWrappedJson(value: Any): String = </span><span style='background: #AEF1AE'>Wrapper.writeValueAsString(value)</span><span style=''>
+</span>28 <span style=''>
+</span>29 <span style=''>  def toJsonPrettyPrint(value: Any): String = </span><span style='background: #AEF1AE'>Mapper.writer().withDefaultPrettyPrinter().writeValueAsString(value)</span><span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>  def fromJson[T](json: String)(implicit m: Manifest[T]): T = </span><span style='background: #F0ADAD'>Mapper.readValue[T](json)</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>  def fromJson[T](json: String, clazz: Class[T]): T = </span><span style='background: #F0ADAD'>Mapper.readValue(json, clazz)</span><span style=''>
+</span>34 <span style=''>
+</span>35 <span style=''>  def fromJson[T](is: InputStream)(implicit m: Manifest[T]): T = </span><span style='background: #F0ADAD'>Mapper.readValue[T](is)</span><span style=''>
+</span>36 <span style=''>
+</span>37 <span style=''>  private def getObjectMapper = {
+</span>38 <span style=''>    val objectMapper = </span><span style='background: #AEF1AE'>new</span><span style=''> ObjectMapper() with ScalaObjectMapper
+</span>39 <span style=''>    </span><span style='background: #AEF1AE'>objectMapper.registerModule(DefaultScalaModule)
+</span>40 <span style=''></span><span style='background: #AEF1AE'>      .registerModule(new JavaTimeModule())
+</span>41 <span style=''></span><span style='background: #AEF1AE'>      .registerModule(new Jdk8Module())
+</span>42 <span style=''></span><span style='background: #AEF1AE'>      .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, SerializationFeature.INDENT_OUTPUT)
+</span>43 <span style=''></span><span style='background: #AEF1AE'>      .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE, DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+</span>44 <span style=''></span><span style='background: #AEF1AE'>      .setSerializationInclusion(Include.NON_NULL)
+</span>45 <span style=''></span><span style='background: #AEF1AE'>      .setSerializationInclusion(Include.NON_ABSENT)
+</span>46 <span style=''></span><span style='background: #AEF1AE'>      .setDateFormat(new SimpleDateFormat(&quot;yyyy-MM-dd'T'HH:mm:ssXXX&quot;))</span><span style=''>
+</span>47 <span style=''>    objectMapper
+</span>48 <span style=''>  }
+</span>49 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          8836
+        </td>
+        <td>
+          579
+          -
+          594
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.atomist.util.JsonUtils.getObjectMapper
+        </td>
+        <td style="background: #AEF1AE">
+          JsonUtils.this.getObjectMapper
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          8837
+        </td>
+        <td>
+          619
+          -
+          688
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.databind.ObjectMapper.configure
+        </td>
+        <td style="background: #AEF1AE">
+          JsonUtils.this.getObjectMapper.configure(WRAP_ROOT_VALUE, true)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          8838
+        </td>
+        <td>
+          817
+          -
+          849
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.databind.ObjectMapper.writeValueAsString
+        </td>
+        <td style="background: #AEF1AE">
+          JsonUtils.this.Mapper.writeValueAsString(value)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          8840
+        </td>
+        <td>
+          938
+          -
+          945
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #F0ADAD">
+          ref.get
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          8839
+        </td>
+        <td>
+          911
+          -
+          924
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #F0ADAD">
+          ref.isDefined
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          8842
+        </td>
+        <td>
+          926
+          -
+          947
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](JsonUtils.this.toJson(ref.get))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          8845
+        </td>
+        <td>
+          953
+          -
+          957
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          8844
+        </td>
+        <td>
+          953
+          -
+          957
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          8841
+        </td>
+        <td>
+          931
+          -
+          946
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.JsonUtils.toJson
+        </td>
+        <td style="background: #F0ADAD">
+          JsonUtils.this.toJson(ref.get)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          8843
+        </td>
+        <td>
+          926
+          -
+          947
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](JsonUtils.this.toJson(ref.get))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          8846
+        </td>
+        <td>
+          1001
+          -
+          1034
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.databind.ObjectMapper.writeValueAsString
+        </td>
+        <td style="background: #AEF1AE">
+          JsonUtils.this.Wrapper.writeValueAsString(value)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          8847
+        </td>
+        <td>
+          1082
+          -
+          1150
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.databind.ObjectWriter.writeValueAsString
+        </td>
+        <td style="background: #AEF1AE">
+          JsonUtils.this.Mapper.writer().withDefaultPrettyPrinter().writeValueAsString(value)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          8848
+        </td>
+        <td>
+          1214
+          -
+          1239
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper.readValue
+        </td>
+        <td style="background: #F0ADAD">
+          JsonUtils.this.Mapper.readValue[T](json)(m)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          8849
+        </td>
+        <td>
+          1295
+          -
+          1324
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.databind.ObjectMapper.readValue
+        </td>
+        <td style="background: #F0ADAD">
+          JsonUtils.this.Mapper.readValue[T](json, clazz)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          8850
+        </td>
+        <td>
+          1391
+          -
+          1414
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper.readValue
+        </td>
+        <td style="background: #F0ADAD">
+          JsonUtils.this.Mapper.readValue[T](is)(m)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          8851
+        </td>
+        <td>
+          1473
+          -
+          1476
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.atomist.util.JsonUtils.$anon.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anon()
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          8852
+        </td>
+        <td>
+          1547
+          -
+          1565
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.fasterxml.jackson.module.scala.DefaultScalaModule
+        </td>
+        <td style="background: #AEF1AE">
+          com.fasterxml.jackson.module.scala.DefaultScalaModule
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          8853
+        </td>
+        <td>
+          1589
+          -
+          1609
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.datatype.jsr310.JavaTimeModule.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule()
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          8854
+        </td>
+        <td>
+          1633
+          -
+          1649
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.datatype.jdk8.Jdk8Module.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new com.fasterxml.jackson.datatype.jdk8.Jdk8Module()
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          8856
+        </td>
+        <td>
+          1714
+          -
+          1748
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          INDENT_OUTPUT
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          8855
+        </td>
+        <td>
+          1666
+          -
+          1712
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          WRITE_DATES_AS_TIMESTAMPS
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          8858
+        </td>
+        <td>
+          1823
+          -
+          1872
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          FAIL_ON_UNKNOWN_PROPERTIES
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          8857
+        </td>
+        <td>
+          1765
+          -
+          1821
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ADJUST_DATES_TO_CONTEXT_TIME_ZONE
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          8859
+        </td>
+        <td>
+          1907
+          -
+          1923
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          NON_NULL
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          8860
+        </td>
+        <td>
+          1958
+          -
+          1976
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          NON_ABSENT
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          8862
+        </td>
+        <td>
+          1519
+          -
+          2048
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.fasterxml.jackson.databind.ObjectMapper.setDateFormat
+        </td>
+        <td style="background: #AEF1AE">
+          objectMapper.registerModule(com.fasterxml.jackson.module.scala.DefaultScalaModule).registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule()).registerModule(new com.fasterxml.jackson.datatype.jdk8.Jdk8Module()).disable(WRITE_DATES_AS_TIMESTAMPS, INDENT_OUTPUT).disable(ADJUST_DATES_TO_CONTEXT_TIME_ZONE, FAIL_ON_UNKNOWN_PROPERTIES).setSerializationInclusion(NON_NULL).setSerializationInclusion(NON_ABSENT).setDateFormat(new java.text.SimpleDateFormat(&quot;yyyy-MM-dd\'T\'HH:mm:ssXXX&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          8861
+        </td>
+        <td>
+          1999
+          -
+          2047
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.text.SimpleDateFormat.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.text.SimpleDateFormat(&quot;yyyy-MM-dd\'T\'HH:mm:ssXXX&quot;)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

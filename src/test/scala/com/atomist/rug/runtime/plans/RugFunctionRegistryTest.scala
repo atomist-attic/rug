@@ -8,6 +8,15 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class RugFunctionRegistryTest extends FlatSpec with Matchers {
 
+
+  it should "find and run SuccessRugFunction from the registry" in {
+    val fn = DefaultRugFunctionRegistry.find("success").get.asInstanceOf[SuccessRugFunction]
+    fn.run(SimpleParameterValues()) match {
+      case FunctionResponse(Status.Success, None, None, None) =>
+      case _ => ???
+    }
+  }
+
   it should "find and run a RugFunction from the registry" in {
     val fn = DefaultRugFunctionRegistry.find("ExampleFunction").get.asInstanceOf[ExampleRugFunction]
     ExampleRugFunction.clearSecrets = true

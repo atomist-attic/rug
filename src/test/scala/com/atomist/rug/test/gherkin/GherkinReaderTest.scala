@@ -31,6 +31,10 @@ class GherkinReaderTest extends FlatSpec with Matchers {
     }
   }
 
+  it should "not load features and scenarios from the node_modules directory" in {
+    val as = SimpleFileBasedArtifactSource(SimpleFeatureFile).withPathAbove(".atomist/node_modules/blah")
+    assert(GherkinReader.findFeatures(as).size == 0)
+  }
 }
 
 object GherkinReaderTest {

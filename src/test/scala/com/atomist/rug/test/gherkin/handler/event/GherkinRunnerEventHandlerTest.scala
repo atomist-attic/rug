@@ -116,11 +116,10 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     useGeneratedModel("PassingFeature1StepsAgainstGenerated.ts")
 
   it should "use generated model and run path expression"
-  useGeneratedModel("PassingFeature1StepsAgainstGeneratedWithPathExpression.ts")
+    useGeneratedModel("PassingFeature1StepsAgainstGeneratedWithPathExpression.ts")
 
   it should "use generated model with enum/narrowed type"
-  useGeneratedModel("PassingFeature1StepsAgainstGenerated4.ts")
-
+    useGeneratedModel("PassingFeature1StepsAgainstGenerated4.ts")
 
   it should "#487: use generated model with arrays" in
     useGeneratedModel("PassingFeature1StepsAgainstGeneratedWithArrays.ts")
@@ -252,9 +251,7 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
       case wtf => fail(s"Unexpected: $wtf")
     }
   }
-
 }
-
 
 private class MatchSavingListener extends GherkinExecutionListenerAdapter {
 

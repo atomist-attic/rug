@@ -35,7 +35,7 @@ class ProjectEditorTest extends FlatSpec with Matchers {
 
     override def description: String = ""
 
-    override def name(): String = ""
+    override def name: String = ""
 
     override def tags: Seq[Tag] = Nil
   }

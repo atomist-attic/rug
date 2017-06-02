@@ -1,20 +1,16 @@
 package com.atomist.rug.kind
 
-
 import com.atomist.rug.kind.grammar.TypeUnderFile
 import org.scalatest.FunSpec
 
 import _root_.scala.util.parsing.combinator.RegexParsers
-
 
 /**
   * We can create Language Extensions for Rug
   * and then use them to parse and navigate files.
   *
   * This test shows an extension with custom Scala parsing code.
-  */
-
-/**
+  *
   * First, the language extension itself!
   * The key method here is fileToRawNode, which returns a ParsedNode, which is a tree
   * of nodes with position information.
@@ -146,9 +142,7 @@ class RugIsExtensible extends FunSpec {
       assert(changedProject.findFile(Panda.PandaFilename).get.content == Panda.KawaiiPandas)
 
     }
-
   }
-
 
   import com.atomist.source.ArtifactSource
 
@@ -177,7 +171,6 @@ class RugIsExtensible extends FunSpec {
     }
 
   }
-
 }
 
 /**
@@ -202,7 +195,5 @@ class PandaRugLanguageExtensionText extends FunSpec with RugLanguageExtensionTes
     assert(newContent.contains("xiaoping"))
 
     println("New content: ------\n" + newContent + "\n--------")
-
   }
-
 }

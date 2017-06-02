@@ -17,9 +17,7 @@ trait ExecutionContext {
     * Provide one to be able to resolve projects, e.g. from repos.
     */
   def repoResolver: Option[RepoResolver] = None
-
 }
-
 
 object DefaultExecutionContext extends ExecutionContext {
 
@@ -30,4 +28,3 @@ case class SimpleExecutionContext(
                                    typeRegistry: TypeRegistry,
                                    override val repoResolver: Option[RepoResolver] = None)
   extends ExecutionContext
-

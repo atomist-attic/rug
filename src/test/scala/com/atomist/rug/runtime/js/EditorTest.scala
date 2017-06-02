@@ -487,8 +487,8 @@ class EditorTest extends FlatSpec with Matchers {
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 
-    // This should not work beause it doesn't meet the content pattern
-    an[IllformedParametersException] should be thrownBy (jsed.modify(target, SimpleParameterValues(Map("content" -> "Bjarn Stroustrup is God"))))
+    // This should not work because it doesn't meet the content pattern
+    an[IllformedParametersException] should be thrownBy jsed.modify(target, SimpleParameterValues(Map("content" -> "Bjarn Stroustrup is God")))
   }
 
   it should "handle default parameter values" in {

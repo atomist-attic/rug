@@ -149,7 +149,6 @@ class FileUpdate(_parent: Impact, oldFile: FileMutableView, newFile: FileMutable
 
 }
 
-
 class FileDeletionTypeProvider extends TypeProvider(classOf[FileDeletion]) {
 
   override def description: String = "File deletion"

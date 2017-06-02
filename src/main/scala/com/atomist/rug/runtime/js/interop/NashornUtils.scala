@@ -16,8 +16,7 @@ object NashornUtils {
   import scala.collection.JavaConverters._
 
   /**
-    * Get all key values, ignoring exceptions, which can be thrown
-    * by Nashorn entrySet
+    * Get all key values, ignoring exceptions, which can be thrown by Nashorn entrySet.
     */
   private def safeObjectMap(som: ScriptObjectMirror): Map[String, AnyRef] =
     som.keySet().asScala
@@ -26,7 +25,6 @@ object NashornUtils {
         val maybeValue = allCatch.opt(som.get(key))
         maybeValue.map(value => key -> value)
       }).toMap
-
 
   def extractProperties(som: ScriptObjectMirror): Map[String, AnyRef] =
     safeObjectMap(som) flatMap {

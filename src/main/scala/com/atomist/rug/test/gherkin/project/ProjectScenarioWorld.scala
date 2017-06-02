@@ -63,7 +63,6 @@ class ProjectScenarioWorld(
     }
   }
 
-
   /**
     * Edit a project with the given editor, passed in from JavaScript.
     * We expect the JavaScript op to have been populated.
@@ -73,7 +72,7 @@ class ProjectScenarioWorld(
     project.updateTo(resultAs)
   }
 
-  // for calling from nashorn which doesn't like default parameter values!
+  // For calling from Nashorn which doesn't like default parameter values!
   def generateWith(generator: ProjectGenerator, projectName: String): Unit = {
     generateWith(generator, projectName, null)
   }
@@ -139,12 +138,11 @@ private object ProjectGenerationContext extends BaseRugContext {
 
 private object GitRepoResolver extends RepoResolver {
 
-  private val cloner = new GitRepositoryCloner("");
+  private val cloner = new GitRepositoryCloner("")
 
   override def resolveBranch(owner: String, repoName: String, branch: String): ArtifactSource = {
     cloner.clone(owner = owner, repo = repoName, branch= Some(branch))
   }
-
 
   override def resolveSha(owner: String, repoName: String, sha: String): ArtifactSource = {
     cloner.clone(owner = owner, repo = repoName, sha = Some(sha))

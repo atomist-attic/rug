@@ -82,7 +82,7 @@ class LinkedJsonGraphDeserializerTest extends FlatSpec with Matchers {
   it should "deserialize graph with cycles and ensure toString is safe" in {
     val withLinks = TestUtils.contentOf(this, "herokuGraph.json")
     val node = LinkedJsonGraphDeserializer.fromJson(withLinks)
-    val x = node.toString()
+    val x = node.toString
     assert(x.contains("HerokuApp"))
   }
 }

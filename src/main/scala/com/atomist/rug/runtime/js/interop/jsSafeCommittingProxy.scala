@@ -136,7 +136,6 @@ class jsSafeCommittingProxy(
 
   }
 
-
   private def invokeConsideringTypeInformation(name: String): AnyRef = {
     val possibleOps = typ.allOperations.filter(op => name == op.name)
     if (possibleOps.nonEmpty) {
@@ -146,15 +145,12 @@ class jsSafeCommittingProxy(
         if (op.exposeAsProperty) {
           // Reuse the logic we have in the function implementation by simply creating and invoking it
           function.call("whatever")
-        }
-        else {
+        } else {
           function
         }
-      }
-      else
+      } else
         nodeNavigationPropertyAccess(node, name)
-    }
-    else
+    } else
       invokeGivenNoMatchingOperationInTypeInformation(name, typ)
   }
 
@@ -164,8 +160,7 @@ class jsSafeCommittingProxy(
         nodeNavigationPropertyAccess(node, navigation)
       case _ =>
         UNDEFINED
-    }
-    else node match {
+    } else node match {
       case sobtn: ScriptObjectBackedTreeNode =>
         // This object is wholly defined in JavaScript
         sobtn.invoke(name)

@@ -405,7 +405,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val backingObject = SimpleFileBasedArtifactSource(src1)
     val pmv = new ProjectMutableView(backingObject, EmptyArtifactSource(""))
     pmv.countFilesInDirectory(".atomist") should be(0)
-    val backingPMV = pmv.backingArchiveProject
+    val backingPMV = pmv.backingArchiveProject()
     backingPMV.countFilesInDirectory(".atomist") should be(1)
     backingPMV.countFilesInDirectory("xxx") should be(0)
   }
@@ -415,7 +415,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val backingObject = SimpleFileBasedArtifactSource(src1)
     val pmv = new ProjectMutableView(backingObject, EmptyArtifactSource(""))
     pmv.countFilesInDirectory(".atomist") should be(0)
-    val backingPMV = pmv.backingArchiveProject
+    val backingPMV = pmv.backingArchiveProject()
     backingPMV.countFilesInDirectory(".atomist") should be(1)
     val file0 = backingPMV.findFile(".atomist/package.json")
     file0.currentBackingObject.mode should equal(FileArtifact.DefaultMode)

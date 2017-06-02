@@ -1,9 +1,7 @@
 package com.atomist.tree.pathexpression
 
 import com.atomist.graph.GraphNode
-import com.atomist.rug.kind.core.RepoResolver
 import com.atomist.rug.runtime.js.ExecutionContext
-import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 
 /**
@@ -41,10 +39,10 @@ case class LocationStep(axis: AxisSpecifier,
   private def combine(preds: Seq[Predicate]): Predicate = preds match {
     case Nil => TruePredicate
     case pred :: Nil => pred
-    case preds => preds.head and combine(preds.tail)
+    case `preds` => `preds`.head and combine(`preds`.tail)
   }
 
-  override def toString = s"${axis}::$test${predicates.mkString("[","][","]")}"
+  override def toString = s"$axis::$test${predicates.mkString("[","][","]")}"
 }
 
 /**

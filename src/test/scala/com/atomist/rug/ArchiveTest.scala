@@ -26,7 +26,7 @@ class ArchiveTest extends FlatSpec with Matchers {
     assert(tss.totalFileCount === 1)
     val as = TypeScriptBuilder.compileWithModel(tss)
     val rugs = RugArchiveReader(as)
-    rugs.allRugs shouldBe (empty)
+    rugs.allRugs shouldBe empty
   }
 
   val prog1 = StringFileArtifact(atomistConfig.editorsRoot + "/Dude.rug",

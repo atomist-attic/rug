@@ -19,4 +19,3 @@ object Cardinality {
       throw new IllegalArgumentException(s"Unknown cardinality: [$x]: Valid values are [$One2One] and [$One2Many]")
   }
 }
-

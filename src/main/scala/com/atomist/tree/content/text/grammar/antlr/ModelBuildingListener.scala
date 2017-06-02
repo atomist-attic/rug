@@ -210,7 +210,6 @@ trait AstNodeCreationStrategy {
 
   def significance(rule: String, fields: Seq[AntlrPositionedTreeNode]): TreeNode.Significance =
     TreeNode.Signal
-
 }
 
 /**
@@ -218,7 +217,6 @@ trait AstNodeCreationStrategy {
   * underlying Antlr grammar.
   */
 object FromGrammarAstNodeCreationStrategy extends AstNodeCreationStrategy
-
 
 /*
  * This has position, name, tags, value, significance

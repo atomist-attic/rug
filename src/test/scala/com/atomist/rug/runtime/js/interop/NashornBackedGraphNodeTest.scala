@@ -265,7 +265,7 @@ class NashornBackedGraphNodeTest extends FlatSpec with Matchers {
         |}
       """.stripMargin)
 
-  private def getNameAndPropertiesFromSimpleNode(s: String) {
+  private def getNameAndPropertiesFromSimpleNode(s: String) = {
     val n = engine.eval(s)
     val gn = toGraphNode(n).get
     assert(gn.nodeName === "Commit")

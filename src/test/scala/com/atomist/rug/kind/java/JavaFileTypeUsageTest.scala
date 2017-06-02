@@ -30,6 +30,4 @@ class JavaFileTypeUsageTest extends AbstractTypeUnderFileTest {
   it should "compare methods" in {
     editorInSideFile(this, "CompareMethods.ts").modify(ParsingTargets.SpringIoGuidesRestServiceSource)
   }
-
-
 }

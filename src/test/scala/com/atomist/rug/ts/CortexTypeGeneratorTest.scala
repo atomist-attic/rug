@@ -66,8 +66,6 @@ class CortexTypeGeneratorTest extends FlatSpec with Matchers {
     assert(cas.allFiles.exists(_.name.endsWith("ChatChannel.js")), "Should have compiled")
 
   }
-
-
 }
 
 object CortexTypeGeneratorTest {

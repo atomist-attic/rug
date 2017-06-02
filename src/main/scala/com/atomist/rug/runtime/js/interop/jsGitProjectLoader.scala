@@ -3,7 +3,7 @@ package com.atomist.rug.runtime.js.interop
 import com.atomist.rug.kind.core.{ProjectMutableView, RepoResolver}
 
 /**
-  * Backs the TypeScript GitProjectLoader interface
+  * Backs the TypeScript GitProjectLoader interface.
   */
 class jsGitProjectLoader(rr: Option[RepoResolver]) {
 
@@ -28,4 +28,3 @@ class jsGitProjectLoader(rr: Option[RepoResolver]) {
   }
 
 }
-

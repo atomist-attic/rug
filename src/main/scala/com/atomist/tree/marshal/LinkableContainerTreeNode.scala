@@ -37,7 +37,6 @@ private class LinkableContainerTreeNode(
   }
 }
 
-
 private class WrappingLinkableContainerTreeNode(val wrappedNode: LinkableContainerTreeNode,
                                                 override val nodeName: String,
                                                 cardinality: Cardinality)

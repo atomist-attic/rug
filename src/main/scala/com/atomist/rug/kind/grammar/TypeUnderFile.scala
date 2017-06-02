@@ -54,7 +54,6 @@ abstract class TypeUnderFile
     inner.map(createView(_, f))
   }
 
-
   /**
     * Subclasses can override this if they want to customize the top level node created:
     * for example, to add verbs that can be used instead of drilling into path expressions.
@@ -76,7 +75,6 @@ abstract class TypeUnderFile
   def preprocess(originalContent: String): String = originalContent
 
   def postprocess(preprocessedContent: String): String = preprocessedContent
-
 }
 
 /**
@@ -85,6 +83,7 @@ abstract class TypeUnderFile
   * into the file in a path expression.
   */
 trait ParsedNode {
+
   def nodeName: String
 
   def parsedNodes: Seq[ParsedNode]

@@ -91,7 +91,6 @@ class DuplicateRugException(msg: String, knownRugs: Seq[Rug])
 class InvalidTestDescriptorException(msg: String)
   extends BadRugException(msg)
 
-
 class InvalidRugScopeException(msg: String, validScopes: Seq[Scope])
   extends BadRugException(msg)
 

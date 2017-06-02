@@ -107,4 +107,3 @@ class GherkinExecutionListenerAdapter extends GherkinExecutionListener {
 
   override def pathExpressionResult(peval: PathExpressionEvaluation): Unit = {}
 }
-

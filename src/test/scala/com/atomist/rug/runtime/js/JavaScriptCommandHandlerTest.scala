@@ -41,7 +41,6 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
       contentOf(this, "SimpleCommandHandlerExecuteInstructionCallingRespondable.ts"))
 
-
   val simpleCommandHandlerReturningDirectedMessageWithInstructionsCreatedByFunction = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "SimpleCommandHandlerReturningDirectedMessageWithInstructionsCreatedByFunction.ts"))
 
@@ -199,7 +198,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
       override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] = Nil
     }, rugResolver = Some(resolver)), loggerOption = Some(NOPLogger.NOP_LOGGER))
     val results = Await.result(runner.run(plan, None), 10.seconds)
-    val msg = results.log(1).asInstanceOf[InstructionResult].response.body.get.asInstanceOf[Plan].local(0).body
+    val msg = results.log(1).asInstanceOf[InstructionResult].response.body.get.asInstanceOf[Plan].local.head.body
     assert(msg.contains("Cannot find Rug Function NonExistent"))
   }
 
@@ -223,7 +222,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
       }
     }, rugResolver = Some(resolver)), loggerOption = Some(NOPLogger.NOP_LOGGER))
     val results = Await.result(runner.run(plan, None), 10.seconds)
-    val msg = results.log(0).asInstanceOf[InstructionResult].response.body.get.asInstanceOf[RugRuntimeException].getMessage
+    val msg = results.log.head.asInstanceOf[InstructionResult].response.body.get.asInstanceOf[RugRuntimeException].getMessage
     assert(msg.contains("uh oh"))
   }
 

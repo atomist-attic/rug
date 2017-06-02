@@ -27,9 +27,8 @@ trait ArtifactContainerView[T <: ArtifactContainer] extends TreeNode {
                       path: String): Boolean
 }
 
-
 /**
-  * Extended by project and directory views
+  * Extended by project and directory views.
   */
 abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
                                                                      originalBackingObject: T,

@@ -4,7 +4,7 @@ import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription}
 import com.atomist.source._
 
 /**
-  * Readonly operations on projects
+  * Readonly operations on projects.
   */
 trait ProjectView
   extends ArtifactContainerView[ArtifactSource] {
@@ -52,7 +52,6 @@ trait ProjectView
   @ExportFunction(readOnly = true, description = "Return a new Project View based on the original backing object (normally the .atomist/ directory)")
   def backingArchiveProject(): ProjectMutableView
 
-
   @ExportFunction(readOnly = true,
     exposeAsProperty = true,
     exposeResultDirectlyToNashorn = true,
@@ -62,5 +61,4 @@ trait ProjectView
   @ExportFunction(readOnly = true,
     description = "Return the path expression to this point in the given file")
   def pathTo(path: String, kind: String, lineFrom1: Int, colFrom1: Int): String
-
 }

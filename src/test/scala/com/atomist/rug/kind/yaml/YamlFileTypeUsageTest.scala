@@ -429,6 +429,5 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
     TextTreeNodeLifecycle.makeWholeFileNodeReady("Yaml", PositionedTreeNode.fromParsedNode(tn), f)
   }
 
-
   it should "change multiple documents in one file" is pending
 }

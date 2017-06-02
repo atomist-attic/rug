@@ -97,14 +97,9 @@ class LinkedJsonGraphDeserializerPathExpressionTest extends FlatSpec with Matche
     try {
       pe.evaluate(SimpleContainerGraphNode("root", node), pex, ec)
       fail()
-    }
-    catch {
+    } catch {
       case ex: IllegalArgumentException =>
         assert(ex.getMessage.contains("Commit") && ex.getMessage.contains("Repo"))
     }
   }
-
 }
-
-
-

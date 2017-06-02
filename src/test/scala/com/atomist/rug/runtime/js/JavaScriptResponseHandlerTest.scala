@@ -103,7 +103,6 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
     val plan = handler.handle(LocalRugContext(TestTreeMaterializer), response, SimpleParameterValues.Empty)
   }
 
-
   val responseHandlerAccessContext = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "ResponseHandlerAccessingContext.ts"))
 
@@ -137,7 +136,6 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
     handlers.size should be(1)
     assert(handlers.head.scope == RugScopes.DEFAULT)
   }
-
 
   val responseHandlerWithArchiveScope = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "ResponseHandlerWithArchiveScope.ts"))

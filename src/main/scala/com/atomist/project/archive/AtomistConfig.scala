@@ -47,7 +47,6 @@ trait AtomistConfig {
 
   def testsRoot = s"$atomistRoot/$testsDirectory"
 
-
   /**
     * Return the atomist content only
     *
@@ -55,8 +54,7 @@ trait AtomistConfig {
     * @return only the Atomist content from the archive
     */
   def atomistContent(rugArchive: ArtifactSource): ArtifactSource = {
-
-    //find files in dir (if any)
+    // Find files in dir (if any)
     def files(dir: String): Seq[FileArtifact] = {
       rugArchive.findDirectory(dir) match {
         case Some(found) => found.allFiles
@@ -67,7 +65,6 @@ trait AtomistConfig {
     val atomistFiles = files(editorsRoot) ++ files(generatorsRoot) ++ files(handlersRoot) ++ files(testsRoot)
     ArtifactSource.fromFiles(atomistFiles: _*)
   }
-
 
   def isJsSource(f: FileArtifact): Boolean = {
     f.name.endsWith(jsExtension) && isAtomistSource(f)

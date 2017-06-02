@@ -156,9 +156,8 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
 
     val updatedFile = proj.findFile(Exceptions.path)
     assert(updatedFile.content === newContent)
-    //updatedFile.dirty should be(true)
+    // updatedFile.dirty should be(true)
   }
-
 }
 
 object JavaFileTypeTest {
@@ -167,9 +166,7 @@ object JavaFileTypeTest {
 
   def projectWithBogusJava =
     new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(BogusJava))
-
-  /** So simple it doesn't even have a newline */
-
+  
   /** So simple it doesn't even have a newline */
   val HelloWorldJava = StringFileArtifact("Hello.java", "public class Hello { }")
 

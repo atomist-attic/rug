@@ -40,7 +40,6 @@ class YamlFileTypeTest extends AbstractTypeUnderFileTest {
     assert(NodeUtils.value(nodes.last) === "NAP250.2")
   }
 
-
   it should "parse and run path expression to find deepest nested sequence" in {
     val otif = parseAndPrepare()
 
@@ -53,7 +52,7 @@ class YamlFileTypeTest extends AbstractTypeUnderFileTest {
     val tn = typeBeingTested.fileToRawNode(f).get
     // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
     val nodeValue = NodeUtils.positionedValue(tn, xYaml)
-    withClue(s"Was [${nodeValue}]\nExpected [${f.content}]") {
+    withClue(s"Was [$nodeValue]\nExpected [${f.content}]") {
       assert(nodeValue === f.content)
     }
   }

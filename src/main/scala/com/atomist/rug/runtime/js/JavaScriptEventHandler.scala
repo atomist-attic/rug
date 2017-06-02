@@ -106,4 +106,3 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
   private def wrap(nodes: Seq[GraphNode], typeRegistry: TypeRegistry): java.util.List[AnyRef] =
     new JavaScriptArray(nodes.map(wrapOne(_, typeRegistry)).asJava)
 }
-

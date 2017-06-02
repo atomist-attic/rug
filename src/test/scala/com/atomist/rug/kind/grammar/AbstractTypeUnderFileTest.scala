@@ -31,12 +31,12 @@ abstract class AbstractTypeUnderFileTest extends FlatSpec with Matchers {
     */
   protected def validateResultContainsValidFiles(r: ArtifactSource): Unit = {
     val filesOfType = r.allFiles.filter(typeBeingTested.isOfType)
-    filesOfType.size should be >= (1)
+    filesOfType.size should be >= 1
     withClue(s"files named ${filesOfType.map(_.path).mkString(",")}") {
       val parsedFiles = filesOfType.map(cs => (cs, typeBeingTested.fileToRawNode(cs)))
         .map(tup => tup._2.getOrElse(fail(s"Cannot parse file\n[${tup._1.content}]")))
       val goodFileCount = parsedFiles.count(tree => tree.parsedNodes.nonEmpty)
-      goodFileCount should be >= (1)
+      goodFileCount should be >= 1
     }
   }
 

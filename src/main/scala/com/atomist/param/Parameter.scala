@@ -182,9 +182,9 @@ class Parameter @JsonCreator()(@JsonProperty("name") val name: String) {
   def isValidValue(obj: Any): Boolean = obj match {
     case s: String =>
       if (allowedValues.nonEmpty) allowedValues.exists(_.value == s)
-      else ((minLength < 0 || s.length >= minLength) &&
+      else (minLength < 0 || s.length >= minLength) &&
         (maxLength < 0 || s.length <= maxLength) &&
-        pattern.r.findAllMatchIn(s).nonEmpty)
+        pattern.r.findAllMatchIn(s).nonEmpty
     case _ => false
   }
 

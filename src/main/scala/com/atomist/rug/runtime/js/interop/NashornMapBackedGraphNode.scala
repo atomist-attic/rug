@@ -9,7 +9,6 @@ import jdk.nashorn.internal.runtime.ScriptRuntime
 
 import scala.collection.JavaConverters._
 
-
 object NashornMapBackedGraphNode {
 
   /**

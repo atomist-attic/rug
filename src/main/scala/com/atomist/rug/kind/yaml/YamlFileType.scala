@@ -181,7 +181,6 @@ class YamlPositionedTreeNode(override val nodeName: String,
 
   def addChild(baby: PositionedTreeNode) = _childNodes = _childNodes :+ baby
 
-
   def setEndPosition(where: InputPosition) = _endPosition = where
 
   override def childNodes: Seq[TreeNode] = _childNodes

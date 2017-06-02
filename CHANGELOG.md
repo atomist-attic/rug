@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/1.0.0-m.4...HEAD
 
+### Fixed
+
+-   Now only load Gherkin feature definitions from the `.atomist/tests`
+    directory [#629][629]
+
+[629]: https://github.com/atomist/rug/issues/629
+
 ## [1.0.0-m.4] - 2017-06-01
 
 [1.0.0-m.4]: https://github.com/atomist/rug/compare/1.0.0-m.3...1.0.0-m.4

@@ -1,5 +1,6 @@
 package com.atomist.rug.test.gherkin
 
+import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.source.{ArtifactSource, FileArtifact}
 import gherkin.ast.Feature
 import gherkin.{AstBuilder, Parser}
@@ -19,11 +20,10 @@ object GherkinReader {
     */
   def findFeatures(as: ArtifactSource): Seq[FeatureDefinition] = {
     for {
-      f <- as.allFiles
+      f <- DefaultAtomistConfig.atomistContent(as).allFiles
       if f.name.endsWith(FeatureExtension)
     }
       yield {
-        //println(s"Looking at $f")
         val gherkinDocument = parser.parse(f.content)
         FeatureDefinition(gherkinDocument.getFeature, f, as)
       }

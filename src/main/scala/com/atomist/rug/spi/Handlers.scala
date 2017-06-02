@@ -160,7 +160,7 @@ object Handlers {
 
     case class Execute(detail: Detail) extends RespondableInstruction
 
-    case class Command(detail: Detail) extends NonrespondableInstruction
+    case class Command(detail: Detail) extends RespondableInstruction
 
     case class Respond(detail: Detail) extends NonrespondableInstruction with Callback
 

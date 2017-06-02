@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/1.0.0-m.4...HEAD
 
+### Fixed
+
+-   onSuccess/onError callbacks now work for `command` instructions [#628][628]
+
+[628]: https://github.com/atomist/rug/issues/628
+
 ## [1.0.0-m.4] - 2017-06-01
 
 [1.0.0-m.4]: https://github.com/atomist/rug/compare/1.0.0-m.3...1.0.0-m.4

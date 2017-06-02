@@ -6,8 +6,9 @@ import com.atomist.rug.spi.Handlers._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.duration.Duration
 import scala.util.{Try, Failure => ScalaFailure, Success => ScalaSuccess}
+import scala.concurrent.{Await, Future}
 
 /**
   * Runs Plans in this JVM - i.e. no work distribution.
@@ -115,6 +116,8 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
       handleInstruction(currentPlan, Nonrespondable(r), instructionResult)
     case p: Plan =>
       val planResult = runNestedPlan(p, instructionResult)
+      //wait for nested plans because we need onSuccess/onError handlers to fire for `command` instructions
+      Await.result(planResult, Duration("10min"))
       Seq(NestedPlanRun(p, planResult))
   }
 

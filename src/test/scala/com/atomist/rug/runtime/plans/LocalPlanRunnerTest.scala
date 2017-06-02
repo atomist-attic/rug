@@ -5,7 +5,7 @@ import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.edit.ProjectEditor
 import com.atomist.rug.SimpleRugResolver
 import com.atomist.rug.TestUtils.contentOf
-import com.atomist.rug.runtime.CommandHandler
+import com.atomist.rug.runtime.{CommandHandler, Rug}
 import com.atomist.rug.spi.Handlers.Instruction._
 import com.atomist.rug.spi.Handlers.Status._
 import com.atomist.rug.spi.Handlers._
@@ -313,5 +313,41 @@ class LocalPlanRunnerTest
     assert(results(1).instruction.detail.name === "ExampleFunction")
     assert(results(1).response.status === Status.Handled)
     assert(PlanResultInterpreter.interpret(result).status === Status.Success)
+  }
+
+  val commandWithOnSuccess = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "CommandInstructionWithOnSuccess.ts"))
+
+  it("on success should fire when command instructions are successful") {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(commandWithOnSuccess))
+    val resolver = SimpleRugResolver(rugArchive)
+
+    val handlers = resolver.resolvedDependencies.resolvedRugs
+    val handler = handlers.collect { case i: CommandHandler => i }.head
+    val deliverer = new CachingMessageDeliverer()
+
+    val runner = new LocalPlanRunner(deliverer, new LocalInstructionRunner(handlers.head, null, null, new TestSecretResolver(handler) {
+      override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] = {
+        Seq(SimpleParameterValue("very", "cool"))
+      }
+    }, rugResolver = Some(resolver)))
+
+    val result = Await.result(runner.run(handler.handle(null, SimpleParameterValues.Empty).get, None), 10.seconds)
+    assert(deliverer.m != null)
+  }
+}
+
+class CachingMessageDeliverer extends MessageDeliverer {
+
+  var m: Message = _
+  /**
+    * Deliver a message.
+    *
+    * @param currentRug    The rug that returned the message
+    * @param message       a message to deliver
+    * @param callbackInput if this was a callback, the result of executing the instruction, null otherwise
+    */
+  override def deliver(currentRug: Rug, message: Message, callbackInput: Option[Response]): Unit = {
+    this.m = message
   }
 }

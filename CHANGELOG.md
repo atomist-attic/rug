@@ -11,9 +11,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+-   Ensure index and original array are also passed to map callback
+    functions [#632][632]
 -   Now only load Gherkin feature definitions from the `.atomist/tests`
     directory [#629][629]
 
+[632]: https://github.com/atomist/rug/issues/632
 [629]: https://github.com/atomist/rug/issues/629
 
 ## [1.0.0-m.4] - 2017-06-01

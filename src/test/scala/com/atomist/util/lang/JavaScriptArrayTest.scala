@@ -206,7 +206,11 @@ class JavaScriptArrayTest extends FlatSpec with Matchers {
       |
       |       //this.lyst.forEach(t => console.log(t))
       |
-      |       let another: number[] = this.lyst.map(t => t.length)
+      |       let another: number[] = this.lyst.map((item, index, arr) => {
+      |         if(index === undefined) throw new Error("Index should be a number");
+      |         if(arr === undefined) throw new Error ("Array should be defined");
+      |         return item.length;
+      |       });
       |       if(another.length != this.lyst.length){
       |           throw new Error("Length of array after map should be the same")
       |       }

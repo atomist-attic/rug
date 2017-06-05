@@ -360,12 +360,10 @@ class JavaScriptArray[T](val toProxy: java.util.List[T])
       case "map" => new AbstractJSObject {
         override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
           val map = args.head.asInstanceOf[ScriptObjectMirror]
-          val iter = lyst.listIterator()
           val res = new JavaScriptArray[AnyRef](new util.ArrayList[AnyRef]())
-          while (iter.hasNext) {
-            val thing = iter.next()
+          for(i <- 0 until lyst.size()){
             val thisArg = if (args.length > 1) args(1) else thiz
-            res.add(map.call(thisArg, thing.asInstanceOf[Object]))
+            res.add(map.call(thisArg, lyst.get(i).asInstanceOf[Object], i.asInstanceOf[Integer], lyst))
           }
           res
         }

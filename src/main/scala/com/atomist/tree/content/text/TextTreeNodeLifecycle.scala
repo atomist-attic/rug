@@ -8,11 +8,11 @@ object TextTreeNodeLifecycle {
   /**
     * This is how tree nodes progress:
     *
-    * ┌───────────────────┐                    ┌───────────────────┐
-    * │                   │                    │                   │
+    * .              ┌───────────────────┐                    ┌───────────────────┐
+    * .              │                   │                    │                   │
     * ───parsing────▶│PositionedTreeNode │─────makeReady─────▶│ UpdatableTreeNode │───────▶  proceed with
-    * │                   │                    │                   │            updates
-    * └───────────────────┘                    └───────────────────┘
+    * .              │                   │                    │                   │            updates
+    * .              └───────────────────┘                    └───────────────────┘
     *
     * Parsing produces PositionedTreeNodes, which know their offset.
     * makeReady incorporates the original contents of the file, and also the file's MutableView,

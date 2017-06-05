@@ -79,7 +79,7 @@ class OverwritableTextTreeNode(name: String,
         ▼                         ▼
 ┌───────────────┐         ┌───────────────┐
 │               │         │               │
-│  Overridden   │         │  Invalidated  │
+│  Overwritten  │         │  Invalidated  │
 │               │         │               │
 └───────────────┘         └───────────────┘
    */

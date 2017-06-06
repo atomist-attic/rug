@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/1.0.0-m.4...HEAD
 
+### Changed
+
+-   Updated JavaParser to 3.2.6
+
 ### Fixed
 
 -   Ensure index and original array are also passed to map callback

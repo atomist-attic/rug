@@ -112,12 +112,12 @@ class ArchiveRugResolver(graph: Dependency,
     resolved.resolvedRugs.find(r => r == root) match {
       case Some(_) => Some(resolved)
       case _ =>
-        val matched = resolved.dependencies.map(findRug(root, _))
+        val matched = resolved.dependencies.map(findRug(root, _)).flatten
         if (matched.isEmpty) {
           None
         }
         else {
-          matched.head
+          Option(matched.head)
         }
     }
   }

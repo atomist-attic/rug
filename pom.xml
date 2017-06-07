@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.atomist</groupId>
     <artifactId>rug</artifactId>
-    <version>1.0.0--SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>rug</name>
     <description>Rug Runtime</description>
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>com.atomist</groupId>
             <artifactId>artifact-source</artifactId>
-            <version>1.0.0-m.3</version>
+            <version>1.0.0-m.4</version>
         </dependency>
         <!-- For now the TS compiler needs to stay as runtime dependency to make sure it gets brought into the CLI
              when running rug install etc. This has to become part of the language <-> runtime version mapping -->

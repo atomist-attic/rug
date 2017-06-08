@@ -57,7 +57,9 @@ object Handlers {
                                     contentType: String,
                                     channelNames: Seq[String] = Nil,
                                     usernames: Seq[String] = Nil,
-                                    instructions: Seq[Presentable] = Nil)
+                                    instructions: Seq[Presentable] = Nil,
+                                    messageId: Option[String] = None,
+                                    timestamp: Option[String] = None)
     extends Callback
       with Message {
 

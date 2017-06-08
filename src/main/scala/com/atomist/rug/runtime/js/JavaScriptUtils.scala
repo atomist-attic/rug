@@ -33,7 +33,7 @@ trait JavaScriptUtils {
       if (params.nonEmpty) {
         setParameters(clone, params.get.parameterValues)
       }
-      //TODO wrap parameters in safe committing proxy
+      // TODO wrap parameters in safe committing proxy
       clone.asInstanceOf[ScriptObjectMirror].callMember(member, args: _*)
     }
   }
@@ -45,7 +45,7 @@ trait JavaScriptUtils {
     val bindings = new SimpleBindings()
     bindings.put("rug", objToClone)
 
-    //TODO - why do we need this?
+    // TODO - why do we need this?
     jsc.engine.getContext.getBindings(ScriptContext.ENGINE_SCOPE).asScala.foreach {
       case (k: String, v: AnyRef) => bindings.put(k, v)
     }

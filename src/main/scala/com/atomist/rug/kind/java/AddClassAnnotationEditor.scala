@@ -50,6 +50,7 @@ class AddClassAnnotationEditor(selector: ClassOrInterfaceDeclaration => Boolean,
     if (modifiedTypes.nonEmpty) {
       if (annotationPackageName.isDefined)
         JavaParserUtils.addImportsIfNeeded(Seq(annotationFqn), cu)
+
       Some(cu)
     } else
       None

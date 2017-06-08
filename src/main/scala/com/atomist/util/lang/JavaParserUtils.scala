@@ -71,6 +71,10 @@ object JavaParserUtils {
   // Make calling JavaParser methods less verbose
   implicit def stringToNameExpr(s: String): NameExpr = new NameExpr(s)
 
+//  TODO Get LexicalPreservingPrinter working
+//  def getLpp(is: InputStream): Pair[ParseResult[CompilationUnit], LexicalPreservingPrinter] =
+//    LexicalPreservingPrinter.setup(ParseStart.COMPILATION_UNIT, Providers.provider(is))
+
   // TODO why doesn't a structural type seem to work here?
   def getAnnotation[T <: BodyDeclaration[T]](bd: BodyDeclaration[T], name: String): Option[AnnotationExpr] =
     bd.getAnnotations.asScala.find(_.getNameAsString equals name)
@@ -102,8 +106,7 @@ object JavaParserUtils {
     }
 
   def isPublicField(f: FieldDeclaration): Boolean =
-    f.getModifiers.contains(Modifier.PUBLIC) && !f.getModifiers.contains(Modifier.STATIC) &&
-      f.getVariables.size == 1
+    f.getModifiers.contains(Modifier.PUBLIC) && !f.getModifiers.contains(Modifier.STATIC) && f.getVariables.size == 1
 
   def isReservedWord(name: String): Boolean =
     name != null && name.length > 0 && reservedWords.contains(name)

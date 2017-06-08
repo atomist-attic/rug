@@ -19,16 +19,13 @@ abstract class BodyDeclarationView[T <: BodyDeclaration[T]](originalBackingObjec
 
   override def childNodeTypes: Set[String] = childNodeNames
 
-  @ExportFunction(readOnly = true,
-    exposeAsProperty = true,
-    description = "Line count")
+  @ExportFunction(readOnly = true, exposeAsProperty = true, description = "Line count")
   override def lineCount: Int =
     FileMetrics.lineCount(currentBackingObject.toString)
 
   @ExportFunction(readOnly = false, description = "Add an import to the containing Java source")
   def addImport(@ExportFunctionParameterDescription(name = "fqn",
-    description = "The fully qualified name of the import")
-                fqn: String): Unit = {
+    description = "The fully qualified name of the import") fqn: String): Unit = {
     val compilationUnit: Option[CompilationUnit] = parent match {
       case jsv: JavaSourceMutableView => jsv.compilationUnit
       case jcoiv: JavaClassOrInterfaceMutableView => jcoiv.compilationUnit
@@ -39,8 +36,7 @@ abstract class BodyDeclarationView[T <: BodyDeclaration[T]](originalBackingObjec
 
   @ExportFunction(readOnly = false, description = "Remove an import from the containing Java source")
   def removeImport(@ExportFunctionParameterDescription(name = "fqn",
-    description = "The fully qualified name of the import")
-                   fqn: String): Unit = {
+    description = "The fully qualified name of the import") fqn: String): Unit = {
     val compilationUnit: Option[CompilationUnit] = parent match {
       case jsv: JavaSourceMutableView => jsv.compilationUnit
       case jcoiv: JavaClassOrInterfaceMutableView => jcoiv.compilationUnit
@@ -51,18 +47,16 @@ abstract class BodyDeclarationView[T <: BodyDeclaration[T]](originalBackingObjec
 
   @ExportFunction(readOnly = true, description = "Does the element have the given annotation?")
   def hasAnnotation(@ExportFunctionParameterDescription(name = "annotation",
-    description = "The string name of the annotation to look for")
-                    annotation: String): Boolean = {
+    description = "The string name of the annotation to look for") annotation: String): Boolean = {
     JavaParserUtils.getAnnotation(currentBackingObject, annotation).isDefined
   }
 
   @ExportFunction(readOnly = false,
     description = "Annotate the element with the given annotation")
-  def addAnnotation(@ExportFunctionParameterDescription(name = "pkg", description = "Package where the annotation is sourced")
-                    pkg: String,
+  def addAnnotation(@ExportFunctionParameterDescription(name = "pkg",
+    description = "Package where the annotation is sourced") pkg: String,
                     @ExportFunctionParameterDescription(name = "annotation",
-                      description = "The annotation to add")
-                    annotation: String): Unit = {
+                      description = "The annotation to add") annotation: String): Unit = {
     JavaTypeType.annotationAddedTo(currentBackingObject, annotation)
     val annotationName: String =
       if (annotation.contains("(")) annotation.substring(0, annotation.indexOf('('))
@@ -72,11 +66,10 @@ abstract class BodyDeclarationView[T <: BodyDeclaration[T]](originalBackingObjec
 
   @ExportFunction(readOnly = false,
     description = "Remove annotation from the element")
-  def removeAnnotation(@ExportFunctionParameterDescription(name = "pkg", description = "Package where the annotation is sourced")
-                    pkg: String,
-                    @ExportFunctionParameterDescription(name = "annotation",
-                      description = "The annotation to remove")
-                    annotation: String): Unit = {
+  def removeAnnotation(@ExportFunctionParameterDescription(name = "pkg",
+    description = "Package where the annotation is sourced") pkg: String,
+                       @ExportFunctionParameterDescription(name = "annotation",
+                         description = "The annotation to remove") annotation: String): Unit = {
     JavaTypeType.annotationRemovedFrom(currentBackingObject, annotation)
     // removeImport(s"$pkg.$annotation") TODO Check first if no other member is annotated with same annotation
   }

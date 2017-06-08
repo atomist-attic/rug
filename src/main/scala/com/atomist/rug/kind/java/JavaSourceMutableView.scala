@@ -40,18 +40,16 @@ class JavaSourceMutableView(old: FileArtifact, parent: ProjectMutableView)
       cu.getTypes.asScala
         .collect {
           case c: ClassOrInterfaceDeclaration => c
-        }
-        .map(c => new JavaClassOrInterfaceMutableView(c, this))
+        }.map(c => new JavaClassOrInterfaceMutableView(c, this))
 
     case _ => throw new RugRuntimeException(null, s"No child with name '$fieldName' in ${getClass.getSimpleName}")
   }
 
-  override def commit(): Unit = {
+  override def commit(): Unit =
     if (dirty) {
       val latest = currentBackingObject
       parent.updateFile(old, latest)
     }
-  }
 
   @ExportFunction(readOnly = true, description = "Return the Java project")
   def javaProject: JavaProjectMutableView =

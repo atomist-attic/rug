@@ -40,13 +40,9 @@ class JavaProjectMutableView(pmv: ProjectMutableView)
     PackageFinder.packages(currentBackingObject).asJava
 
   @ExportFunction(readOnly = false, description = "Rename the given package. All package under it will also be renamed")
-  def renamePackage(@ExportFunctionParameterDescription(
-    name = "oldPackage",
-    description = "Old package name")
+  def renamePackage(@ExportFunctionParameterDescription(name = "oldPackage", description = "Old package name")
                     oldPackageName: String,
-                    @ExportFunctionParameterDescription(
-                      name = "newPackage",
-                      description = "The new package name")
+                    @ExportFunctionParameterDescription(name = "newPackage", description = "The new package name")
                     newPackageName: String): Unit = {
     // We do this will string operations rather than JavaParser
     if (!JavaHelpers.isValidPackageName(newPackageName))

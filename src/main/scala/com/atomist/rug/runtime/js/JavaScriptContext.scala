@@ -42,13 +42,13 @@ object JavaScriptContext {
 /**
   * Context superclass for evaluating JavaScript.
   * Creates a Nashorn ScriptEngineManager and can evaluate files and JavaScript fragments,
-  * exposing the known vars in a typesafe way so we partly avoid the horrific detyped
+  * exposing the known vars in a type-safe way so we partly avoid the horrific detyped
   * Nashorn API.
   *
-  * One of these per rug please, or else they may stomp on one-another
+  * One of these per rug please, or else they may stomp on one-another.
   *
   * @param initializer function to initialize the engine:
-  *                          for example, binding objects or evaluating standard scripts
+  * for example, binding objects or evaluating standard scripts
   */
 class JavaScriptContext(val rugAs: ArtifactSource,
                         val atomistConfig: AtomistConfig = DefaultAtomistConfig,
@@ -63,12 +63,11 @@ class JavaScriptContext(val rugAs: ArtifactSource,
 
   engine.setBindings(bindings, ScriptContext.ENGINE_SCOPE)
 
-   initializer(engine)
+  initializer(engine)
 
   try {
     Require.enable(engine, new ArtifactSourceBasedFolder(rugAs))
-  }
-  catch {
+  } catch {
     case e: Exception =>
       throw new RuntimeException("Unable to set up ArtifactSource based module loader", e)
   }
@@ -92,8 +91,7 @@ class JavaScriptContext(val rugAs: ArtifactSource,
       // TODO is it safe to keep calling this?
       engine.put(ScriptEngine.FILENAME, f.path)
       engine.eval(toEval)
-    }
-    catch {
+    } catch {
       case x: ScriptException => throw new RugJavaScriptException(s"Error during eval of: ${f.path}", x)
       case x: RuntimeException => x.getCause match {
         case c: ScriptException => throw new RugJavaScriptException(s"Error during eval of: ${f.path}", c)
@@ -109,8 +107,7 @@ class JavaScriptContext(val rugAs: ArtifactSource,
   def withEnhancedExceptions[T](result: => T): T = {
     try {
       result
-    }
-    catch {
+    } catch {
       case ecmaEx: ECMAException =>
         throw ExceptionEnhancer.enhanceIfPossible(rugAs, ecmaEx)
     }
@@ -163,16 +160,17 @@ class JavaScriptContext(val rugAs: ArtifactSource,
 
   override def toString: String =
     s"${getClass.getSimpleName} backed by ArtifactSource with ${rugAs.totalFileCount} artifacts\n" +
-    s"User JS files=${ArtifactSourceUtils.prettyListFiles(atomistContent.filter(_ => true, f =>
-      atomistConfig.isJsSource(f) || atomistConfig.isJsTest(f)))}\n" +
-    s" - test features [${atomistContent.allFiles.filter(f => f.name.endsWith(".feature"))}]"
-
+      s"User JS files=${
+        ArtifactSourceUtils.prettyListFiles(atomistContent.filter(_ => true, f =>
+          atomistConfig.isJsSource(f) || atomistConfig.isJsTest(f)))
+      }\n" +
+      s" - test features [${atomistContent.allFiles.filter(f => f.name.endsWith(".feature"))}]"
 }
 
 /**
-  * Information about a JavaScript var exposed in the project scripts
+  * Information about a JavaScript var exposed in the project scripts.
   *
-  * @param key                name of the var
+  * @param key name of the var
   * @param scriptObjectMirror interface for working with Var
   */
 case class Var(key: String, scriptObjectMirror: ScriptObjectMirror)

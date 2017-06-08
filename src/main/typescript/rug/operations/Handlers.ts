@@ -276,6 +276,10 @@ export type MessageAddress = UserAddress | ChannelAddress;
 export class DirectedMessage extends LocallyRenderedMessage<"directed"> {
   public kind: "directed" = "directed";
 
+  public id?: string;
+  // format has to be sortable like 2017-06-08T20:00:59.188Z or epoch
+  public timestamp?: string;
+
   constructor(body: string, address: MessageAddress, contentType?: MessageMimeType) {
     super();
     this.body = body;

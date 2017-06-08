@@ -50,6 +50,9 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   val simpleCommandHandlerReturningDirectedMessageWithInstructions = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "SimpleCommandHandlerReturningDirectedMessageWithInstructions.ts"))
 
+  val simpleCommandHandlerReturningDirectedMessageWithMessageIdAndTimestamp = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "SimpleCommandHandlerReturningDirectedMessageWithMessageIdAndTimestamp.ts"))
+
   val simpleCommandHandlerReturningEmptyMessage = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "SimpleCommandHandlerReturningEmptyMessage.ts"))
 
@@ -229,7 +232,14 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   it should "return plan with DirectedMessage containing instructions" in
     directed(simpleCommandHandlerReturningDirectedMessageWithInstructions)
 
-  private def directed(f: FileArtifact) {
+  it should "return plan with DirectedMessage containing id and timestamp" in {
+    val plan = directed(simpleCommandHandlerReturningDirectedMessageWithMessageIdAndTimestamp)
+    assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].messageId.get === "some-message")
+    assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].timestamp.get === "123456")
+  }
+
+
+  private def directed(f: FileArtifact): Plan = {
     val rugArchive = TypeScriptBuilder.compileWithModel(
       SimpleFileBasedArtifactSource(f))
     val rugs = RugArchiveReader(rugArchive)
@@ -239,6 +249,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     assert(plan.messages.length === 1)
     assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].instructions.length === 1)
     assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].instructions.head.id.get === "123")
+    plan
   }
 
   it should "return plan with DirectedMessage containing instructions created by function" in

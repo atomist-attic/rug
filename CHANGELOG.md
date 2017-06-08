@@ -11,8 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
--   Added `id` and `timestamp` to TypeScript `DirectedMessage` to allow 
-    message to be re-written
+-   Added new `UpdatableMessage` to allow message to be re-written in
+    the bot
 
 ### Changed
 

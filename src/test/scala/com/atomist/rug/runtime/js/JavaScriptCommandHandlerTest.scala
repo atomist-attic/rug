@@ -50,8 +50,8 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   val simpleCommandHandlerReturningDirectedMessageWithInstructions = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "SimpleCommandHandlerReturningDirectedMessageWithInstructions.ts"))
 
-  val simpleCommandHandlerReturningDirectedMessageWithMessageIdAndTimestamp = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
-    contentOf(this, "SimpleCommandHandlerReturningDirectedMessageWithMessageIdAndTimestamp.ts"))
+  val simpleCommandHandlerReturningUpdatableMessageWithMessageIdAndTimestamp = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "SimpleCommandHandlerReturningUpdatableMessageWithMessageIdAndTimestamp.ts"))
 
   val simpleCommandHandlerReturningEmptyMessage = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "SimpleCommandHandlerReturningEmptyMessage.ts"))
@@ -232,10 +232,10 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   it should "return plan with DirectedMessage containing instructions" in
     directed(simpleCommandHandlerReturningDirectedMessageWithInstructions)
 
-  it should "return plan with DirectedMessage containing id and timestamp" in {
-    val plan = directed(simpleCommandHandlerReturningDirectedMessageWithMessageIdAndTimestamp)
+  it should "return plan with UpdatableMessage containing id and timestamp" in {
+    val plan = directed(simpleCommandHandlerReturningUpdatableMessageWithMessageIdAndTimestamp)
     assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].messageId.get === "some-message")
-    assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].timestamp.get === "123456")
+    assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].timestamp.isDefined)
   }
 
 

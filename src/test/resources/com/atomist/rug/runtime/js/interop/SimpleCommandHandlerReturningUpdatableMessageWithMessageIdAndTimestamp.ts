@@ -7,7 +7,7 @@ import {
 import {
   ChannelAddress,
   CommandPlan,
-  DirectedMessage,
+  UpdatableMessage,
   HandleCommand,
   HandlerContext,
   Instruction,
@@ -19,7 +19,7 @@ class KittieFetcher implements HandleCommand {
 
   handle(ctx: HandlerContext): CommandPlan {
     const plan = new CommandPlan();
-    const message = new DirectedMessage("some message", new ChannelAddress("general"));
+    const message = new UpdatableMessage("some-message", "some message", new ChannelAddress("general"));
     message.addAction({
       instruction: {
         kind: "command",
@@ -27,8 +27,6 @@ class KittieFetcher implements HandleCommand {
       },
       id: "123"
     })
-    message.id = "some-message";
-    message.timestamp = "123456";
     plan.add(message);
     return plan;
   }

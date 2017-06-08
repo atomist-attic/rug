@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/1.0.0-m.4...HEAD
 
+### Added
+
+-   Added new `UpdatableMessage` to allow message to be re-written in
+    the bot
+
 ### Changed
 
 -   Updated JavaParser to 3.2.6

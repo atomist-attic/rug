@@ -3,10 +3,10 @@ package com.atomist.rug.test.gherkin
 import com.atomist.graph.GraphNode
 import com.atomist.project.archive.Rugs
 import com.atomist.project.common.InvalidParametersException
-import com.atomist.rug.runtime.js.interop.{NashornUtils, jsSafeCommittingProxy}
+import com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy
+import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
 import com.typesafe.scalalogging.LazyLogging
 import gherkin.ast.{ScenarioDefinition, Step}
-import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.collection.JavaConverters._
 
@@ -72,10 +72,10 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
         r match {
           case Right(b: java.lang.Boolean) =>
             AssertionResult(step.getText, Result(b, stepMatch.jsVar.toString))
-          case Right(rsom: ScriptObjectMirror) =>
-            val result = NashornUtils.stringProperty(rsom, "result", "false") == "true"
-            AssertionResult(step.getText, Result(result, NashornUtils.stringProperty(rsom, "message", "Detailed information unavailable")))
-          case Right(r) if ScriptObjectMirror.isUndefined(r) =>
+          case Right(rsom: JavaScriptObject) =>
+            val result = rsom.stringProperty("result", "false") == "true"
+            AssertionResult(step.getText, Result(result, rsom.stringProperty("message", "Detailed information unavailable")))
+          case Right(r) if r == UNDEFINED =>
             // Returning void (which will be undefined) is truthy
             // This enables use of frameworks such as as chai
             AssertionResult(step.getText, Result(f = true, stepMatch.jsVar.toString))
@@ -136,7 +136,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
     }
   }
 
-  // Call a ScriptObjectMirror function with appropriate error handling
+  // Call a JavaScriptObject function with appropriate error handling
   private def callFunction(sm: StepMatch, world: ScenarioWorld): Either[Throwable, Object] = {
     import scala.util.control.Exception._
     val target = world.target match {

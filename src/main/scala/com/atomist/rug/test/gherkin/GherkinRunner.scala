@@ -1,7 +1,7 @@
 package com.atomist.rug.test.gherkin
 
-import com.atomist.project.archive.Rugs
-import com.atomist.rug.runtime.js.JavaScriptContext
+import com.atomist.project.archive.{DefaultAtomistConfig, Rugs}
+import com.atomist.rug.runtime.js.JavaScriptEngineContext
 import com.typesafe.scalalogging.LazyLogging
 
 /**
@@ -20,7 +20,7 @@ case class GherkinRunnerConfig(oAuthToken: Option[String] = None)
   * @param listeners optional execution listeners
   * @param config    config to use for test running
   */
-class GherkinRunner(jsc: JavaScriptContext,
+class GherkinRunner(jsc: JavaScriptEngineContext,
                     rugs: Option[Rugs] = None,
                     listeners: Seq[GherkinExecutionListener] = Nil,
                     config: GherkinRunnerConfig = GherkinRunnerConfig())
@@ -32,9 +32,9 @@ class GherkinRunner(jsc: JavaScriptContext,
 
   private val definitions = new Definitions(jsc)
 
-  jsc.engine.put(DefinitionsObjectName, definitions)
-  jsc.atomistContent
-    .filter(_ => true, jsc.atomistConfig.isJsTest)
+  jsc.setMember(DefinitionsObjectName, definitions)
+  jsc.atomistContent()
+    .filter(_ => true, DefaultAtomistConfig.isJsTest)
     .allFiles
     .foreach(f => {
       jsc.evaluate(f)
@@ -55,7 +55,7 @@ class GherkinRunner(jsc: JavaScriptContext,
     */
   def execute(filter: (FeatureDefinition) => Boolean = _ => true): ArchiveTestResult = {
     logger.info(s"Execute on $this")
-    ArchiveTestResult(executableFeatures.filter(pmf => filter(pmf.definition)).map(ef => jsc.withEnhancedExceptions {
+    ArchiveTestResult(executableFeatures.filter(pmf => filter(pmf.definition)).map(ef => {
       listeners.foreach(_.featureStarting(ef.definition))
       val result = ef.execute()
       listeners.foreach(_.featureCompleted(ef.definition, result))

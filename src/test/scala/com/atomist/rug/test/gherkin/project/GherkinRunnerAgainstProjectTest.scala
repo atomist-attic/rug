@@ -1,7 +1,8 @@
 package com.atomist.rug.test.gherkin.project
 
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.rug.runtime.js.JavaScriptContext
+import com.atomist.rug.runtime.js.JavaScriptEngineContextFactory
+import com.atomist.rug.runtime.js.nashorn.NashornContext
 import com.atomist.rug.test.gherkin._
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.rug.{RugArchiveReader, TestUtils}
@@ -19,7 +20,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
   "Gherkin project testing" should "fail without JS" in {
     val el = new TestExecutionListener
     val as = SimpleFileBasedArtifactSource(TwoScenarioFeatureFile)
-    val grt = new GherkinRunner(new JavaScriptContext(as), None, Seq(el))
+    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(as), None, Seq(el))
     val run = grt.execute()
     assert(run.result.isInstanceOf[NotYetImplemented])
     assert(el.fsCount == 1)
@@ -31,14 +32,14 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
   it should "pass with passing JS" in {
     val as = SimpleFileBasedArtifactSource(SimpleFeatureFile, PassingSimpleTsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas))
+    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas))
     assert(grt.execute().result === Passed)
   }
 
   it should "fail with failing JS" in {
     val as = SimpleFileBasedArtifactSource(SimpleFeatureFile, FailingSimpleTsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas))
+    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas))
     val run = grt.execute()
     run.result match {
       case _: Failed =>
@@ -49,7 +50,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
   it should "fail if Given step is not implemented" in {
     val as = SimpleFileBasedArtifactSource(NotImplementedGivenFeatureFile, PassingSimpleTsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas))
+    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas))
     val run = grt.execute()
     assert(run.result.isInstanceOf[NotYetImplemented])
   }
@@ -57,7 +58,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
   it should "fail if When step is not implemented" in {
     val as = SimpleFileBasedArtifactSource(NotImplementedWhenFeatureFile, PassingSimpleTsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas))
+    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas))
     val run = grt.execute()
     assert(run.result.isInstanceOf[NotYetImplemented])
   }
@@ -68,7 +69,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
       SimpleFeatureFile,
       EditorWithoutParametersTsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader(cas)))
+    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Option(RugArchiveReader(cas)))
     val run = grt.execute()
     assert(run.result === Passed)
   }
@@ -81,7 +82,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
         SimpleFeatureFile,
         EditorWithParametersStepsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader(cas)), Seq(el))
+    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Option(RugArchiveReader(cas)), Seq(el))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
@@ -101,7 +102,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
         SimpleFeatureFile,
         EditorWithParametersStepsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader(cas)), Seq(el))
+    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Option(RugArchiveReader(cas)), Seq(el))
     val run = grt.execute((fd: FeatureDefinition) => {!fd.feature.getName.equals("Australian political history")})
     assert(run.testCount == 0)
     assert(run.result === Passed)
@@ -119,7 +120,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
       EditorWithBadParametersStepsFile
     )
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader(cas)), Seq(el))
+    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Option(RugArchiveReader(cas)), Seq(el))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
@@ -134,7 +135,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
         TestUtils.contentOf(this, "ParameterizedFeatureSteps.ts"))
     )
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader(cas)), Seq(el))
+    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Option(RugArchiveReader(cas)), Seq(el))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
@@ -154,7 +155,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
-    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Option(RugArchiveReader(rugArchive)), Seq(el))
+    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(rugArchive), Option(RugArchiveReader(rugArchive)), Seq(el))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
@@ -179,7 +180,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
-    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Some(RugArchiveReader(rugArchive)))
+    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(rugArchive), Some(RugArchiveReader(rugArchive)))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
@@ -198,7 +199,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
-    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Some(RugArchiveReader(rugArchive)))
+    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(rugArchive), Some(RugArchiveReader(rugArchive)))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
@@ -219,7 +220,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
-    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Some(RugArchiveReader(rugArchive)))
+    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(rugArchive), Some(RugArchiveReader(rugArchive)))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result.isInstanceOf[Failed])
@@ -238,7 +239,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
-    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Some(RugArchiveReader(rugArchive)))
+    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(rugArchive), Some(RugArchiveReader(rugArchive)))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
@@ -256,7 +257,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
-    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Some(RugArchiveReader(rugArchive)))
+    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(rugArchive), Some(RugArchiveReader(rugArchive)))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result.isInstanceOf[Failed])
@@ -280,7 +281,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
         TestUtils.contentOf(this, feature))
     )
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader(cas)), Seq(el))
+    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Option(RugArchiveReader(cas)), Seq(el))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)

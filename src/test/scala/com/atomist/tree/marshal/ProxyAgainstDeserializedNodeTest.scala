@@ -3,9 +3,8 @@ package com.atomist.tree.marshal
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.rugdoc.TypeScriptStubClassGeneratorTest
-import com.atomist.rug.runtime.js.interop.{NashornUtilsTest, jsSafeCommittingProxy}
+import com.atomist.rug.runtime.js.interop.{NashornJavaScriptArray, NashornUtilsTest, jsSafeCommittingProxy}
 import com.atomist.rug.spi.TypeRegistry
-import com.atomist.util.lang.JavaScriptArray
 import org.scalatest.{FlatSpec, Matchers}
 
 class ProxyAgainstDeserializedNodeTest extends FlatSpec with Matchers {
@@ -42,7 +41,7 @@ class ProxyAgainstDeserializedNodeTest extends FlatSpec with Matchers {
     assert(eng.eval("issue.number").toString === "307")
     assert(eng.eval("issue.repo.name").toString === "handlers")
     eng.eval("issue.repo.channels") match {
-      case jsa: JavaScriptArray[_] =>
+      case jsa: NashornJavaScriptArray[_] =>
         assert(jsa.size === 1)
       case f => fail(s"Unexpected: $f")
     }

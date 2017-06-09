@@ -5,13 +5,11 @@ import com.atomist.project.archive.{DefaultAtomistConfig, RugResolver}
 import com.atomist.project.edit._
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.source.ArtifactSource
-import com.atomist.util.Timing._
-import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.util.control.NonFatal
 
 /**
-  * Find Editors in a Nashorn.
+  * Find Editors in a JS Engine.
   */
 class JavaScriptProjectEditorFinder
   extends JavaScriptRugFinder[JavaScriptProjectEditor] {
@@ -19,12 +17,13 @@ class JavaScriptProjectEditorFinder
   /**
     * Is the supplied thing valid at all?
     */
-  def isValid(obj: ScriptObjectMirror): Boolean =
+  def isValid(obj: JavaScriptObject): Boolean = {
     obj.getMember("__kind") == "editor" &&
       obj.hasMember("edit") &&
-      obj.getMember("edit").asInstanceOf[ScriptObjectMirror].isFunction
+      obj.getMember("edit").asInstanceOf[JavaScriptObject].isFunction
+  }
 
-  override def create(jsc: JavaScriptContext, fnVar: ScriptObjectMirror, resolver: Option[RugResolver]): Option[JavaScriptProjectEditor] = {
+  override def create(jsc: JavaScriptEngineContext, fnVar: JavaScriptObject, resolver: Option[RugResolver]): Option[JavaScriptProjectEditor] = {
     Some(new JavaScriptProjectEditor(jsc, fnVar, jsc.rugAs, resolver))
   }
 }
@@ -32,10 +31,12 @@ class JavaScriptProjectEditorFinder
 /**
   * ProjectEditor implementation that invokes a JavaScript function.
   */
-class JavaScriptProjectEditor(jsc: JavaScriptContext,
-                              jsVar: ScriptObjectMirror,
-                              rugAs: ArtifactSource,
-                              resolver: Option[RugResolver])
+
+class JavaScriptProjectEditor(
+                               jsc: JavaScriptEngineContext,
+                               jsVar: JavaScriptObject,
+                               rugAs: ArtifactSource,
+                               resolver: Option[RugResolver])
   extends JavaScriptProjectOperation(jsc, jsVar, rugAs)
     with ProjectEditorSupport {
 
@@ -48,8 +49,12 @@ class JavaScriptProjectEditor(jsc: JavaScriptContext,
     val (result, elapsedTime) = time {
       val pmv = new ProjectMutableView(rugAs, targetProject, atomistConfig = DefaultAtomistConfig, Some(this), rugResolver = resolver)
       try {
-        // Important that we don't invoke edit on the prototype as otherwise all constructor effects are lost!
-        invokeMemberFunction(jsc, jsVar, "edit", Some(validated), wrapProject(pmv))
+
+        jsc.invokeMember(
+          jsVar,
+          "edit",
+          Some(validated),
+          wrapProject(pmv))
         if (pmv.currentBackingObject == targetProject) {
           NoModificationNeeded("OK")
         } else {

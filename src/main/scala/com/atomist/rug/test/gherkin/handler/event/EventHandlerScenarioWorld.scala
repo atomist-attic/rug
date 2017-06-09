@@ -3,8 +3,8 @@ package com.atomist.rug.test.gherkin.handler.event
 import com.atomist.graph.GraphNode
 import com.atomist.project.archive.Rugs
 import com.atomist.rug.RugNotFoundException
-import com.atomist.rug.runtime.js.{JavaScriptEventHandler, RugContext}
 import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode
+import com.atomist.rug.runtime.js.{JavaScriptEventHandler, RugContext}
 import com.atomist.rug.runtime.{EventHandler, SystemEvent}
 import com.atomist.rug.test.gherkin.{Definitions, GherkinExecutionListener, GherkinRunnerConfig, PathExpressionEvaluation}
 import com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld
@@ -43,7 +43,7 @@ class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = N
   /**
     * Publish an event constructed in TypeScript using our API
     * (normally a cortex stub)
-    * It's hopefully a ScriptObjectMirror
+    * It's hopefully a JavaScriptObject
     */
   def sendEvent(e: AnyRef): Unit = {
     val gn = NashornMapBackedGraphNode.toGraphNode(e).getOrElse(

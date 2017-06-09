@@ -5,12 +5,11 @@ import com.atomist.project.archive.Rugs
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.rug.spi.{TypeRegistry, Typed, UsageSpecificTypeRegistry}
 import com.atomist.rug.ts.{CortexTypeGenerator, DefaultTypeGeneratorConfig}
 import com.atomist.source.file.NamedFileSystemArtifactSourceIdentifier
-import com.atomist.source.git.{FileSystemGitArtifactSource, GitRepositoryCloner}
-import jdk.nashorn.api.scripting.ScriptObjectMirror
+import com.atomist.source.git.FileSystemGitArtifactSource
+import com.atomist.util.GitRepositoryCloner
 
 import scala.util.{Failure, Success, Try}
 
@@ -73,12 +72,15 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs], c
   def logInvalidParameters(ipe: InvalidParametersException): Unit =
     this.ipe = ipe
 
-  protected def parameters(params: Any): ParameterValues = params match {
-    case som: ScriptObjectMirror =>
-      // The user has created a new JavaScript object, as in { foo: "bar" },
-      // to pass up as an argument to the invoked editor. Extract its properties
-      SimpleParameterValues(NashornUtils.extractProperties(som))
-    case _ => SimpleParameterValues.Empty
+
+  protected def parameters(params: Any): ParameterValues = {
+    params match {
+      case som: JavaScriptObject =>
+        // The user has created a new JavaScript object, as in { foo: "bar" },
+        // to pass up as an argument to the invoked editor. Extract its properties
+        SimpleParameterValues(som.extractProperties())
+      case _ => SimpleParameterValues.Empty
+    }
   }
 
   protected case class RepoIdentification(owner: String, name: String, branch: Option[String], sha: Option[String])
@@ -95,14 +97,12 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs], c
     }
   }
 
-  import NashornUtils._
-
   protected def extractRepoId(o: AnyRef): RepoIdentification = o match {
-    case som: ScriptObjectMirror =>
-      val owner = stringProperty(som, "owner")
-      val name = stringProperty(som, "name")
-      val branch = stringProperty(som, "branch")
-      val sha = stringProperty(som, "sha")
+    case som: JavaScriptObject =>
+      val owner = som.stringProperty("owner")
+      val name = som.stringProperty("name")
+      val branch = som.stringProperty("branch")
+      val sha = som.stringProperty("sha")
       RepoIdentification(owner, name, Option(branch), Option(sha))
     case x =>
       throw new IllegalArgumentException(s"Required JavaScript object repo ID, not $x")

@@ -1,19 +1,17 @@
 package com.atomist.rug.test.gherkin.handler
 
-import com.atomist.graph.GraphNode
 import com.atomist.project.archive.Rugs
 import com.atomist.rug.RugNotFoundException
 import com.atomist.rug.kind.core.{ProjectMutableView, RepoResolver}
 import com.atomist.rug.runtime.CommandHandler
 import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsPathExpressionEngine, jsScalaHidingProxy}
-import com.atomist.rug.runtime.js.{RugContext, SimpleContainerGraphNode}
+import com.atomist.rug.runtime.js.{JavaScriptObject, RugContext, SimpleContainerGraphNode}
 import com.atomist.rug.spi.Handlers.Instruction.{Command, Edit, Generate}
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.rug.test.gherkin.{Definitions, GherkinExecutionListener, GherkinRunnerConfig, ScenarioWorld}
 import com.atomist.source.EmptyArtifactSource
 import com.atomist.tree.{TreeMaterializer, TreeNode}
-import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
   * Superclass for Handler worlds. Handles plan capture and exposing to JavaScript
@@ -93,7 +91,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   }
 
   private def exposeToJavaScript(plan: Plan): AnyRef = plan.nativeObject match {
-    case Some(som: ScriptObjectMirror) => som
+    case Some(som: JavaScriptObject) => som
     case _ => jsScalaHidingProxy(plan)
   }
 

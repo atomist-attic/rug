@@ -1,9 +1,8 @@
 package com.atomist.project.archive
 
-import com.atomist.rug.{BadRugSyntaxException, DuplicateRugException}
+import com.atomist.rug.DuplicateRugException
 import com.atomist.rug.runtime._
-import com.atomist.rug.runtime.js.JavaScriptContext.{EngineInitializer, redirectConsoleToSysOut}
-import com.atomist.rug.runtime.js._
+import com.atomist.rug.runtime.js.{JavaScriptEngineContextFactory, _}
 import com.atomist.source.ArtifactSource
 
 /**
@@ -14,8 +13,7 @@ import com.atomist.source.ArtifactSource
   *
   * A None means no resolution!
   */
-class ArchiveRugResolver(graph: Dependency,
-                         engineInitializer: EngineInitializer = redirectConsoleToSysOut) extends RugResolver {
+class ArchiveRugResolver(graph: Dependency) extends RugResolver {
 
   private val finders: Seq[JavaScriptRugFinder[_ <: Rug]] = Seq(
     new JavaScriptCommandHandlerFinder(),
@@ -28,7 +26,7 @@ class ArchiveRugResolver(graph: Dependency,
     * Find Rugs of all known kinds in the artifact.
     */
   private def find(as: ArtifactSource, resolver: RugResolver): Seq[Rug] = {
-    val jsc = new JavaScriptContext(as, initializer = engineInitializer)
+    val jsc = JavaScriptEngineContextFactory.create(as)
     val found = finders.flatMap(finder => finder.find(jsc, Some(resolver)))
     val grouped = found.groupBy(_.name).collect{case x if x._2.size > 1 => x._1}
     if(grouped.nonEmpty){

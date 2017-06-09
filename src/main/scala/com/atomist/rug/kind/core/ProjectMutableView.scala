@@ -8,15 +8,14 @@ import com.atomist.project.common.template._
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.Rug
-import com.atomist.rug.runtime.js.interop._
-import com.atomist.rug.runtime.js.{LocalRugContext, RugContext}
+import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, jsGitProjectLoader, jsPathExpressionEngine}
+import com.atomist.rug.runtime.js.{JavaScriptObject, LocalRugContext, RugContext}
 import com.atomist.rug.spi.{ExportFunctionParameterDescription, _}
 import com.atomist.rug.{EditorNotFoundException, RugRuntimeException}
 import com.atomist.source._
 import com.atomist.tree.content.text.{LineInputPositionImpl, OverwritableTextTreeNode}
 import com.atomist.tree.{AddressableTreeNode, TreeMaterializer, TreeNode}
 import com.atomist.util.BinaryDecider
-import jdk.nashorn.api.scripting.ScriptObjectMirror
 import org.apache.commons.lang3.StringUtils
 
 import scala.collection.JavaConverters._
@@ -393,8 +392,8 @@ class ProjectMutableView(
   }
 
   private def mapToUse(arg: Any): Map[String, Object] = arg match {
-    case som: ScriptObjectMirror =>
-      NashornUtils.extractProperties(som)
+    case som: JavaScriptObject =>
+      som.extractProperties()
     case m: Map[String, Object]@unchecked => m
     case m: java.util.Map[String, Object]@unchecked =>
       import scala.collection.JavaConverters._
@@ -472,10 +471,10 @@ class ProjectMutableView(
                   description = "Parameters to pass to the editor")
                 params: Any): Unit = {
     val m: Map[String, Object] = params match {
-      case som: ScriptObjectMirror =>
+      case som: JavaScriptObject =>
         // The user has created a new JavaScript object, as in { foo: "bar" },
         // to pass up as an argument to the invoked editor. Extract its properties
-        NashornUtils.extractProperties(som)
+        som.extractProperties()
       case _ => Map.empty
     }
     editWith(editorName, m)
@@ -532,7 +531,6 @@ class ProjectMutableView(
     ctx.pathExpressionEngine.ee.evaluate(this, pexpr) match {
       case Right(nodes) if nodes.size == 1 =>
         val theNode = nodes.head
-        //println(theNode.toString)
         theNode match {
           case ow: OverwritableTextTreeNode =>
             val pos = LineInputPositionImpl(ow.file.content, lineFrom1, colFrom1)
@@ -542,7 +540,6 @@ class ProjectMutableView(
       case Right(nodes) if nodes.size > 1 =>
         throw new IllegalArgumentException(s"Found ${nodes.size} hits for [$pexpr], not 1")
       case x =>
-        // println(s"Unexpected result [$x] for [$pexpr]")
         None
     }
   }

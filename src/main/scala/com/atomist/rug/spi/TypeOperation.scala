@@ -3,7 +3,7 @@ package com.atomist.rug.spi
 import java.lang.reflect.InvocationTargetException
 
 import com.atomist.rug.RugRuntimeException
-import com.atomist.rug.runtime.js.interop.NashornUtils
+import com.atomist.rug.runtime.js.JavaScriptEngineUtils
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.OutOfDateNodeException
 
@@ -48,7 +48,7 @@ case class TypeOperation(
     * passed directly from Javascript.
     */
   def invoke(target: Object, rawArgs: Seq[AnyRef]): Object = {
-    val args = rawArgs.map(a => NashornUtils.toJavaType(a))
+    val args = rawArgs.map(a => JavaScriptEngineUtils.toJavaType(a))
     // Include TreeNode methods, although the annotations won't be inherited
     val methods = target.getClass.getMethods.toSeq.filter(m =>
       this.name.equals(m.getName) &&

@@ -3,9 +3,8 @@ package com.atomist.rug.runtime.js.interop
 import java.util.Objects
 
 import com.atomist.graph.{AddressableGraphNode, GraphNode}
+import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
 import com.atomist.tree.SimpleTerminalTreeNode
-import jdk.nashorn.api.scripting.ScriptObjectMirror
-import jdk.nashorn.internal.runtime.ScriptRuntime
 
 import scala.collection.JavaConverters._
 
@@ -16,9 +15,9 @@ object NashornMapBackedGraphNode {
     * Will return AddressedGraphNode if address is known.
     */
   def toGraphNode(nashornReturn: Object, nodeRegistry: NodeRegistry = new NodeRegistry): Option[GraphNode] = nashornReturn match {
-    case som: ScriptObjectMirror if nodeRegistry.alreadyWrapped(som).isDefined =>
+    case som: JavaScriptObject if nodeRegistry.alreadyWrapped(som).isDefined =>
       nodeRegistry.alreadyWrapped(som)
-    case som: ScriptObjectMirror =>
+    case som: JavaScriptObject =>
       val relevantPropertiesAndValues: Map[String, Object] =
         relevantPropertyValues(som)
       //println(som.hashCode() + ": " + relevantPropertiesAndValues)
@@ -35,9 +34,9 @@ object NashornMapBackedGraphNode {
       None
   }
 
-  private[interop] def relevantPropertyValues(som: ScriptObjectMirror): Map[String, Object] = {
-    (NashornUtils.extractProperties(som) ++
-      NashornUtils.extractNoArgFunctionValues(som))
+  private[interop] def relevantPropertyValues(som: JavaScriptObject): Map[String, Object] = {
+    (som.extractProperties() ++
+      som.extractNoArgFunctionValues())
       // Null properties don't match path expressions, so suppress them
       .filter(_._2 != null)
   }
@@ -57,7 +56,7 @@ object NashornMapBackedGraphNode {
 private[interop] class NodeRegistry {
 
   private var reg: Map[String, NashornMapBackedGraphNode] = Map()
-  private var somReg: Map[ScriptObjectMirror, NashornMapBackedGraphNode] = Map()
+  private var somReg: Map[JavaScriptObject, NashornMapBackedGraphNode] = Map()
 
   def register(gn: NashornMapBackedGraphNode): Unit = {
     gn.nodeId.foreach(id => {
@@ -68,7 +67,7 @@ private[interop] class NodeRegistry {
 
   def get(id: String): Option[NashornMapBackedGraphNode] = reg.get(id)
 
-  def alreadyWrapped(som: ScriptObjectMirror): Option[NashornMapBackedGraphNode] = somReg.get(som)
+  def alreadyWrapped(som: JavaScriptObject): Option[NashornMapBackedGraphNode] = somReg.get(som)
 
   override def toString: String = s"NodeRegistry ${hashCode()}: Known ids=[${reg.keySet.mkString(",")}]"
 
@@ -82,7 +81,7 @@ import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode._
   * Backed by a Map that can include simple properties or Nashorn ScriptObjectMirror in the event of nesting.
   * Handles cycles if references are provided.
   */
-class NashornMapBackedGraphNode(val scriptObject: ScriptObjectMirror,
+class NashornMapBackedGraphNode(val scriptObject: JavaScriptObject,
                                 nodeRegistry: NodeRegistry)
   extends GraphNode
     with JsonableProxy {
@@ -105,8 +104,8 @@ class NashornMapBackedGraphNode(val scriptObject: ScriptObjectMirror,
 
   override def nodeTags: Set[String] = {
     relevantPropertiesAndValues("nodeTags") match {
-      case som: ScriptObjectMirror if som.isArray =>
-        som.values().asScala.map(Objects.toString(_)).toSet
+      case som: JavaScriptObject if som.isSeq =>
+        som.values().map(Objects.toString(_)).toSet
       case _ => Set()
     }
   }
@@ -129,10 +128,10 @@ class NashornMapBackedGraphNode(val scriptObject: ScriptObjectMirror,
     traversableEdges.getOrElse(name, Nil)
 
   private def toNode(key: String): Seq[GraphNode] = {
-    def nodify(som: ScriptObjectMirror): GraphNode = {
-      if (NashornUtils.hasDefinedProperties(som, NodeRefField)) {
+    def nodify(som: JavaScriptObject): GraphNode = {
+      if (som.hasDefinedProperties(NodeRefField)) {
         // It's a ref to an existing node. We must have seen that node before
-        val id = NashornUtils.stringProperty(som, NodeRefField)
+        val id = som.stringProperty(NodeRefField)
         nodeRegistry.get(id) match {
           case None => throw new IllegalArgumentException(s"No node found with referenced id [$id] in $nodeRegistry")
           case Some(n) => n
@@ -148,13 +147,13 @@ class NashornMapBackedGraphNode(val scriptObject: ScriptObjectMirror,
     relevantPropertiesAndValues.get(key) match {
       case None => Nil
       case Some(s: String) => Seq(SimpleTerminalTreeNode(key, s, Set()))
-      case Some(som: ScriptObjectMirror) if som.isArray =>
-        som.values().asScala.collect {
-          case s: ScriptObjectMirror => nodify(s)
+      case Some(som: JavaScriptObject) if som.isSeq =>
+        som.values().collect {
+          case s: JavaScriptObject => nodify(s)
         }.toSeq
-      case Some(som: ScriptObjectMirror) =>
+      case Some(som: JavaScriptObject) =>
         Seq(nodify(som))
-      case Some(ScriptRuntime.UNDEFINED) =>
+      case Some(UNDEFINED) =>
         Nil
       case Some(x) =>
         val v = Objects.toString(x)
@@ -165,7 +164,7 @@ class NashornMapBackedGraphNode(val scriptObject: ScriptObjectMirror,
 }
 
 private class NashornMapBackedAddressableGraphNode(
-                                                    som: ScriptObjectMirror,
+                                                    som: JavaScriptObject,
                                                     nodeRegistry: NodeRegistry,
                                                     val address: String)
   extends NashornMapBackedGraphNode(som, nodeRegistry)

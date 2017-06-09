@@ -1,9 +1,8 @@
 package com.atomist.rug.runtime.js.interop
 
 import com.atomist.graph.GraphNode
-import com.atomist.rug.runtime.js.{BaseRugContext, LocalRugContext, SimpleContainerGraphNode}
+import com.atomist.rug.runtime.js.BaseRugContext
 import com.atomist.tree.SimpleTerminalTreeNode
-import com.atomist.util.lang.JavaScriptArray
 import jdk.nashorn.api.scripting.JSObject
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -78,7 +77,7 @@ class jsScalaHidingProxyTest extends FlatSpec with Matchers {
     engine.put("proxy", proxy)
     assert(engine.eval("proxy.mate") === null)
     engine.eval("proxy.friends") match {
-      case friends: JavaScriptArray[_]@unchecked =>
+      case friends: NashornJavaScriptArray[_]@unchecked =>
         assert(friends.size() === 1)
         assert(friends.get(0).asInstanceOf[jsScalaHidingProxy].getMember("name") === "Rover")
       case x => fail(s"Unexpected: $x")

@@ -7,7 +7,6 @@ import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
-import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
   * Superclass for all operations that delegate to JavaScript.
@@ -17,8 +16,8 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
   * @param rugAs  backing artifact source for the Rug archive
   */
 abstract class JavaScriptProjectOperation(
-                                           _jsc: JavaScriptContext,
-                                           _jsVar: ScriptObjectMirror,
+                                           _jsc: JavaScriptEngineContext,
+                                           _jsVar: JavaScriptObject,
                                            rugAs: ArtifactSource
                                          )
   extends ProjectOperation
@@ -26,7 +25,7 @@ abstract class JavaScriptProjectOperation(
     with JavaScriptUtils {
 
   /** Needed by BDD testing support */
-  val jsVar: ScriptObjectMirror = _jsVar
+  val jsVar: JavaScriptObject = _jsVar
 
   // Visible for test
   private[js] val jsc = _jsc

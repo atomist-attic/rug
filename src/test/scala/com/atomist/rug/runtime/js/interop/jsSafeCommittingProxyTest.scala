@@ -6,7 +6,6 @@ import com.atomist.rug.runtime.js.SimpleContainerGraphNode
 import com.atomist.rug.ts.Cardinality
 import com.atomist.source.{EmptyArtifactSource, StringFileArtifact}
 import com.atomist.tree.{SimpleTerminalTreeNode, TreeNode}
-import com.atomist.util.lang.JavaScriptArray
 import jdk.nashorn.internal.runtime.ScriptRuntime
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -47,7 +46,7 @@ class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
     val sc = new jsSafeCommittingProxy(c, DefaultTypeRegistry)
     val value = sc.getMember("bar")
     value match {
-      case jsa: JavaScriptArray[_] =>
+      case jsa: NashornJavaScriptArray[_] =>
         assert(jsa.size === 1)
       //assert(jsa.lyst === util.Arrays.asList("baz", "baz2"))
       case x => fail(s"Unexpected: $x")
@@ -63,7 +62,7 @@ class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
     val sc = new jsSafeCommittingProxy(c, DefaultTypeRegistry)
     val value = sc.getMember("bar")
     value match {
-      case jsa: JavaScriptArray[_] =>
+      case jsa: NashornJavaScriptArray[_] =>
         assert(jsa.size === 2)
        //assert(jsa.lyst === util.Arrays.asList("baz", "baz2"))
       case x => fail(s"Unexpected: $x")

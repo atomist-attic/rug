@@ -8,7 +8,6 @@ import com.atomist.rug.spi._
 import com.atomist.rug.ts.Cardinality
 import com.atomist.tree._
 import com.atomist.tree.utils.NodeUtils
-import com.atomist.util.lang.JavaScriptArray
 import com.atomist.util.misc.SerializationFriendlyLazyLogging
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 import jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED
@@ -125,7 +124,7 @@ class jsSafeCommittingProxy(
           throw new IllegalArgumentException(s"Attempt to resolve type [$typeName], which is not registered")
       }).getOrElse(Nil)
       if (array)
-        new JavaScriptArray(wrapIfNecessary(rawSeq, typeRegistry))
+        new NashornJavaScriptArray(wrapIfNecessary(rawSeq, typeRegistry))
       else {
         require(rawSeq.size < 2, s"Needed 0 or 1 returns for type [$typeName] under $this, got ${rawSeq.size}. Call $$jumpInto to get an array")
         val wrappedSeq = wrapIfNecessary(rawSeq, typeRegistry)
@@ -204,9 +203,9 @@ class jsSafeCommittingProxy(
 
     private def wrapJVMReturn(returned: AnyRef, op: TypeOperation): AnyRef = {
       returned match {
-        case l: util.List[_] => new JavaScriptArray(wrapIfNecessary(l.asScala, typeRegistry))
-        case s: Seq[_] => new JavaScriptArray(wrapIfNecessary(s, typeRegistry))
-        case s: Set[_] => new JavaScriptArray(s.toSeq.asJava)
+        case l: util.List[_] => new NashornJavaScriptArray(wrapIfNecessary(l.asScala, typeRegistry))
+        case s: Seq[_] => new NashornJavaScriptArray(wrapIfNecessary(s, typeRegistry))
+        case s: Set[_] => new NashornJavaScriptArray(s.toSeq.asJava)
         case r =>
           // Be sure to proxy all the way down
           val wrapped = wrapIfNecessary(Seq(r), typeRegistry).get(0)
@@ -233,14 +232,14 @@ class jsSafeCommittingProxy(
       case null :: Nil => null
       case (ttn: TerminalTreeNode) :: Nil if ttn.hasTag(Cardinality.One2Many) =>
         // Pull out the value and put in an array
-        JavaScriptArray.fromSeq(Seq(ttn.value))
+        NashornJavaScriptArray.fromSeq(Seq(ttn.value))
       case (ttn: TerminalTreeNode) :: Nil =>
         // Pull out the value
         ttn.value
       case head :: Nil if !head.hasTag(Cardinality.One2Many) =>
         // Only one entry and we know it's not marked as an array
         wrapOne(head)
-      case more => new JavaScriptArray(wrapIfNecessary(more, typeRegistry))
+      case more => new NashornJavaScriptArray(wrapIfNecessary(more, typeRegistry))
     }
   }
 
@@ -267,7 +266,7 @@ object jsSafeCommittingProxy {
     * @return TypeScript and JavaScript-friendly list
     */
   def wrap(nodes: Seq[GraphNode], typeRegistry: TypeRegistry): java.util.List[GraphNode] =
-    new JavaScriptArray(nodes.map(wrapOne(_, typeRegistry)).asJava)
+    new NashornJavaScriptArray(nodes.map(wrapOne(_, typeRegistry)).asJava)
 
   def wrapIfNecessary(nodes: Seq[_], typeRegistry: TypeRegistry): java.util.List[Object] = {
     val wrapped = nodes map {

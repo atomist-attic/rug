@@ -4,6 +4,7 @@ import com.atomist.param.{SimpleParameterValue, SimpleParameterValues}
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.TestUtils.contentOf
 import com.atomist.rug.runtime.RugScopes
+import com.atomist.rug.runtime.js.nashorn.NashornContext
 import com.atomist.rug.spi.Handlers.{Response, Status}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -76,7 +77,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
   it should "extract and run a response handler" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleResponseHandler))
     val finder = new JavaScriptResponseHandlerFinder()
-    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
     handlers.size should be(1)
     val handler = handlers.head
     handler.name should be(kitties)
@@ -90,7 +91,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
   it should "coerce responses to json if they are strings or bytes and the annotation is present" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleResponseHandlerWithJsonCoercion))
     val finder = new JavaScriptResponseHandlerFinder()
-    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
     handlers.size should be(1)
     val handler = handlers.head
     val response = Response(Status.Success, Some("It worked! :p"), Some(204), Some(
@@ -109,7 +110,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
   it should "pass rug context to response handlers" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(responseHandlerAccessContext))
     val finder = new JavaScriptResponseHandlerFinder()
-    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
     handlers.size should be(1)
     val handler = handlers.head
     val response = Response(Status.Success, Some("It worked! :p"), Some(204))
@@ -122,7 +123,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
   it should "add set parameters to the handler instance if the field doesn't exist already and there's no parameter annotation" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(responseHandlerWithInjectedValues))
     val finder = new JavaScriptResponseHandlerFinder()
-    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
     handlers.size should be(1)
     val handler = handlers.head
     val response = Response(Status.Success, Some("It worked! :p"), Some(204))
@@ -132,7 +133,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
   it should "the scope of a ResponseHandler should be `default` by default" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(responseHandlerWithInjectedValues))
     val finder = new JavaScriptResponseHandlerFinder()
-    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
     handlers.size should be(1)
     assert(handlers.head.scope == RugScopes.DEFAULT)
   }
@@ -143,7 +144,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
   it should "be possible to set the scope of a response handler" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(responseHandlerWithArchiveScope))
     val finder = new JavaScriptResponseHandlerFinder()
-    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
     handlers.size should be(1)
     assert(handlers.head.scope == RugScopes.ARCHIVE)
   }

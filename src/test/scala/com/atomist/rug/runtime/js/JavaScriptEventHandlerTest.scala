@@ -6,6 +6,7 @@ import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.RugArchiveReader
 import com.atomist.rug.TestUtils.contentOf
 import com.atomist.rug.runtime.SystemEvent
+import com.atomist.rug.runtime.js.nashorn.NashornContext
 import com.atomist.rug.runtime.plans._
 import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.spi.Secret
@@ -148,7 +149,7 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     val rugArchive = TypeScriptBuilder.compileWithModel(
       SimpleFileBasedArtifactSource(f))
     val finder = new JavaScriptEventHandlerFinder()
-    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
     handlers.size should be(1)
     val handler = handlers.head
     handler.rootNodeName should be("issue")
@@ -174,7 +175,7 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     val rugArchive = TypeScriptBuilder.compileWithModel(
       SimpleFileBasedArtifactSource(JavaScriptEventHandlerTest.eventHandlerWithLifecycleMessage))
     val finder = new JavaScriptEventHandlerFinder()
-    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
     handlers.size should be(1)
     val actualPlan = handlers.head.handle(LocalRugContext(TestTreeMaterializer), SysEvent)
     assert(actualPlan.nonEmpty)
@@ -203,7 +204,7 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
   it should "handle empty tree nodes" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(JavaScriptEventHandlerTest.noPlanBuildHandler))
     val finder = new JavaScriptEventHandlerFinder()
-    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
     handlers.size should be(1)
     val handler = handlers.head
     handler.rootNodeName should be("build")
@@ -216,7 +217,7 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
   it should "allow initial element of path expression to be NodesWithTag when empty result set received" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(JavaScriptEventHandlerTest.nodesWithTagBuildHandler))
     val finder = new JavaScriptEventHandlerFinder()
-    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
     handlers.size should be(1)
     val handler = handlers.head
     handler.rootNodeName should be("Build")
@@ -230,7 +231,7 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     val rugArchive = TypeScriptBuilder.compileWithModel(
       SimpleFileBasedArtifactSource(JavaScriptEventHandlerTest.eventHandlerWithTreeNode))
     val finder = new JavaScriptEventHandlerFinder()
-    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
     handlers.size should be(1)
     val handler = handlers.head
     handler.rootNodeName should be("issue")
@@ -245,7 +246,7 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
   it should "resolve secrets from the secret resolver" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleEventHandlerWithSecrets))
     val finder = new JavaScriptEventHandlerFinder()
-    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
     handlers.size should be(1)
     val fn = DefaultRugFunctionRegistry.find("ExampleFunction").get.asInstanceOf[ExampleRugFunction]
     val runner = new LocalPlanRunner(null, new LocalInstructionRunner(fn, null, null, new TestSecretResolver(handlers.head) {
@@ -269,7 +270,7 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
   it should "it should not invoke the actual handler if there matches are empty" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(JavaScriptEventHandlerTest.eventHandlerWithEmptyMatches))
     val finder = new JavaScriptEventHandlerFinder()
-    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
     handlers.size should be(1)
     val handler = handlers.head
     handler.rootNodeName should be("nomatch")

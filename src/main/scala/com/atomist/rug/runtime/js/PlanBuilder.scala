@@ -8,8 +8,6 @@ import com.atomist.rug.spi.Handlers.Instruction.{NonrespondableInstruction, Resp
 import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.{BadPlanException, InvalidHandlerResultException}
 import com.atomist.util.JsonUtils
-import jdk.nashorn.api.scripting.ScriptObjectMirror
-import jdk.nashorn.internal.runtime.{ScriptRuntime, Undefined}
 
 /**
   * Constructs plans from Nashorn response to a Handler/handle operation
@@ -18,7 +16,7 @@ object ConstructPlan {
 
   def apply(jsObj: Any, returningRug: Some[Rug]): Option[Plan] = {
     jsObj match {
-      case o: ScriptObjectMirror => Some(new PlanBuilder().constructPlan(o, returningRug))
+      case o: JavaScriptObject => Some(new PlanBuilder().constructPlan(o, returningRug))
       case other => throw new InvalidHandlerResultException(s"Could not construct Plan from: $other")
     }
   }
@@ -26,21 +24,21 @@ object ConstructPlan {
 
 class PlanBuilder {
 
-  def constructPlan(jsPlan: ScriptObjectMirror, returningRug: Option[Rug]): Plan = {
+  def constructPlan(jsPlan: JavaScriptObject, returningRug: Option[Rug]): Plan = {
 
     val jsMessages = jsPlan.getMember("messages") match {
-      case o: ScriptObjectMirror => o.values().toArray.toList
+      case o: JavaScriptObject => o.values().toArray.toList
       case _ => Nil
     }
     val messages: Seq[Message] = jsMessages.map { message =>
-      val m = message.asInstanceOf[ScriptObjectMirror]
+      val m = message.asInstanceOf[JavaScriptObject]
       constructMessage(m)
     }
     val instructions = jsPlan.getMember("instructions") match {
-      case u: Undefined => Nil
-      case jsInstructions: ScriptObjectMirror =>
+      case u: UNDEFINED => Nil
+      case jsInstructions: JavaScriptObject =>
         jsInstructions.values().toArray.toList.map { respondable =>
-          constructRespondable(respondable.asInstanceOf[ScriptObjectMirror], returningRug)
+          constructRespondable(respondable.asInstanceOf[JavaScriptObject], returningRug)
         }
     }
 
@@ -50,7 +48,7 @@ class PlanBuilder {
     Plan(returningRug, lifecycle, local, instructions, nativeObject = Some(jsPlan))
   }
 
-  def constructMessage(jsMessage: ScriptObjectMirror): Message = {
+  def constructMessage(jsMessage: JavaScriptObject): Message = {
 
     jsMessage.getMember("kind") match {
       case "response" | "directed" =>
@@ -71,7 +69,7 @@ class PlanBuilder {
           case _: Undefined => None
         }
         val messageBody = jsMessage.getMember("body") match {
-          case json: ScriptObjectMirror =>
+          case json: JavaScriptObject =>
             throw new UnsupportedOperationException("Message body must be a string")
           case text: String => text
           case _ =>
@@ -82,36 +80,36 @@ class PlanBuilder {
           case _ => throw new InvalidHandlerResultException(s"Message must have a `contentType`")
         }
         val usernames = jsMessage.getMember("usernames") match {
-          case _: Undefined => Nil
-          case usernames: ScriptObjectMirror =>
+          case _: UNDEFINED => Nil
+          case usernames: JavaScriptObject =>
             usernames.values().toArray.toSeq.asInstanceOf[Seq[String]]
         }
         val channelNames = jsMessage.getMember("channelNames") match {
-          case _: Undefined => Nil
-          case channelNames: ScriptObjectMirror =>
+          case _: UNDEFINED => Nil
+          case channelNames: JavaScriptObject =>
             channelNames.values().toArray.toSeq.asInstanceOf[Seq[String]]
         }
         val instructions = jsMessage.getMember("instructions") match {
-          case _: Undefined => Nil
-          case jsInstructions: ScriptObjectMirror =>
+          case _: UNDEFINED => Nil
+          case jsInstructions: JavaScriptObject =>
             jsInstructions.values().toArray.toList.map { presentable =>
-              constructPresentable(presentable.asInstanceOf[ScriptObjectMirror])
+              constructPresentable(presentable.asInstanceOf[JavaScriptObject])
             }
         }
         LocallyRenderedMessage(messageBody, contentType, channelNames, usernames, instructions, messageId, timestamp, ttl, post)
 
       case "lifecycle" =>
         val instructions = jsMessage.getMember("instructions") match {
-          case _: Undefined => Nil
-          case jsInstructions: ScriptObjectMirror =>
+          case _: UNDEFINED => Nil
+          case jsInstructions: JavaScriptObject =>
             jsInstructions.values().toArray.toList.map { presentable =>
-              constructPresentable(presentable.asInstanceOf[ScriptObjectMirror])
+              constructPresentable(presentable.asInstanceOf[JavaScriptObject])
             }
         }
 
         val node = jsMessage.getMember("node") match {
           case t: GraphNode => t
-          case som: ScriptObjectMirror =>
+          case som: JavaScriptObject =>
             NashornMapBackedGraphNode.toGraphNode(som).getOrElse(
               throw new InvalidHandlerResultException(s"Lifecycle message node script could not be converted to a GraphNode: Invalid argument: $som")
             )
@@ -125,13 +123,13 @@ class PlanBuilder {
         }
         LifecycleMessage(node, instructions, id)
 
-      case _: Undefined => throw new InvalidHandlerResultException(s"A message must have a kind: $jsMessage")
+      case _: UNDEFINED => throw new InvalidHandlerResultException(s"A message must have a kind: $jsMessage")
     }
   }
 
-  def constructPresentable(jsPresentable: ScriptObjectMirror): Presentable = {
+  def constructPresentable(jsPresentable: JavaScriptObject): Presentable = {
     val instruction = jsPresentable.getMember("instruction") match {
-      case o: ScriptObjectMirror => constructInstruction(o)
+      case o: JavaScriptObject => constructInstruction(o)
       case x => throw new InvalidHandlerResultException(s"A Message Presentable must contain an 'Instruction', actually $x")
     }
     val label = jsPresentable.getMember("label") match {
@@ -151,11 +149,11 @@ class PlanBuilder {
     Presentable(instruction, label, id, parameterName)
   }
 
-  def constructRespondable(jsRespondable: ScriptObjectMirror, returningRug: Option[Rug]): Plannable = {
+  def constructRespondable(jsRespondable: JavaScriptObject, returningRug: Option[Rug]): Plannable = {
     val instruction: Instruction = jsRespondable.getMember("instruction") match {
-      case u: Undefined =>
+      case u: UNDEFINED =>
         throw new IllegalArgumentException(s"No instruction found in $jsRespondable")
-      case o: ScriptObjectMirror =>
+      case o: JavaScriptObject =>
         constructInstruction(o)
     }
     val onSuccess: Option[Callback] = constructCallback(jsRespondable.getMember("onSuccess"), returningRug)
@@ -166,7 +164,7 @@ class PlanBuilder {
     }
   }
 
-  def constructInstruction(jsInstruction: ScriptObjectMirror): Instruction = {
+  def constructInstruction(jsInstruction: JavaScriptObject): Instruction = {
     val jsInstructionKind = jsInstruction.getMember("kind") match {
       case kind: String => kind
       case x => throw new InvalidHandlerResultException(s"An Instruction must have a valid 'kind', actually: $x")
@@ -175,35 +173,33 @@ class PlanBuilder {
     Instruction.from(jsInstructionKind, detail)
   }
 
-  def constructInstructionDetail(jsInstruction: ScriptObjectMirror): Instruction.Detail = {
+  def constructInstructionDetail(jsInstruction: JavaScriptObject): Instruction.Detail = {
     val parameters: Seq[ParameterValue] = jsInstruction.getMember("parameters") match {
-      case o: ScriptObjectMirror =>
-        val filtered = o.keySet().toArray.filter(key => {
-          val name = key.asInstanceOf[String]
-          o.getMember(name) match {
+      case o: JavaScriptObject =>
+        val filtered = o.keys(false).filter(key => {
+          o.getMember(key) match {
             case null => false
-            case ScriptRuntime.UNDEFINED => false
-            case o: ScriptObjectMirror if o.isFunction => false
+            case UNDEFINED => false
+            case o: JavaScriptObject if o.isFunction => false
             case _ => true
           }
         })
 
         filtered.map { key =>
-          val name = key.asInstanceOf[String]
-          val value = o.getMember(name)
-          SimpleParameterValue(name,
+          val value = o.getMember(key)
+          SimpleParameterValue(key,
             value match {
               case s: String => s
               case o => JsonUtils.toJsonStr(o)
             })
-        }
+        }.toSeq
       case _ => Nil
     }
 
     val (name, coordinates) = jsInstruction.getMember("name") match {
       case name: String =>
         (name, None)
-      case o: ScriptObjectMirror =>
+      case o: JavaScriptObject =>
         val name = o.getMember("name").asInstanceOf[String]
         val coordinates = MavenCoordinate(
           o.getMember("group").asInstanceOf[String],
@@ -223,7 +219,7 @@ class PlanBuilder {
     }
 
     val target = jsInstruction.getMember("target") match {
-      case o: ScriptObjectMirror if o.hasMember("baseBranch") =>
+      case o: JavaScriptObject if o.hasMember("baseBranch") =>
         val baseBranch = o.getMember("baseBranch").asInstanceOf[String]
         o.getMember("kind") match {
           case "github-pull-request" =>
@@ -248,7 +244,7 @@ class PlanBuilder {
 
   def constructCallback(callback: Object, returningRug: Option[Rug]): Option[Callback] = {
     callback match {
-      case jsOnSuccess: ScriptObjectMirror =>
+      case jsOnSuccess: JavaScriptObject =>
         val callback = jsOnSuccess.getMember("kind") match {
           case "response" | "lifecycle" | "directed" => constructMessage(jsOnSuccess)
           case _: String => Respond(constructInstructionDetail(jsOnSuccess))

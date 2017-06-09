@@ -2,8 +2,8 @@ package com.atomist.project.archive
 
 import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit._
+import com.atomist.rug.runtime.js.nashorn.NashornConstructorTest
 import com.atomist.rug.{DuplicateRugException, RugArchiveReader}
-import com.atomist.rug.runtime.lang.js.NashornConstructorTest
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.file.ClassPathArtifactSource
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}

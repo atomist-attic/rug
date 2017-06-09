@@ -6,11 +6,9 @@ import java.util.Collections
 import com.atomist.graph.GraphNode
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.dynamic.ChildResolver
-import com.atomist.rug.runtime.js.interop.NashornUtils._
-import com.atomist.rug.runtime.js.{RugContext, SimpleExecutionContext}
+import com.atomist.rug.runtime.js.{JavaScriptObject, RugContext, SimpleExecutionContext}
 import com.atomist.rug.spi._
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpression, PathExpressionEngine, PathExpressionParser}
-import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.collection.JavaConverters._
 
@@ -63,12 +61,12 @@ class jsPathExpressionEngine(
   }
 
   private def dynamicTypeDefinitionToTypeProvider(o: Object): Typed = o match {
-    case som: ScriptObjectMirror if hasDefinedProperties(som, "typeName") =>
+    case som: JavaScriptObject if som.hasDefinedProperties("typeName") =>
       // It's a type provider coded in JavaScript
       val tp = new JavaScriptBackedTypeProvider(som)
       tp
-    case som: ScriptObjectMirror =>
-      throw new RugRuntimeException(null, s"Unrecognized type. It has properties ${som.entrySet().asScala.map(_.getKey).mkString(",")}")
+    case som: JavaScriptObject =>
+      throw new RugRuntimeException(null, s"Unrecognized type. It has properties ${som.entries().keys.mkString(",")}")
     case x =>
       throw new RugRuntimeException(null, s"Unrecognized dynamic type $x")
 
@@ -111,7 +109,7 @@ class jsPathExpressionEngine(
       // Unwrap this
       scp.node
     case tn: GraphNode => tn
-    case som: ScriptObjectMirror =>
+    case som: JavaScriptObject =>
       NashornMapBackedGraphNode.toGraphNode(som).getOrElse(
         throw new IllegalArgumentException(s"Can't convert script object $som to a GraphNode")
       )
@@ -127,7 +125,7 @@ class jsPathExpressionEngine(
     * @param f     function to apply to each path expression
     */
   def `with`(root: AnyRef, pexpr: Object, f: Object): Unit = f match {
-    case som: ScriptObjectMirror =>
+    case som: JavaScriptObject =>
       val r = evaluateInternal(root, pexpr)
       r.matches.asScala.foreach(m => {
         val args = Seq(m)
@@ -225,10 +223,10 @@ object jsPathExpressionEngine {
     * Parse path expression from a JavaScript-backed object with an "expression" property or a string.
     */
   def pathExpressionFromObject(pe: Object): PathExpression = pe match {
-    case som: ScriptObjectMirror =>
+    case som: JavaScriptObject =>
       // Examine a JavaScript object passed to us. It's probably a
       // TypeScript class with an "expression" property
-      val expr = NashornUtils.stringProperty(som, "expression")
+      val expr = som.stringProperty("expression")
       PathExpressionParser.parsePathExpression(expr)
     case expr: String =>
       PathExpressionParser.parsePathExpression(expr)

@@ -8,8 +8,6 @@ import com.atomist.rug.kind.core.{ProjectContext, ProjectMutableView}
 import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
 import com.atomist.util.Timing._
-import jdk.nashorn.api.scripting.{JSObject, ScriptObjectMirror}
-import jdk.nashorn.internal.runtime.ScriptRuntime
 
 /**
   * Find Generators in a Nashorn
@@ -20,13 +18,13 @@ class JavaScriptProjectGeneratorFinder
   /**
     * Is the supplied thing valid at all?
     */
-  def isValid(obj: ScriptObjectMirror): Boolean = {
+  def isValid(obj: JavaScriptObject): Boolean = {
     obj.getMember("__kind") == "generator" &&
       obj.hasMember("populate") &&
-      obj.getMember("populate").asInstanceOf[ScriptObjectMirror].isFunction
+      obj.getMember("populate").asInstanceOf[JavaScriptObject].isFunction
   }
 
-  override def create(jsc: JavaScriptContext, fnVar: ScriptObjectMirror, resolver: Option[RugResolver]): Option[JavaScriptProjectGenerator] = {
+  override def create(jsc: JavaScriptEngineContext, fnVar: JavaScriptObject, resolver: Option[RugResolver]): Option[JavaScriptProjectGenerator] = {
     val project: ArtifactSource = removeAtomistTemplateContent(jsc.rugAs)
     Some(new JavaScriptProjectGenerator(jsc, fnVar, jsc.rugAs, project, resolver))
   }
@@ -41,8 +39,8 @@ class JavaScriptProjectGeneratorFinder
   * TypeScript compilation, but need not be. Attempts to source metadata from annotations.
   */
 class JavaScriptProjectGenerator(
-                                  jsc: JavaScriptContext,
-                                  jsVar: ScriptObjectMirror,
+                                  jsc: JavaScriptEngineContext,
+                                  jsVar: JavaScriptObject,
                                   rugAs: ArtifactSource,
                                   startProject: ArtifactSource,
                                   resolver: Option[RugResolver]
@@ -66,10 +64,10 @@ class JavaScriptProjectGenerator(
     val (result, elapsedMillis) = time {
       // If the user has provided this method, call it to get the project starting point
       val projectToInvokePopulateWith = jsVar.getMember(StartingPointFunction) match {
-        case null | ScriptRuntime.UNDEFINED =>
+        case null | UNDEFINED =>
           pmv
-        case js: JSObject if js.isFunction =>
-          val userProject = invokeMemberFunction(jsc, jsVar,
+        case js: JavaScriptObject if js.isFunction =>
+          val userProject = jsc.invokeMember(jsVar,
             StartingPointFunction, Some(validated),
             wrapProject(pmv), jsScalaHidingProxy(pmv.context)).asInstanceOf[ProjectMutableView]
           val userAs = raw + userProject.currentBackingObject
@@ -77,7 +75,7 @@ class JavaScriptProjectGenerator(
         case x => throw new IllegalArgumentException(s"Don't know what to do with JavaScript member $x")
       }
 
-      invokeMemberFunction(jsc, jsVar, "populate", Some(validated), wrapProject(projectToInvokePopulateWith))
+      jsc.invokeMember(jsVar, "populate", Some(validated), wrapProject(projectToInvokePopulateWith))
       projectToInvokePopulateWith.currentBackingObject
     }
     logger.debug(s"$name.populate took ${elapsedMillis}ms")

@@ -4,11 +4,10 @@ import com.atomist.param._
 import com.atomist.project.archive.RugResolver
 import com.atomist.rug.runtime.RugScopes.Scope
 import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy
-import com.atomist.rug.runtime.plans.{JsonResponseCoercer, NullResponseCoercer, ResponseCoercer}
+import com.atomist.rug.runtime.plans.{JsonResponseConverter, NullResponseConverter, ResponseConverter}
 import com.atomist.rug.runtime.{ParameterizedRug, ResponseHandler}
 import com.atomist.rug.spi.Handlers.{Plan, Response}
 import com.atomist.rug.{InvalidHandlerException, InvalidHandlerResultException}
-import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
   * Extract response handlers from a Nashorn instance
@@ -17,7 +16,7 @@ class JavaScriptResponseHandlerFinder
   extends JavaScriptRugFinder[JavaScriptResponseHandler]
     with JavaScriptUtils {
 
-  override def create(jsc: JavaScriptContext, handler: ScriptObjectMirror, resolver: Option[RugResolver]): Option[JavaScriptResponseHandler] = {
+  override def create(jsc: JavaScriptEngineContext, handler: JavaScriptObject, resolver: Option[RugResolver]): Option[JavaScriptResponseHandler] = {
     Some(new JavaScriptResponseHandler(
       jsc,
       handler,
@@ -32,28 +31,28 @@ class JavaScriptResponseHandlerFinder
   /**
     * Figure out if we need to parse json or whatever.
     */
-  def coerce(jsc: JavaScriptContext, handler: ScriptObjectMirror): ResponseCoercer = {
+  def coerce(jsc: JavaScriptEngineContext, handler: JavaScriptObject): ResponseConverter = {
     handler.getMember("__coercion") match {
-      case "JSON" => new JsonResponseCoercer(jsc, handler)
+      case "JSON" => new JsonResponseConverter(jsc, handler)
       case str: String => throw new InvalidHandlerException(s"Don't know how to coerce responses to $str")
-      case _ => NullResponseCoercer
+      case _ => NullResponseConverter
     }
   }
 
-  override def isValid(obj: ScriptObjectMirror): Boolean = {
+  override def isValid(obj: JavaScriptObject): Boolean = {
     obj.getMember("__kind") == "response-handler" &&
       obj.hasMember("handle") &&
-      obj.getMember("handle").asInstanceOf[ScriptObjectMirror].isFunction
+      obj.getMember("handle").asInstanceOf[JavaScriptObject].isFunction
   }
 }
 
-class JavaScriptResponseHandler(jsc: JavaScriptContext,
-                                handler: ScriptObjectMirror,
+class JavaScriptResponseHandler(jsc: JavaScriptEngineContext,
+                                handler: JavaScriptObject,
                                 override val name: String,
                                 override val description: String,
                                 override val parameters: Seq[Parameter],
                                 override val tags: Seq[Tag],
-                                responseCoercer: ResponseCoercer,
+                                responseCoercer: ResponseConverter,
                                 override val scope: Scope)
   extends ParameterizedRug
     with ResponseHandler
@@ -64,15 +63,14 @@ class JavaScriptResponseHandler(jsc: JavaScriptContext,
     // TODO this handle method is almost identical to the command handler - extract it
     val validated = addDefaultParameterValues(params)
     validateParameters(validated)
-    val coerced = responseCoercer.coerce(response)
-    invokeMemberFunction(
-      jsc,
+    val coerced = responseCoercer.convert(response)
+    jsc.invokeMember(
       handler,
       "handle",
       Some(validated),
       jsScalaHidingProxy(jsResponse(coerced.msg.orNull, coerced.code.getOrElse(-1), coerced.body.getOrElse(Nil))),
       jsScalaHidingProxy(ctx)) match {
-      case plan: ScriptObjectMirror => ConstructPlan(plan, Some(this))
+      case plan: JavaScriptObject => ConstructPlan(plan, Some(this))
       case other => throw new InvalidHandlerResultException(s"$name ResponseHandler did not return a recognized response ($other) when invoked with ${params.toString()}")
     }
   }
@@ -82,7 +80,7 @@ class JavaScriptResponseHandler(jsc: JavaScriptContext,
     * but only if no @Parameter annotations are there
     * This is handy to avoid use @Parameter decorators
     */
-  override protected def setParameters(clone: ScriptObjectMirror, params: Seq[ParameterValue]): Unit = {
+  override protected def setParameters(clone: JavaScriptObject, params: Seq[ParameterValue]): Unit = {
     super.setParameters(clone, params)
     if (parameters.isEmpty) {
       params.foreach(p => {

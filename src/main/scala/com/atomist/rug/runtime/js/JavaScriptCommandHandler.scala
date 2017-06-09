@@ -2,15 +2,12 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.param._
 import com.atomist.project.archive.RugResolver
-import com.atomist.rug.{InvalidHandlerResultException, InvalidTestDescriptorException, RugRuntimeException}
-import com.atomist.rug.runtime.{CommandHandler, TestDescriptor}
 import com.atomist.rug.runtime.js.interop.{jsSafeCommittingProxy, jsScalaHidingProxy}
+import com.atomist.rug.{InvalidHandlerResultException, InvalidTestDescriptorException}
+import com.atomist.rug.runtime.{CommandHandler, TestDescriptor}
 import com.atomist.rug.runtime.plans.MappedParameterSupport
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.Secret
-import jdk.nashorn.api.scripting.ScriptObjectMirror
-
-import scala.collection.JavaConverters._
 
 /**
   * Finds JavaScriptCommandHandlers in Nashorn vars
@@ -22,14 +19,14 @@ class JavaScriptCommandHandlerFinder
   /**
     * Is the supplied thing valid at all?
     */
-  def isValid(obj: ScriptObjectMirror): Boolean = {
+  def isValid(obj: JavaScriptObject): Boolean = {
     obj.getMember("__kind") == "command-handler" &&
       obj.hasMember("handle") &&
-      obj.getMember("handle").asInstanceOf[ScriptObjectMirror].isFunction
+      obj.getMember("handle").asInstanceOf[JavaScriptObject].isFunction
   }
 
-  override def create(jsc: JavaScriptContext,
-                      handler: ScriptObjectMirror,
+  override def create(jsc: JavaScriptEngineContext,
+                      handler: JavaScriptObject,
                       resolver: Option[RugResolver]): Option[JavaScriptCommandHandler] = {
     Some(new JavaScriptCommandHandler(
       jsc,
@@ -47,9 +44,9 @@ class JavaScriptCommandHandlerFinder
   /**
     * Extract any test related metadata - if any.
     */
-  protected def testDescriptor(someVar: ScriptObjectMirror): Option[TestDescriptor] = {
+  protected def testDescriptor(someVar: JavaScriptObject): Option[TestDescriptor] = {
     someVar.getMember("__test") match {
-      case som: ScriptObjectMirror => (som.getMember("description"), som.getMember("kind")) match {
+      case som: JavaScriptObject => (som.getMember("description"), som.getMember("kind")) match {
         case (description: String, kind: String) => Some(TestDescriptor(kind, description))
         case _ => throw new InvalidTestDescriptorException("A test must have a 'kind' and a 'description'")
       }
@@ -59,13 +56,13 @@ class JavaScriptCommandHandlerFinder
   /**
     * Extract intent from a var.
     */
-  protected def intent(someVar: ScriptObjectMirror): Seq[String] = {
+  protected def intent(someVar: JavaScriptObject): Seq[String] = {
     someVar.getMember("__intent") match {
-      case som: ScriptObjectMirror =>
-        val stringValues = som.values().asScala collect {
+      case som: JavaScriptObject =>
+        val stringValues = som.values().collect {
           case s: String => s
         }
-        stringValues.toSeq
+        stringValues
       case _ => Nil
     }
   }
@@ -75,11 +72,11 @@ class JavaScriptCommandHandlerFinder
     *
     * See MappedParameters in Handlers.ts for examples.
     */
-  protected def mappedParameters(someVar: ScriptObjectMirror): Seq[MappedParameter] = {
-    getMember(someVar, "__mappedParameters") match {
-      case Some(ps: ScriptObjectMirror) if !ps.isEmpty =>
-        ps.asScala.collect {
-          case (_, details: ScriptObjectMirror) =>
+  protected def mappedParameters(someVar: JavaScriptObject): Seq[MappedParameter] = {
+    someVar.getMember("__mappedParameters") match {
+      case ps: JavaScriptObject if !ps.isEmpty =>
+        ps.entries().collect {
+          case (_, details: JavaScriptObject) =>
             val localKey = details.getMember("localKey").asInstanceOf[String]
             val foreignKey = details.getMember("foreignKey").asInstanceOf[String]
             MappedParameter(localKey, foreignKey)
@@ -92,8 +89,8 @@ class JavaScriptCommandHandlerFinder
 /**
   * Runs a CommandHandler in Nashorn.
   */
-class JavaScriptCommandHandler(jsc: JavaScriptContext,
-                               handler: ScriptObjectMirror,
+class JavaScriptCommandHandler(jsc: JavaScriptEngineContext,
+                               handler: JavaScriptObject,
                                override val name: String,
                                override val description: String,
                                override val parameters: Seq[Parameter],
@@ -113,13 +110,12 @@ class JavaScriptCommandHandler(jsc: JavaScriptContext,
     val validated = addDefaultParameterValues(params)
     validateParameters(validated)
     // We need to proxy the context to allow for property access
-    invokeMemberFunction(
-      jsc,
+    jsc.invokeMember(
       handler,
       "handle",
       Some(validated),
       jsScalaHidingProxy(ctx, returnNotToProxy = jsSafeCommittingProxy.DoNotProxy)) match {
-      case plan: ScriptObjectMirror =>
+      case plan: JavaScriptObject =>
         ConstructPlan(plan, Some(this))
       case other =>
         throw new InvalidHandlerResultException(s"$name CommandHandler did not return a recognized response ($other) when invoked with ${params.toString()}")

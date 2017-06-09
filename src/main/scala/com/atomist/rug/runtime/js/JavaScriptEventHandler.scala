@@ -3,15 +3,13 @@ package com.atomist.rug.runtime.js
 import com.atomist.graph.GraphNode
 import com.atomist.param.Tag
 import com.atomist.project.archive.RugResolver
-import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsContextMatch, jsSafeCommittingProxy, jsScalaHidingProxy}
+import com.atomist.rug.runtime.js.interop._
 import com.atomist.rug.runtime.{EventHandler, SystemEvent}
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.{Secret, TypeRegistry}
 import com.atomist.rug.{InvalidHandlerResultException, RugRuntimeException}
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.{NamedNodeTest, NodesWithTag, PathExpression, PathExpressionParser}
-import com.atomist.util.lang.JavaScriptArray
-import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
   * Discover JavaScriptEventHandlers from a Nashorn instance
@@ -23,13 +21,13 @@ class JavaScriptEventHandlerFinder
   /**
     * Is the supplied thing valid at all?
     */
-  def isValid(obj: ScriptObjectMirror): Boolean = {
+  def isValid(obj: JavaScriptObject): Boolean = {
     obj.getMember("__kind") == "event-handler" &&
       obj.hasMember("handle") &&
-      obj.getMember("handle").asInstanceOf[ScriptObjectMirror].isFunction
+      obj.getMember("handle").asInstanceOf[JavaScriptObject].isFunction
   }
 
-  override def create(jsc: JavaScriptContext, someVar: ScriptObjectMirror, resolver: Option[RugResolver]): Option[JavaScriptEventHandler] = {
+  override def create(jsc: JavaScriptEngineContext, someVar: JavaScriptObject, resolver: Option[RugResolver]): Option[JavaScriptEventHandler] = {
     Option(someVar.getMember("__expression")).map(v => {
       val expression: String = v.asInstanceOf[String]
       new JavaScriptEventHandler(jsc, someVar, expression, name(someVar), description(someVar), tags(someVar), secrets(someVar))
@@ -46,8 +44,8 @@ object JavaScriptEventHandler {
 /**
   * An invokable JS based handler for System Events
   */
-class JavaScriptEventHandler(jsc: JavaScriptContext,
-                             val handler: ScriptObjectMirror,
+class JavaScriptEventHandler(jsc: JavaScriptEngineContext,
+                             val handler: JavaScriptObject,
                              val pathExpressionStr: String,
                              override val name: String,
                              override val description: String,
@@ -77,14 +75,13 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
           ctx.pathExpressionEngine,
           ctx.contextRoot(),
           teamId = e.teamId)
-        invokeMemberFunction(
-          jsc,
+        jsc.invokeMember(
           handler,
           "handle",
           None,
           jsScalaHidingProxy(cm, returnNotToProxy = _ => true)
         ) match {
-          case plan: ScriptObjectMirror => ConstructPlan(plan, Some(this))
+          case plan: JavaScriptObject => ConstructPlan(plan, Some(this))
           case other => throw new InvalidHandlerResultException(s"$name EventHandler returned an invalid response ($other) when handling $pathExpressionStr")
         }
       case Right(matches) if matches.isEmpty => None
@@ -104,5 +101,5 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
   import scala.collection.JavaConverters._
 
   private def wrap(nodes: Seq[GraphNode], typeRegistry: TypeRegistry): java.util.List[AnyRef] =
-    new JavaScriptArray(nodes.map(wrapOne(_, typeRegistry)).asJava)
+    new NashornJavaScriptArray(nodes.map(wrapOne(_, typeRegistry)).asJava)
 }

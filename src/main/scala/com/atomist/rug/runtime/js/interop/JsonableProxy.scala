@@ -1,6 +1,5 @@
 package com.atomist.rug.runtime.js.interop
 
-import com.atomist.util.lang.JavaScriptArray
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
@@ -21,7 +20,7 @@ private[interop] trait JsonableProxy {
     (propertyMap map {
       case (k, som: ScriptObjectMirror) =>
         s""""$k": ${som.eval("JSON.stringify(this)")}"""
-      case (k, js: JavaScriptArray[_]) =>
+      case (k, js: NashornJavaScriptArray[_]) =>
         s""""$k": [${js.lyst.asScala.mkString(", ")}]"""
       case (k, v) =>
         s""""$k": "$v""""

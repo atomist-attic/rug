@@ -193,15 +193,6 @@ class JavaScriptProjectOperationTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "create two separate js objects for each operation" in {
-    val tsf = StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters)
-    val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
-    val jsed = RugArchiveReader(as).editors.head.asInstanceOf[JavaScriptProjectEditor]
-    val v1 = jsed.cloneVar(jsed.jsc, jsed.jsVar)
-    v1.put("__description", "dude")
-    jsed.jsVar.get("__description") should be ("A nice little editor")
-  }
-
   it should "Should throw an exception if required parameters are not set" in {
     val tsf = StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithRequiredParameterButNoDefault)
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))

@@ -19,7 +19,7 @@ object Handlers {
     * @param lifecycle    messages in the plan
     * @param local        messages in the plan
     * @param instructions instructions in the plan
-    * @param nativeObject native object (such as a Nashorn ScriptObjectMirror)
+    * @param nativeObject native object (such as a JavaScriptObject)
     *                     if one is available
     */
   case class Plan(returningRug: Option[Rug],

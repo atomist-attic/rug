@@ -3,7 +3,6 @@ package com.atomist.rug.runtime.js.interop
 import java.lang.reflect.{Method, Modifier}
 
 import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.MethodValidator
-import com.atomist.util.lang.JavaScriptArray
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 import jdk.nashorn.internal.runtime.ScriptRuntime
 import org.springframework.util.ReflectionUtils
@@ -55,7 +54,7 @@ class jsScalaHidingProxy private(
     }
 
     (r match {
-      case seq: Seq[_] => new JavaScriptArray(
+      case seq: Seq[_] => new NashornJavaScriptArray(
         seq.map(new jsScalaHidingProxy(_, methodsToHide, methodValidator, returnNotToProxy))
           .asJava)
       case opt: Option[AnyRef]@unchecked => opt.orNull
@@ -63,7 +62,7 @@ class jsScalaHidingProxy private(
     }) match {
       case null => null
       case x if returnNotToProxy(x) => x
-      case arr: JavaScriptArray[_] => arr
+      case arr: NashornJavaScriptArray[_] => arr
       case s: String => s
       case i: Integer => i
       case fun: FunctionProxyToReflectiveInvocation => fun

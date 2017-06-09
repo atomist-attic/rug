@@ -274,6 +274,7 @@ export type MessageAddress = UserAddress | ChannelAddress;
  * Uncorrelated message to the bot
  */
 export class DirectedMessage extends LocallyRenderedMessage<"directed"> {
+
   public kind: "directed" = "directed";
 
   constructor(body: string, address: MessageAddress, contentType?: MessageMimeType) {
@@ -283,6 +284,20 @@ export class DirectedMessage extends LocallyRenderedMessage<"directed"> {
       this.contentType = contentType;
     }
     this.addAddress(address);
+  }
+}
+
+/**
+ * Message that can be re-written in the bot
+ */
+export class UpdatableMessage extends DirectedMessage {
+
+  public id: string;
+  public timestamp: string = new Date().getTime().toString();
+
+  constructor(id: string, body: string, address: MessageAddress, contentType?: MessageMimeType) {
+    super(body, address, contentType);
+    this.id = id;
   }
 }
 

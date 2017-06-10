@@ -82,7 +82,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
           case Right(wtf) =>
             throw new IllegalArgumentException(s"Unexpected result from Then '${step.getText}': $wtf")
           case Left(t) =>
-            AssertionResult(step.getText, Failed(t.getMessage))
+            AssertionResult(step.getText, Failed(t.getMessage, Some(t)))
         }
       case None =>
         AssertionResult(step.getText, NotYetImplemented("Then " + step.getText))
@@ -149,6 +149,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
       case _ => Seq(target, world)
     }
     val args = fixedParams ++ sm.args
+
     allCatch.either(sm.jsVar.call("apply", args:_*))
   }
 

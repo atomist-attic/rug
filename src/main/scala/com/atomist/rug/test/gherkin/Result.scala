@@ -23,7 +23,7 @@ case object Passed extends Result {
   override def message = "Passed"
 }
 
-case class Failed(message: String) extends Result
+case class Failed(message: String, cause: Option[Throwable] = None) extends Result
 
 case class NotYetImplemented(name: String) extends Result {
 
@@ -52,7 +52,7 @@ abstract class MultiTestRun(results: Seq[TestRun]) extends TestRun {
       val r = results.find(_.result.isInstanceOf[Failed])
         .map(_.result)
       r match {
-        case Some(Failed(why)) => Failed(why)
+        case Some(Failed(why,t)) => Failed(why,t)
         case _ => NotYetImplemented(results.mkString(","))
       }
     }

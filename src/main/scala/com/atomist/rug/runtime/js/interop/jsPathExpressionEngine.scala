@@ -61,7 +61,7 @@ class jsPathExpressionEngine(
   }
 
   private def dynamicTypeDefinitionToTypeProvider(o: Object): Typed = o match {
-    case som: JavaScriptObject if som.hasDefinedProperties("typeName") =>
+    case som: JavaScriptObject if som.hasMember("typeName") =>
       // It's a type provider coded in JavaScript
       val tp = new JavaScriptBackedTypeProvider(som)
       tp

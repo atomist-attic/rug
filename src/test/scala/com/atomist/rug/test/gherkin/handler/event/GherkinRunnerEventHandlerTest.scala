@@ -4,7 +4,6 @@ import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.RugArchiveReader
 import com.atomist.rug.TestUtils._
 import com.atomist.rug.runtime.js.JavaScriptEngineContextFactory
-import com.atomist.rug.runtime.js.nashorn.NashornContext
 import com.atomist.rug.test.gherkin.{Passed, _}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource}
@@ -63,7 +62,7 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Some(RugArchiveReader(cas)))
     val run = grt.execute()
     run.result match {
-      case Failed(msg) =>
+      case Failed(msg,_) =>
         assert(!msg.contains("null"))
       case wtf => fail(s"Unexpected: $wtf")
     }
@@ -85,7 +84,7 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Some(RugArchiveReader(cas)))
     val run = grt.execute()
     run.result match {
-      case Failed(msg) =>
+      case Failed(msg,_) =>
         assert(msg.contains("What in God's holy name are you blathering about"))
       case wtf => fail(s"Unexpected: $wtf")
     }
@@ -107,7 +106,7 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Some(RugArchiveReader(cas)))
     val run = grt.execute()
     run.result match {
-      case Failed(msg) =>
+      case Failed(msg,_) =>
         assert(msg.contains("hate"))
       case wtf => fail(s"Unexpected: $wtf")
     }
@@ -140,7 +139,12 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     val run = grt.execute()
     run.result match {
       case Passed =>
-      case wtf => fail(s"Unexpected: $wtf")
+      case wtf: Failed =>
+        if(wtf.cause.nonEmpty){
+          wtf.cause.get.printStackTrace()
+        }
+        fail(s"Unexpected: $wtf")
+      case _ =>
     }
   }
 

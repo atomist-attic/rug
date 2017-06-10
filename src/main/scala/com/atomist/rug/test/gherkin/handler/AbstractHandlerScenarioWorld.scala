@@ -91,7 +91,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   }
 
   private def exposeToJavaScript(plan: Plan): AnyRef = plan.nativeObject match {
-    case Some(som: JavaScriptObject) => som
+    case Some(som: JavaScriptObject) => som.getNativeObject
     case _ => jsScalaHidingProxy(plan)
   }
 

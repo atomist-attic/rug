@@ -6,32 +6,32 @@ import com.atomist.graph.{AddressableGraphNode, GraphNode}
 import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
 import com.atomist.tree.SimpleTerminalTreeNode
 
-import scala.collection.JavaConverters._
-
 object NashornMapBackedGraphNode {
 
   /**
     * Convert this object returned from Nashorn to a GraphNode if possible.
     * Will return AddressedGraphNode if address is known.
     */
-  def toGraphNode(nashornReturn: Object, nodeRegistry: NodeRegistry = new NodeRegistry): Option[GraphNode] = nashornReturn match {
-    case som: JavaScriptObject if nodeRegistry.alreadyWrapped(som).isDefined =>
-      nodeRegistry.alreadyWrapped(som)
-    case som: JavaScriptObject =>
-      val relevantPropertiesAndValues: Map[String, Object] =
-        relevantPropertyValues(som)
-      //println(som.hashCode() + ": " + relevantPropertiesAndValues)
-      relevantPropertiesAndValues.get(NodeAddressField) match {
-        case None =>
-          Some(new NashornMapBackedGraphNode(som, nodeRegistry))
-        case Some(address: String) =>
-          Some(new NashornMapBackedAddressableGraphNode(som, nodeRegistry, address))
-        case x =>
-          val address = Objects.toString(x)
-          Some(new NashornMapBackedAddressableGraphNode(som, nodeRegistry, address))
-      }
-    case _ =>
-      None
+  def toGraphNode(nashornReturn: Object, nodeRegistry: NodeRegistry = new NodeRegistry): Option[GraphNode] = {
+    val result = nashornReturn match {
+      case som: JavaScriptObject if nodeRegistry.alreadyWrapped(som).isDefined =>
+        nodeRegistry.alreadyWrapped(som)
+      case som: JavaScriptObject =>
+        val relevantPropertiesAndValues: Map[String, Object] =
+          relevantPropertyValues(som)
+        relevantPropertiesAndValues.get(NodeAddressField) match {
+          case None =>
+            Some(new NashornMapBackedGraphNode(som, nodeRegistry))
+          case Some(address: String) =>
+            Some(new NashornMapBackedAddressableGraphNode(som, nodeRegistry, address))
+          case x =>
+            val address = Objects.toString(x)
+            Some(new NashornMapBackedAddressableGraphNode(som, nodeRegistry, address))
+        }
+      case _ =>
+        None
+    }
+    result
   }
 
   private[interop] def relevantPropertyValues(som: JavaScriptObject): Map[String, Object] = {
@@ -103,8 +103,8 @@ class NashornMapBackedGraphNode(val scriptObject: JavaScriptObject,
   }
 
   override def nodeTags: Set[String] = {
-    relevantPropertiesAndValues("nodeTags") match {
-      case som: JavaScriptObject if som.isSeq =>
+    relevantPropertiesAndValues.get("_nodeTags") match {
+      case Some(som: JavaScriptObject) if som.isSeq =>
         som.values().map(Objects.toString(_)).toSet
       case _ => Set()
     }
@@ -129,7 +129,7 @@ class NashornMapBackedGraphNode(val scriptObject: JavaScriptObject,
 
   private def toNode(key: String): Seq[GraphNode] = {
     def nodify(som: JavaScriptObject): GraphNode = {
-      if (som.hasDefinedProperties(NodeRefField)) {
+      if (som.hasMember(NodeRefField)) {
         // It's a ref to an existing node. We must have seen that node before
         val id = som.stringProperty(NodeRefField)
         nodeRegistry.get(id) match {
@@ -150,7 +150,7 @@ class NashornMapBackedGraphNode(val scriptObject: JavaScriptObject,
       case Some(som: JavaScriptObject) if som.isSeq =>
         som.values().collect {
           case s: JavaScriptObject => nodify(s)
-        }.toSeq
+        }
       case Some(som: JavaScriptObject) =>
         Seq(nodify(som))
       case Some(UNDEFINED) =>

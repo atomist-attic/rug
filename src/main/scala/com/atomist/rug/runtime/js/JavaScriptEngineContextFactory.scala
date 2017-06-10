@@ -8,6 +8,6 @@ import com.atomist.source.ArtifactSource
   */
 object JavaScriptEngineContextFactory {
   def create(as: ArtifactSource): JavaScriptEngineContext = {
-    JavaScriptEngineContextFactory.create(as)
+    new NashornContext(as)
   }
 }

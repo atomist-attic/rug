@@ -114,7 +114,6 @@ object jsScalaHidingProxy {
       case x =>
         new jsScalaHidingProxy(x, methodsToHide, methodValidator, returnNotToProxy)
     }
-    //println(s"Result for $target is $r")
     r
   }
 

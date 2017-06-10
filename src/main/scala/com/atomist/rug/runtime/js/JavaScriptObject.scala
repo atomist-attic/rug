@@ -8,6 +8,9 @@ import scala.util.control.Exception.allCatch
   * Talk to objects in a JavaScriptEngine
   */
 trait JavaScriptObject {
+
+  def getNativeObject: AnyRef
+
   def hasMember(name: String): Boolean
 
   def getMember(name: String): AnyRef
@@ -24,8 +27,6 @@ trait JavaScriptObject {
 
   def isSeq: Boolean
 
-  def isMap: Boolean
-
   def isFunction: Boolean
 
   def eval(js: String): AnyRef
@@ -36,23 +37,11 @@ trait JavaScriptObject {
     entries().keys
   }
 
-  /**
-    * Get all key values, ignoring exceptions, which can be thrown by Nashorn entrySet.
-    */
-  private def safeObjectMap(): Map[String, AnyRef] =
-    keys()
-      .flatMap(key => {
-        // TypeScript "get" properties can throw exceptions
-        val maybeValue = allCatch.opt(getMember(key))
-        maybeValue.map(value => key -> value)
-      }).toMap
 
   def extractProperties(): Map[String, AnyRef] =
-    safeObjectMap flatMap {
-      case (_, som: JavaScriptObject) if som.isFunction =>
-        None
-      case (key, value) =>
-        Some(key -> value)
+    entries().filter {
+      case (name, value: JavaScriptObject) if !value.isFunction => true
+      case _ => false
     }
 
   // TODO this is fragile but can't find a Nashorn method to do it
@@ -67,8 +56,8 @@ trait JavaScriptObject {
     * Return the current state of no-arg methods on this object
     */
   def extractNoArgFunctionValues(): Map[String, AnyRef] = {
-    val m = safeObjectMap().flatMap {
-      case (key, f: JavaScriptObject) if isNoArgFunction(f) =>
+    val m = entries().flatMap {
+      case (key: String, f: JavaScriptObject) if isNoArgFunction(f) =>
         // If calling the function throws an exception, discard the value.
         // This will happen with builder stubs that haven't been fully initialized
         // Otherwise, use it
@@ -100,12 +89,6 @@ trait JavaScriptObject {
       case null => null
       case x => Objects.toString(x)
     }
-
-  /**
-    * Are all these properties defined
-    */
-  def hasDefinedProperties(properties: String*): Boolean =
-    properties.forall(p => getMember(p) != null)
 }
 
 case class UNDEFINED()

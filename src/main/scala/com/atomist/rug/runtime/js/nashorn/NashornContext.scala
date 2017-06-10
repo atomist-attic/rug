@@ -1,5 +1,6 @@
 package com.atomist.rug.runtime.js.nashorn
 
+import java.lang.reflect.{Field, Method}
 import java.util.regex.Pattern
 import javax.script._
 
@@ -10,10 +11,12 @@ import com.atomist.rug.runtime.js._
 import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, FileArtifact}
 import com.coveo.nashorn_modules.{AbstractFolder, Folder, Require}
 import com.typesafe.scalalogging.LazyLogging
-import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactory, ScriptObjectMirror}
-import jdk.nashorn.internal.runtime.ECMAException
+import jdk.nashorn.api.scripting.{AbstractJSObject, NashornScriptEngine, NashornScriptEngineFactory, ScriptObjectMirror}
+import jdk.nashorn.internal.runtime.{ECMAException, ScriptRuntime}
+import org.springframework.util.ReflectionUtils
 
 import scala.collection.JavaConverters._
+import scala.util.control.NonFatal
 
 object NashornContext {
 
@@ -124,7 +127,7 @@ class NashornContext(val rugAs: ArtifactSource,
     *
     * @return ScriptObjectMirror objects for all vars known to the engine
     */
-  def vars: Seq[JavaScriptMember] = {
+  def members(): Seq[JavaScriptMember] = {
     engine.getContext.getBindings(ScriptContext.ENGINE_SCOPE)
       .get("exports").asInstanceOf[ScriptObjectMirror]
       .asScala.collect {
@@ -170,21 +173,19 @@ class NashornContext(val rugAs: ArtifactSource,
       atomistConfig.isJsSource(f) || atomistConfig.isJsTest(f)))}\n" +
     s" - test features [${atomistContent.allFiles.filter(f => f.name.endsWith(".feature"))}]"
 
-  override def members(): Seq[JavaScriptMember] = ???
-
   override def invokeMember(jsVar: JavaScriptObject, member: String, params: Option[ParameterValues], args: Object*): Any = {
     withEnhancedExceptions {
       val clone = cloneVar(jsVar.asInstanceOf[NashornJavaScriptObject].som)
       if (params.nonEmpty) {
         setParameters(clone, params.get.parameterValues)
       }
-      clone.asInstanceOf[JavaScriptObject].callMember(member, args: _*)
+      clone.callMember(member, args: _*)
     }
   }
   /**
     * Separate for test
     */
-  private[js] def cloneVar(objToClone: ScriptObjectMirror): JavaScriptObject = {
+  private[js] def cloneVar(objToClone: ScriptObjectMirror): NashornJavaScriptObject = {
     val bindings = new SimpleBindings()
     bindings.put("rug", objToClone)
 
@@ -207,7 +208,71 @@ class NashornContext(val rugAs: ArtifactSource,
   }
 
   override def setMember(name: String, value: AnyRef): Unit = {
-    engine.put(name, value)
+    value match {
+      case o: NashornJavaScriptObject => engine.put(name, o.som)
+      case _ => engine.put(name, new ObjectWrapper(value))
+    }
+  }
+}
+/**
+  * Wrap ScriptObjectMirrors with NashornJavaScriptObject
+  * @param delegate
+  */
+class ObjectWrapper(delegate: AnyRef) extends AbstractJSObject {
+
+
+  if(delegate.isInstanceOf[ObjectWrapper]){
+    throw new RuntimeException("Don't wrap wrappers")
+  }
+
+  if(delegate.isInstanceOf[NashornJavaScriptObject]){
+    throw new RuntimeException("These should _not_ be wrapped!")
+  }
+
+  if(delegate.isInstanceOf[ScriptObjectMirror]){
+    throw new RuntimeException("These should _not_ be wrapped!")
+  }
+
+  override def getMember(name: String): AnyRef = {
+
+    if("valueOf" == name){
+      super.getMember(name)
+    }else{
+      ReflectionUtils.getAllDeclaredMethods(delegate.getClass).find(_.getName == name) match {
+        case Some(m) => new TempWrappingFunction(m, delegate)
+        case _ =>
+          ReflectionUtils.findField(delegate.getClass, name) match {
+            case o: Field => new ObjectWrapper(o.get(delegate))
+            case _ => ScriptRuntime.UNDEFINED
+          }
+      }
+    }
+  }
+}
+
+class TempWrappingFunction(m: Method, delegate: AnyRef) extends AbstractJSObject {
+  override def isFunction: Boolean = true
+  override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+    try {
+      val fixed = args.collect {
+        case o: ScriptObjectMirror => new NashornJavaScriptObject(o)
+        case x => x
+      }
+      m.invoke(delegate, fixed: _*) match {
+        case o if !o.isInstanceOf[String] && !o.isInstanceOf[JavaScriptObject] &&  !o.isInstanceOf[ScriptObjectMirror] => new ObjectWrapper(o)
+        //case x: ScriptObjectMirror => new NashornJavaScriptObject(x)
+        case y: AnyRef => y
+      }
+
+    }
+    catch {
+      case iex: IllegalArgumentException =>
+        throw new IllegalArgumentException(s"Illegal ${args.size} arguments for ${delegate.getClass}.${m.getName}: [$args]", iex)
+      case o: Throwable =>{
+        o.printStackTrace()
+        throw o
+      }
+    }
   }
 }
 

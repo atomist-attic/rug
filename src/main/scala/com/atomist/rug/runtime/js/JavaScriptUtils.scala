@@ -99,20 +99,29 @@ trait JavaScriptUtils {
     val pName = details.getMember("name").asInstanceOf[String]
     val pPattern = details.getMember("pattern").asInstanceOf[String]
     val parameter = Parameter(pName, pPattern)
-    parameter.setDisplayName(details.getMember("displayName").asInstanceOf[String])
+    details.getMember("displayName") match {
+      case o: String => parameter.setDisplayName(o)
+      case _ =>
+    }
 
     details.getMember("maxLength") match {
-      case x: AnyRef => parameter.setMaxLength(x.asInstanceOf[Int])
+      case x: AnyRef if x.isInstanceOf[UNDEFINED] => parameter.setMaxLength(x.asInstanceOf[Int])
       case _ => parameter.setMaxLength(-1)
     }
     details.getMember("minLength") match {
-      case x: AnyRef => parameter.setMinLength(x.asInstanceOf[Int])
+      case x: AnyRef if x.isInstanceOf[UNDEFINED] => parameter.setMinLength(x.asInstanceOf[Int])
       case _ => parameter.setMinLength(-1)
     }
 
-    parameter.setDefaultRef(details.getMember("defaultRef").asInstanceOf[String])
-    val disp = details.getMember("displayable")
-    parameter.setDisplayable(if (disp != null) disp.asInstanceOf[Boolean] else true)
+    details.getMember("defaultRef") match {
+      case x: String => parameter.setDefaultRef(x)
+      case _ =>
+    }
+
+    details.getMember("displayable") match {
+      case o if o.isInstanceOf[Boolean] => parameter.setDisplayable(o.asInstanceOf[Boolean])
+      case _ => parameter.setDisplayable(true)
+    }
 
     if (details.hasMember("required")) {
       parameter.setRequired(details.getMember("required").asInstanceOf[Boolean])
@@ -121,8 +130,10 @@ trait JavaScriptUtils {
     }
 
     parameter.addTags(tags(details))
-
-    parameter.setValidInputDescription(details.getMember("validInput").asInstanceOf[String])
+    details.getMember("validInput") match {
+      case o: String => parameter.setValidInputDescription(o)
+      case _ =>
+    }
     parameter.describedAs(details.getMember("description").asInstanceOf[String])
 
     pPattern match {

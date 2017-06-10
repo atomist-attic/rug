@@ -89,13 +89,13 @@ class ScriptObjectBackedTreeNode(som: JavaScriptObject) extends TreeNode {
 
     override def isSeq: Boolean = ???
 
-    override def isMap: Boolean = ???
-
     override def isFunction: Boolean = true
 
     override def eval(js: String): AnyRef = ???
 
     override def entries(): Map[String, AnyRef] = ???
+
+    override def getNativeObject: AnyRef = ???
   }
 
 }

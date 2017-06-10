@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime.js.nashorn
 
-import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy
+import com.atomist.rug.runtime.js.interop.{jsSafeCommittingProxy, jsScalaHidingProxy}
 import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 import jdk.nashorn.internal.runtime.Undefined
@@ -41,7 +41,8 @@ class NashornJavaScriptObject(val som: ScriptObjectMirror)
   override def callMember(name: String, args: AnyRef*): AnyRef = {
     val wrapped = args.collect {
       case j: jsScalaHidingProxy => j
-      case o: Object => new ObjectWrapper(o)
+      case j: jsSafeCommittingProxy => j
+      case o: Object => jsScalaHidingProxy(o)
       case x => x
     }
     convert(som.callMember(name, wrapped:_*))
@@ -69,10 +70,7 @@ class NashornJavaScriptObject(val som: ScriptObjectMirror)
   }
 
   override def call(thisArg: AnyRef, args: AnyRef*): AnyRef = {
-    val wrapped = args.collect {
-      case o: Object => new ObjectWrapper(o)
-      case x => x
-    }
+    val wrapped = args.map(a => jsScalaHidingProxy(a))
     convert(som.call(thisArg, wrapped:_*))
   }
 

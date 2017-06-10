@@ -2,7 +2,10 @@ package com.atomist.rug.runtime.js.interop
 
 import java.lang.reflect.{Method, Modifier}
 
+import com.atomist.graph.GraphNode
+import com.atomist.rug.runtime.js.JavaScriptObject
 import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.MethodValidator
+import com.atomist.rug.runtime.js.nashorn.NashornJavaScriptObject
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 import jdk.nashorn.internal.runtime.ScriptRuntime
 import org.springframework.util.ReflectionUtils
@@ -18,6 +21,7 @@ import scala.util.control.NonFatal
   * Exposes no-arg methods as properties but allows invocation with parameters.
   * If you wish to expose a no-arg method as a function (because it has
   * side effects etc) use
+  *
   * @see ExposeAsFunction
   */
 class jsScalaHidingProxy private(
@@ -39,7 +43,14 @@ class jsScalaHidingProxy private(
           ReflectionUtils.getAllDeclaredMethods(target.getClass).find(_.getName == name) match {
             case Some(m) if methodValidator(m) =>
               if (m.getParameterCount == 0 && !m.isAnnotationPresent(classOf[ExposeAsFunction]))
-                m.invoke(target)
+                m.invoke(target) match {
+                  case n: GraphNode => n
+                  case o if !o.isInstanceOf[String] &&
+                    !o.isInstanceOf[JavaScriptObject] &&
+                    !o.isInstanceOf[ScriptObjectMirror] &&
+                    !o.isInstanceOf[NashornJavaScriptArray[_]]=> jsScalaHidingProxy(o)
+                  case y: AnyRef => y
+                }
               else {
                 new FunctionProxyToReflectiveInvocation(m)
               }
@@ -67,6 +78,7 @@ class jsScalaHidingProxy private(
       case i: Integer => i
       case fun: FunctionProxyToReflectiveInvocation => fun
       case js: ScriptObjectMirror => js
+      case njo: NashornJavaScriptObject => njo.som
       case x => jsScalaHidingProxy(x)
     }
   }
@@ -78,11 +90,27 @@ class jsScalaHidingProxy private(
 
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
       try {
-        m.invoke(target, args: _*)
+        val fixed = args.collect {
+          case o: ScriptObjectMirror => new NashornJavaScriptObject(o)
+          case x => x
+        }
+        m.invoke(target, fixed: _*) match {
+          case n: GraphNode => n
+          case o
+            if !o.isInstanceOf[String] &&
+              !o.isInstanceOf[JavaScriptObject] &&
+              !o.isInstanceOf[ScriptObjectMirror] &&
+              !o.isInstanceOf[NashornJavaScriptArray[_]]  => jsScalaHidingProxy(o)
+          case o: NashornJavaScriptObject => o.som
+          case y: AnyRef => y
+        }
       }
       catch {
         case iex: IllegalArgumentException =>
           throw new IllegalArgumentException(s"Illegal ${args.size} arguments for ${target.getClass}.${m.getName}: [$args]", iex)
+        case t: Throwable =>
+          t.printStackTrace()//TODO remove
+          throw t
         case NonFatal(t) => throw t
       }
     }

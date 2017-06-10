@@ -91,4 +91,7 @@ trait JavaScriptObject {
     }
 }
 
-case class UNDEFINED()
+/**
+  * Represents undefined in the different engines
+  */
+object UNDEFINED

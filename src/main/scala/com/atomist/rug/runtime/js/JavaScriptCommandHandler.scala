@@ -75,12 +75,12 @@ class JavaScriptCommandHandlerFinder
   protected def mappedParameters(someVar: JavaScriptObject): Seq[MappedParameter] = {
     someVar.getMember("__mappedParameters") match {
       case ps: JavaScriptObject if !ps.isEmpty =>
-        ps.entries().collect {
-          case (_, details: JavaScriptObject) =>
+        ps.values().collect {
+          case details: JavaScriptObject =>
             val localKey = details.getMember("localKey").asInstanceOf[String]
             val foreignKey = details.getMember("foreignKey").asInstanceOf[String]
             MappedParameter(localKey, foreignKey)
-        }.toSeq
+        }
       case _ => Seq()
     }
   }

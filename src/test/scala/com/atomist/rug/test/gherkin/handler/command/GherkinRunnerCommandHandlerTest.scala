@@ -50,7 +50,7 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Some(RugArchiveReader(cas)))
     val run = grt.execute()
     run.result match {
-      case Failed(msg) =>
+      case Failed(msg,_) =>
       case wtf => fail(s"Unexpected: $wtf")
     }
   }

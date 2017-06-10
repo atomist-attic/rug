@@ -42,8 +42,8 @@ class NashornContextTest extends FlatSpec with Matchers {
     val tsf = StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters)
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val jsed = RugArchiveReader(as).editors.head.asInstanceOf[JavaScriptProjectEditor]
-    val v1 = jsed.jsc.asInstanceOf[NashornContext].cloneVar(jsed.jsVar.asInstanceOf[NashornJavaScriptObject].som).asInstanceOf[ScriptObjectMirror]
-    v1.put("__description", "dude")
+    val v1 = jsed.jsc.asInstanceOf[NashornContext].cloneVar(jsed.jsVar.asInstanceOf[NashornJavaScriptObject].som)
+    v1.setMember("__description", "dude")
     jsed.jsVar.asInstanceOf[NashornJavaScriptObject].som.get("__description") should be ("A nice little editor")
   }
 }

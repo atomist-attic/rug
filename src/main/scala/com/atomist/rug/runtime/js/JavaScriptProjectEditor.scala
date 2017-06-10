@@ -5,6 +5,7 @@ import com.atomist.project.archive.{DefaultAtomistConfig, RugResolver}
 import com.atomist.project.edit._
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.source.ArtifactSource
+import com.atomist.util.Timing.time
 
 import scala.util.control.NonFatal
 
@@ -49,7 +50,6 @@ class JavaScriptProjectEditor(
     val (result, elapsedTime) = time {
       val pmv = new ProjectMutableView(rugAs, targetProject, atomistConfig = DefaultAtomistConfig, Some(this), rugResolver = resolver)
       try {
-
         jsc.invokeMember(
           jsVar,
           "edit",

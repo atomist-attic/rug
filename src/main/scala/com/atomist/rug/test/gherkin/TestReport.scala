@@ -23,7 +23,7 @@ class TestReport(archiveTestResult: ArchiveTestResult) {
     (archiveTestResult.result match {
       case Passed =>
         "\nTest SUCCESS\n"
-      case Failed(_) =>
+      case Failed(_,_) =>
         "\nTest FAILURE\n"
       case NotYetImplemented(s) =>
         s"\nTest NOT YET IMPLEMENTED: $s\n"

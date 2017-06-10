@@ -35,7 +35,7 @@ class PlanBuilder {
       constructMessage(m)
     }
     val instructions = jsPlan.getMember("instructions") match {
-      case u: UNDEFINED => Nil
+      case UNDEFINED => Nil
       case jsInstructions: JavaScriptObject =>
         jsInstructions.values().toArray.toList.map { respondable =>
           constructRespondable(respondable.asInstanceOf[JavaScriptObject], returningRug)
@@ -80,17 +80,17 @@ class PlanBuilder {
           case _ => throw new InvalidHandlerResultException(s"Message must have a `contentType`")
         }
         val usernames = jsMessage.getMember("usernames") match {
-          case _: UNDEFINED => Nil
+          case UNDEFINED => Nil
           case usernames: JavaScriptObject =>
-            usernames.values().toArray.toSeq.asInstanceOf[Seq[String]]
+            usernames.values().asInstanceOf[Seq[String]]
         }
         val channelNames = jsMessage.getMember("channelNames") match {
-          case _: UNDEFINED => Nil
+          case UNDEFINED => Nil
           case channelNames: JavaScriptObject =>
             channelNames.values().toArray.toSeq.asInstanceOf[Seq[String]]
         }
         val instructions = jsMessage.getMember("instructions") match {
-          case _: UNDEFINED => Nil
+          case UNDEFINED => Nil
           case jsInstructions: JavaScriptObject =>
             jsInstructions.values().toArray.toList.map { presentable =>
               constructPresentable(presentable.asInstanceOf[JavaScriptObject])
@@ -100,7 +100,7 @@ class PlanBuilder {
 
       case "lifecycle" =>
         val instructions = jsMessage.getMember("instructions") match {
-          case _: UNDEFINED => Nil
+          case UNDEFINED => Nil
           case jsInstructions: JavaScriptObject =>
             jsInstructions.values().toArray.toList.map { presentable =>
               constructPresentable(presentable.asInstanceOf[JavaScriptObject])
@@ -123,7 +123,7 @@ class PlanBuilder {
         }
         LifecycleMessage(node, instructions, id)
 
-      case _: UNDEFINED => throw new InvalidHandlerResultException(s"A message must have a kind: $jsMessage")
+      case UNDEFINED => throw new InvalidHandlerResultException(s"A message must have a kind: $jsMessage")
     }
   }
 
@@ -151,7 +151,7 @@ class PlanBuilder {
 
   def constructRespondable(jsRespondable: JavaScriptObject, returningRug: Option[Rug]): Plannable = {
     val instruction: Instruction = jsRespondable.getMember("instruction") match {
-      case u: UNDEFINED =>
+      case UNDEFINED =>
         throw new IllegalArgumentException(s"No instruction found in $jsRespondable")
       case o: JavaScriptObject =>
         constructInstruction(o)
@@ -190,7 +190,8 @@ class PlanBuilder {
           SimpleParameterValue(key,
             value match {
               case s: String => s
-              case o => JsonUtils.toJsonStr(o)
+              case o: JavaScriptObject => JsonUtils.toJson(o.getNativeObject)
+              case o => JsonUtils.toJson(o)
             })
         }.toSeq
       case _ => Nil

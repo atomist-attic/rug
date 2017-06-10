@@ -8,6 +8,7 @@ import com.atomist.param.ParameterValues
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.RugJavaScriptException
 import com.atomist.rug.runtime.js._
+import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy
 import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, FileArtifact}
 import com.coveo.nashorn_modules.{AbstractFolder, Folder, Require}
 import com.typesafe.scalalogging.LazyLogging
@@ -210,69 +211,74 @@ class NashornContext(val rugAs: ArtifactSource,
   override def setMember(name: String, value: AnyRef): Unit = {
     value match {
       case o: NashornJavaScriptObject => engine.put(name, o.som)
-      case _ => engine.put(name, new ObjectWrapper(value))
+      case _ => engine.put(name, jsScalaHidingProxy(value))
     }
   }
 }
 /**
-  * Wrap ScriptObjectMirrors with NashornJavaScriptObject
+  *
   * @param delegate
   */
-class ObjectWrapper(delegate: AnyRef) extends AbstractJSObject {
-
-
-  if(delegate.isInstanceOf[ObjectWrapper]){
-    throw new RuntimeException("Don't wrap wrappers")
-  }
-
-  if(delegate.isInstanceOf[NashornJavaScriptObject]){
-    throw new RuntimeException("These should _not_ be wrapped!")
-  }
-
-  if(delegate.isInstanceOf[ScriptObjectMirror]){
-    throw new RuntimeException("These should _not_ be wrapped!")
-  }
-
-  override def getMember(name: String): AnyRef = {
-
-    if("valueOf" == name){
-      super.getMember(name)
-    }else{
-      ReflectionUtils.getAllDeclaredMethods(delegate.getClass).find(_.getName == name) match {
-        case Some(m) => new TempWrappingFunction(m, delegate)
-        case _ =>
-          ReflectionUtils.findField(delegate.getClass, name) match {
-            case o: Field => new ObjectWrapper(o.get(delegate))
-            case _ => ScriptRuntime.UNDEFINED
-          }
-      }
-    }
-  }
-}
-
-class TempWrappingFunction(m: Method, delegate: AnyRef) extends AbstractJSObject {
-  override def isFunction: Boolean = true
-  override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
-    try {
-      val fixed = args.collect {
-        case o: ScriptObjectMirror => new NashornJavaScriptObject(o)
-        case x => x
-      }
-      m.invoke(delegate, fixed: _*) match {
-        case o if !o.isInstanceOf[String] && !o.isInstanceOf[JavaScriptObject] &&  !o.isInstanceOf[ScriptObjectMirror] => new ObjectWrapper(o)
-        //case x: ScriptObjectMirror => new NashornJavaScriptObject(x)
-        case y: AnyRef => y
-      }
-
-    }
-    catch {
-      case iex: IllegalArgumentException =>
-        throw new IllegalArgumentException(s"Illegal ${args.size} arguments for ${delegate.getClass}.${m.getName}: [$args]", iex)
-      case o: Throwable =>{
-        o.printStackTrace()
-        throw o
-      }
-    }
-  }
-}
+//class ObjectWrapperX(delegate: AnyRef) extends AbstractJSObject {
+//
+//
+//  if(delegate.isInstanceOf[ObjectWrapperX]){
+//    throw new RuntimeException("Don't wrap wrappers")
+//  }
+//
+//  if(delegate.isInstanceOf[NashornJavaScriptObject]){
+//    throw new RuntimeException("These should _not_ be wrapped!")
+//  }
+//
+//  if(delegate.isInstanceOf[ScriptObjectMirror]){
+//    throw new RuntimeException("These should _not_ be wrapped!")
+//  }
+//
+//  override def getMember(name: String): AnyRef = {
+//
+//    if("valueOf" == name){
+//      super.getMember(name)
+//    }else{
+//      ReflectionUtils.getAllDeclaredMethods(delegate.getClass).find(_.getName == name) match {
+//        case Some(m) => new TempWrappingFunction(m, delegate)
+//        case _ =>
+//          ReflectionUtils.findField(delegate.getClass, name) match {
+//            case o: Field => new ObjectWrapper(o.get(delegate))
+//            case _ => ScriptRuntime.UNDEFINED
+//          }
+//      }
+//    }
+//  }
+//}
+//
+///**
+//  * Ensure we use an ObjectWrapper for normal java objects
+//  * @param m
+//  * @param delegate
+//  */
+//class TempWrappingFunction(m: Method, delegate: AnyRef) extends AbstractJSObject {
+//  override def isFunction: Boolean = true
+//  override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+//    try {
+//      val fixed = args.collect {
+//        case o: ScriptObjectMirror => new NashornJavaScriptObject(o)
+//        case x => x
+//      }
+//      m.invoke(delegate, fixed: _*) match {
+//        case o if !o.isInstanceOf[String] && !o.isInstanceOf[JavaScriptObject] &&  !o.isInstanceOf[ScriptObjectMirror] => new ObjectWrapper(o)
+//        //case x: ScriptObjectMirror => new NashornJavaScriptObject(x)
+//        case y: AnyRef => y
+//      }
+//
+//    }
+//    catch {
+//      case iex: IllegalArgumentException =>
+//        throw new IllegalArgumentException(s"Illegal ${args.size} arguments for ${delegate.getClass}.${m.getName}: [$args]", iex)
+//      case o: Throwable =>{
+//        o.printStackTrace()
+//        throw o
+//      }
+//    }
+//  }
+//}
 

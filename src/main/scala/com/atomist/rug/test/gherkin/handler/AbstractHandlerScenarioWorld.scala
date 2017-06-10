@@ -4,7 +4,7 @@ import com.atomist.project.archive.Rugs
 import com.atomist.rug.RugNotFoundException
 import com.atomist.rug.kind.core.{ProjectMutableView, RepoResolver}
 import com.atomist.rug.runtime.CommandHandler
-import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsPathExpressionEngine, jsScalaHidingProxy}
+import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, NashornMapBackedGraphNode, jsPathExpressionEngine, jsScalaHidingProxy}
 import com.atomist.rug.runtime.js.{JavaScriptObject, RugContext, SimpleContainerGraphNode}
 import com.atomist.rug.spi.Handlers.Instruction.{Command, Edit, Generate}
 import com.atomist.rug.spi.Handlers.Plan
@@ -91,7 +91,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   }
 
   private def exposeToJavaScript(plan: Plan): AnyRef = plan.nativeObject match {
-    case Some(som: JavaScriptObject) => som.getNativeObject
+    case Some(som: JavaScriptObject) => som
     case _ => jsScalaHidingProxy(plan)
   }
 
@@ -110,6 +110,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   /**
     * Return the plan or null if none was recorded
     */
+  @ExposeAsFunction
   def plan: Any =
     recordedPlans.values.headOption.map(exposeToJavaScript).orNull
 

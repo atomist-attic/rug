@@ -20,8 +20,8 @@ trait JavaScriptUtils {
   protected def setParameters(obj: JavaScriptObject, params: Seq[ParameterValue]): Unit = {
     val decoratedParamNames: Set[String] = obj.getMember("__parameters") match {
       case ps: JavaScriptObject if !ps.isEmpty =>
-        ps.entries().collect {
-          case (_, details: JavaScriptObject) =>
+        ps.values().collect {
+          case details: JavaScriptObject =>
             details.getMember("name").asInstanceOf[String]
         }.toSet[String]
       case _ => Set()
@@ -29,8 +29,8 @@ trait JavaScriptUtils {
 
     val mappedParams: Set[String] = obj.getMember("__mappedParameters") match {
       case ps: JavaScriptObject if !ps.isEmpty =>
-        ps.entries().collect {
-          case (_, details: JavaScriptObject) =>
+        ps.values.collect {
+          case details: JavaScriptObject =>
             details.getMember("localKey").asInstanceOf[String]
         }.toSet[String]
       case _ => Set()
@@ -74,9 +74,9 @@ trait JavaScriptUtils {
   protected def parameters(someVar: JavaScriptObject): Seq[Parameter] = {
     getMember(someVar, "__parameters") match {
       case Some(ps: JavaScriptObject) if !ps.isEmpty =>
-        ps.entries().collect {
-          case (_, details: JavaScriptObject) => parameterVarToParameter(someVar, details)
-        }.toSeq
+        ps.values().collect {
+          case details: JavaScriptObject => parameterVarToParameter(someVar, details)
+        }
       case _ => Seq()
     }
   }
@@ -105,11 +105,13 @@ trait JavaScriptUtils {
     }
 
     details.getMember("maxLength") match {
-      case x: AnyRef if x.isInstanceOf[UNDEFINED] => parameter.setMaxLength(x.asInstanceOf[Int])
+      case UNDEFINED => parameter.setMaxLength(-1)
+      case x: AnyRef => parameter.setMaxLength(x.asInstanceOf[Int])
       case _ => parameter.setMaxLength(-1)
     }
     details.getMember("minLength") match {
-      case x: AnyRef if x.isInstanceOf[UNDEFINED] => parameter.setMinLength(x.asInstanceOf[Int])
+      case UNDEFINED => parameter.setMinLength(-1)
+      case x: AnyRef => parameter.setMinLength(x.asInstanceOf[Int])
       case _ => parameter.setMinLength(-1)
     }
 

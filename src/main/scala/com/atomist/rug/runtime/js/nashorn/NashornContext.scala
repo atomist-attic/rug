@@ -1,6 +1,5 @@
 package com.atomist.rug.runtime.js.nashorn
 
-import java.lang.reflect.{Field, Method}
 import java.util.regex.Pattern
 import javax.script._
 
@@ -12,12 +11,10 @@ import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy
 import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, FileArtifact}
 import com.coveo.nashorn_modules.{AbstractFolder, Folder, Require}
 import com.typesafe.scalalogging.LazyLogging
-import jdk.nashorn.api.scripting.{AbstractJSObject, NashornScriptEngine, NashornScriptEngineFactory, ScriptObjectMirror}
-import jdk.nashorn.internal.runtime.{ECMAException, ScriptRuntime}
-import org.springframework.util.ReflectionUtils
+import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactory, ScriptObjectMirror}
+import jdk.nashorn.internal.runtime.ECMAException
 
 import scala.collection.JavaConverters._
-import scala.util.control.NonFatal
 
 object NashornContext {
 
@@ -183,6 +180,8 @@ class NashornContext(val rugAs: ArtifactSource,
       clone.callMember(member, args: _*)
     }
   }
+
+
   /**
     * Separate for test
     */
@@ -215,70 +214,5 @@ class NashornContext(val rugAs: ArtifactSource,
     }
   }
 }
-/**
-  *
-  * @param delegate
-  */
-//class ObjectWrapperX(delegate: AnyRef) extends AbstractJSObject {
-//
-//
-//  if(delegate.isInstanceOf[ObjectWrapperX]){
-//    throw new RuntimeException("Don't wrap wrappers")
-//  }
-//
-//  if(delegate.isInstanceOf[NashornJavaScriptObject]){
-//    throw new RuntimeException("These should _not_ be wrapped!")
-//  }
-//
-//  if(delegate.isInstanceOf[ScriptObjectMirror]){
-//    throw new RuntimeException("These should _not_ be wrapped!")
-//  }
-//
-//  override def getMember(name: String): AnyRef = {
-//
-//    if("valueOf" == name){
-//      super.getMember(name)
-//    }else{
-//      ReflectionUtils.getAllDeclaredMethods(delegate.getClass).find(_.getName == name) match {
-//        case Some(m) => new TempWrappingFunction(m, delegate)
-//        case _ =>
-//          ReflectionUtils.findField(delegate.getClass, name) match {
-//            case o: Field => new ObjectWrapper(o.get(delegate))
-//            case _ => ScriptRuntime.UNDEFINED
-//          }
-//      }
-//    }
-//  }
-//}
-//
-///**
-//  * Ensure we use an ObjectWrapper for normal java objects
-//  * @param m
-//  * @param delegate
-//  */
-//class TempWrappingFunction(m: Method, delegate: AnyRef) extends AbstractJSObject {
-//  override def isFunction: Boolean = true
-//  override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
-//    try {
-//      val fixed = args.collect {
-//        case o: ScriptObjectMirror => new NashornJavaScriptObject(o)
-//        case x => x
-//      }
-//      m.invoke(delegate, fixed: _*) match {
-//        case o if !o.isInstanceOf[String] && !o.isInstanceOf[JavaScriptObject] &&  !o.isInstanceOf[ScriptObjectMirror] => new ObjectWrapper(o)
-//        //case x: ScriptObjectMirror => new NashornJavaScriptObject(x)
-//        case y: AnyRef => y
-//      }
-//
-//    }
-//    catch {
-//      case iex: IllegalArgumentException =>
-//        throw new IllegalArgumentException(s"Illegal ${args.size} arguments for ${delegate.getClass}.${m.getName}: [$args]", iex)
-//      case o: Throwable =>{
-//        o.printStackTrace()
-//        throw o
-//      }
-//    }
-//  }
-//}
+
 

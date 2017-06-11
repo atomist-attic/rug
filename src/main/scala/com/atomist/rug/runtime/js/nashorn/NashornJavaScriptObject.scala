@@ -70,7 +70,10 @@ class NashornJavaScriptObject(val som: ScriptObjectMirror)
   }
 
   override def call(thisArg: AnyRef, args: AnyRef*): AnyRef = {
-    val wrapped = args.map(a => jsScalaHidingProxy(a))
+    val wrapped = args.map{
+      case o: jsSafeCommittingProxy => o
+      case a => jsScalaHidingProxy(a)
+    }
     convert(som.call(thisArg, wrapped:_*))
   }
 

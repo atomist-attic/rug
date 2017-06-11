@@ -37,7 +37,7 @@ class JavaScriptBackedTypeProvider(jsTypeProvider: JavaScriptObject)
 /**
   * TreeNode backed by a JavaScript object
   */
-class ScriptObjectBackedTreeNode(som: JavaScriptObject) extends TreeNode {
+class ScriptObjectBackedTreeNode(val som: JavaScriptObject) extends TreeNode {
 
   override def nodeName: String = som.stringFunction("nodeName")
 

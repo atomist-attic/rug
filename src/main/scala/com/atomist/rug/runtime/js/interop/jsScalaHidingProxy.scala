@@ -44,6 +44,7 @@ class jsScalaHidingProxy private(
             case Some(m) if methodValidator(m) =>
               if (m.getParameterCount == 0 && !m.isAnnotationPresent(classOf[ExposeAsFunction]))
                 m.invoke(target) match {
+                  case s: ScriptObjectBackedTreeNode => jsScalaHidingProxy(s)
                   case n: GraphNode => n
                   case o if !o.isInstanceOf[String] &&
                     !o.isInstanceOf[JavaScriptObject] &&
@@ -72,6 +73,7 @@ class jsScalaHidingProxy private(
       case x => x
     }) match {
       case null => null
+      case ScriptRuntime.UNDEFINED => ScriptRuntime.UNDEFINED
       case x if returnNotToProxy(x) => x
       case arr: NashornJavaScriptArray[_] => arr
       case s: String => s
@@ -95,6 +97,7 @@ class jsScalaHidingProxy private(
           case x => x
         }
         m.invoke(target, fixed: _*) match {
+          case s: ScriptObjectBackedTreeNode => jsScalaHidingProxy(s)
           case n: GraphNode => n
           case o
             if !o.isInstanceOf[String] &&

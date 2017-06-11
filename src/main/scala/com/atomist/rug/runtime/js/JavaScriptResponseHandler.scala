@@ -74,22 +74,6 @@ class JavaScriptResponseHandler(jsc: JavaScriptEngineContext,
       case other => throw new InvalidHandlerResultException(s"$name ResponseHandler did not return a recognized response ($other) when invoked with ${params.toString()}")
     }
   }
-
-  /**
-    * If a field doesn't exist on the handler already, create it,
-    * but only if no @Parameter annotations are there
-    * This is handy to avoid use @Parameter decorators
-    */
-  override protected def setParameters(clone: JavaScriptObject, params: Seq[ParameterValue]): Unit = {
-    super.setParameters(clone, params)
-    if (parameters.isEmpty) {
-      params.foreach(p => {
-        if (!clone.hasMember(p.getName)) {
-          clone.setMember(p.getName, p.getValue)
-        }
-      })
-    }
-  }
 }
 
 private case class jsResponse(msg: String,

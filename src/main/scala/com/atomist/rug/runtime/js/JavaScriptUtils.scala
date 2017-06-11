@@ -43,6 +43,14 @@ trait JavaScriptUtils {
         obj.setMember(p.getName, p.getValue)
       }
     })
+
+    if (mappedParams.isEmpty && decoratedParamNames.isEmpty) {
+      params.foreach(p => {
+        if (!obj.hasMember(p.getName)) {
+          obj.setMember(p.getName, p.getValue)
+        }
+      })
+    }
   }
 
   /**
@@ -136,7 +144,11 @@ trait JavaScriptUtils {
       case o: String => parameter.setValidInputDescription(o)
       case _ =>
     }
-    parameter.describedAs(details.getMember("description").asInstanceOf[String])
+
+    details.getMember("description") match {
+      case o: String => parameter.describedAs(o)
+      case _ =>
+    }
 
     pPattern match {
       case s: String if s.startsWith("@") => DefaultIdentifierResolver.resolve(s.substring(1)) match {

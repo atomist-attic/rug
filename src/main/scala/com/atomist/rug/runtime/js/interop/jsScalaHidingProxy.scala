@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime.js.interop
 
-import java.lang.reflect.{Method, Modifier}
+import java.lang.reflect.{InvocationTargetException, Method, Modifier}
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
@@ -117,9 +117,8 @@ class jsScalaHidingProxy private(
       catch {
         case iex: IllegalArgumentException =>
           throw new IllegalArgumentException(s"Illegal ${args.size} arguments for ${target.getClass}.${m.getName}: [$args]", iex)
-        case t: Throwable =>
-          t.printStackTrace()//TODO remove
-          throw t
+        case t: InvocationTargetException =>
+          throw t.getTargetException
         case NonFatal(t) => throw t
       }
     }

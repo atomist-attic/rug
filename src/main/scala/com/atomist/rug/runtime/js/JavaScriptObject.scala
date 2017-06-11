@@ -9,6 +9,8 @@ import scala.util.control.Exception.allCatch
   */
 trait JavaScriptObject {
 
+  override def hashCode: Int
+
   def getNativeObject: AnyRef
 
   def hasMember(name: String): Boolean
@@ -40,14 +42,15 @@ trait JavaScriptObject {
 
   def extractProperties(): Map[String, AnyRef] =
     entries().filter {
-      case (name, value: JavaScriptObject) if !value.isFunction => true
+      case (_, value: JavaScriptObject) if !value.isFunction => true
+      case (_, x) if !x.isInstanceOf[JavaScriptObject] => true
       case _ => false
     }
 
   // TODO this is fragile but can't find a Nashorn method to do it
   private def isNoArgFunction(f: JavaScriptObject): Boolean = {
     f.isFunction && {
-      val s = f.toString
+      val s = f.getNativeObject.toString
       s.startsWith("function ()")
     }
   }

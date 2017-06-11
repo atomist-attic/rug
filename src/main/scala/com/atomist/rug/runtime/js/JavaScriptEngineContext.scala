@@ -10,10 +10,11 @@ trait JavaScriptEngineContext {
   def evaluate(f: FileArtifact): Unit
   def members(): Seq[JavaScriptMember]
   def rugAs: ArtifactSource
-  def invokeMember(jsVar: JavaScriptObject, member: String, params: Option[ParameterValues], args: Object*): Any
+  def invokeMember(jsVar: JavaScriptObject, member: String, params: Option[ParameterValues], args: Object*): AnyRef
   def parseJson(json: String): JavaScriptObject
   def setMember(name: String, value: AnyRef): Unit
   def atomistContent(): ArtifactSource
+  def eval(script: String): AnyRef
 }
 
 /**

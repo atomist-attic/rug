@@ -1,7 +1,7 @@
 package com.atomist.rug.runtime.js.interop
 
 import com.atomist.graph.GraphNode
-import com.atomist.rug.runtime.js.BaseRugContext
+import com.atomist.rug.runtime.js.{BaseRugContext, UNDEFINED}
 import com.atomist.tree.SimpleTerminalTreeNode
 import jdk.nashorn.api.scripting.JSObject
 import org.scalatest.{FlatSpec, Matchers}
@@ -29,7 +29,7 @@ class jsScalaHidingProxyTest extends FlatSpec with Matchers {
     val fido = Animal("Fido", 6)
     val proxy = jsScalaHidingProxy(fido)
     val engine = createEngine
-    engine.put("proxy", proxy)
+    engine.setMember("proxy", proxy)
     val r = engine.eval("proxy.name")
     assert(r === fido.name)
     assert(engine.eval("proxy.age") === 6)
@@ -39,7 +39,7 @@ class jsScalaHidingProxyTest extends FlatSpec with Matchers {
     val fido = Animal("Fido", 6)
     val proxy = jsScalaHidingProxy(fido)
     val engine = createEngine
-    engine.put("proxy", proxy)
+    engine.setMember("proxy", proxy)
     val r = engine.eval("proxy.name")
     assert(engine.eval("proxy.evilSideEffect()") === "evilSideEffect")
   }
@@ -48,7 +48,7 @@ class jsScalaHidingProxyTest extends FlatSpec with Matchers {
     val fido = Animal("Fido", 6)
     val proxy = jsScalaHidingProxy(fido)
     val engine = createEngine
-    engine.put("proxy", proxy)
+    engine.setMember("proxy", proxy)
     val r = engine.eval("proxy.name")
     assert(engine.eval("proxy.friendsLike('tom')") === 0)
   }
@@ -57,16 +57,16 @@ class jsScalaHidingProxyTest extends FlatSpec with Matchers {
     val fido = Animal("Fido", 6)
     val proxy = jsScalaHidingProxy(fido)
     val engine = createEngine
-    engine.put("proxy", proxy)
-    val r = engine.eval("!proxy.absquatulate")
-    assert(r === false)
+    engine.setMember("proxy", proxy)
+    val r = engine.eval("proxy.absquatulate == undefined")
+    assert(r == true)
   }
 
   it should "allow toString" in {
     val fido = Animal("Fido", 6)
     val proxy = jsScalaHidingProxy(fido)
     val engine = createEngine
-    engine.put("proxy", proxy)
+    engine.setMember("proxy", proxy)
     engine.eval("var s = '' + proxy")
   }
 
@@ -74,7 +74,7 @@ class jsScalaHidingProxyTest extends FlatSpec with Matchers {
     val fido = Animal("Fido", 6, Seq(Animal("Rover", 2)))
     val proxy = jsScalaHidingProxy(fido)
     val engine = createEngine
-    engine.put("proxy", proxy)
+    engine.setMember("proxy", proxy)
     assert(engine.eval("proxy.mate") === null)
     engine.eval("proxy.friends") match {
       case friends: NashornJavaScriptArray[_]@unchecked =>
@@ -88,7 +88,7 @@ class jsScalaHidingProxyTest extends FlatSpec with Matchers {
     val fido = Animal("Fido", 6, mate = Some(Animal("Rover", 2)))
     val proxy = jsScalaHidingProxy(fido)
     val engine = createEngine
-    engine.put("proxy", proxy)
+    engine.setMember("proxy", proxy)
     val mate = engine.eval("proxy.mate")
     mate match {
       case p: jsScalaHidingProxy =>
@@ -102,7 +102,7 @@ class jsScalaHidingProxyTest extends FlatSpec with Matchers {
     val rc = new TestContext(node)
     val proxy = jsScalaHidingProxy(rc)
     val engine = createEngine
-    engine.put("context", proxy)
+    engine.setMember("context", proxy)
     val pex = engine.eval("context.pathExpressionEngine")
     pex should not be null
     pex match {

@@ -2,6 +2,7 @@ package com.atomist.rug.runtime.js.interop
 
 import com.atomist.graph.{AddressableGraphNode, GraphNode}
 import com.atomist.rug.runtime.js.SimpleContainerGraphNode
+import com.atomist.rug.runtime.js.nashorn.NashornContext
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.{PathExpression, PathExpressionEngine}
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -10,7 +11,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class NashornBackedGraphNodeTest extends FlatSpec with Matchers {
 
-  def engine: NashornScriptEngine = NashornUtilsTest.createEngine
+  def engine: NashornContext = NashornUtilsTest.createEngine
 
   val pe = new PathExpressionEngine
 

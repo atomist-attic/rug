@@ -7,12 +7,12 @@ import com.atomist.param.ParameterValues
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.RugJavaScriptException
 import com.atomist.rug.runtime.js._
-import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy
+import com.atomist.rug.runtime.js.interop.{jsSafeCommittingProxy, jsScalaHidingProxy}
 import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, FileArtifact}
 import com.coveo.nashorn_modules.{AbstractFolder, Folder, Require}
 import com.typesafe.scalalogging.LazyLogging
 import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactory, ScriptObjectMirror}
-import jdk.nashorn.internal.runtime.ECMAException
+import jdk.nashorn.internal.runtime.{ECMAException, ScriptRuntime}
 
 import scala.collection.JavaConverters._
 
@@ -171,7 +171,7 @@ class NashornContext(val rugAs: ArtifactSource,
       atomistConfig.isJsSource(f) || atomistConfig.isJsTest(f)))}\n" +
     s" - test features [${atomistContent.allFiles.filter(f => f.name.endsWith(".feature"))}]"
 
-  override def invokeMember(jsVar: JavaScriptObject, member: String, params: Option[ParameterValues], args: Object*): Any = {
+  override def invokeMember(jsVar: JavaScriptObject, member: String, params: Option[ParameterValues], args: Object*): AnyRef = {
     withEnhancedExceptions {
       val clone = cloneVar(jsVar.asInstanceOf[NashornJavaScriptObject].som)
       if (params.nonEmpty) {
@@ -210,7 +210,16 @@ class NashornContext(val rugAs: ArtifactSource,
   override def setMember(name: String, value: AnyRef): Unit = {
     value match {
       case o: NashornJavaScriptObject => engine.put(name, o.som)
+      case s: jsSafeCommittingProxy => engine.put(name, s)
       case _ => engine.put(name, jsScalaHidingProxy(value))
+    }
+  }
+
+  override def eval(script: String): AnyRef = {
+    engine.eval(script) match {
+      case o: ScriptObjectMirror => new NashornJavaScriptObject(o)
+      case ScriptRuntime.UNDEFINED => UNDEFINED
+      case x => x
     }
   }
 }

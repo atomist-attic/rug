@@ -103,7 +103,7 @@ class NashornMapBackedGraphNode(val scriptObject: JavaScriptObject,
   }
 
   override def nodeTags: Set[String] = {
-    relevantPropertiesAndValues.get("_nodeTags") match {
+    relevantPropertiesAndValues.get("nodeTags") match {
       case Some(som: JavaScriptObject) if som.isSeq =>
         som.values().map(Objects.toString(_)).toSet
       case _ => Set()

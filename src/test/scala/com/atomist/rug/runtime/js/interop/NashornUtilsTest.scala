@@ -1,12 +1,10 @@
 package com.atomist.rug.runtime.js.interop
 
-import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactory}
+import com.atomist.rug.runtime.js.nashorn.NashornContext
+import com.atomist.source.EmptyArtifactSource
 
 object NashornUtilsTest {
 
-  def createEngine: NashornScriptEngine =
-    new NashornScriptEngineFactory()
-      .getScriptEngine("--optimistic-types", "--language=es6", "--no-java")
-      .asInstanceOf[NashornScriptEngine]
+  def createEngine: NashornContext = new NashornContext(EmptyArtifactSource())
 
 }

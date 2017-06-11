@@ -37,7 +37,7 @@ class ProxyAgainstDeserializedNodeTest extends FlatSpec with Matchers {
       case x => assert(x.toString === "307")
     }
     val eng = NashornUtilsTest.createEngine
-    eng.put("issue", proxy)
+    eng.setMember("issue", proxy)
     assert(eng.eval("issue.number").toString === "307")
     assert(eng.eval("issue.repo.name").toString === "handlers")
     eng.eval("issue.repo.channels") match {

@@ -80,4 +80,13 @@ class NashornJavaScriptObject(val som: ScriptObjectMirror)
   override def eval(js: String): AnyRef = convert(som.eval(js))
 
   override def getNativeObject: AnyRef = som
+
+  override def hashCode(): Int = som.hashCode()
+
+  override def equals(obj: scala.Any): Boolean = {
+    obj match {
+      case n: NashornJavaScriptObject => n.som.equals(som)
+      case _ => false
+    }
+  }
 }

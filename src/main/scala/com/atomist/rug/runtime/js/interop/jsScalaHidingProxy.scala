@@ -47,12 +47,14 @@ class jsScalaHidingProxy private(
                 m.invoke(target) match {
                   case s: ScriptObjectBackedTreeNode => jsScalaHidingProxy(s)
                   case n: GraphNode => n
-                  case o: Object if !o.isInstanceOf[String] &&
-                    !o.isInstanceOf[JavaScriptObject] &&
-                    !o.isInstanceOf[ScriptObjectMirror] &&
-                    !ClassUtils.isPrimitiveWrapper(o.getClass) &&
-                    !o.isInstanceOf[NashornJavaScriptArray[_]]=> jsScalaHidingProxy(o)
-                  case y: AnyRef => y
+                  case o: JavaScriptObject => o
+                  case s: String => s
+                  case m: ScriptObjectMirror => m
+                  case p: Object if ClassUtils.isPrimitiveWrapper(p.getClass) => p
+                  case a: NashornJavaScriptArray[_] => a
+                  case x: Seq[_] => x
+                  case o: AnyRef => jsScalaHidingProxy(o)
+                  case x => x
                 }
               else {
                 new FunctionProxyToReflectiveInvocation(m)
@@ -98,7 +100,7 @@ class jsScalaHidingProxy private(
           case o: ScriptObjectMirror => new NashornJavaScriptObject(o)
           case x => x
         }
-        m.invoke(target, fixed: _*) match {
+        if(fixed.nonEmpty) m.invoke(target, fixed: _*) else m.invoke(target) match {
           case s: ScriptObjectBackedTreeNode => jsScalaHidingProxy(s)
           case n: GraphNode => n
           case o: Object
@@ -109,7 +111,7 @@ class jsScalaHidingProxy private(
               !o.isInstanceOf[NashornJavaScriptArray[_]]  => jsScalaHidingProxy(o)
           case o: NashornJavaScriptObject => o.som
           case y: AnyRef => y
-          case null => UNDEFINED
+          case null => ScriptRuntime.UNDEFINED
         }
       }
       catch {

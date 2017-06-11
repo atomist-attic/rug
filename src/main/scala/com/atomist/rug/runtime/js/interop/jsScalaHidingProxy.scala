@@ -3,11 +3,12 @@ package com.atomist.rug.runtime.js.interop
 import java.lang.reflect.{Method, Modifier}
 
 import com.atomist.graph.GraphNode
-import com.atomist.rug.runtime.js.JavaScriptObject
+import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
 import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.MethodValidator
 import com.atomist.rug.runtime.js.nashorn.NashornJavaScriptObject
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 import jdk.nashorn.internal.runtime.ScriptRuntime
+import org.apache.commons.lang3.ClassUtils
 import org.springframework.util.ReflectionUtils
 
 import scala.collection.JavaConverters._
@@ -46,9 +47,10 @@ class jsScalaHidingProxy private(
                 m.invoke(target) match {
                   case s: ScriptObjectBackedTreeNode => jsScalaHidingProxy(s)
                   case n: GraphNode => n
-                  case o if !o.isInstanceOf[String] &&
+                  case o: Object if !o.isInstanceOf[String] &&
                     !o.isInstanceOf[JavaScriptObject] &&
                     !o.isInstanceOf[ScriptObjectMirror] &&
+                    !ClassUtils.isPrimitiveWrapper(o.getClass) &&
                     !o.isInstanceOf[NashornJavaScriptArray[_]]=> jsScalaHidingProxy(o)
                   case y: AnyRef => y
                 }
@@ -99,13 +101,15 @@ class jsScalaHidingProxy private(
         m.invoke(target, fixed: _*) match {
           case s: ScriptObjectBackedTreeNode => jsScalaHidingProxy(s)
           case n: GraphNode => n
-          case o
+          case o: Object
             if !o.isInstanceOf[String] &&
               !o.isInstanceOf[JavaScriptObject] &&
               !o.isInstanceOf[ScriptObjectMirror] &&
+              !ClassUtils.isPrimitiveWrapper(o.getClass) &&
               !o.isInstanceOf[NashornJavaScriptArray[_]]  => jsScalaHidingProxy(o)
           case o: NashornJavaScriptObject => o.som
           case y: AnyRef => y
+          case null => UNDEFINED
         }
       }
       catch {

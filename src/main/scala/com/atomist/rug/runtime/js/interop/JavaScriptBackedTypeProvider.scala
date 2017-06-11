@@ -4,9 +4,10 @@ import java.util.Objects
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.dynamic.ChildResolver
-import com.atomist.rug.runtime.js.JavaScriptObject
+import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
 import com.atomist.rug.spi.{TypeOperation, Typed}
 import com.atomist.tree.TreeNode
+import jdk.nashorn.api.scripting.AbstractJSObject
 
 /**
   * Type provider backed by a JavaScript object
@@ -67,35 +68,15 @@ class ScriptObjectBackedTreeNode(val som: JavaScriptObject) extends TreeNode {
   /**
     * Invoke an arbitrary function defined in JavaScript
     */
-  def invoke(name: String): JavaScriptObject = new InvokingFunctionProxy(name)
+  def invoke(name: String): AbstractJSObject = new InvokingFunctionProxy(name)
 
   private class InvokingFunctionProxy(fname: String)
-    extends JavaScriptObject {
-    override def hasMember(name: String): Boolean = ???
-
-    override def getMember(name: String): AnyRef = ???
-
-    override def setMember(name: String, value: AnyRef): Unit = ???
-
-    override def callMember(name: String, args: AnyRef*): AnyRef = ???
-
-    override def call(thisArg: AnyRef, args: AnyRef*): AnyRef = {
-      som.callMember(fname,args)
-    }
-
-    override def isEmpty: Boolean = ???
-
-    override def values(): Seq[AnyRef] = ???
-
-    override def isSeq: Boolean = ???
-
+    extends AbstractJSObject {
     override def isFunction: Boolean = true
 
-    override def eval(js: String): AnyRef = ???
-
-    override def entries(): Map[String, AnyRef] = ???
-
-    override def getNativeObject: AnyRef = ???
+    override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+      som.callMember(fname)
+    }
   }
 
 }

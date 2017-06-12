@@ -112,17 +112,17 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "use generated model"
-    useGeneratedModel("PassingFeature1StepsAgainstGenerated.ts")
+  it should "use generated model" in
+    {useGeneratedModel("PassingFeature1StepsAgainstGenerated.ts")}
 
-  it should "use generated model and run path expression"
-    useGeneratedModel("PassingFeature1StepsAgainstGeneratedWithPathExpression.ts")
+  it should "use generated model and run path expression" in
+    {useGeneratedModel("PassingFeature1StepsAgainstGeneratedWithPathExpression.ts")}
 
-  it should "use generated model with enum/narrowed type"
-    useGeneratedModel("PassingFeature1StepsAgainstGenerated4.ts")
+  it should "use generated model with enum/narrowed type" in
+    {useGeneratedModel("PassingFeature1StepsAgainstGenerated4.ts")}
 
   it should "#487: use generated model with arrays" in
-    useGeneratedModel("PassingFeature1StepsAgainstGeneratedWithArrays.ts")
+    {useGeneratedModel("PassingFeature1StepsAgainstGeneratedWithArrays.ts")}
 
   private def useGeneratedModel(stepsFile: String): Unit = {
     val passingFeature1StepsFile = requiredFileInPackage(
@@ -149,19 +149,19 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
   }
 
   it should "verify no plan steps with matching simple path match" in
-    verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps2.ts")
+    {verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps2.ts")}
 
   it should "verify no plan steps with matching simple path match using named type" in
-    verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps2a.ts")
+    {verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps2a.ts")}
 
   it should "verify no plan steps with matching simple path match with void return" in
-    verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps2d.ts")
+    {verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps2d.ts")}
 
   it should "verify no plan steps with matching deeper path match" in
-    verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps4.ts")
+    {verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps4.ts")}
 
   it should "#480 verify no plan steps with more than one handler registered" in
-    verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps5.ts")
+    {verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps5.ts")}
 
   def verifyNoPlanStepsWithMatchingSimplePathMatch(stepsFile: String) {
     val passingFeature1StepsFile = requiredFileInPackage(
@@ -210,7 +210,8 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
   }
 
   it should "return the message from the handler when no plan was explicitly returned and more than one event fired" in
-    feature2Steps("PassingFeature2Steps1.ts")
+    {
+      feature2Steps("PassingFeature2Steps1.ts")}
 
   private def feature2Steps(stepsFile: String): Unit = {
     val passingFeature1StepsFile = requiredFileInPackage(

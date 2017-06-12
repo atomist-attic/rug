@@ -84,8 +84,7 @@ import com.atomist.rug.runtime.js.interop.JavaScriptBackedGraphNode._
   */
 class JavaScriptBackedGraphNode(val scriptObject: JavaScriptObject,
                                 nodeRegistry: NodeRegistry)
-  extends GraphNode
-  with JsonableProxy{
+  extends GraphNode {
 
   protected val relevantPropertiesAndValues: Map[String, AnyRef] = relevantPropertyValues(scriptObject)
 

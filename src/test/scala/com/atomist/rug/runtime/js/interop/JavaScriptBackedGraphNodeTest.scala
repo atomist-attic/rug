@@ -300,30 +300,4 @@ class JavaScriptBackedGraphNodeTest extends FlatSpec with Matchers {
     assert(s.size === 1)
     assert(s.head.relatedNodeNames.contains("name"))
   }
-
-  private def casparTheGangster: GraphNode = {
-    val rootName = "Gangster"
-    val n = engine.eval(
-      s"""
-         |{
-         |   var x = { nodeName: '$rootName', forename: 'Johnny', surname: 'Caspar',
-         |     associates: [
-         |      { nodeName: 'Leo', forename: 'Leo', nodeTags: ["Irish"]},
-         |      { nodeName: 'Tom', forename: 'Tom', nodeTags: ["Irish"]}
-         |     ],
-         |     nodeTags: ["tag1", "tag2"]};
-         |   x
-         |}
-      """.stripMargin
-    )
-    toGraphNode(n).get
-  }
-
-  it should "produce valid JSON toString from nested node" in {
-    val caspar = casparTheGangster
-    val json = caspar.toString
-    val om = new ObjectMapper()
-    // Check it doesn't blow up
-    val obj = om.readValue(json, classOf[AnyRef])
-  }
 }

@@ -11,7 +11,6 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.js._
 import com.atomist.rug.runtime.js.interop.{JavaScriptBackedGraphNode, JavaScriptRuntimeException, jsContextMatch, jsPathExpressionEngine}
-import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, FileArtifact}
 import com.coveo.nashorn_modules.{AbstractFolder, Folder, Require}
 import com.typesafe.scalalogging.LazyLogging
@@ -252,6 +251,14 @@ class NashornContext(val rugAs: ArtifactSource,
       case x => x
     }
   }
+
+//  override def unrap[T](o: AnyRef): T = {
+//    o match {
+//      case p: jsSafeCommittingProxy => p.node.asInstanceOf[T]
+//      case o: jsScalaHidingProxy => o.target.asInstanceOf[T]
+//      case x => x.asInstanceOf[T]
+//    }
+//  }
 }
 
 

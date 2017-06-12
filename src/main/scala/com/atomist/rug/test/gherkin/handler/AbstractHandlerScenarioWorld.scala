@@ -98,6 +98,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   /**
     * Return a single plan or throw an exception if none was recorded.
     */
+  @ExposeAsFunction
   def requiredPlan: AnyRef = recordedPlans.values.toList match {
     case Nil =>
       throw new IllegalArgumentException("No plan was recorded")
@@ -122,6 +123,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
       .map(jsScalaHidingProxy.apply(_))
       .orNull
 
+  @ExposeAsFunction
   def planCount: Int = recordedPlans.size
 
   /**

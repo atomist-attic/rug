@@ -142,7 +142,7 @@ class jsScalaHidingProxy private(
         case i: IllegalArgumentException =>
           throw new RuntimeException(s"Error invoking ${m.getName} on $target with ${args.length} parameters: [${fixed.mkString(",")}]", i)
         case t: InvocationTargetException =>
-          throw new RuntimeException(s"Error from ${m.getName} on $target with ${args.length} parameters: [${fixed.mkString(",")}]", t.getTargetException)
+          throw t.getTargetException
         case NonFatal(t) => throw t
       }
     }

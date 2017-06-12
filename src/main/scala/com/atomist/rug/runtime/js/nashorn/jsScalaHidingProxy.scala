@@ -3,10 +3,11 @@ package com.atomist.rug.runtime.js.nashorn
 import java.lang.reflect.{InvocationTargetException, Method, Modifier}
 
 import com.atomist.graph.GraphNode
+import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.Rug
 import com.atomist.rug.runtime.js.interop._
 import com.atomist.rug.runtime.js.nashorn.jsScalaHidingProxy.MethodValidator
-import com.atomist.rug.runtime.js.{JavaScriptCommandHandler, JavaScriptObject}
+import com.atomist.rug.runtime.js.{JavaScriptCommandHandler, JavaScriptObject, SimpleContainerGraphNode}
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 import jdk.nashorn.internal.runtime.ScriptRuntime
 import org.apache.commons.lang3.ClassUtils
@@ -26,7 +27,7 @@ import scala.util.control.NonFatal
   *
   * @see ExposeAsFunction
   */
-class jsScalaHidingProxy private(
+private [nashorn] class jsScalaHidingProxy private(
                                   val target: Any,
                                   methodsToHide: Set[String],
                                   methodValidator: MethodValidator
@@ -63,7 +64,9 @@ class jsScalaHidingProxy private(
               if (m.getParameterCount == 0 && !m.isAnnotationPresent(classOf[ExposeAsFunction]))
                 m.invoke(theTarget) match {
                   case s: ScriptObjectBackedTreeNode => jsScalaHidingProxy(s)
+                  case s: SimpleContainerGraphNode => s
                   case n: GraphNode => n
+                  case m: Match => jsScalaHidingProxy(m)
                   case o: JavaScriptObject => o
                   case s: String => s
                   case m: ScriptObjectMirror => m
@@ -94,6 +97,7 @@ class jsScalaHidingProxy private(
       case x => x
     }) match {
       case null => null
+      case s: SimpleContainerGraphNode => s
       case ScriptRuntime.UNDEFINED => ScriptRuntime.UNDEFINED
       case arr: NashornJavaScriptArray[_] => arr
       case s: String => s
@@ -122,6 +126,7 @@ class jsScalaHidingProxy private(
       try {
         val res = (if(fixed.nonEmpty) m.invoke(target, fixed: _*) else m.invoke(target)) match {
           case s: ScriptObjectBackedTreeNode => jsScalaHidingProxy(s)
+          case s: SimpleContainerGraphNode => s
           case n: GraphNode => n
           case pxe: jsPathExpressionEngine => jsScalaHidingProxy(pxe)
           case o: Object
@@ -158,7 +163,7 @@ class jsScalaHidingProxy private(
     s"${getClass.getSimpleName} wrapping [$target]"
 }
 
-object jsScalaHidingProxy {
+private [nashorn] object jsScalaHidingProxy {
 
   type MethodValidator = Method => Boolean
 

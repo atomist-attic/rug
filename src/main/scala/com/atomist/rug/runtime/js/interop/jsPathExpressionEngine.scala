@@ -6,7 +6,7 @@ import java.util.Collections
 import com.atomist.graph.GraphNode
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.dynamic.ChildResolver
-import com.atomist.rug.runtime.js.nashorn.{jsSafeCommittingProxy, jsScalaHidingProxy}
+import com.atomist.rug.runtime.js.nashorn.jsSafeCommittingProxy
 import com.atomist.rug.runtime.js.{JavaScriptObject, RugContext, SimpleExecutionContext}
 import com.atomist.rug.spi._
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpression, PathExpressionEngine, PathExpressionParser}
@@ -20,7 +20,7 @@ import scala.collection.JavaConverters._
   * @param root    root we evaluated path from
   * @param matches matches
   */
-private case class Match(root: GraphNode,
+case class Match(root: GraphNode,
                    matches: _root_.java.util.List[GraphNode])
 
 /**
@@ -84,8 +84,7 @@ class jsPathExpressionEngine(
     * @return a Match
     */
   def evaluate(root: AnyRef, pe: Object): AnyRef = {
-    val raw = evaluateInternal(root, jsPathExpressionEngine.pathExpressionFromObject(pe))
-    jsScalaHidingProxy(raw, returnNotToProxy = _=> true)
+    evaluateInternal(root, jsPathExpressionEngine.pathExpressionFromObject(pe))
   }
 
   private def evaluateInternal(root: AnyRef, pe: Object): Match =
@@ -109,7 +108,7 @@ class jsPathExpressionEngine(
     case scp: jsSafeCommittingProxy =>
       // Unwrap this
       scp.node
-    case shp: jsScalaHidingProxy if shp.target.isInstanceOf[GraphNode] => shp.target.asInstanceOf[GraphNode]
+    //case shp: jsScalaHidingProxy if shp.target.isInstanceOf[GraphNode] => shp.target.asInstanceOf[GraphNode]
     case tn: GraphNode => tn
     case som: JavaScriptObject =>
       JavaScriptBackedGraphNode.toGraphNode(som).getOrElse(

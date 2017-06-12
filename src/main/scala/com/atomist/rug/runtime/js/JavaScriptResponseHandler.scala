@@ -3,7 +3,6 @@ package com.atomist.rug.runtime.js
 import com.atomist.param._
 import com.atomist.project.archive.RugResolver
 import com.atomist.rug.runtime.RugScopes.Scope
-import com.atomist.rug.runtime.js.nashorn.jsScalaHidingProxy
 import com.atomist.rug.runtime.plans.{JsonResponseConverter, NullResponseConverter, ResponseConverter}
 import com.atomist.rug.runtime.{ParameterizedRug, ResponseHandler}
 import com.atomist.rug.spi.Handlers.{Plan, Response}

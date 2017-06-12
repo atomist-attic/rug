@@ -5,7 +5,6 @@ import com.atomist.rug.RugNotFoundException
 import com.atomist.rug.kind.core.{ProjectMutableView, RepoResolver}
 import com.atomist.rug.runtime.CommandHandler
 import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, JavaScriptBackedGraphNode, jsPathExpressionEngine}
-import com.atomist.rug.runtime.js.nashorn.jsScalaHidingProxy
 import com.atomist.rug.runtime.js.{JavaScriptObject, RugContext, SimpleContainerGraphNode}
 import com.atomist.rug.spi.Handlers.Instruction.{Command, Edit, Generate}
 import com.atomist.rug.spi.Handlers.Plan
@@ -93,7 +92,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
 
   private def exposeToJavaScript(plan: Plan): AnyRef = plan.nativeObject match {
     case Some(som: JavaScriptObject) => som
-    case _ => jsScalaHidingProxy(plan)
+    case _ => plan
   }
 
   /**
@@ -119,10 +118,8 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   /**
     * Return the plan recorded for this named handler, or null if not found
     */
-  def planFor(handlerName: String): jsScalaHidingProxy =
-    recordedPlans.get(handlerName)
-      .map(jsScalaHidingProxy.apply(_))
-      .orNull
+  def planFor(handlerName: String): Plan =
+    recordedPlans.get(handlerName).orNull
 
   @ExposeAsFunction
   def planCount: Int = recordedPlans.size

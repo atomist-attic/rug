@@ -68,8 +68,8 @@ class JavaScriptResponseHandler(jsc: JavaScriptEngineContext,
       handler,
       "handle",
       Some(validated),
-      jsScalaHidingProxy(jsResponse(coerced.msg.orNull, coerced.code.getOrElse(-1), coerced.body.getOrElse(Nil))),
-      jsScalaHidingProxy(ctx)) match {
+      jsResponse(coerced.msg.orNull, coerced.code.getOrElse(-1), coerced.body.getOrElse(Nil)),
+      ctx) match {
       case plan: JavaScriptObject => ConstructPlan(plan, Some(this))
       case other => throw new InvalidHandlerResultException(s"$name ResponseHandler did not return a recognized response ($other) when invoked with ${params.toString()}")
     }

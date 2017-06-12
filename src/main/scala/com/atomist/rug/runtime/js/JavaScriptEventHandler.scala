@@ -80,7 +80,7 @@ class JavaScriptEventHandler(jsc: JavaScriptEngineContext,
           handler,
           "handle",
           None,
-          jsScalaHidingProxy(cm, returnNotToProxy = _ => true)
+          cm
         ) match {
           case plan: JavaScriptObject => ConstructPlan(plan, Some(this))
           case other => throw new InvalidHandlerResultException(s"$name EventHandler returned an invalid response ($other) when handling $pathExpressionStr")

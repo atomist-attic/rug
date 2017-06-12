@@ -37,14 +37,4 @@ abstract class JavaScriptProjectOperation(
   override def name: String = name(jsVar)
 
   override def description: String = description(jsVar)
-
-  /**
-    * Convenient class allowing subclasses to wrap projects in a safe, updating proxy
-    *
-    * @param pmv project to wrap
-    * @return proxy TypeScript callers can use
-    */
-  protected def wrapProject(pmv: ProjectMutableView): jsSafeCommittingProxy = {
-    new jsSafeCommittingProxy(pmv, DefaultTypeRegistry)
-  }
 }

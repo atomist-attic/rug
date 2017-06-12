@@ -114,7 +114,7 @@ class JavaScriptCommandHandler(jsc: JavaScriptEngineContext,
       handler,
       "handle",
       Some(validated),
-      jsScalaHidingProxy(ctx, returnNotToProxy = jsSafeCommittingProxy.DoNotProxy)) match {
+      ctx) match {
       case plan: JavaScriptObject =>
         ConstructPlan(plan, Some(this))
       case other =>

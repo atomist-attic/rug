@@ -69,13 +69,14 @@ class JavaScriptProjectGenerator(
         case js: JavaScriptObject if js.isFunction =>
           val userProject = jsc.invokeMember(jsVar,
             StartingPointFunction, Some(validated),
-            wrapProject(pmv), jsScalaHidingProxy(pmv.context)).asInstanceOf[ProjectMutableView]
+            pmv,
+            pmv.context).asInstanceOf[ProjectMutableView]
           val userAs = raw + userProject.currentBackingObject
           new ProjectMutableView(rugAs, userAs, atomistConfig = DefaultAtomistConfig, Some(this), rugResolver = resolver)
         case x => throw new IllegalArgumentException(s"Don't know what to do with JavaScript member $x")
       }
 
-      jsc.invokeMember(jsVar, "populate", Some(validated), wrapProject(projectToInvokePopulateWith))
+      jsc.invokeMember(jsVar, "populate", Some(validated), projectToInvokePopulateWith)
       projectToInvokePopulateWith.currentBackingObject
     }
     logger.debug(s"$name.populate took ${elapsedMillis}ms")

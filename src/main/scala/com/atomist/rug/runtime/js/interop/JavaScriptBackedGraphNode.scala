@@ -3,7 +3,6 @@ package com.atomist.rug.runtime.js.interop
 import java.util.Objects
 
 import com.atomist.graph.{AddressableGraphNode, GraphNode}
-import com.atomist.rug.runtime.js.nashorn.JsonableProxy
 import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
 import com.atomist.tree.SimpleTerminalTreeNode
 

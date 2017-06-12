@@ -3,7 +3,8 @@ package com.atomist.rug.runtime.js.interop
 import java.lang.reflect.{InvocationTargetException, Method, Modifier}
 
 import com.atomist.graph.GraphNode
-import com.atomist.rug.runtime.js.JavaScriptObject
+import com.atomist.rug.runtime.Rug
+import com.atomist.rug.runtime.js.{JavaScriptCommandHandler, JavaScriptObject}
 import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.MethodValidator
 import com.atomist.rug.runtime.js.nashorn.NashornJavaScriptObject
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
@@ -37,6 +38,12 @@ class jsScalaHidingProxy private(
   if(target.isInstanceOf[Boolean])
     throw new RuntimeException("This can't be a boolean!")//TODO remove
 
+  if(target.isInstanceOf[jsSafeCommittingProxy])
+    throw new RuntimeException("Can't be a proxy")
+
+  if(target.isInstanceOf[JavaScriptCommandHandler]){
+    throw new RuntimeException("Can't be a handler")
+  }
   override def getMember(name: String): AnyRef = {
     val r = name match {
       case _ if methodsToHide.contains(name) =>
@@ -95,6 +102,7 @@ class jsScalaHidingProxy private(
       case js: ScriptObjectMirror => js
       case njo: NashornJavaScriptObject => njo.som
       case o if ClassUtils.isPrimitiveOrWrapper(o.getClass) => o
+      case safe: jsSafeCommittingProxy => safe
       case x => jsScalaHidingProxy(x)
     }
   }
@@ -105,30 +113,36 @@ class jsScalaHidingProxy private(
     override def isFunction: Boolean = true
 
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+      val m = methods.find(_.getParameterCount == args.size).getOrElse(throw new RuntimeException(s"Could not find method '${methods.head.getName}' with ${args.size}" +
+        s" parameters"))
+      val fixed = args.collect {
+        case o: ScriptObjectMirror => new NashornJavaScriptObject(o)
+        case x => x
+      }
       try {
-        val fixed = args.collect {
-          case o: ScriptObjectMirror => new NashornJavaScriptObject(o)
-          case x => x
-        }
-        val m = methods.find(_.getParameterCount == args.size).getOrElse(throw new RuntimeException(s"Could not find method '${methods.head.getName}' with ${args.size} parameters"))
-
-        if(fixed.nonEmpty) m.invoke(target, fixed: _*) else m.invoke(target) match {
+        val res = (if(fixed.nonEmpty) m.invoke(target, fixed: _*) else m.invoke(target)) match {
           case s: ScriptObjectBackedTreeNode => jsScalaHidingProxy(s)
           case n: GraphNode => n
+          case pxe: jsPathExpressionEngine => jsScalaHidingProxy(pxe)
           case o: Object
             if !o.isInstanceOf[String] &&
               !o.isInstanceOf[JavaScriptObject] &&
               !o.isInstanceOf[ScriptObjectMirror] &&
               !ClassUtils.isPrimitiveWrapper(o.getClass) &&
-              !o.isInstanceOf[NashornJavaScriptArray[_]]  => jsScalaHidingProxy(o)
+              !o.isInstanceOf[NashornJavaScriptArray[_]] &&
+              !o.isInstanceOf[Rug]
+              => jsScalaHidingProxy(o)
           case o: NashornJavaScriptObject => o.som
           case null => null;
           case y: AnyRef => y
         }
+        res
       }
       catch {
+        case i: IllegalArgumentException =>
+          throw new RuntimeException(s"Error invoking ${m.getName} on $target with ${args.length} parameters: [${fixed.mkString(",")}]", i)
         case t: InvocationTargetException =>
-          throw t.getTargetException
+          throw new RuntimeException(s"Error from ${m.getName} on $target with ${args.length} parameters: [${fixed.mkString(",")}]", t.getTargetException)
         case NonFatal(t) => throw t
       }
     }

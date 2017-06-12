@@ -93,7 +93,7 @@ class JavaScriptEventHandler(jsc: JavaScriptEngineContext,
 
   private def wrapOne(n: GraphNode, typeRegistry: TypeRegistry): AnyRef = n match {
     case nbgn: NashornMapBackedGraphNode =>
-      nbgn.scriptObject
+      nbgn.scriptObject.getNativeObject
     case _ =>
       jsSafeCommittingProxy.wrapOne(n, typeRegistry)
   }

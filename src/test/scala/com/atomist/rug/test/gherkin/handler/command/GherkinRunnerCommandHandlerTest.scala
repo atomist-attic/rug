@@ -34,7 +34,12 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val run = grt.execute()
     run.result match {
       case Passed =>
-      case wtf => fail(s"Unexpected: $wtf")
+      case wtf =>
+        wtf match {
+          case Failed(msg, Some(t)) => t.printStackTrace()
+          case _ =>
+        }
+        fail(s"Unexpected: $wtf")
     }
   }
 
@@ -50,8 +55,9 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Some(RugArchiveReader(cas)))
     val run = grt.execute()
     run.result match {
-      case Failed(msg,_) =>
-      case wtf => fail(s"Unexpected: $wtf")
+      case Failed(_, _) =>
+      case wtf =>
+        fail(s"Unexpected: $wtf")
     }
   }
 
@@ -70,7 +76,12 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val run = grt.execute()
     run.result match {
       case Passed =>
-      case wtf => fail(s"Unexpected: $wtf")
+      case wtf =>
+        wtf match {
+          case Failed(msg, Some(t)) => t.printStackTrace()
+          case _ =>
+        }
+        fail(s"Unexpected: $wtf")
     }
   }
 
@@ -91,7 +102,12 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     //println(new TestReport(run))
     run.result match {
       case Passed =>
-      case wtf => fail(s"Unexpected: $wtf")
+      case wtf =>
+        wtf match {
+          case Failed(msg, Some(t)) => t.printStackTrace()
+          case _ =>
+        }
+        fail(s"Unexpected: $wtf")
     }
   }
 
@@ -115,7 +131,12 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     //println(new TestReport(run))
     run.result match {
       case Passed =>
-      case wtf => fail(s"Unexpected: $wtf")
+      case wtf =>
+        wtf match {
+          case Failed(msg, Some(t)) => t.printStackTrace()
+          case _ =>
+        }
+        fail(s"Unexpected: $wtf")
     }
   }
 

@@ -1,17 +1,11 @@
 package com.atomist.rug.runtime.js.interop
 
-import java.util
-import java.util.Collections
-
 import com.atomist.graph.GraphNode
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.dynamic.ChildResolver
-import com.atomist.rug.runtime.js.nashorn.jsSafeCommittingProxy
 import com.atomist.rug.runtime.js.{JavaScriptObject, RugContext, SimpleExecutionContext}
 import com.atomist.rug.spi._
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpression, PathExpressionEngine, PathExpressionParser}
-
-import scala.collection.JavaConverters._
 
 /**
   * Represents a Match from executing a PathExpression, exposed
@@ -21,7 +15,7 @@ import scala.collection.JavaConverters._
   * @param matches matches
   */
 case class Match(root: GraphNode,
-                   matches: _root_.java.util.List[GraphNode])
+                   matches: Seq[GraphNode])
 
 /**
   * JavaScript-friendly facade to an ExpressionEngine.
@@ -40,8 +34,6 @@ class jsPathExpressionEngine(
                               rugContext: RugContext,
                               typeRegistry: TypeRegistry,
                               val ee: ExpressionEngine = new PathExpressionEngine) {
-
-  import jsSafeCommittingProxy._
 
   def this(rugContext: RugContext) {
     this(rugContext, rugContext.typeRegistry, new PathExpressionEngine)
@@ -97,18 +89,14 @@ class jsPathExpressionEngine(
       SimpleExecutionContext(typeRegistry, rugContext.repoResolver)
     ) match {
       case Right(nodes) =>
-        val m = Match(root, wrap(nodes, typeRegistry))
+        val m = Match(root, nodes)
         m
       case Left(_) =>
-        Match(root, Collections.emptyList())
+        Match(root, Nil)
     }
   }
 
   private def toUnderlyingGraphNode(o: AnyRef): GraphNode = o match {
-    case scp: jsSafeCommittingProxy =>
-      // Unwrap this
-      scp.node
-    //case shp: jsScalaHidingProxy if shp.target.isInstanceOf[GraphNode] => shp.target.asInstanceOf[GraphNode]
     case tn: GraphNode => tn
     case som: JavaScriptObject =>
       JavaScriptBackedGraphNode.toGraphNode(som).getOrElse(
@@ -128,7 +116,7 @@ class jsPathExpressionEngine(
   def `with`(root: AnyRef, pexpr: Object, f: Object): Unit = f match {
     case som: JavaScriptObject =>
       val r = evaluateInternal(root, pexpr)
-      r.matches.asScala.foreach(m => {
+      r.matches.foreach(m => {
         val args = Seq(m)
         // println(s"I am calling ${som} with value ${m}")
         som.call("apply", args: _*)
@@ -146,10 +134,10 @@ class jsPathExpressionEngine(
   def scalar(root: AnyRef, pe: Object): GraphNode = {
     val res = evaluateInternal(root, pe)
     val ms = res.matches
-    ms.size() match {
+    ms.size match {
       // TODO use more specific exception type
       case 0 => throw new Exception(s"No matches found for path expression [${jsPathExpressionEngine.pathExpressionFromObject(pe)}]")
-      case 1 => ms.get(0)
+      case 1 => ms(0)
       case more => throw new PathExpressionException(root, pe, s"Too many matches found for path expression [${jsPathExpressionEngine.pathExpressionFromObject(pe)}! Found $more")
     }
   }
@@ -164,7 +152,7 @@ class jsPathExpressionEngine(
         case empty if empty.isEmpty => // nothing found, keep looking
           inner(report, Some(steps), steps.dropLastStep)
         case nonEmpty => // something was found
-          val dirtyDeets = if (nonEmpty.size > 1) "" else s" = ${nonEmpty.get(0)}"
+          val dirtyDeets = if (nonEmpty.size > 1) "" else s" = ${nonEmpty.head}"
           val myReport = Seq(s"$steps found ${nonEmpty.size}$dirtyDeets")
           val recentEmptyReport = lastEmptySteps.map(" " + _ + " found 0").toSeq
           val reportSoFar = myReport ++ recentEmptyReport ++ report
@@ -187,15 +175,14 @@ class jsPathExpressionEngine(
     * @param parent parent node we want to look under
     * @param name   name of the children we want to look for
     */
-  def children(parent: AnyRef, name: String): util.List[GraphNode] = {
+  def children(parent: AnyRef, name: String): Seq[GraphNode] = {
     val rootTn = toUnderlyingGraphNode(parent)
     val typ = typeRegistry.findByName(name).getOrElse(
       throw new IllegalArgumentException(s"Unknown type")
     )
     (typ, rootTn) match {
       case (cr: ChildResolver, mv: MutableView[_]) =>
-        val kids = cr.findAllIn(mv).getOrElse(Nil)
-        wrap(kids, typeRegistry)
+        cr.findAllIn(mv).getOrElse(Nil)
       case _ => ???
     }
   }

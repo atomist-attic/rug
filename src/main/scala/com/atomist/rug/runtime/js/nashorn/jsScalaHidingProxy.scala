@@ -3,7 +3,6 @@ package com.atomist.rug.runtime.js.nashorn
 import java.lang.reflect.{InvocationTargetException, Method, Modifier}
 
 import com.atomist.graph.GraphNode
-import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.Rug
 import com.atomist.rug.runtime.js.interop._
 import com.atomist.rug.runtime.js.nashorn.jsScalaHidingProxy.MethodValidator
@@ -28,23 +27,11 @@ import scala.util.control.NonFatal
   * @see ExposeAsFunction
   */
 private [nashorn] class jsScalaHidingProxy private(
-                                  val target: Any,
+                                  val target: AnyRef,
                                   methodsToHide: Set[String],
                                   methodValidator: MethodValidator
                                 ) extends AbstractJSProxy {
 
-  if(target.isInstanceOf[String])
-    throw new RuntimeException("This can't be a string!")//TODO remove
-
-  if(target.isInstanceOf[Boolean])
-    throw new RuntimeException("This can't be a boolean!")//TODO remove
-
-  if(target.isInstanceOf[jsSafeCommittingProxy])
-    throw new RuntimeException("Can't be a proxy")
-
-  if(target.isInstanceOf[JavaScriptCommandHandler]){
-    throw new RuntimeException("Can't be a handler")
-  }
   override def getMember(name: String): AnyRef = {
     val r = name match {
       case _ if methodsToHide.contains(name) =>
@@ -91,8 +78,10 @@ private [nashorn] class jsScalaHidingProxy private(
 
     (r match {
       case seq: Seq[_] => new NashornJavaScriptArray(
-        seq.map(new jsScalaHidingProxy(_, methodsToHide, methodValidator))
-          .asJava)
+        seq.map{
+          case o: AnyRef => new jsScalaHidingProxy(o, methodsToHide, methodValidator)
+          case x => x
+        }.asJava)
       case opt: Option[AnyRef]@unchecked => opt.orNull
       case x => x
     }) match {
@@ -121,6 +110,8 @@ private [nashorn] class jsScalaHidingProxy private(
         s" parameters"))
       val fixed = args.collect {
         case o: ScriptObjectMirror => new NashornJavaScriptObject(o)
+        case s: jsSafeCommittingProxy => s.node
+        case s: jsScalaHidingProxy => s.target
         case x => x
       }
       try {
@@ -176,7 +167,7 @@ private [nashorn] object jsScalaHidingProxy {
       case shp: jsScalaHidingProxy =>
         // Don't double proxy
         shp
-      case x =>
+      case x: AnyRef =>
         new jsScalaHidingProxy(x, methodsToHide, methodValidator)
     }
     r

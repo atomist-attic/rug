@@ -139,10 +139,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
   // Call a JavaScriptObject function with appropriate error handling
   private def callFunction(sm: StepMatch, world: ScenarioWorld): Either[Throwable, Object] = {
     import scala.util.control.Exception._
-    val target = world.target match {
-      case gn: GraphNode => new jsSafeCommittingProxy(gn, world.typeRegistry)
-      case t => t
-    }
+    val target = world.target
     // Only include the target if it's different from the world.
     val fixedParams: Seq[AnyRef] = target match {
       case `world` => Seq(world)

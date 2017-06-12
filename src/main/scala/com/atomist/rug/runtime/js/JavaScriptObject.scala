@@ -5,7 +5,7 @@ import java.util.Objects
 import scala.util.control.Exception.allCatch
 
 /**
-  * Talk to objects in a JavaScriptEngine
+  * Talk to objects in a JavaScriptEngineContext
   */
 trait JavaScriptObject {
 

@@ -46,7 +46,8 @@ class CSharpFileTypeUsageTest extends AbstractTypeUnderFileTest {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile("src/exception.cs").get
         assert(theFile.content === Exceptions.replace("IndexOutOfRangeException", newExceptionType))
-      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+      case wtf =>
+        fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
 

@@ -1,5 +1,8 @@
 package com.atomist.rug.runtime.js.nashorn
 
+import com.atomist.graph.GraphNode
+import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.rug.runtime.js.interop.{JavaScriptBackedGraphNode, ScriptObjectBackedTreeNode}
 import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 import jdk.nashorn.internal.runtime.Undefined
@@ -73,6 +76,7 @@ private[nashorn] class NashornJavaScriptObject(val som: ScriptObjectMirror)
     val wrapped = args.map{
       case o: jsSafeCommittingProxy => o
       case o: String => o
+      case o: GraphNode => new jsSafeCommittingProxy(o, DefaultTypeRegistry)
       case o: Object if ClassUtils.isPrimitiveWrapper(o.getClass) => o
       case a => jsScalaHidingProxy(a)
     }

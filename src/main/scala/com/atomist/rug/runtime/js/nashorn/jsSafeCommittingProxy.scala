@@ -21,7 +21,7 @@ import jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED
   *
   * @param node node we are fronting
   */
-class jsSafeCommittingProxy(
+private[nashorn] class jsSafeCommittingProxy(
                              val node: GraphNode,
                              typeRegistry: TypeRegistry)
   extends AbstractJSObject
@@ -246,7 +246,7 @@ class jsSafeCommittingProxy(
 
 }
 
-object jsSafeCommittingProxy {
+private[nashorn] object jsSafeCommittingProxy {
 
   import scala.collection.JavaConverters._
 

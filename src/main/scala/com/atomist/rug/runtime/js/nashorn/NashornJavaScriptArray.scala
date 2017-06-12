@@ -6,7 +6,7 @@ import java.util.Comparator
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 import jdk.nashorn.internal.runtime.ScriptFunction
 
-object NashornJavaScriptArray {
+private[nashorn] object NashornJavaScriptArray {
 
   import scala.collection.JavaConverters._
 

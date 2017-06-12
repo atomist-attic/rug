@@ -3,13 +3,15 @@ package com.atomist.rug.runtime.js.nashorn
 import java.util.regex.Pattern
 import javax.script._
 
+import com.atomist.graph.GraphNode
 import com.atomist.param.ParameterValues
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.RugJavaScriptException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.js._
-import com.atomist.rug.runtime.js.interop.{JavaScriptRuntimeException, jsContextMatch}
+import com.atomist.rug.runtime.js.interop.{JavaScriptBackedGraphNode, JavaScriptRuntimeException, jsContextMatch, jsPathExpressionEngine}
+import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, FileArtifact}
 import com.coveo.nashorn_modules.{AbstractFolder, Folder, Require}
 import com.typesafe.scalalogging.LazyLogging
@@ -182,7 +184,10 @@ class NashornContext(val rugAs: ArtifactSource,
 
       val fixed = args.collect{
         case ctx: RugContext => jsScalaHidingProxy(ctx)
-        case cm: jsContextMatch => jsScalaHidingProxy(cm)
+        case jsContextMatch(target, matches, pxe, ctxRoot, teamId) =>
+          jsScalaHidingProxy(
+            wrappedJSContextMatch(wrapOne(target), wrap(matches), pxe, ctxRoot, teamId)
+          )
         case js: jsResponse => jsScalaHidingProxy(js)
         case pmv: ProjectMutableView => new jsSafeCommittingProxy(pmv, DefaultTypeRegistry)
         case x => x
@@ -191,7 +196,21 @@ class NashornContext(val rugAs: ArtifactSource,
       clone.callMember(member, fixed: _*)
     }
   }
+  case class wrappedJSContextMatch(
+                                    root: AnyRef,
+                                    matches: java.util.List[AnyRef],
+                                    pathExpressionEngine: jsPathExpressionEngine,
+                                    contextRoot: AnyRef,
+                                    teamId: String)
+    private def wrapOne(n: GraphNode): AnyRef = n match {
+      case nbgn: JavaScriptBackedGraphNode =>
+        nbgn.scriptObject.getNativeObject
+      case _ =>
+        jsSafeCommittingProxy.wrapOne(n, DefaultTypeRegistry)
+    }
 
+    private def wrap(nodes: Seq[GraphNode]): java.util.List[AnyRef] =
+      NashornJavaScriptArray(nodes.map(wrapOne))
 
   /**
     * Separate for test

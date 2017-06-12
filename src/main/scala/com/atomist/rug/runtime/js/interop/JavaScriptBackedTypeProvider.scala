@@ -4,7 +4,7 @@ import java.util.Objects
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.dynamic.ChildResolver
-import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
+import com.atomist.rug.runtime.js.{JavaScriptObject}
 import com.atomist.rug.spi.{TypeOperation, Typed}
 import com.atomist.tree.TreeNode
 import jdk.nashorn.api.scripting.AbstractJSObject

@@ -284,6 +284,10 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
     val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Option(RugArchiveReader(cas)), Seq(el))
     val run = grt.execute()
     assert(run.testCount > 0)
+    run.result match {
+      case Failed(msg, Some(cause)) => cause.printStackTrace()
+      case _ =>
+    }
     assert(run.result === Passed)
   }
 

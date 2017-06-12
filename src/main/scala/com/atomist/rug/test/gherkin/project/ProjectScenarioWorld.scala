@@ -7,6 +7,7 @@ import com.atomist.project.edit.{FailedModificationAttempt, ModificationAttempt,
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.RugNotFoundException
 import com.atomist.rug.kind.core.{ProjectContext, ProjectMutableView, RepoResolver}
+import com.atomist.rug.runtime.js.interop.ExposeAsFunction
 import com.atomist.rug.runtime.js.{BaseRugContext, JavaScriptProjectOperation}
 import com.atomist.rug.test.gherkin._
 import com.atomist.source.file.NamedFileSystemArtifactSourceIdentifier
@@ -105,6 +106,7 @@ class ProjectScenarioWorld(
     editWith(editor, null)
   }
 
+  @ExposeAsFunction
   def modificationsMade: Boolean = editorResults.exists {
     case Right(_: SuccessfulModification) => true
     case _ => false
@@ -116,6 +118,7 @@ class ProjectScenarioWorld(
     case _ => false
   }
 
+  @ExposeAsFunction
   def editorsRun: Int = editorResults.size
 
   // TODO could probably pull this up

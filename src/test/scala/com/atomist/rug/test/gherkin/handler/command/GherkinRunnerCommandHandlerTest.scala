@@ -143,7 +143,13 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val run = grt.execute()
     run.result match {
       case Passed =>
-      case wtf => fail(s"Unexpected: $wtf")
+      case wtf =>
+        wtf match {
+          case Failed(msg, (Some(t))) => t.printStackTrace()
+          case _ =>
+        }
+
+        fail(s"Unexpected: $wtf")
     }
   }
 

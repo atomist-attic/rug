@@ -80,7 +80,7 @@ trait JavaScriptObject {
     */
   def stringProperty(name: String, default: String = null): String =
     getMember(name) match {
-      case null => default
+      case null | UNDEFINED => default
       case x => Objects.toString(x)
     }
 

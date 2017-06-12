@@ -3,7 +3,7 @@ package com.atomist.rug.runtime.js.interop
 import java.lang.reflect.{InvocationTargetException, Method, Modifier}
 
 import com.atomist.graph.GraphNode
-import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
+import com.atomist.rug.runtime.js.JavaScriptObject
 import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.MethodValidator
 import com.atomist.rug.runtime.js.nashorn.NashornJavaScriptObject
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
@@ -28,9 +28,14 @@ import scala.util.control.NonFatal
 class jsScalaHidingProxy private(
                                   val target: Any,
                                   methodsToHide: Set[String],
-                                  methodValidator: MethodValidator,
-                                  returnNotToProxy: Any => Boolean
+                                  methodValidator: MethodValidator
                                 ) extends AbstractJSProxy {
+
+  if(target.isInstanceOf[String])
+    throw new RuntimeException("This can't be a string!")//TODO remove
+
+  if(target.isInstanceOf[Boolean])
+    throw new RuntimeException("This can't be a boolean!")//TODO remove
 
   override def getMember(name: String): AnyRef = {
     val r = name match {
@@ -40,11 +45,16 @@ class jsScalaHidingProxy private(
       case _ if jsSafeCommittingProxy.MagicJavaScriptMethods.contains(name) =>
         super.getMember(name)
       case _ =>
+        val theTarget = target match {
+          case Some(x) => x
+          case x => x
+        }
+        val methods = ReflectionUtils.getAllDeclaredMethods(theTarget.getClass).filter(_.getName == name)
         try {
-          ReflectionUtils.getAllDeclaredMethods(target.getClass).find(_.getName == name) match {
+          methods.headOption match {
             case Some(m) if methodValidator(m) =>
               if (m.getParameterCount == 0 && !m.isAnnotationPresent(classOf[ExposeAsFunction]))
-                m.invoke(target) match {
+                m.invoke(theTarget) match {
                   case s: ScriptObjectBackedTreeNode => jsScalaHidingProxy(s)
                   case n: GraphNode => n
                   case o: JavaScriptObject => o
@@ -57,7 +67,7 @@ class jsScalaHidingProxy private(
                   case x => x
                 }
               else {
-                new FunctionProxyToReflectiveInvocation(m)
+                new FunctionProxyToReflectiveInvocation(methods)
               }
             case _ =>
               ScriptRuntime.UNDEFINED
@@ -71,25 +81,25 @@ class jsScalaHidingProxy private(
 
     (r match {
       case seq: Seq[_] => new NashornJavaScriptArray(
-        seq.map(new jsScalaHidingProxy(_, methodsToHide, methodValidator, returnNotToProxy))
+        seq.map(new jsScalaHidingProxy(_, methodsToHide, methodValidator))
           .asJava)
       case opt: Option[AnyRef]@unchecked => opt.orNull
       case x => x
     }) match {
       case null => null
       case ScriptRuntime.UNDEFINED => ScriptRuntime.UNDEFINED
-      case x if returnNotToProxy(x) => x
       case arr: NashornJavaScriptArray[_] => arr
       case s: String => s
       case i: Integer => i
       case fun: FunctionProxyToReflectiveInvocation => fun
       case js: ScriptObjectMirror => js
       case njo: NashornJavaScriptObject => njo.som
+      case o if ClassUtils.isPrimitiveOrWrapper(o.getClass) => o
       case x => jsScalaHidingProxy(x)
     }
   }
 
-  private class FunctionProxyToReflectiveInvocation(m: Method)
+  private class FunctionProxyToReflectiveInvocation(methods: Seq[Method])
     extends AbstractJSObject {
 
     override def isFunction: Boolean = true
@@ -100,6 +110,8 @@ class jsScalaHidingProxy private(
           case o: ScriptObjectMirror => new NashornJavaScriptObject(o)
           case x => x
         }
+        val m = methods.find(_.getParameterCount == args.size).getOrElse(throw new RuntimeException(s"Could not find method '${methods.head.getName}' with ${args.size} parameters"))
+
         if(fixed.nonEmpty) m.invoke(target, fixed: _*) else m.invoke(target) match {
           case s: ScriptObjectBackedTreeNode => jsScalaHidingProxy(s)
           case n: GraphNode => n
@@ -110,13 +122,11 @@ class jsScalaHidingProxy private(
               !ClassUtils.isPrimitiveWrapper(o.getClass) &&
               !o.isInstanceOf[NashornJavaScriptArray[_]]  => jsScalaHidingProxy(o)
           case o: NashornJavaScriptObject => o.som
+          case null => null;
           case y: AnyRef => y
-          case null => ScriptRuntime.UNDEFINED
         }
       }
       catch {
-        case iex: IllegalArgumentException =>
-          throw new IllegalArgumentException(s"Illegal ${args.size} arguments for ${target.getClass}.${m.getName}: [$args]", iex)
         case t: InvocationTargetException =>
           throw t.getTargetException
         case NonFatal(t) => throw t
@@ -148,7 +158,7 @@ object jsScalaHidingProxy {
         // Don't double proxy
         shp
       case x =>
-        new jsScalaHidingProxy(x, methodsToHide, methodValidator, returnNotToProxy)
+        new jsScalaHidingProxy(x, methodsToHide, methodValidator)
     }
     r
   }

@@ -4,6 +4,7 @@ import com.atomist.rug.runtime.js.interop.{jsSafeCommittingProxy, jsScalaHidingP
 import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 import jdk.nashorn.internal.runtime.Undefined
+import org.apache.commons.lang3.ClassUtils
 
 import scala.collection.JavaConverters._
 
@@ -72,6 +73,8 @@ class NashornJavaScriptObject(val som: ScriptObjectMirror)
   override def call(thisArg: AnyRef, args: AnyRef*): AnyRef = {
     val wrapped = args.map{
       case o: jsSafeCommittingProxy => o
+      case o: String => o
+      case o: Object if ClassUtils.isPrimitiveWrapper(o.getClass) => o
       case a => jsScalaHidingProxy(a)
     }
     convert(som.call(thisArg, wrapped:_*))
@@ -81,8 +84,16 @@ class NashornJavaScriptObject(val som: ScriptObjectMirror)
 
   override def getNativeObject: AnyRef = som
 
+  /**
+    * Need this cos people are using this in maps etc
+    * @return
+    */
   override def hashCode(): Int = som.hashCode()
 
+  /**
+    * Need this cos people are using this in maps etc
+    * @return
+    */
   override def equals(obj: scala.Any): Boolean = {
     obj match {
       case n: NashornJavaScriptObject => n.som.equals(som)

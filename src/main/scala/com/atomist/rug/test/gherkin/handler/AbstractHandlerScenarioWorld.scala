@@ -127,6 +127,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   /**
     * Is the plan internally valid? Do the referenced handlers and other operations exist?
     */
+  @ExposeAsFunction
   def planIsInternallyValid(): Boolean = {
     if (recordedPlans.isEmpty)
       throw new IllegalArgumentException("No plan was recorded")

@@ -210,7 +210,7 @@ class jsSafeCommittingProxy(
           // Be sure to proxy all the way down
           val wrapped = wrapIfNecessary(Seq(r), typeRegistry).get(0)
           if (op.exposeResultDirectlyToNashorn)
-            jsScalaHidingProxy(wrapped, returnNotToProxy = DoNotProxy)
+            jsScalaHidingProxy(wrapped)
           else
             wrapped
       }

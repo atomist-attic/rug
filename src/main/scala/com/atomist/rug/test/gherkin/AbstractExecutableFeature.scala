@@ -51,7 +51,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
             Some(runThen(world, step))
           case "Then " if world.aborted =>
             Some(AssertionResult(step.getText,
-              Failed(s"Scenario aborted: Could not evaluate: [${world.abortMessage}]")))
+              Failed(s"Scenario aborted: Could not evaluate: [${world.abortMessage}]", world.abortedCause)))
           case _ =>
             None
         }
@@ -75,7 +75,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
           case Right(rsom: JavaScriptObject) =>
             val result = rsom.stringProperty("result", "false") == "true"
             AssertionResult(step.getText, Result(result, rsom.stringProperty("message", "Detailed information unavailable")))
-          case Right(r) if r == UNDEFINED =>
+          case Right(UNDEFINED) =>
             // Returning void (which will be undefined) is truthy
             // This enables use of frameworks such as as chai
             AssertionResult(step.getText, Result(f = true, stepMatch.jsVar.toString))
@@ -107,7 +107,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
           case Left(t) =>
             listeners.foreach(_.stepFailed(step, t))
             logger.error(t.getMessage, t)
-            world.abort(t.getMessage)
+            world.abort(t.getMessage,t)
             None
           case _ =>
             None
@@ -124,7 +124,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
       case Some(som) =>
         callFunction(som, world) match {
           case Left(t) =>
-            world.abort(t.getMessage)
+            world.abort(t.getMessage, t)
             listeners.foreach(_.stepFailed(step, t))
             logger.error(t.getMessage, t)
             None

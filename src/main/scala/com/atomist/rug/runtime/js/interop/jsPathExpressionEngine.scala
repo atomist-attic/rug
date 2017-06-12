@@ -108,6 +108,7 @@ class jsPathExpressionEngine(
     case scp: jsSafeCommittingProxy =>
       // Unwrap this
       scp.node
+    case shp: jsScalaHidingProxy if shp.target.isInstanceOf[GraphNode] => shp.target.asInstanceOf[GraphNode]
     case tn: GraphNode => tn
     case som: JavaScriptObject =>
       NashornMapBackedGraphNode.toGraphNode(som).getOrElse(

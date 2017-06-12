@@ -1,21 +1,19 @@
 package com.atomist.rug.runtime.js.interop
 
 import com.atomist.graph.{AddressableGraphNode, GraphNode}
-import com.atomist.rug.runtime.js.SimpleContainerGraphNode
-import com.atomist.rug.runtime.js.nashorn.NashornContext
+import com.atomist.rug.runtime.js.{JavaScriptEngineContext, JavaScriptEngineTestUtils, SimpleContainerGraphNode}
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.{PathExpression, PathExpressionEngine}
 import com.fasterxml.jackson.databind.ObjectMapper
-import jdk.nashorn.api.scripting.NashornScriptEngine
 import org.scalatest.{FlatSpec, Matchers}
 
-class NashornBackedGraphNodeTest extends FlatSpec with Matchers {
+class JavaScriptBackedGraphNodeTest extends FlatSpec with Matchers {
 
-  def engine: NashornContext = NashornUtilsTest.createEngine
+  def engine: JavaScriptEngineContext = JavaScriptEngineTestUtils.createEngine
 
   val pe = new PathExpressionEngine
 
-  import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode._
+  import com.atomist.rug.runtime.js.interop.JavaScriptBackedGraphNode._
 
   "toGraphNode" should "fail to convert null without error" in {
     toGraphNode(null) shouldBe empty
@@ -328,5 +326,4 @@ class NashornBackedGraphNodeTest extends FlatSpec with Matchers {
     // Check it doesn't blow up
     val obj = om.readValue(json, classOf[AnyRef])
   }
-
 }

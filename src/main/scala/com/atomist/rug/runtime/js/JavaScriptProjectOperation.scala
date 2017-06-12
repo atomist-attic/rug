@@ -4,7 +4,7 @@ import com.atomist.param.{Parameter, Tag}
 import com.atomist.project.ProjectOperation
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy
+import com.atomist.rug.runtime.js.nashorn.jsSafeCommittingProxy
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
 

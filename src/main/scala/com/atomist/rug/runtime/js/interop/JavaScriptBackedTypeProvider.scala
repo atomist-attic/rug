@@ -7,7 +7,6 @@ import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.runtime.js.JavaScriptObject
 import com.atomist.rug.spi.{TypeOperation, Typed}
 import com.atomist.tree.TreeNode
-import jdk.nashorn.api.scripting.AbstractJSObject
 
 /**
   * Type provider backed by a JavaScript object
@@ -64,19 +63,4 @@ class ScriptObjectBackedTreeNode(val som: JavaScriptObject) extends TreeNode {
 
   override def childrenNamed(key: String): Seq[TreeNode] =
     kids.filter(k => k.nodeName == key)
-
-  /**
-    * Invoke an arbitrary function defined in JavaScript
-    */
-  def invoke(name: String): AbstractJSObject = new InvokingFunctionProxy(name)
-
-  private class InvokingFunctionProxy(fname: String)
-    extends AbstractJSObject {
-    override def isFunction: Boolean = true
-
-    override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
-      som.callMember(fname)
-    }
-  }
-
 }

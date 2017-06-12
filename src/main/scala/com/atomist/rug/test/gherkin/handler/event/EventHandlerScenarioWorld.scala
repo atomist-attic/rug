@@ -3,7 +3,7 @@ package com.atomist.rug.test.gherkin.handler.event
 import com.atomist.graph.GraphNode
 import com.atomist.project.archive.Rugs
 import com.atomist.rug.RugNotFoundException
-import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode
+import com.atomist.rug.runtime.js.interop.JavaScriptBackedGraphNode
 import com.atomist.rug.runtime.js.{JavaScriptEventHandler, RugContext}
 import com.atomist.rug.runtime.{EventHandler, SystemEvent}
 import com.atomist.rug.test.gherkin.{Definitions, GherkinExecutionListener, GherkinRunnerConfig, PathExpressionEvaluation}
@@ -46,7 +46,7 @@ class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = N
     * It's hopefully a JavaScriptObject
     */
   def sendEvent(e: AnyRef): Unit = {
-    val gn = NashornMapBackedGraphNode.toGraphNode(e).getOrElse(
+    val gn = JavaScriptBackedGraphNode.toGraphNode(e).getOrElse(
       throw new IllegalArgumentException(s"Cannot make a GraphNode out of $e")
     )
     if (registeredHandlers.isEmpty)

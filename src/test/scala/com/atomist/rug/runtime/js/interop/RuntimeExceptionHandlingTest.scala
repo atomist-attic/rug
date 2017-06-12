@@ -3,7 +3,6 @@ package com.atomist.rug.runtime.js.interop
 import com.atomist.param.SimpleParameterValues
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.rug.TestUtils
-import com.atomist.rug.runtime.js.SourceLanguageRuntimeException
 import org.scalatest.{FlatSpec, Matchers}
 
 class RuntimeExceptionHandlingTest extends FlatSpec with Matchers {

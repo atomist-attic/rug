@@ -1,10 +1,11 @@
-package com.atomist.tree.marshal
+package com.atomist.rug.runtime.js.nashorn
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.rugdoc.TypeScriptStubClassGeneratorTest
-import com.atomist.rug.runtime.js.interop.{NashornJavaScriptArray, NashornUtilsTest, jsSafeCommittingProxy}
+import com.atomist.rug.runtime.js.JavaScriptEngineTestUtils
 import com.atomist.rug.spi.TypeRegistry
+import com.atomist.tree.marshal.LinkedJsonGraphDeserializer
 import org.scalatest.{FlatSpec, Matchers}
 
 class ProxyAgainstDeserializedNodeTest extends FlatSpec with Matchers {
@@ -36,7 +37,7 @@ class ProxyAgainstDeserializedNodeTest extends FlatSpec with Matchers {
     proxy.getMember("number") match {
       case x => assert(x.toString === "307")
     }
-    val eng = NashornUtilsTest.createEngine
+    val eng = JavaScriptEngineTestUtils.createEngine
     eng.setMember("issue", proxy)
     assert(eng.eval("issue.number").toString === "307")
     assert(eng.eval("issue.repo.name").toString === "handlers")

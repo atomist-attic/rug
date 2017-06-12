@@ -2,7 +2,7 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.param._
 import com.atomist.project.archive.RugResolver
-import com.atomist.rug.runtime.js.interop.{jsSafeCommittingProxy, jsScalaHidingProxy}
+import com.atomist.rug.runtime.js.nashorn.{jsSafeCommittingProxy, jsScalaHidingProxy}
 import com.atomist.rug.{InvalidHandlerResultException, InvalidTestDescriptorException}
 import com.atomist.rug.runtime.{CommandHandler, TestDescriptor}
 import com.atomist.rug.runtime.plans.MappedParameterSupport

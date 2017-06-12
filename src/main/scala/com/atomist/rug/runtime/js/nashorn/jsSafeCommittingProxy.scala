@@ -1,9 +1,10 @@
-package com.atomist.rug.runtime.js.interop
+package com.atomist.rug.runtime.js.nashorn
 
 import java.util
 import java.util.Objects
 
 import com.atomist.graph.GraphNode
+import com.atomist.rug.runtime.js.interop.{ScriptObjectBackedTreeNode, jsPathExpressionEngine}
 import com.atomist.rug.spi._
 import com.atomist.rug.ts.Cardinality
 import com.atomist.tree._
@@ -162,7 +163,7 @@ class jsSafeCommittingProxy(
     } else node match {
       case sobtn: ScriptObjectBackedTreeNode =>
         // This object is wholly defined in JavaScript
-        sobtn.invoke(name)
+        sobtn.som.createMemberFunction(name)
       case _ =>
         logger.warn(
           s"Attempt to invoke method [$name] on type [${typ.description}]: " +
@@ -232,7 +233,7 @@ class jsSafeCommittingProxy(
       case null :: Nil => null
       case (ttn: TerminalTreeNode) :: Nil if ttn.hasTag(Cardinality.One2Many) =>
         // Pull out the value and put in an array
-        NashornJavaScriptArray.fromSeq(Seq(ttn.value))
+        NashornJavaScriptArray(Seq(ttn.value))
       case (ttn: TerminalTreeNode) :: Nil =>
         // Pull out the value
         ttn.value
@@ -256,7 +257,7 @@ object jsSafeCommittingProxy {
   /**
     * Set of JavaScript magic methods that we should let Nashorn superclass handle.
     */
-  private[interop] def MagicJavaScriptMethods = Set("valueOf")
+  private[nashorn] def MagicJavaScriptMethods = Set("valueOf")
 
   /**
     * Wrap the given sequence of nodes so they can be accessed from

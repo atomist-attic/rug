@@ -1,11 +1,11 @@
-package com.atomist.rug.runtime.js.interop
+package com.atomist.rug.runtime.js.nashorn
 
 import jdk.nashorn.api.scripting.AbstractJSObject
 
 /**
   * Simple JS function that always returns the given value
   */
-private[interop] class AlwaysReturns(what: AnyRef) extends AbstractJSObject {
+private[nashorn] class AlwaysReturns(what: AnyRef) extends AbstractJSObject {
 
   override def isFunction: Boolean = true
 

@@ -1,7 +1,9 @@
-package com.atomist.rug.runtime.js
+package com.atomist.rug.runtime.js.nashorn
 
+import com.atomist.rug.runtime.js.JavaScriptObject
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 import jdk.nashorn.internal.runtime.ConsString
+
 import scala.collection.JavaConverters._
 
 /**

@@ -4,6 +4,7 @@ import com.atomist.graph.GraphNode
 import com.atomist.param.Tag
 import com.atomist.project.archive.RugResolver
 import com.atomist.rug.runtime.js.interop._
+import com.atomist.rug.runtime.js.nashorn.{NashornJavaScriptArray, jsSafeCommittingProxy, jsScalaHidingProxy}
 import com.atomist.rug.runtime.{EventHandler, SystemEvent}
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.{Secret, TypeRegistry}
@@ -92,7 +93,7 @@ class JavaScriptEventHandler(jsc: JavaScriptEngineContext,
   }
 
   private def wrapOne(n: GraphNode, typeRegistry: TypeRegistry): AnyRef = n match {
-    case nbgn: NashornMapBackedGraphNode =>
+    case nbgn: JavaScriptBackedGraphNode =>
       nbgn.scriptObject.getNativeObject
     case _ =>
       jsSafeCommittingProxy.wrapOne(n, typeRegistry)
@@ -101,5 +102,5 @@ class JavaScriptEventHandler(jsc: JavaScriptEngineContext,
   import scala.collection.JavaConverters._
 
   private def wrap(nodes: Seq[GraphNode], typeRegistry: TypeRegistry): java.util.List[AnyRef] =
-    new NashornJavaScriptArray(nodes.map(wrapOne(_, typeRegistry)).asJava)
+    NashornJavaScriptArray(nodes.map(wrapOne(_, typeRegistry)))
 }

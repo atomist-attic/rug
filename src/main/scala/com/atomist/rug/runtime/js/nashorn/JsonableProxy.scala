@@ -1,11 +1,11 @@
-package com.atomist.rug.runtime.js.interop
+package com.atomist.rug.runtime.js.nashorn
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
   * Consistent JSON-based toString stringification
   */
-private[interop] trait JsonableProxy {
+trait JsonableProxy {
 
   override def toString: String = {
     val typeKey = s""""__backingObject__": "${getClass.getSimpleName}#$hashCode""""

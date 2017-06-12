@@ -6,6 +6,7 @@ import java.util.Collections
 import com.atomist.graph.GraphNode
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.dynamic.ChildResolver
+import com.atomist.rug.runtime.js.nashorn.{jsSafeCommittingProxy, jsScalaHidingProxy}
 import com.atomist.rug.runtime.js.{JavaScriptObject, RugContext, SimpleExecutionContext}
 import com.atomist.rug.spi._
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpression, PathExpressionEngine, PathExpressionParser}
@@ -111,7 +112,7 @@ class jsPathExpressionEngine(
     case shp: jsScalaHidingProxy if shp.target.isInstanceOf[GraphNode] => shp.target.asInstanceOf[GraphNode]
     case tn: GraphNode => tn
     case som: JavaScriptObject =>
-      NashornMapBackedGraphNode.toGraphNode(som).getOrElse(
+      JavaScriptBackedGraphNode.toGraphNode(som).getOrElse(
         throw new IllegalArgumentException(s"Can't convert script object $som to a GraphNode")
       )
     case x => throw new IllegalArgumentException(s"Can't convert $x to a GraphNode")

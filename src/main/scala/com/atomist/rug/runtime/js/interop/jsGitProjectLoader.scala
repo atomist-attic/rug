@@ -26,5 +26,4 @@ class jsGitProjectLoader(rr: Option[RepoResolver]) {
     )
     new ProjectMutableView(originalBackingObject = as)
   }
-
 }

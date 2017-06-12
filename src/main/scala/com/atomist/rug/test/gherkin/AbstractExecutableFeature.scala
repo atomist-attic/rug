@@ -3,7 +3,7 @@ package com.atomist.rug.test.gherkin
 import com.atomist.graph.GraphNode
 import com.atomist.project.archive.Rugs
 import com.atomist.project.common.InvalidParametersException
-import com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy
+import com.atomist.rug.runtime.js.nashorn.jsSafeCommittingProxy
 import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
 import com.typesafe.scalalogging.LazyLogging
 import gherkin.ast.{ScenarioDefinition, Step}

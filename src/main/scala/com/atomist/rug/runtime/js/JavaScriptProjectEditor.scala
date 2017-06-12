@@ -4,6 +4,7 @@ import com.atomist.param.ParameterValues
 import com.atomist.project.archive.{DefaultAtomistConfig, RugResolver}
 import com.atomist.project.edit._
 import com.atomist.rug.kind.core.ProjectMutableView
+import com.atomist.rug.runtime.js.interop.SourceLanguageRuntimeException
 import com.atomist.source.ArtifactSource
 import com.atomist.util.Timing.time
 

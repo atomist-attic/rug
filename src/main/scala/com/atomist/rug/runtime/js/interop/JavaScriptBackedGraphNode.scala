@@ -3,10 +3,11 @@ package com.atomist.rug.runtime.js.interop
 import java.util.Objects
 
 import com.atomist.graph.{AddressableGraphNode, GraphNode}
+import com.atomist.rug.runtime.js.nashorn.JsonableProxy
 import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
 import com.atomist.tree.SimpleTerminalTreeNode
 
-object NashornMapBackedGraphNode {
+object JavaScriptBackedGraphNode {
 
   /**
     * Convert this object returned from Nashorn to a GraphNode if possible.
@@ -21,12 +22,12 @@ object NashornMapBackedGraphNode {
           relevantPropertyValues(som)
         relevantPropertiesAndValues.get(NodeAddressField) match {
           case None =>
-            Some(new NashornMapBackedGraphNode(som, nodeRegistry))
+            Some(new JavaScriptBackedGraphNode(som, nodeRegistry))
           case Some(address: String) =>
-            Some(new NashornMapBackedAddressableGraphNode(som, nodeRegistry, address))
+            Some(new JavaScriptBackedAddressableGraphNode(som, nodeRegistry, address))
           case x =>
             val address = Objects.toString(x)
-            Some(new NashornMapBackedAddressableGraphNode(som, nodeRegistry, address))
+            Some(new JavaScriptBackedAddressableGraphNode(som, nodeRegistry, address))
         }
       case _ =>
         None
@@ -55,25 +56,25 @@ object NashornMapBackedGraphNode {
   */
 private[interop] class NodeRegistry {
 
-  private var reg: Map[String, NashornMapBackedGraphNode] = Map()
-  private var somReg: Map[JavaScriptObject, NashornMapBackedGraphNode] = Map()
+  private var reg: Map[String, JavaScriptBackedGraphNode] = Map()
+  private var somReg: Map[JavaScriptObject, JavaScriptBackedGraphNode] = Map()
 
-  def register(gn: NashornMapBackedGraphNode): Unit = {
+  def register(gn: JavaScriptBackedGraphNode): Unit = {
     gn.nodeId.foreach(id => {
       reg = reg ++ Map(id -> gn)
     })
     somReg = somReg ++ Map(gn.scriptObject -> gn)
   }
 
-  def get(id: String): Option[NashornMapBackedGraphNode] = reg.get(id)
+  def get(id: String): Option[JavaScriptBackedGraphNode] = reg.get(id)
 
-  def alreadyWrapped(som: JavaScriptObject): Option[NashornMapBackedGraphNode] = somReg.get(som)
+  def alreadyWrapped(som: JavaScriptObject): Option[JavaScriptBackedGraphNode] = somReg.get(som)
 
   override def toString: String = s"NodeRegistry ${hashCode()}: Known ids=[${reg.keySet.mkString(",")}]"
 
 }
 
-import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode._
+import com.atomist.rug.runtime.js.interop.JavaScriptBackedGraphNode._
 
 /**
   * Object used within the JVM whose implementation of the GraphNode interface is based on
@@ -81,10 +82,10 @@ import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode._
   * Backed by a Map that can include simple properties or Nashorn ScriptObjectMirror in the event of nesting.
   * Handles cycles if references are provided.
   */
-class NashornMapBackedGraphNode(val scriptObject: JavaScriptObject,
+class JavaScriptBackedGraphNode(val scriptObject: JavaScriptObject,
                                 nodeRegistry: NodeRegistry)
   extends GraphNode
-    with JsonableProxy {
+  with JsonableProxy{
 
   protected val relevantPropertiesAndValues: Map[String, AnyRef] = relevantPropertyValues(scriptObject)
 
@@ -110,7 +111,7 @@ class NashornMapBackedGraphNode(val scriptObject: JavaScriptObject,
     }
   }
 
-  override protected def propertyMap: Map[String, Any] = relevantPropertiesAndValues
+  protected def propertyMap: Map[String, Any] = relevantPropertiesAndValues
 
   override lazy val relatedNodes: Seq[GraphNode] =
     relevantPropertiesAndValues.keySet.diff(Set(NodeNameField, NodeTagsField, NodeIdField))
@@ -160,12 +161,11 @@ class NashornMapBackedGraphNode(val scriptObject: JavaScriptObject,
         Seq(SimpleTerminalTreeNode(key, v, Set()))
     }
   }
-
 }
 
-private class NashornMapBackedAddressableGraphNode(
+private class JavaScriptBackedAddressableGraphNode(
                                                     som: JavaScriptObject,
                                                     nodeRegistry: NodeRegistry,
                                                     val address: String)
-  extends NashornMapBackedGraphNode(som, nodeRegistry)
+  extends JavaScriptBackedGraphNode(som, nodeRegistry)
     with AddressableGraphNode

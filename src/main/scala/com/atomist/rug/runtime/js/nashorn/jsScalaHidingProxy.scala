@@ -1,12 +1,12 @@
-package com.atomist.rug.runtime.js.interop
+package com.atomist.rug.runtime.js.nashorn
 
 import java.lang.reflect.{InvocationTargetException, Method, Modifier}
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.runtime.Rug
+import com.atomist.rug.runtime.js.interop._
+import com.atomist.rug.runtime.js.nashorn.jsScalaHidingProxy.MethodValidator
 import com.atomist.rug.runtime.js.{JavaScriptCommandHandler, JavaScriptObject}
-import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.MethodValidator
-import com.atomist.rug.runtime.js.nashorn.NashornJavaScriptObject
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 import jdk.nashorn.internal.runtime.ScriptRuntime
 import org.apache.commons.lang3.ClassUtils

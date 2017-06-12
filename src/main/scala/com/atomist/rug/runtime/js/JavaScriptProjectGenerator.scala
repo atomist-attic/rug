@@ -5,7 +5,7 @@ import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, RugReso
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.kind.core.{ProjectContext, ProjectMutableView}
-import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy
+import com.atomist.rug.runtime.js.nashorn.jsScalaHidingProxy
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
 import com.atomist.util.Timing._
 

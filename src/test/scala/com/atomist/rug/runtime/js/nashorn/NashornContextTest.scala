@@ -1,10 +1,9 @@
-package com.atomist.rug.runtime.js
+package com.atomist.rug.runtime.js.nashorn
 
-import com.atomist.rug.{RugArchiveReader, RugJavaScriptException}
-import com.atomist.rug.runtime.js.nashorn.{NashornContext, NashornJavaScriptObject}
+import com.atomist.rug.runtime.js.{JavaScriptEngineContextFactory, JavaScriptProjectEditor}
 import com.atomist.rug.ts.TypeScriptBuilder
+import com.atomist.rug.{RugArchiveReader, RugJavaScriptException}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
-import jdk.nashorn.api.scripting.ScriptObjectMirror
 import org.scalatest.{FlatSpec, Matchers}
 
 class NashornContextTest extends FlatSpec with Matchers {

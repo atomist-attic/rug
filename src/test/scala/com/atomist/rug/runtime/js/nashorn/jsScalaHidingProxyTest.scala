@@ -1,14 +1,15 @@
-package com.atomist.rug.runtime.js.interop
+package com.atomist.rug.runtime.js.nashorn
 
 import com.atomist.graph.GraphNode
-import com.atomist.rug.runtime.js.{BaseRugContext, UNDEFINED}
+import com.atomist.rug.runtime.js.BaseRugContext
+import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, jsPathExpressionEngine}
 import com.atomist.tree.SimpleTerminalTreeNode
 import jdk.nashorn.api.scripting.JSObject
 import org.scalatest.{FlatSpec, Matchers}
 
 class jsScalaHidingProxyTest extends FlatSpec with Matchers {
 
-  import NashornUtilsTest._
+  import com.atomist.rug.runtime.js.JavaScriptEngineTestUtils._
 
   case class Animal(name: String, age: Int, friends: Seq[Animal] = Nil, mate: Option[Animal] = None) {
     def friendsLike(arg: String) = friends.size

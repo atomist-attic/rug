@@ -1,4 +1,4 @@
-package com.atomist.rug.runtime.js.interop
+package com.atomist.rug.runtime.js.nashorn
 
 import java.util
 import java.util.Comparator
@@ -10,13 +10,13 @@ object NashornJavaScriptArray {
 
   import scala.collection.JavaConverters._
 
-  def fromSeq[T](l: Seq[T]) = new NashornJavaScriptArray[T](l.asJava)
+  def apply[T](l: Seq[T]) = new NashornJavaScriptArray[T](l.asJava)
 }
 
 /**
   * Decorate a java.util.List instance with anything required to implement the JS array methods
   */
-class NashornJavaScriptArray[T](val toProxy: java.util.List[T])
+private[nashorn] class NashornJavaScriptArray[T](val toProxy: java.util.List[T])
   extends AbstractJSObject
     with java.util.List[T] {
 
@@ -389,7 +389,7 @@ class NashornJavaScriptArray[T](val toProxy: java.util.List[T])
   }
 }
 
-class ReducerJSObject[Y](lst: util.List[Y]) extends AbstractJSObject {
+private class ReducerJSObject[Y](lst: util.List[Y]) extends AbstractJSObject {
 
   override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
 

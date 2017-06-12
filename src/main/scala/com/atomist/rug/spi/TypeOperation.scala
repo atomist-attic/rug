@@ -3,7 +3,7 @@ package com.atomist.rug.spi
 import java.lang.reflect.InvocationTargetException
 
 import com.atomist.rug.RugRuntimeException
-import com.atomist.rug.runtime.js.JavaScriptEngineUtils
+import com.atomist.rug.runtime.js.nashorn.JavaScriptEngineUtils
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.OutOfDateNodeException
 

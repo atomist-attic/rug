@@ -3,7 +3,7 @@ package com.atomist.rug.runtime.js
 import com.atomist.graph.GraphNode
 import com.atomist.param.{ParameterValue, SimpleParameterValue}
 import com.atomist.rug.runtime.Rug
-import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode
+import com.atomist.rug.runtime.js.interop.JavaScriptBackedGraphNode
 import com.atomist.rug.spi.Handlers.Instruction.{NonrespondableInstruction, Respond, RespondableInstruction}
 import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.{BadPlanException, InvalidHandlerResultException}
@@ -110,7 +110,7 @@ class PlanBuilder {
         val node = jsMessage.getMember("node") match {
           case t: GraphNode => t
           case som: JavaScriptObject =>
-            NashornMapBackedGraphNode.toGraphNode(som).getOrElse(
+            JavaScriptBackedGraphNode.toGraphNode(som).getOrElse(
               throw new InvalidHandlerResultException(s"Lifecycle message node script could not be converted to a GraphNode: Invalid argument: $som")
             )
           case a =>

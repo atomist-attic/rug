@@ -1,8 +1,7 @@
 package com.atomist.rug.runtime.js.nashorn
 
-import com.atomist.rug.runtime.js.interop.{jsSafeCommittingProxy, jsScalaHidingProxy}
 import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
-import jdk.nashorn.api.scripting.ScriptObjectMirror
+import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 import jdk.nashorn.internal.runtime.Undefined
 import org.apache.commons.lang3.ClassUtils
 
@@ -11,7 +10,7 @@ import scala.collection.JavaConverters._
 /**
   * Nashorn backed JS object
   */
-class NashornJavaScriptObject(val som: ScriptObjectMirror)
+private[nashorn] class NashornJavaScriptObject(val som: ScriptObjectMirror)
   extends JavaScriptObject{
 
   /**
@@ -98,6 +97,25 @@ class NashornJavaScriptObject(val som: ScriptObjectMirror)
     obj match {
       case n: NashornJavaScriptObject => n.som.equals(som)
       case _ => false
+    }
+  }
+
+  /**
+    * Create and return a function that can be called later
+    * which closes over the name
+    *
+    * @param name
+    * @return
+    */
+  override def createMemberFunction(name: String): AnyRef = {
+    new InvokingFunctionProxy(name)
+  }
+
+  private class InvokingFunctionProxy(fname: String)
+    extends AbstractJSObject {
+    override def isFunction: Boolean = true
+    override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+      som.callMember(fname, args:_*)
     }
   }
 }

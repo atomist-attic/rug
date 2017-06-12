@@ -21,6 +21,14 @@ trait JavaScriptObject {
 
   def callMember(name: String, args: AnyRef*): AnyRef
 
+  /**
+    * Create and return a function that can be called later
+    * which closes over the name
+    * @param name
+    * @return
+    */
+  def createMemberFunction(name: String): AnyRef
+
   def call(thisArg: AnyRef, args: AnyRef*): AnyRef
 
   def isEmpty: Boolean

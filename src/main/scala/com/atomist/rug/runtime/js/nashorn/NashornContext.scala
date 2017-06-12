@@ -7,7 +7,7 @@ import com.atomist.param.ParameterValues
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.RugJavaScriptException
 import com.atomist.rug.runtime.js._
-import com.atomist.rug.runtime.js.interop.{jsSafeCommittingProxy, jsScalaHidingProxy}
+import com.atomist.rug.runtime.js.interop.JavaScriptRuntimeException
 import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, FileArtifact}
 import com.coveo.nashorn_modules.{AbstractFolder, Folder, Require}
 import com.typesafe.scalalogging.LazyLogging
@@ -177,6 +177,9 @@ class NashornContext(val rugAs: ArtifactSource,
       if (params.nonEmpty) {
         setParameters(clone, params.get.parameterValues)
       }
+
+      //do all the proxying here!
+
       clone.callMember(member, args: _*)
     }
   }

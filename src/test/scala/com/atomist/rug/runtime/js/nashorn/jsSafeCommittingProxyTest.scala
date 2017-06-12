@@ -1,4 +1,4 @@
-package com.atomist.rug.runtime.js.interop
+package com.atomist.rug.runtime.js.nashorn
 
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.{FileMutableView, ProjectMutableView}

@@ -4,7 +4,8 @@ import com.atomist.project.archive.Rugs
 import com.atomist.rug.RugNotFoundException
 import com.atomist.rug.kind.core.{ProjectMutableView, RepoResolver}
 import com.atomist.rug.runtime.CommandHandler
-import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, NashornMapBackedGraphNode, jsPathExpressionEngine, jsScalaHidingProxy}
+import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, JavaScriptBackedGraphNode, jsPathExpressionEngine}
+import com.atomist.rug.runtime.js.nashorn.jsScalaHidingProxy
 import com.atomist.rug.runtime.js.{JavaScriptObject, RugContext, SimpleContainerGraphNode}
 import com.atomist.rug.spi.Handlers.Instruction.{Command, Edit, Generate}
 import com.atomist.rug.spi.Handlers.Plan
@@ -69,7 +70,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
     * Add a node to the root context
     */
   def addToRootContext(n: AnyRef): Unit = {
-    val gn = NashornMapBackedGraphNode.toGraphNode(n).getOrElse(
+    val gn = JavaScriptBackedGraphNode.toGraphNode(n).getOrElse(
       throw new IllegalArgumentException(s"$n is not a valid GraphNode")
     )
     rootContext = rootContext match {

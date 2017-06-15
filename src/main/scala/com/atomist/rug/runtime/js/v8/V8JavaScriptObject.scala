@@ -52,7 +52,12 @@ class V8JavaScriptObject(obj: AnyRef) extends JavaScriptObject {
   }
 
   override def values(): Seq[AnyRef] = obj match {
-    case x: V8Object => x.getKeys.map(p => x.get(p))
+    case x: V8Object => x.getKeys.map(p => {
+      x.get(p) match {
+        case o: V8Object => new V8JavaScriptObject(o)
+        case x => x
+      }
+    })
     case _ => Nil
   }
 

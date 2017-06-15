@@ -131,7 +131,6 @@ object TestV8JavaScriptContext {
       val resolver = new ArchiveRugResolver(Dependency(spring))
       resolver.resolvedDependencies.rugs
     }
-
     println(s"Loaded: ${result.allRugs.size} in $elapsedTime ms")
   }
 }

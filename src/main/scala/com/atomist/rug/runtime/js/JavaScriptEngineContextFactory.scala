@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime.js
 
-import com.atomist.rug.runtime.js.nashorn.NashornContext
+import com.atomist.rug.runtime.js.v8.V8JavaScriptEngineContext
 import com.atomist.source.ArtifactSource
 
 /**
@@ -8,6 +8,6 @@ import com.atomist.source.ArtifactSource
   */
 object JavaScriptEngineContextFactory {
   def create(as: ArtifactSource): JavaScriptEngineContext = {
-    new NashornContext(as)
+    new V8JavaScriptEngineContext(as)
   }
 }

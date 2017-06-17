@@ -25,5 +25,10 @@ class DirectoryMutableView(
   override def value: String = currentBackingObject.path
 
   override def childrenNamed(fieldName: String): Seq[MutableView[_]] = kids(fieldName, parent)
+}
 
+object DirectoryMutableView {
+
+  def apply(originalBackingObject: DirectoryArtifact, parent: ProjectMutableView) =
+    new DirectoryMutableView(originalBackingObject, parent)
 }

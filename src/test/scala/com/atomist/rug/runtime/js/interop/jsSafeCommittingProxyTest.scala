@@ -14,14 +14,14 @@ class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
 
   "safe committing proxy" should "return undefined on invocation of non export function" in {
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
-    val fmv = new FileMutableView(f, null)
+    val fmv = FileMutableView(f, null)
     val sc = new jsSafeCommittingProxy(fmv, DefaultTypeRegistry)
     sc.getMember("bla") should be (ScriptRuntime.UNDEFINED)
   }
 
   it should "return undefined for unregistered command function" in {
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
-    val fmv = new FileMutableView(f, null)
+    val fmv = FileMutableView(f, null)
     val sc = new jsSafeCommittingProxy(fmv, DefaultTypeRegistry)
     sc.getMember("delete") should be (ScriptRuntime.UNDEFINED)
   }

@@ -146,3 +146,9 @@ class FileMutableView(
   override def setName(@ExportFunctionParameterDescription(name = "name",
     description = "The name to set the file to") name: String): Unit = super.setName(name)
 }
+
+object FileMutableView {
+
+  def apply(originalBackingObject: FileArtifact, parent: ProjectMutableView) =
+    new FileMutableView(originalBackingObject, parent)
+}

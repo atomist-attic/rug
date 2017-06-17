@@ -18,7 +18,7 @@ class XmlTypeTest extends FlatSpec with Matchers {
 
   it should "find XML in a .xml file" in {
     val xmlFile = StringFileArtifact("src/resources/royalty.xml", """<prince>Rogers Nelson</prince>""")
-    val fmv = new FileMutableView(xmlFile, null)
+    val fmv = FileMutableView(xmlFile, null)
     val xt = new XmlType
     xt.findAllIn(fmv) match {
       case Some(xs) => assert(xs.size === 1)
@@ -28,7 +28,7 @@ class XmlTypeTest extends FlatSpec with Matchers {
 
   it should "not find XML in a .sh file" in {
     val xmlFile = StringFileArtifact("src/resources/royalty.sh", "#!/bin/sh\necho Prince Rogers Nelson\n")
-    val fmv = new FileMutableView(xmlFile, null)
+    val fmv = FileMutableView(xmlFile, null)
     val xt = new XmlType
     xt.findAllIn(fmv) match {
       case None =>

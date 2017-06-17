@@ -427,7 +427,7 @@ class ProjectMutableView(
     exposeAsProperty = true,
     description = "Files in this project")
   def files: java.util.List[FileMutableView] =
-    currentBackingObject.allFiles.map(new FileMutableView(_, this)).asJava
+    currentBackingObject.allFiles.map(FileMutableView(_, this)).asJava
 
   /**
     * For use by scripts. Edit the project with the given

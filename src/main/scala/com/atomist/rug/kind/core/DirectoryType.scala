@@ -15,7 +15,7 @@ class DirectoryType
 
   override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>
-        Some(pmv.currentBackingObject.allDirectories.map(d => new DirectoryMutableView(d, pmv)))
+        Some(pmv.currentBackingObject.allDirectories.map(DirectoryMutableView(_, pmv)))
       case _ => None
     }
 }

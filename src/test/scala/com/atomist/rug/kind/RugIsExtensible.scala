@@ -41,7 +41,7 @@ class PandaRugLanguageExtension extends TypeUnderFile {
 
   // strip the preprocess marks
   override def postprocess(preprocessedContent: String): String =
-     preprocessedContent.replaceAll("(?m)^\\$", "")
+    preprocessedContent.replaceAll("(?m)^\\$", "")
 
 }
 
@@ -129,9 +129,7 @@ class RugIsExtensible extends FunSpec {
   describe("How rug can be extended to parse a panda language") {
 
     it("Can run an editor that uses the panda extension") {
-
       // TODO: get this Panda type declared in the manifest thinger somehow
-
       val changedProject = runTypeScriptProgram(
         Panda.PandaProject,
         "com/atomist/rug/kind/PandaParsingTypeScriptTest.ts",
@@ -140,14 +138,12 @@ class RugIsExtensible extends FunSpec {
           "changeFirstPandaInEachLineTo" -> "bear"))
 
       assert(changedProject.findFile(Panda.PandaFilename).get.content == Panda.KawaiiPandas)
-
     }
   }
 
   import com.atomist.source.ArtifactSource
 
   def runTypeScriptProgram(target: ArtifactSource, tsEditorResource: String, parameterMap: Map[String, String]): ArtifactSource = {
-
     import com.atomist.param.SimpleParameterValues
     import com.atomist.project.edit.SuccessfulModification
     import com.atomist.rug.RugArchiveReader
@@ -169,7 +165,6 @@ class RugIsExtensible extends FunSpec {
         sm.result
       case boo => fail(s"Modification was not successful: $boo")
     }
-
   }
 }
 
@@ -194,6 +189,6 @@ class PandaRugLanguageExtensionText extends FunSpec with RugLanguageExtensionTes
     val newContent = pmv.findFile("com/atomist/rug/kind/Sample.panda").content
     assert(newContent.contains("xiaoping"))
 
-    println("New content: ------\n" + newContent + "\n--------")
+    // println("New content: ------\n" + newContent + "\n--------")
   }
 }

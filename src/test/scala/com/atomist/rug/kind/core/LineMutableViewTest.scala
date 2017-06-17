@@ -9,7 +9,7 @@ class LineMutableViewTest extends FlatSpec with Matchers {
 
   it should "find no lines in empty file" in {
     val emptyFile = StringFileArtifact("thing", "")
-    val fmv = new FileMutableView(emptyFile, null)
+    val fmv = FileMutableView(emptyFile, null)
     lineType.findAllIn(fmv).get should be(empty)
   }
 
@@ -37,7 +37,7 @@ class LineMutableViewTest extends FlatSpec with Matchers {
       "",
       "line")
     val f = StringFileArtifact("thing", lines.mkString("\n") + "\n\n")
-    val fmv = new FileMutableView(f, null)
+    val fmv = FileMutableView(f, null)
     val lineViews: Seq[LineMutableView] = lineType.findAllIn(fmv).get
     assert(lineViews.size === lines.size + 1)
     lineViews.zipWithIndex.foreach(tup => {
@@ -49,7 +49,7 @@ class LineMutableViewTest extends FlatSpec with Matchers {
 
   private def validate(lines: String*) {
     val f = StringFileArtifact("thing", lines.mkString("\n"))
-    val fmv = new FileMutableView(f, null)
+    val fmv = FileMutableView(f, null)
     val lineViews: Seq[LineMutableView] = lineType.findAllIn(fmv).get
     assert(lineViews.size === lines.size)
     lineViews.zipWithIndex.foreach(tup => {

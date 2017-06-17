@@ -44,11 +44,11 @@ class Impact(_parent: GraphNode, _before: ArtifactSource, _after: ArtifactSource
   def files: Seq[FileImpact] =
     deltas.deltas collect {
       case fad: FileAdditionDelta =>
-        new FileAddition(this, new FileMutableView(fad.newFile, afterProject))
+        new FileAddition(this, FileMutableView(fad.newFile, afterProject))
       case fud: FileUpdateDelta =>
-        new FileUpdate(this, new FileMutableView(fud.oldFile, beforeProject), new FileMutableView(fud.updatedFile, afterProject))
+        new FileUpdate(this, FileMutableView(fud.oldFile, beforeProject), FileMutableView(fud.updatedFile, afterProject))
       case fdd: FileDeletionDelta =>
-        new FileDeletion(this, new FileMutableView(fdd.oldFile, beforeProject))
+        new FileDeletion(this, FileMutableView(fdd.oldFile, beforeProject))
     }
 
   @ExportFunction(readOnly = true, description = "Virtual project composed of files changed in this commit", exposeAsProperty = true)

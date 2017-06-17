@@ -50,14 +50,14 @@ abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
 
   protected def kids(fieldName: String, parent: ProjectMutableView): Seq[MutableView[_]] = fieldName match {
     case FileTypeName =>
-      currentBackingObject.allFiles.view.map(f => new FileMutableView(f, parent))
+      currentBackingObject.allFiles.view.map(FileMutableView(_, parent))
     case DirectoryTypeName =>
-      currentBackingObject.allDirectories.view.map(d => new DirectoryMutableView(d, parent))
+      currentBackingObject.allDirectories.view.map(DirectoryMutableView(_, parent))
     case maybeContainedArtifactName =>
       val arts = currentBackingObject.artifacts.filter(_.name == maybeContainedArtifactName)
       arts.map {
-        case d: DirectoryArtifact => new DirectoryMutableView(d, parent)
-        case f: FileArtifact => new FileMutableView(f, parent)
+        case d: DirectoryArtifact => DirectoryMutableView(d, parent)
+        case f: FileArtifact => FileMutableView(f, parent)
       }
   }
 
@@ -76,7 +76,7 @@ abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
     }
     currentBackingObject.findFile(path) match {
       case None => null
-      case Some(f) => new FileMutableView(f, parent)
+      case Some(f) => FileMutableView(f, parent)
     }
   }
 

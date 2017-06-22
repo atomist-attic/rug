@@ -2,17 +2,18 @@ package com.atomist.rug.runtime.js.v8
 
 import java.io.File
 import java.nio.charset.Charset
+import java.nio.file.{CopyOption, Files, Path, StandardCopyOption}
 
 import com.atomist.param.ParameterValues
 import com.atomist.project.archive.{ArchiveRugResolver, AtomistConfig, DefaultAtomistConfig, Dependency}
-import com.atomist.rug.runtime.js.{JavaScriptEngineContext, JavaScriptMember, JavaScriptObject, JavaScriptUtils}
+import com.atomist.rug.runtime.js._
 import com.atomist.source.file.{FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}
 import com.atomist.source.{ArtifactSource, FileArtifact}
 import com.atomist.util.Timing.time
 import com.eclipsesource.v8._
 import com.eclipsesource.v8.utils.MemoryManager
 import com.typesafe.scalalogging.LazyLogging
-import org.apache.commons.io.IOUtils
+import org.apache.commons.io.{FileUtils, IOUtils}
 
 import scala.collection.mutable.ListBuffer
 
@@ -33,20 +34,32 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
 
   val atomistContent: ArtifactSource = atomistConfig.atomistContent(rugAs)
 
-  val exports: ListBuffer[JavaScriptMember] = new ListBuffer[JavaScriptMember]()
+  private val exports: ListBuffer[JavaScriptMember] = new ListBuffer[JavaScriptMember]()
+
   // Require all the Atomist stuff
+
+  private val root = rugAs match {
+    case fs: FileSystemArtifactSource => fs.id.rootFile.toPath
+    case mem =>
+      val tempRoot = Files.createTempDirectory("rug")
+      mem.allFiles.foreach{ memFile =>
+        val fsFile = tempRoot.resolve(memFile.path)
+        fsFile.getParent.toFile.mkdirs()
+        Files.copy(memFile.inputStream(), fsFile, StandardCopyOption.REPLACE_EXISTING)
+      }
+      tempRoot
+  }
+
   atomistContent
     .filter(_ => true, atomistConfig.isJsSource)
     .allFiles.foreach(evaluate)
 
 
-
   override def evaluate(f: FileArtifact): Unit = {
 
-    var root = rugAs.asInstanceOf[FileSystemArtifactSource].id.rootFile
-    var path = new File(root, f.path)
+    val path = root.resolve(f.path)
     val scope = new MemoryManager(runtime)
-    val more: Seq[JavaScriptMember] =  node.require(path) match {
+    val more: Seq[JavaScriptMember] =  node.require(path.toFile) match {
       case o: V8Object => o.getKeys.map(k => JavaScriptMember(k, new V8JavaScriptObject(o.get(k))))
       case _ => Nil
     }
@@ -57,13 +70,26 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
     exports
   }
 
-  override def invokeMember(jsVar: JavaScriptObject, member: String, params: Option[ParameterValues], args: Object*): AnyRef = ???
+  override def invokeMember(jsVar: JavaScriptObject, member: String, params: Option[ParameterValues], args: Object*): AnyRef = {
+    val v8o = jsVar.asInstanceOf[V8JavaScriptObject].getNativeObject.asInstanceOf[V8Object]
+    val fixed = params match {
+      case Some(pvs) => pvs.parameterValues
+      case _ => Nil
+    }
+    v8o.executeJSFunction(member, fixed:_*)
+  }
 
   override def parseJson(json: String): JavaScriptObject = ???
 
   override def setMember(name: String, value: AnyRef): Unit = ???
 
-  override def eval(script: String): AnyRef = ???
+  override def eval(script: String): AnyRef = {
+    runtime.executeObjectScript(script) match {
+      case x: V8Object if !x.isUndefined => new V8JavaScriptObject(x)
+      case _: V8Object => UNDEFINED
+      case o => o
+    }
+  }
 
   override def finalize(): Unit = {
     super.finalize()

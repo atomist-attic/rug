@@ -71,7 +71,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     assert(pmv.dirty === true)
     val r = pmv.currentBackingObject
     val readmeFile = r.findFile("README.md").get
-    readmeFile.content.contains(replacementText) should be(true)
+    readmeFile.content.contains(replacementText) shouldBe true
   }
 
   "ProjectMutableView" should "correctly handle a regexReplace that has been accidentally specified with an @regex lookup" in {
@@ -83,14 +83,14 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     assert(pmv.dirty === true)
     val r = pmv.currentBackingObject
     val readmeFile = r.findFile("README.md").get
-    readmeFile.content.contains(replacementText) should be(true)
+    readmeFile.content.contains(replacementText) shouldBe true
   }
 
   it should "merge" is pending
 
   it should "get simple project name with file system backed artifact" in {
     val as = ParsingTargets.NewStartSpringIoProject
-    as.isInstanceOf[FileSystemArtifactSource] should be(true)
+    as.isInstanceOf[FileSystemArtifactSource] shouldBe true
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), as)
     assert(pmv.name === "demo")
   }
@@ -103,7 +103,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
 
   it should "throw MissingEditorException if an editor cannot be found via editWith" in {
     val as = ParsingTargets.NewStartSpringIoProject
-    as.isInstanceOf[FileSystemArtifactSource] should be(true)
+    as.isInstanceOf[FileSystemArtifactSource] shouldBe true
     val tsf = StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditor)
     val otherAs = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val resolver = SimpleRugResolver(otherAs)
@@ -115,7 +115,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
 
   it should "throw EditorNotFoundException with a helpful message if we can help" in {
     val as = ParsingTargets.NewStartSpringIoProject
-    as.isInstanceOf[FileSystemArtifactSource] should be(true)
+    as.isInstanceOf[FileSystemArtifactSource] shouldBe true
     val tsf = StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditor)
     val otherAs = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val resolver = SimpleRugResolver(otherAs)
@@ -137,10 +137,10 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val r = pmv.currentBackingObject
     val pingPath = s"src/main/java/${newPackage.replace(".", "/")}/PingController.java"
     val pinger = r.findFile(pingPath).get
-    pinger.content.contains("package " + newPackage) should be(true)
+    pinger.content.contains("package " + newPackage) shouldBe true
     val testPath = s"src/test/java/${newPackage.replace(".", "/")}/Test1OutOfContainerIntegrationTests.java"
     val test = r.findFile(testPath).get
-    test.content.contains("package " + newPackage) should be(true)
+    test.content.contains("package " + newPackage) shouldBe true
   }
 
   it should "mergeTemplates to output root" in {
@@ -187,16 +187,16 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     assert(pmv.currentBackingObject.totalFileCount === 1)
     assert(pmv.currentBackingObject.cachedDeltas.size === 1)
     assert(pmv.currentBackingObject.findFile(mergeOutputPath).get.content === "content")
-    pmv.currentBackingObject.cachedDeltas.exists(d => d.path == mergeOutputPath) should be(true)
+    pmv.currentBackingObject.cachedDeltas.exists(d => d.path == mergeOutputPath) shouldBe true
 
     pmv.copyEditorBackingFilesWithNewRelativePath(sourceDir = copyInputDir, destinationPath = copyOutputDir)
     assert(pmv.totalFileCount === 2)
     assert(pmv.currentBackingObject.cachedDeltas.size === 3)
     assert(pmv.currentBackingObject.findFile(mergeOutputPath).get.content === "content")
     assert(pmv.currentBackingObject.findFile(copyOutputPath).get.content === "file content")
-    pmv.currentBackingObject.cachedDeltas.exists(_.path == mergeOutputPath) should be(true)
-    pmv.currentBackingObject.cachedDeltas.exists(_.path == copyOutputDir) should be(true)
-    pmv.currentBackingObject.cachedDeltas.exists(_.path == copyOutputPath) should be(true)
+    pmv.currentBackingObject.cachedDeltas.exists(_.path == mergeOutputPath) shouldBe true
+    pmv.currentBackingObject.cachedDeltas.exists(_.path == copyOutputDir) shouldBe true
+    pmv.currentBackingObject.cachedDeltas.exists(_.path == copyOutputPath) shouldBe true
   }
 
   it should "add two entries to change log" in {
@@ -324,10 +324,10 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(backingTemplates, project)
 
     val gitDirectoryPath = s"dirToDelete"
-    pmv.directoryExists(gitDirectoryPath) should be(true)
+    pmv.directoryExists(gitDirectoryPath) shouldBe true
     assert(pmv.dirty === false)
     pmv.deleteDirectory(gitDirectoryPath)
-    pmv.directoryExists(gitDirectoryPath) should be(false)
+    pmv.directoryExists(gitDirectoryPath) shouldBe false
     assert(pmv.dirty === true)
   }
 
@@ -336,10 +336,25 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(backingTemplates, project)
 
     val fileToDelete = "src/main/resources/application.properties"
-    pmv.fileExists(fileToDelete) should be(true)
+    pmv.fileExists(fileToDelete) shouldBe true
     assert(pmv.dirty === false)
     pmv.deleteFile(fileToDelete)
-    pmv.fileExists(fileToDelete) should be(false)
+    pmv.fileExists(fileToDelete) shouldBe false
+    assert(pmv.dirty === true)
+  }
+
+  it should "handle deleting of a file and adding it back" in {
+    val project = JavaTypeUsageTest.NewSpringBootProject
+    val pmv = new ProjectMutableView(backingTemplates, project)
+
+    val fileToDelete = "src/main/resources/application.properties"
+    pmv.fileExists(fileToDelete) shouldBe true
+    assert(pmv.dirty === false)
+    pmv.deleteFile(fileToDelete)
+    pmv.fileExists(fileToDelete) shouldBe false
+    assert(pmv.dirty === true)
+    pmv.addFile("src/main/resources/application.properties", "foo=bar")
+    pmv.fileExists(fileToDelete) shouldBe true
     assert(pmv.dirty === true)
   }
 
@@ -361,10 +376,10 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val directoryToCreate = "static"
     val pathToDirectory = "src/main/resources"
     val pathAndDirectoryName = pathToDirectory + "/" + directoryToCreate
-    pmv.directoryExists(pathAndDirectoryName) should be(false)
+    pmv.directoryExists(pathAndDirectoryName) shouldBe false
     assert(pmv.dirty === false)
     pmv.addDirectory(directoryToCreate, pathToDirectory)
-    pmv.directoryExists(pathAndDirectoryName) should be(true)
+    pmv.directoryExists(pathAndDirectoryName) shouldBe true
     assert(pmv.dirty === true)
   }
 
@@ -373,10 +388,10 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(backingTemplates, project)
 
     val directoryAndIntermdiateDirectoriesToCreate = "src/main/resources/parent/static/stuff"
-    pmv.directoryExists(directoryAndIntermdiateDirectoriesToCreate) should be(false)
+    pmv.directoryExists(directoryAndIntermdiateDirectoriesToCreate) shouldBe false
     assert(pmv.dirty === false)
     pmv.addDirectoryAndIntermediates(directoryAndIntermdiateDirectoriesToCreate)
-    pmv.directoryExists(directoryAndIntermdiateDirectoriesToCreate) should be(true)
+    pmv.directoryExists(directoryAndIntermdiateDirectoriesToCreate) shouldBe true
     assert(pmv.dirty === true)
   }
 
@@ -384,10 +399,10 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
     val directoryAndIntermdiateDirectoriesToCreate = ""
-    pmv.directoryExists(directoryAndIntermdiateDirectoriesToCreate) should be(false)
+    pmv.directoryExists(directoryAndIntermdiateDirectoriesToCreate) shouldBe false
     assert(pmv.dirty === false)
     pmv.addDirectoryAndIntermediates(directoryAndIntermdiateDirectoriesToCreate)
-    pmv.directoryExists(directoryAndIntermdiateDirectoriesToCreate) should be(true)
+    pmv.directoryExists(directoryAndIntermdiateDirectoriesToCreate) shouldBe true
     assert(pmv.dirty === true)
   }
 
@@ -497,7 +512,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     assert(fmv.dirty === true)
     assert(fmv.path === newPath)
     assert(fmv.currentBackingObject.path === newPath)
-    pmv.files.asScala.map(_.path).contains(oldPath) should be(false)
-    pmv.files.asScala.map(_.path).contains(newPath) should be(true)
+    pmv.files.asScala.map(_.path).contains(oldPath) shouldBe false
+    pmv.files.asScala.map(_.path).contains(newPath) shouldBe true
   }
 }

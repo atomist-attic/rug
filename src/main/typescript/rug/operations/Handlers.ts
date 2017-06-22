@@ -333,6 +333,8 @@ export abstract class MappedParameters {
   public static readonly GITHUB_API_URL: string = "atomist://github_api_url";
   
   public static readonly SLACK_CHANNEL: string = "atomist://slack/channel";
+  public static readonly SLACK_CHANNEL_NAME: string = "atomist://slack/channel_name";
   public static readonly SLACK_TEAM: string = "atomist://slack/team";
   public static readonly SLACK_USER: string = "atomist://slack/user";
+  public static readonly SLACK_USER_NAME: string = "atomist://slack/user_name";
 }

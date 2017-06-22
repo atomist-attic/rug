@@ -537,7 +537,7 @@ class EditorTest extends FlatSpec with Matchers {
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     jsed.modify(target, SimpleParameterValues(Map("packageName" -> "com.atomist.crushed"))) match {
       case sm: SuccessfulModification =>
-        sm.result.findFile("pom.xml").get.content.contains("randomness") should be(true)
+        sm.result.findFile("pom.xml").get.content.contains("randomness") shouldBe true
         (jsed, sm)
       case _ => ???
     }
@@ -566,7 +566,7 @@ class EditorTest extends FlatSpec with Matchers {
     jsed.modify(target, SimpleParameterValues(Map("content" -> "Anders Hjelsberg is God"))) match {
       case sm: SuccessfulModification =>
         assert(sm.result.totalFileCount === 2)
-        sm.result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
+        sm.result.findFile("src/from/typescript").get.content.contains("Anders") shouldBe true
       case _ => ???
     }
     jsed
@@ -585,7 +585,7 @@ class EditorTest extends FlatSpec with Matchers {
     jsed.modify(target, p) match {
       case sm: SuccessfulModification =>
         assert(sm.result.totalFileCount === 2)
-        sm.result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
+        sm.result.findFile("src/from/typescript").get.content.contains("Anders") shouldBe true
 
         jsed.modify(sm.result, p) match {
           case _: NoModificationNeeded => //yay

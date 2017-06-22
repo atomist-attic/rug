@@ -109,7 +109,7 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
       ))) match {
       case sm: SuccessfulModification =>
         val f = sm.result.findFile(filepath).get
-        f.content.contains(s"$newName") should be(true)
+        f.content.contains(s"$newName") shouldBe true
         f.content
       case x => fail
     }

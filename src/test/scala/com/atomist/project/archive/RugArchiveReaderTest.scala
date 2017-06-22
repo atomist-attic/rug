@@ -137,7 +137,7 @@ class RugArchiveReaderTest extends FlatSpec with Matchers {
     jsed.modify(target, SimpleParameterValues(Map("content" -> "Anders Hjelsberg is God"))) match {
       case sm: SuccessfulModification =>
         assert(sm.result.totalFileCount === 2)
-        sm.result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
+        sm.result.findFile("src/from/typescript").get.content.contains("Anders") shouldBe true
       case _ => ???
     }
     jsed

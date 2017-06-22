@@ -11,7 +11,7 @@ class JsonUtilsTest extends FlatSpec with Matchers {
     )
     val json = JsonUtils.toJsonPrettyPrint(pe)
     // println(json)
-    json.contains("Child\"") should be(true)
+    json.contains("Child\"") shouldBe true
   }
 
   it should "support the wrapped json too" in {
@@ -42,6 +42,6 @@ class JsonUtilsTest extends FlatSpec with Matchers {
     val pe = PathExpressionParser.parsePathExpression(expr)
     val json = JsonUtils.toJsonPrettyPrint(pe)
     // println(json)
-    json.contains("NestedPath") should be(true)
+    json.contains("NestedPath") shouldBe true
   }
 }

@@ -297,7 +297,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
   }
 
   it should "add a new project property" in {
-    validPomUut.contains("/project/properties/my.new.property") should be(false)
+    validPomUut.contains("/project/properties/my.new.property") shouldBe false
     assert(validPomUut.dirty === false)
 
     val propertyName = "my.new.property"
@@ -332,7 +332,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     val propertyName = "project.build.sourceEncoding"
     validPomUut.property(propertyName) should not be ""
 
-    validPomUut.content.contains("<!-- Misc Comment for Testing -->") should be(true)
+    validPomUut.content.contains("<!-- Misc Comment for Testing -->") shouldBe true
 
     validPomUut.removeProperty(propertyName)
 
@@ -340,20 +340,20 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.property(propertyName) should be("")
 
-    validPomUut.content.contains("<!-- Misc Comment for Testing -->") should be(true)
+    validPomUut.content.contains("<!-- Misc Comment for Testing -->") shouldBe true
   }
 
   it should "add a dependency" in {
     val dependencyArtifactId = "atomist-artifact"
     val dependencyGroupId = "com.atomist"
 
-    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be(false)
+    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) shouldBe false
 
     validPomUut.addOrReplaceDependency(dependencyGroupId, dependencyArtifactId)
 
     assert(validPomUut.dirty === true)
 
-    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be(true)
+    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) shouldBe true
   }
 
   it should "add a dependency with scope" in {
@@ -361,13 +361,13 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     val dependencyGroupId = "com.atomist"
     val dependencyScope = "compile"
 
-    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be(false)
+    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) shouldBe false
 
     validPomUut.addOrReplaceDependencyOfScope(dependencyGroupId, dependencyArtifactId, dependencyScope)
 
     assert(validPomUut.dirty === true)
 
-    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be(true)
+    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) shouldBe true
 
     validPomUut.dependencyScope(dependencyGroupId, dependencyArtifactId) should be("compile")
   }
@@ -378,13 +378,13 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     val dependencyVersion = "0.1.0"
     val dependencyScope = "compile"
 
-    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be(false)
+    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) shouldBe false
 
     validPomUut.addOrReplaceDependencyOfVersionAndScope(dependencyGroupId, dependencyArtifactId, dependencyVersion, dependencyScope)
 
     assert(validPomUut.dirty === true)
 
-    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be(true)
+    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) shouldBe true
 
     validPomUut.dependencyVersion(dependencyGroupId, dependencyArtifactId) should be("0.1.0")
 
@@ -395,13 +395,13 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     val dependencyArtifactId = "spring-boot-starter-web"
     val dependencyGroupId = "org.springframework.boot"
 
-    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be(true)
+    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) shouldBe true
 
     validPomUut.addOrReplaceDependency(dependencyGroupId, dependencyArtifactId)
 
     assert(validPomUut.dirty === true)
 
-    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be(true)
+    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) shouldBe true
   }
 
   it should "add a dependency's version" in {
@@ -520,26 +520,26 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     val dependencyArtifactId = "spring-boot-starter-web"
     val dependencyGroupId = "org.springframework.boot"
 
-    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be(true)
+    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) shouldBe true
 
     validPomUut.removeDependency(dependencyGroupId, dependencyArtifactId)
 
     assert(validPomUut.dirty === true)
 
-    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be(false)
+    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) shouldBe false
   }
 
   it should "sensibly respond at an attempted deletion of a dependency that is not present" in {
     val dependencyArtifactId = "spring-boot-starter-web-DUMMY"
     val dependencyGroupId = "org.springframework.boot"
 
-    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be(false)
+    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) shouldBe false
 
     validPomUut.removeDependency(dependencyGroupId, dependencyArtifactId)
 
     assert(validPomUut.dirty === false)
 
-    validPomUut.isDependencyPresent(dependencyArtifactId, dependencyArtifactId) should be(false)
+    validPomUut.isDependencyPresent(dependencyArtifactId, dependencyArtifactId) shouldBe false
   }
 
   it should "add a new build plugin when one was not present before" in {
@@ -547,13 +547,13 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     val groupId = "atomistgroup"
     val plugin = s"""<plugin><groupId>$groupId</groupId><artifactId>$artifactId</artifactId></plugin>"""
 
-    validPomUut.isBuildPluginPresent(groupId, artifactId) should be(false)
+    validPomUut.isBuildPluginPresent(groupId, artifactId) shouldBe false
 
     validPomUut.addOrReplaceBuildPlugin(groupId, artifactId, plugin)
 
     assert(validPomUut.dirty === true)
 
-    validPomUut.isBuildPluginPresent(groupId, artifactId) should be(true)
+    validPomUut.isBuildPluginPresent(groupId, artifactId) shouldBe true
   }
 
   it should "replace an existing build plugin" in {
@@ -563,22 +563,22 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     val newGroupId = "atomistgroup"
     val plugin = s"""<plugin><groupId>$newGroupId</groupId><artifactId>$newArtifactId</artifactId></plugin>"""
 
-    validPomUut.isBuildPluginPresent(groupId, artifactId) should be(true)
-    validPomUut.isBuildPluginPresent(newGroupId, newArtifactId) should be(false)
+    validPomUut.isBuildPluginPresent(groupId, artifactId) shouldBe true
+    validPomUut.isBuildPluginPresent(newGroupId, newArtifactId) shouldBe false
 
     validPomUut.addOrReplaceBuildPlugin(groupId, artifactId, plugin)
 
     assert(validPomUut.dirty === true)
 
-    validPomUut.isBuildPluginPresent(newGroupId, newArtifactId) should be(true)
-    validPomUut.isBuildPluginPresent(groupId, artifactId) should be(false)
+    validPomUut.isBuildPluginPresent(newGroupId, newArtifactId) shouldBe true
+    validPomUut.isBuildPluginPresent(groupId, artifactId) shouldBe false
   }
 
   it should "be able to test that a dependency management dependency is present when no dependency management section" in {
     val groupId = "org.springframework.cloud"
     val artifactId = "spring-cloud-dependencies"
 
-    validPomUut.isDependencyManagementDependencyPresent(groupId, artifactId) should be(false)
+    validPomUut.isDependencyManagementDependencyPresent(groupId, artifactId) shouldBe false
 
     assert(validPomUut.dirty === false)
   }
@@ -587,7 +587,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     val groupId = "org.springframework.cloud"
     val artifactId = "spring-cloud-dependencies"
 
-    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, artifactId) should be(true)
+    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, artifactId) shouldBe true
 
     assert(validPomWithDependencyManagement.dirty === false)
   }
@@ -603,7 +603,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     assert(validPomUut.dirty === true)
 
-    validPomUut.isDependencyManagementDependencyPresent(groupId, artifactId) should be(true)
+    validPomUut.isDependencyManagementDependencyPresent(groupId, artifactId) shouldBe true
   }
 
   it should "replace a dependency management dependency" in {
@@ -612,13 +612,13 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     val dependencyContent =
       s"""<dependency><groupId>$groupId</groupId><artifactId>$artifactId</artifactId><version>Brixton.SR4</version><type>pom</type><scope>import</scope></dependency>""".stripMargin
 
-    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, artifactId) should be(true)
+    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, artifactId) shouldBe true
 
     validPomWithDependencyManagement.addOrReplaceDependencyManagementDependency(groupId, artifactId, dependencyContent)
 
     assert(validPomWithDependencyManagement.dirty === true)
 
-    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, artifactId) should be(true)
+    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, artifactId) shouldBe true
   }
 
   it should "not replace a dependency management section if it already exists" in {
@@ -628,22 +628,22 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     val dependencyContent =
       s"""<dependency><groupId>$groupId</groupId><artifactId>$artifactId</artifactId><version>Brixton.SR4</version><type>pom</type><scope>import</scope></dependency>""".stripMargin
 
-    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, originalArtifactId) should be(true)
-    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, artifactId) should be(false)
+    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, originalArtifactId) shouldBe true
+    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, artifactId) shouldBe false
 
     validPomWithDependencyManagement.addOrReplaceDependencyManagementDependency(groupId, artifactId, dependencyContent)
 
     assert(validPomWithDependencyManagement.dirty === true)
 
-    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, originalArtifactId) should be(true)
-    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, artifactId) should be(true)
+    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, originalArtifactId) shouldBe true
+    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, artifactId) shouldBe true
   }
 
   it should "be able to test that a plugin management plugin is present when no plugin management section" in {
     val groupId = "com.spotify"
     val artifactId = "docker-maven-plugin"
 
-    validPomUut.isBuildPluginManagementPresent(groupId, artifactId) should be(false)
+    validPomUut.isBuildPluginManagementPresent(groupId, artifactId) shouldBe false
 
     assert(validPomUut.dirty === false)
   }
@@ -652,7 +652,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     val groupId = "com.spotify"
     val artifactId = "docker-maven-plugin"
 
-    validPomWithPluginManagement.isBuildPluginManagementPresent(groupId, artifactId) should be(true)
+    validPomWithPluginManagement.isBuildPluginManagementPresent(groupId, artifactId) shouldBe true
 
     assert(validPomWithPluginManagement.dirty === false)
   }
@@ -662,19 +662,19 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     val artifactId = "docker-maven-plugin"
     val plugin = s"""<plugin><groupId>$groupId</groupId><artifactId>$artifactId</artifactId></plugin>"""
 
-    validPomUut.isBuildPluginManagementPresent(groupId, artifactId) should be(false)
+    validPomUut.isBuildPluginManagementPresent(groupId, artifactId) shouldBe false
 
     validPomUut.addOrReplaceBuildPluginManagementPlugin(groupId, artifactId, plugin)
 
     assert(validPomUut.dirty === true)
 
-    validPomUut.isBuildPluginManagementPresent(groupId, artifactId) should be(true)
+    validPomUut.isBuildPluginManagementPresent(groupId, artifactId) shouldBe true
   }
 
   it should "be able to test that a profile is present when no profiles section" in {
     val profileId = "docker"
 
-    validPomUut.isProfilePresent(profileId) should be(false)
+    validPomUut.isProfilePresent(profileId) shouldBe false
 
     assert(validPomUut.dirty === false)
   }
@@ -682,7 +682,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
   it should "be able to test that a profule is present when it is" in {
     val profileId = "docker"
 
-    validPomWithProfile.isProfilePresent(profileId) should be(true)
+    validPomWithProfile.isProfilePresent(profileId) shouldBe true
 
     assert(validPomWithProfile.dirty === false)
   }
@@ -691,13 +691,13 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     val profileId = "docker"
     val profile = s"""<profile><id>$profileId</id><activation><activeByDefault>true</activeByDefault></activation></profile>"""
 
-    validPomUut.isProfilePresent(profileId) should be(false)
+    validPomUut.isProfilePresent(profileId) shouldBe false
 
     validPomUut.addOrReplaceProfile(profileId, profile)
 
     assert(validPomUut.dirty === true)
 
-    validPomUut.isProfilePresent(profileId) should be(true)
+    validPomUut.isProfilePresent(profileId) shouldBe true
   }
 }
 

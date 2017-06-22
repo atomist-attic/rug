@@ -89,7 +89,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
 
     val updatedFile = proj.findFile(Exceptions.path)
     assert(updatedFile.content === newContent)
-    //updatedFile.dirty should be(true)
+    //updatedFile.dirty shouldBe true
   }
 
   it should "find path to format info, execute and verify" in {
@@ -166,7 +166,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
 
     val updatedFile = proj.findFile(Exceptions.path)
     assert(updatedFile.content === newContent)
-    //updatedFile.dirty should be(true)
+    //updatedFile.dirty shouldBe true
   }
 
   it should "find and modify specific exception catch body" in {

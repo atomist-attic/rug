@@ -372,7 +372,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
       val rtn2 = ee.evaluate(pmv, expr2)
       val nodes = rtn2.right.get
       nodes.size should be > 1
-      nodes.forall(n => n.nodeTags.contains("File")) should be(true)
+      nodes.forall(n => n.nodeTags.contains("File")) shouldBe true
     }
   }
 

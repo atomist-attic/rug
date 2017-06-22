@@ -30,8 +30,8 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     val jpv = new JavaProjectMutableView(pmv)
 
     val oldPackage = "com.atomist.test1"
-    jpv.packages.asScala.map(_.name).contains(oldPackage) should be(true)
-    jpv.currentBackingObject.allFiles.exists(_.content.contains(oldPackage)) should be(true)
+    jpv.packages.asScala.map(_.name).contains(oldPackage) shouldBe true
+    jpv.currentBackingObject.allFiles.exists(_.content.contains(oldPackage)) shouldBe true
 
     val newPackage = "com.whatever"
     jpv.renamePackage(oldPackage, newPackage)
@@ -49,13 +49,13 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     val jpv = new JavaProjectMutableView(pmv)
 
     val oldPackage = "com.atomist"
-    jpv.currentBackingObject.allFiles.exists(_.content.contains(oldPackage)) should be(true)
+    jpv.currentBackingObject.allFiles.exists(_.content.contains(oldPackage)) shouldBe true
 
     val newPackage = "com.whatever"
     jpv.renamePackage(oldPackage, newPackage)
     assert(jpv.dirty === true)
 
-    jpv.currentBackingObject.allFiles.exists(_.content.contains("com.whatever.test1")) should be(true)
+    jpv.currentBackingObject.allFiles.exists(_.content.contains("com.whatever.test1")) shouldBe true
 
     val unchanged = jpv.currentBackingObject.allFiles.filter(f => f.name.endsWith(".java")).find(_.content.contains(oldPackage))
     if (unchanged.nonEmpty) {
@@ -89,14 +89,14 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     jpv.copyEditorBackingFilesPreservingPath(copiedInDir)
 
     val oldPackage = "com.foo"
-    jpv.currentBackingObject.allFiles.exists(_.content.contains(oldPackage)) should be(true)
+    jpv.currentBackingObject.allFiles.exists(_.content.contains(oldPackage)) shouldBe true
 
     val newPackage = "com.whatever"
     jpv.renamePackage(oldPackage, newPackage)
     assert(jpv.dirty === true)
 
-    jpv.currentBackingObject.allFiles.exists(_.content.contains(newPackage)) should be(true)
-    jpv.directoryExists(copiedInDir) should be(false)
+    jpv.currentBackingObject.allFiles.exists(_.content.contains(newPackage)) shouldBe true
+    jpv.directoryExists(copiedInDir) shouldBe false
     assert(jpv.currentBackingObject.findDirectory(copiedInDir).isDefined === false)
 
     val unchanged = jpv.currentBackingObject.allFiles.filter(f => f.name.endsWith(".java")).find(_.content.contains(oldPackage))
@@ -132,7 +132,7 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     jpv.copyEditorBackingFilesPreservingPath(copiedInDir + "/baz")
 
     val oldPackage = "com.foo"
-    jpv.currentBackingObject.allFiles.exists(_.content.contains(oldPackage)) should be(true)
+    jpv.currentBackingObject.allFiles.exists(_.content.contains(oldPackage)) shouldBe true
 
     // The new package
     val newPackage = "com.atomist.test1"
@@ -141,8 +141,8 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     jpv.renamePackage(oldPackage, newPackage)
     assert(jpv.dirty === true)
 
-    jpv.currentBackingObject.allFiles.exists(_.content.contains(newPackage)) should be(true)
-    jpv.directoryExists(copiedInDir) should be(false)
+    jpv.currentBackingObject.allFiles.exists(_.content.contains(newPackage)) shouldBe true
+    jpv.directoryExists(copiedInDir) shouldBe false
     jpv.currentBackingObject.findDirectory(copiedInDir) shouldBe empty
 
     val unchanged = jpv.currentBackingObject.allFiles.filter(f => f.name.endsWith(".java")).find(_.content.contains(oldPackage))
@@ -165,13 +165,13 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     val jpv = new JavaProjectMutableView(pmv)
 
     val oldPackage = "com.atomist"
-    jpv.currentBackingObject.allFiles.exists(_.content.contains(oldPackage)) should be(true)
+    jpv.currentBackingObject.allFiles.exists(_.content.contains(oldPackage)) shouldBe true
 
     val newPackage = "com.whatever"
     jpv.renamePackage(oldPackage, newPackage)
     assert(jpv.dirty === true)
 
-    jpv.currentBackingObject.allFiles.exists(_.content.contains("com.whatever.test1")) should be(true)
+    jpv.currentBackingObject.allFiles.exists(_.content.contains("com.whatever.test1")) shouldBe true
 
     val unchanged = jpv.currentBackingObject.allFiles.filter(f => f.name.endsWith(".java")).find(_.content.contains(oldPackage))
     if (unchanged.nonEmpty) {
@@ -210,13 +210,13 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     val jpv = new JavaProjectMutableView(pmv)
 
     val oldPackage = "com.atomist"
-    jpv.currentBackingObject.allFiles.exists(_.content.contains(oldPackage)) should be(true)
+    jpv.currentBackingObject.allFiles.exists(_.content.contains(oldPackage)) shouldBe true
 
     val newPackage = "com.whatever"
     jpv.renamePackage(oldPackage, newPackage)
     assert(jpv.dirty === true)
 
-    jpv.currentBackingObject.allFiles.exists(_.content.contains("com.whatever.test1")) should be(true)
+    jpv.currentBackingObject.allFiles.exists(_.content.contains("com.whatever.test1")) shouldBe true
 
     import com.atomist.rug.kind.core.ProjectType._
     val unchanged = jpv.currentBackingObject.allFiles.filter(f => !f.path.equals(ProvenanceFilePath)).find(_.content.contains(oldPackage))

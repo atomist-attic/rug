@@ -29,7 +29,7 @@ class JavaScriptContextTypeScriptTest extends FlatSpec with Matchers {
     val contents = result.findFile(fileThatWillBeModified).get.content
     withClue(s"contents of $fileThatWillBeModified are:<$contents>") {
       // check the results
-      contents.contains("hello yo") should be(true)
+      contents.contains("hello yo") shouldBe true
     }
 
   }

@@ -19,7 +19,7 @@ class JavaSourceMutableViewTest extends FlatSpec with Matchers {
     as.allFiles
       .filter(f => f.name.endsWith(".java"))
       .map(f => new JavaSourceMutableView(f, null))
-      .forall(f => f.isWellFormed) should be(false)
+      .forall(f => f.isWellFormed) shouldBe false
   }
 
 }

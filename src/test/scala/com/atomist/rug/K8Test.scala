@@ -133,7 +133,7 @@ class K8Test extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         val r = sm.result
         val f = r.findFile(filename).get
-        f.content.contains(s"/$service:$newSha") should be(true)
+        f.content.contains(s"/$service:$newSha") shouldBe true
         f.content
       case x => fail(s"Unexpcted: $x")
     }

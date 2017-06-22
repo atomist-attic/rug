@@ -30,7 +30,7 @@ class SampleTypeScriptTest extends FlatSpec with Matchers {
         val contents = sm.result.findFile(fileThatWillBeModified).get.content
         withClue(s"contents of $fileThatWillBeModified are:<$contents>") {
           // check the results
-          contents.contains("dependenciesAreForBirds") should be(true)
+          contents.contains("dependenciesAreForBirds") shouldBe true
         }
 
       case boo => fail(s"Modification was not successful: $boo")

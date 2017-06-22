@@ -156,7 +156,7 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
 
     val updatedFile = proj.findFile(Exceptions.path)
     assert(updatedFile.content === newContent)
-    // updatedFile.dirty should be(true)
+    // updatedFile.dirty shouldBe true
   }
 }
 

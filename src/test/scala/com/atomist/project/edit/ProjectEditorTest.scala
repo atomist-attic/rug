@@ -57,7 +57,7 @@ class ProjectEditorTest extends FlatSpec with Matchers {
         val javaFiles = sma.result.files.filter(_.name.endsWith(".java"))
         assert(javaFiles.size === 2)
         javaFiles.foreach(f => {
-          f.content contains "@Mysterious" should be(true)
+          f.content contains "@Mysterious" shouldBe true
         })
       case f: FailedModificationAttempt => fail
       case _ => fail

@@ -181,7 +181,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     val f = result.findFile("src/main/java/com/atomist/Dog.java").get
     assert(result.findFile(dog.path).isDefined === false)
-    f.content.contains("package com.atomist;") should be(true)
+    f.content.contains("package com.atomist;") shouldBe true
 
     // Should now import Dog
     f.content should include("import com.atomist.Dog;")
@@ -338,7 +338,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val r = executeJava(program, "editors/ClassAnnotated.ts", as)
 
     val unchangedImpl = r.findFile(impl.path).get
-    unchangedImpl.content contentEquals impl.content should be(true)
+    unchangedImpl.content contentEquals impl.content shouldBe true
 
     val updatedInterface = r.findFile(interfaceFile.path).get
     updatedInterface.content should include(s"import com.foo.bar.Baz;")
@@ -362,7 +362,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     updatedAbstractClass.content should include("@Baz")
 
     val unchangedConcrete = r.findFile(concreteFile.path).get
-    unchangedConcrete.content contentEquals concreteFile.content should be(true)
+    unchangedConcrete.content contentEquals concreteFile.content shouldBe true
   }
 
   it should "allow access to project" in {

@@ -15,11 +15,11 @@ class ParameterGeneratorTest extends FlatSpec with Matchers {
 
   it should "generate values for parameterized" in {
     val pvs = validParameterValuesFor(ParameterizedToTest)
-    ParameterizedToTest.areValid(pvs) should be(true)
+    ParameterizedToTest.areValid(pvs) shouldBe true
   }
 
   private def testGenerationFor(p: Parameter) {
     val generatedPv = validValueFor(p, 4)
-    p.isValidValue(generatedPv.getValue) should be(true)
+    p.isValidValue(generatedPv.getValue) shouldBe true
   }
 }

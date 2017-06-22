@@ -41,7 +41,7 @@ class PythonFileTypeUsageTest extends AbstractTypeUnderFileTest {
   it should "modify imports in single file" in {
     val r = modifyAndReparseSuccessfully("ChangeImports.ts", Flask1)
     val f = r.findFile("hello.py").get
-    f.content.contains("newImport") should be(true)
+    f.content.contains("newImport") shouldBe true
   }
 
   private val newRoute =

@@ -249,7 +249,7 @@ class JavaScriptArrayTest extends FlatSpec with Matchers {
 
     jsed.modify(target, SimpleParameterValues(Map("packageName" -> "com.atomist.crushed"))) match {
       case sm: NoModificationNeeded =>
-      sm.comment.contains("OK") should be(true)
+      sm.comment.contains("OK") shouldBe true
       case _ => ???
     }
     jsed

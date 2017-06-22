@@ -27,14 +27,14 @@ class CSharpFileTypeUsageTest extends AbstractTypeUnderFileTest {
   it should "modify using via path expression" in {
     val r = modifyAndReparseSuccessfully("ChangeUsing.ts", HelloWorldSources)
     val f = r.findFile("src/hello.cs").get
-    f.content.contains("newImportWithAVeryVeryLongName") should be(true)
+    f.content.contains("newImportWithAVeryVeryLongName") shouldBe true
   }
 
   it should "add using and verify" in {
     val r = modifyAndReparseSuccessfully("AddUsing.ts", HelloWorldSources)
     val f = r.findFile("src/hello.cs").get
-    f.content.contains("using System;") should be(true)
-    f.content.contains("using System.Linq;") should be(true)
+    f.content.contains("using System;") shouldBe true
+    f.content.contains("using System.Linq;") shouldBe true
   }
 
   it should "add using if no using present" is pending

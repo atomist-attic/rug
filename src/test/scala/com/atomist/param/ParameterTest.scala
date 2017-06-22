@@ -57,10 +57,10 @@ class ParameterTest extends FlatSpec with Matchers {
   }
 
   private def shouldAccept(p: Parameter, values: Seq[String]): Unit = {
-    values.foreach(v => p.isValidValue(v) should be(true))
+    values.foreach(v => p.isValidValue(v) shouldBe true)
   }
 
   private def shouldReject(p: Parameter, values: Seq[String]): Unit = {
-    values.foreach(v => p.isValidValue(v) should be(false))
+    values.foreach(v => p.isValidValue(v) shouldBe false)
   }
 }

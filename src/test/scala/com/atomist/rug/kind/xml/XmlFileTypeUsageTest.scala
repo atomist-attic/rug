@@ -13,7 +13,7 @@ class XmlFileTypeUsageTest extends FlatSpec with Matchers {
     ed.modify(JavaTypeUsageTest.NewSpringBootProject, SimpleParameterValues.Empty) match {
       case sm: SuccessfulModification =>
         val outputxml = sm.result.findFile("pom.xml").get
-        outputxml.content.contains("<groupId>not-atomist</groupId>") should be(true)
+        outputxml.content.contains("<groupId>not-atomist</groupId>") shouldBe true
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
@@ -32,7 +32,7 @@ class XmlFileTypeUsageTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         val outputxml = sm.result.findFile("pom.xml").get
         //println(outputxml.content)
-        outputxml.content.contains(s"<version>$desiredVersion</version>") should be(true)
+        outputxml.content.contains(s"<version>$desiredVersion</version>") shouldBe true
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }

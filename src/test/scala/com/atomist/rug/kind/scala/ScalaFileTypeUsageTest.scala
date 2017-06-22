@@ -18,7 +18,7 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(Python3Source.path).get
         // println(theFile.content)
-        theFile.content.contains("nodeNamingStrategy =") should be(true)
+        theFile.content.contains("nodeNamingStrategy =") shouldBe true
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
@@ -65,8 +65,8 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(UsesDotEquals.path).get
         // println(theFile.content)
-        theFile.content.contains("==") should be(true)
-        theFile.content.contains("equals") should be(false)
+        theFile.content.contains("==") shouldBe true
+        theFile.content.contains("equals") shouldBe false
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
@@ -79,7 +79,7 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(UsesPrintlnsSource.path).get
         // println(theFile.content)
-        theFile.content.contains("println") should be(false)
+        theFile.content.contains("println") shouldBe false
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
@@ -92,10 +92,10 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(UsesPrintlnsSource.path).get
         // println(theFile.content)
-        theFile.content.contains("println") should be(false)
-        theFile.content.contains("logger.debug") should be(true)
-        theFile.content.contains("import org.slf4j.LoggerFactory") should be(true)
-        theFile.content.contains("private lazy val logger: Logger = Logger(LoggerFactory.getLogger(getClass.getName))") should be(true)
+        theFile.content.contains("println") shouldBe false
+        theFile.content.contains("logger.debug") shouldBe true
+        theFile.content.contains("import org.slf4j.LoggerFactory") shouldBe true
+        theFile.content.contains("private lazy val logger: Logger = Logger(LoggerFactory.getLogger(getClass.getName))") shouldBe true
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
@@ -106,7 +106,7 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(OldStyleScalaTest.path).get
         // println(theFile.content)
-        theFile.content.contains("===") should be(true)
+        theFile.content.contains("===") shouldBe true
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }

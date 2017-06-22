@@ -16,7 +16,7 @@ class SpringTypeSelectorsTest extends FlatSpec with Matchers {
       Seq(StringFileArtifact("Test.java", "@SpringBootApplication public class Test {}").asInstanceOf[FileArtifact]).asJava
     )
     val coit = facu.head.compilationUnit.getTypes.asScala.head.asInstanceOf[ClassOrInterfaceDeclaration]
-    SpringBootApplicationClassSelector(coit) should be(true)
+    SpringBootApplicationClassSelector(coit) shouldBe true
   }
 
   it should "reject non Spring Boot application class" in {
@@ -24,6 +24,6 @@ class SpringTypeSelectorsTest extends FlatSpec with Matchers {
       Seq(StringFileArtifact("Test.java", "public class Test {}").asInstanceOf[FileArtifact]).asJava
     )
     val coit = facu.head.compilationUnit.getTypes.asScala.head.asInstanceOf[ClassOrInterfaceDeclaration]
-    SpringBootApplicationClassSelector(coit) should be(false)
+    SpringBootApplicationClassSelector(coit) shouldBe false
   }
 }

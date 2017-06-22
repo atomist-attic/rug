@@ -26,7 +26,8 @@ class KittieFetcher implements HandleCommand {
         name: "GetKitties"
       },
       id: "123"
-    })
+    });
+    message.ttl = (new Date().getTime() + (1000 * 60 * 60 * 25)).toString();
     plan.add(message);
     return plan;
   }

@@ -62,6 +62,10 @@ class PlanBuilder {
           case c: String => Option(c)
           case _: Undefined => None
         }
+        val ttl = jsMessage.getMember("ttl") match {
+          case c: String => Option(c)
+          case _: Undefined => None
+        }
         val messageBody = jsMessage.getMember("body") match {
           case json: ScriptObjectMirror =>
             throw new UnsupportedOperationException("Message body must be a string")
@@ -90,7 +94,7 @@ class PlanBuilder {
               constructPresentable(presentable.asInstanceOf[ScriptObjectMirror])
             }
         }
-        LocallyRenderedMessage(messageBody, contentType, channelNames, usernames, instructions, messageId, timestamp)
+        LocallyRenderedMessage(messageBody, contentType, channelNames, usernames, instructions, messageId, timestamp, ttl)
 
       case "lifecycle" =>
         val instructions = jsMessage.getMember("instructions") match {

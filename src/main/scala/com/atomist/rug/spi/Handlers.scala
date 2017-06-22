@@ -59,7 +59,8 @@ object Handlers {
                                     usernames: Seq[String] = Nil,
                                     instructions: Seq[Presentable] = Nil,
                                     messageId: Option[String] = None,
-                                    timestamp: Option[String] = None)
+                                    timestamp: Option[String] = None,
+                                    ttl: Option[String] = None)
     extends Callback
       with Message {
 

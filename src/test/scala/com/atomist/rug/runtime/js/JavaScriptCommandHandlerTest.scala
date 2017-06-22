@@ -236,6 +236,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     val plan = directed(simpleCommandHandlerReturningUpdatableMessageWithMessageIdAndTimestamp)
     assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].messageId.get === "some-message")
     assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].timestamp.isDefined)
+    assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].ttl.isDefined)
   }
 
 

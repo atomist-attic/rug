@@ -294,6 +294,8 @@ export class UpdatableMessage extends DirectedMessage {
 
   public id: string;
   public timestamp: string = new Date().getTime().toString();
+  // Time after which the message will get re-posted instead of re-written
+  public ttl?: string;
 
   constructor(id: string, body: string, address: MessageAddress, contentType?: MessageMimeType) {
     super(body, address, contentType);

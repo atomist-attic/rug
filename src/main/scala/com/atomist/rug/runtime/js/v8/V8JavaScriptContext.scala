@@ -171,7 +171,7 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
   private def proxy(obj: AnyRef): V8Object = {
     val v8pmv = new V8Object(runtime)
     obj.getClass.getMethods.foreach {
-      case m: Method if exposeAsProperty(m) => v8pmv.add(m.getName, new PropertyProxy(obj, m))
+      case m: Method if exposeAsProperty(m) => v8pmv.add(m.getName, new PropertyProxy(runtime, obj, m))
       case m: Method => v8pmv.registerJavaMethod(new MethodProxy(obj,m), m.getName)
     }
     v8pmv
@@ -181,17 +181,6 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
     m.getDeclaredAnnotations.exists {
       case o: ExportFunction => o.exposeAsProperty()
       case _ => false
-    }
-  }
-}
-
-class PropertyProxy(obj: AnyRef, method: Method) extends V8Value {
-  override def createTwin(): V8Value = ???
-
-  override def equals(that: scala.Any): Boolean = {
-    that match {
-      case u: V8Object if u.isUndefined => false
-      case o => super.equals(that)
     }
   }
 }

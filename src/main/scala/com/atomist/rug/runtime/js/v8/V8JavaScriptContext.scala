@@ -1,12 +1,15 @@
 package com.atomist.rug.runtime.js.v8
 
 import java.io.File
+import java.lang.reflect.Method
 import java.nio.charset.Charset
 import java.nio.file.{CopyOption, Files, Path, StandardCopyOption}
 
 import com.atomist.param.ParameterValues
 import com.atomist.project.archive.{ArchiveRugResolver, AtomistConfig, DefaultAtomistConfig, Dependency}
+import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.js._
+import com.atomist.rug.spi.ExportFunction
 import com.atomist.source.file.{FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}
 import com.atomist.source.{ArtifactSource, FileArtifact}
 import com.atomist.util.Timing.time
@@ -14,6 +17,8 @@ import com.eclipsesource.v8._
 import com.eclipsesource.v8.utils.MemoryManager
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.commons.io.{FileUtils, IOUtils}
+import org.apache.commons.lang3.ClassUtils
+import org.springframework.util.ReflectionUtils
 
 import scala.collection.mutable.ListBuffer
 
@@ -71,17 +76,30 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
   }
 
   override def invokeMember(jsVar: JavaScriptObject, member: String, params: Option[ParameterValues], args: Object*): AnyRef = {
+    val scope = new MemoryManager(runtime)
     val v8o = jsVar.asInstanceOf[V8JavaScriptObject].getNativeObject.asInstanceOf[V8Object]
-    val fixed = params match {
-      case Some(pvs) => pvs.parameterValues
-      case _ => Nil
+    params match {
+      case Some(pvs) => pvs.parameterValues.foreach{ kv =>
+        kv.getValue match {
+          case o: String => v8o.add(kv.getName, o)
+          case x => throw new RuntimeException(s"Don't know how to deal with $x")
+        }
+
+      }
+      case _ =>
     }
-    v8o.executeJSFunction(member, fixed:_*)
+    try{
+      v8o.executeJSFunction(member, args.map(proxy):_*)
+    }finally{
+      scope.release()
+    }
   }
 
   override def parseJson(json: String): JavaScriptObject = ???
 
-  override def setMember(name: String, value: AnyRef): Unit = ???
+  override def setMember(name: String, value: AnyRef): Unit = {
+    runtime.add(name, proxy(value))
+  }
 
   override def eval(script: String): AnyRef = {
     runtime.executeObjectScript(script) match {
@@ -144,6 +162,49 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
     val require = IOUtils.toString(Thread.currentThread().getContextClassLoader.getResourceAsStream("tiny_require.js"), Charset.defaultCharset)
     runtime.executeVoidScript(s"$require;\n")
   }
+
+  /**
+    * Create a proxy around obj
+    * @param obj
+    * @return
+    */
+  private def proxy(obj: AnyRef): V8Object = {
+    val v8pmv = new V8Object(runtime)
+    obj.getClass.getMethods.foreach {
+      case m: Method if exposeAsProperty(m) => v8pmv.add(m.getName, new PropertyProxy(obj, m))
+      case m: Method => v8pmv.registerJavaMethod(new MethodProxy(obj,m), m.getName)
+    }
+    v8pmv
+  }
+
+  private def exposeAsProperty(m: Method): Boolean = {
+    m.getDeclaredAnnotations.exists {
+      case o: ExportFunction => o.exposeAsProperty()
+      case _ => false
+    }
+  }
+}
+
+class PropertyProxy(obj: AnyRef, method: Method) extends V8Value {
+  override def createTwin(): V8Value = ???
+
+  override def equals(that: scala.Any): Boolean = {
+    that match {
+      case u: V8Object if u.isUndefined => false
+      case o => super.equals(that)
+    }
+  }
+}
+
+class MethodProxy(obj: AnyRef, method: Method) extends JavaCallback {
+
+  override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
+    val args = new scala.collection.mutable.ListBuffer[AnyRef]
+    for(i <- 0 to parameters.length()){
+      args.append(parameters.get(i))
+    }
+    method.invoke(obj, args:_*)//TODO proxy the response
+  }
 }
 
 /**
@@ -160,3 +221,4 @@ object TestV8JavaScriptContext {
     println(s"Loaded: ${result.allRugs.size} in $elapsedTime ms")
   }
 }
+

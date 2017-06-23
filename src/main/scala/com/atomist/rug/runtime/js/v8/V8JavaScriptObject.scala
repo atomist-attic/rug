@@ -76,5 +76,12 @@ class V8JavaScriptObject(obj: AnyRef) extends JavaScriptObject {
 
   override def eval(js: String): AnyRef = ???
 
-  override def entries(): Map[String, AnyRef] = ???
+  override def entries(): Map[String, AnyRef] = obj match {
+    case x: V8Object => x.getKeys.map{ key =>
+      x.get(key) match {
+        case o: V8Object => (key, new V8JavaScriptObject(o))
+        case eh => (key, eh)
+      }
+    }.toMap
+  }
 }

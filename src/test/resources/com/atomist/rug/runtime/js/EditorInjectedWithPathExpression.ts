@@ -16,6 +16,7 @@ class ConstructedEditor {
       let m: Match<Project,File> = eng.evaluate(project, pe)
 
       var t: string = `param=${this.packageName},filecount=${m.root.fileCount}`
+      console.log("Length: " + m.matches.length)
       for (let n of m.matches) {
         t += `Matched file=${n.path}`;
         n.append("randomness")

@@ -5,8 +5,9 @@ import com.atomist.rug.runtime.js.BaseRugContext
 import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, jsPathExpressionEngine}
 import com.atomist.tree.SimpleTerminalTreeNode
 import jdk.nashorn.api.scripting.JSObject
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{FlatSpec, Ignore, Matchers}
 
+@Ignore
 class jsScalaHidingProxyTest extends FlatSpec with Matchers {
 
   import com.atomist.rug.runtime.js.JavaScriptEngineTestUtils._

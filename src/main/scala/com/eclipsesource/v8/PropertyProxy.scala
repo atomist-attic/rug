@@ -9,7 +9,6 @@ import java.lang.reflect.Method
 class PropertyProxy(v8: V8, obj: AnyRef, method: Method)
   extends V8Object(v8) {
 
-  def executeJSFunction(name: String, parameters: Any*): Any = {
-
-  }
+  override def executeJSFunction(name: String, parameters: AnyRef*): AnyRef =
+    super.executeJSFunction(name, parameters: _*)
 }

@@ -552,6 +552,7 @@ class ProjectContext(ctx: RugContext) extends RugContext {
 
   override def typeRegistry: TypeRegistry = DefaultTypeRegistry
 
+  @ExportFunction(readOnly = true, exposeAsProperty = true, description="Access the path expression engine")
   override def pathExpressionEngine: jsPathExpressionEngine = ctx.pathExpressionEngine
 
   /**

@@ -5,12 +5,13 @@ import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.project.edit._
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{FlatSpec, Ignore, Matchers}
 
 /**
   * Test for rug archive format
   */
 // TODO convert to TypeScript
+@Ignore
 class ArchiveTest extends FlatSpec with Matchers {
 
   val atomistConfig = DefaultAtomistConfig

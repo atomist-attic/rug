@@ -4,8 +4,8 @@ import com.atomist.rug.runtime.js.{JavaScriptEngineContextFactory, JavaScriptPro
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.rug.{RugArchiveReader, RugJavaScriptException}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
-import org.scalatest.{FlatSpec, Matchers}
-
+import org.scalatest.{FlatSpec, Ignore, Matchers}
+@Ignore
 class NashornContextTest extends FlatSpec with Matchers {
   val SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters: String =
     s"""

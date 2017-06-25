@@ -7,12 +7,13 @@ import com.atomist.rug.runtime.js.JavaScriptEngineContextFactory
 import com.atomist.rug.test.gherkin.{Passed, _}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{FlatSpec, Ignore, Matchers}
 
 /**
   * Files ending with "a," "b" etc are identical in effect from the point
   * of view of these tests
   */
+@Ignore
 class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
 
   import EventHandlerTestTargets._

@@ -7,6 +7,8 @@ import com.atomist.rug.runtime.js.{JavaScriptObject, RugContext, SimpleExecution
 import com.atomist.rug.spi._
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpression, PathExpressionEngine, PathExpressionParser}
 
+import scala.annotation.meta.{field, getter, param}
+
 /**
   * Represents a Match from executing a PathExpression, exposed
   * to JavaScript/TypeScript behind a jsScalaHidingProxy
@@ -14,8 +16,10 @@ import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpression, PathEx
   * @param root    root we evaluated path from
   * @param matches matches
   */
-case class Match(root: GraphNode,
-                   matches: Seq[GraphNode])
+case class Match(@(ExportFunction @getter)(description = "Root node of query", readOnly = true, exposeAsProperty = true)
+                 root: GraphNode,
+                 @(ExportFunction @getter)(description = "Any matches", readOnly = true, exposeAsProperty = true)
+                 matches: Seq[GraphNode])
 
 /**
   * JavaScript-friendly facade to an ExpressionEngine.
@@ -75,6 +79,7 @@ class jsPathExpressionEngine(
     *             The latter allows us to define TypeScript classes.
     * @return a Match
     */
+  @ExportFunction(description = "Evaluate the given path expression.", readOnly = true)
   def evaluate(root: AnyRef, pe: Object): AnyRef = {
     evaluateInternal(root, jsPathExpressionEngine.pathExpressionFromObject(pe))
   }

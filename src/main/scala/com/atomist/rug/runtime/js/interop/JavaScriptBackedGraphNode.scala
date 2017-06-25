@@ -9,7 +9,7 @@ import com.atomist.tree.SimpleTerminalTreeNode
 object JavaScriptBackedGraphNode {
 
   /**
-    * Convert this object returned from Nashorn to a GraphNode if possible.
+    * Convert this object returned from JavaScript to a GraphNode if possible.
     * Will return AddressedGraphNode if address is known.
     */
   def toGraphNode(nashornReturn: Object, nodeRegistry: NodeRegistry = new NodeRegistry): Option[GraphNode] = {

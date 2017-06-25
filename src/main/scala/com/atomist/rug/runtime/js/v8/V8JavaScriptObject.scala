@@ -1,7 +1,7 @@
 package com.atomist.rug.runtime.js.v8
 
 import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
-import com.eclipsesource.v8.{V8Array, V8Function, V8Object}
+import com.eclipsesource.v8.{V8Array, V8Function, V8Object, V8Value, Proxy}
 
 /**
   * V8 implementation
@@ -43,7 +43,22 @@ class V8JavaScriptObject(obj: AnyRef) extends JavaScriptObject {
     */
   override def createMemberFunction(name: String): AnyRef = ???
 
-  override def call(thisArg: AnyRef, args: AnyRef*): AnyRef = ???
+  override def call(thisArg: AnyRef, args: AnyRef*): AnyRef = {
+    obj match {
+      case o: V8Function =>
+        val params = new V8Array(o.getRuntime)
+        args.foreach{
+          case o: java.lang.Boolean => params.push(o)
+          case d: java.lang.Double => params.push(d)
+          case i: java.lang.Integer => params.push(i)
+          case s: String => params.push(s)
+          case v: V8Value => params.push(v)
+          case p: AnyRef => params.push(Proxy(o.getRuntime,p, Map(p.hashCode -> p)))
+          case x => throw new RuntimeException(s"Could not proxy object $x")
+        }
+        o.call(null, params)
+    }
+  }
 
   override def isEmpty: Boolean = obj match {
     case v: V8Array => v.length() == 0

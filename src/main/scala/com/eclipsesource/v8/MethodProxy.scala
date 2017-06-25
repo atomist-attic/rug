@@ -19,9 +19,10 @@ class MethodProxy(runtime: V8, obj: AnyRef, method: Method, refs: Map[Int, AnyRe
       parameters.get(i) match {
         case o: V8Object if !o.isUndefined =>
           if(o.contains("__object_reference")){
-            refs.get(o.get("__object_reference").asInstanceOf[Int]) match {
+            val code = o.get("__object_reference").asInstanceOf[Int]
+            refs.get(code) match {
               case Some(x) => args.append(x)
-              case x => args.append(x)
+              case None => throw new RuntimeException(s"Could not find $code in ${refs.mkString(",")}")
             }
 
           }else{

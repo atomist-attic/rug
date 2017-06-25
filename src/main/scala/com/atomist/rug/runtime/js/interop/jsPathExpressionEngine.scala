@@ -118,6 +118,7 @@ class jsPathExpressionEngine(
     * @param pexpr path expression (compiled or string)
     * @param f     function to apply to each path expression
     */
+  @ExportFunction(description = "Run some javascript on the results", readOnly = true)
   def `with`(root: AnyRef, pexpr: Object, f: Object): Unit = f match {
     case som: JavaScriptObject =>
       val r = evaluateInternal(root, pexpr)

@@ -37,7 +37,11 @@ object Proxy {
     val v8pmv = new V8Object(runtime)
 
     //TODO - is there any other way to track JVM objects as their proxies pass through a JS function?
-    v8pmv.add("__object_reference", obj.hashCode())
+    val code = obj.hashCode()
+    v8pmv.add("__object_reference", code)
+    if(!refs.contains(code)){
+      throw new RuntimeException(s"Could not find ${code} in ${refs.mkString(",")}")
+    }
     obj match {
       case o: Seq[_] =>
         val arr = new V8Array(runtime)
@@ -55,7 +59,7 @@ object Proxy {
                 v8pmv.add(m.getName, str)
               case o =>
                 //println(s"Proxying property ${m.getName} on ${obj.getClass.getName}")
-                v8pmv.add(m.getName, Proxy(runtime, o, refs))
+                v8pmv.add(m.getName, Proxy(runtime, o, Map[Int, AnyRef](o.hashCode() -> o) ++ refs))
             }
           case m: Method if exposeAsFunction(m) =>
             //println(s"Registering method: ${m.getName} on ${obj.getClass.getName}")

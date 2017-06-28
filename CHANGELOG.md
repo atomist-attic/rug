@@ -16,8 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
--   Updated JavaParser to 3.2.6
--   Updated artifact-source to 1.0.0-m.4
+-   Updated JavaParser to 3.2.8
+-   Updated artifact-source to 1.0.0-m.5
 
 ### Fixed
 

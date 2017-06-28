@@ -30,9 +30,6 @@ notifications:
     on_error: always
     urls:
     - https://webhook.atomist.com/travis
-cache:
-  directories:
-  - $HOME/.m2
 before_deploy:
 - nvm install 6.9.2
 deploy:

@@ -8,7 +8,9 @@ import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.rug.spi.{TypeRegistry, Typed, UsageSpecificTypeRegistry}
 import com.atomist.rug.ts.{CortexTypeGenerator, DefaultTypeGeneratorConfig}
-import com.atomist.source.git.GitRepositoryCloner
+import com.atomist.source.file.FileSystemArtifactSourceIdentifier
+import com.atomist.source.git.FileSystemGitArtifactSource
+import com.atomist.util.GitRepositoryCloner
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 object ScenarioWorld {
@@ -90,7 +92,8 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs], c
   def cloneRepo(cloneInfo: AnyRef): ProjectMutableView = {
     val rid = extractRepoId(cloneInfo)
     val cloner = new GitRepositoryCloner(oAuthToken = config.oAuthToken.getOrElse(""))
-    val as = cloner.clone(rid.name, rid.owner, rid.branch, rid.sha)
+    val file = cloner.clone(rid.name, rid.owner, rid.branch, rid.sha)
+    val as = FileSystemGitArtifactSource(FileSystemArtifactSourceIdentifier(file.get))
     new ProjectMutableView(as)
   }
 

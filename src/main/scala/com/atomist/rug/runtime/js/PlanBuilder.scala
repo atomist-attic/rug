@@ -184,7 +184,7 @@ class PlanBuilder {
           SimpleParameterValue(name,
             value match {
               case s: String => s
-              case o => JsonUtils.toJson(o)
+              case o => JsonUtils.toJsonStr(o)
             })
         }
       case _ => Nil

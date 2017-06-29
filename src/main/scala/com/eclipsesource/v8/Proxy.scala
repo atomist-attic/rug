@@ -91,13 +91,17 @@ object Proxy {
           case m: Method if ReflectionUtils.isObjectMethod(m) => //don't proxy standard stuff
           case m: Method if exposeAsProperty(m) =>
             m.getReturnType match {
-              case JList => v8pmv.add(m.getName, new PropertyProxy(node, obj, m))
               case JString => v8pmv.add(m.getName, m.invoke(obj).asInstanceOf[String])
               case JLong => v8pmv.add(m.getName, m.invoke(obj).asInstanceOf[Long])
               case JInt => v8pmv.add(m.getName, m.invoke(obj).asInstanceOf[Int])
               case JDouble => v8pmv.add(m.getName, m.invoke(obj).asInstanceOf[Double])
               case JBoolean => v8pmv.add(m.getName, m.invoke(obj).asInstanceOf[Boolean])
-              case r => v8pmv.add(m.getName, new PropertyProxy(node, obj, m))
+              case _ =>
+                val callback = new V8Object(node.getRuntime)
+                callback.registerJavaMethod(new MethodProxy(node, obj,m), "get")
+
+                val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
+                theObject.executeJSFunction("defineProperty", v8pmv, m.getName, callback)
             }
           case m: Method if exposeAsFunction(m) =>
             v8pmv.registerJavaMethod(new MethodProxy(node, obj,m), m.getName)

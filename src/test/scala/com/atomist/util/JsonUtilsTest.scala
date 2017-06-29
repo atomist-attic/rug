@@ -33,7 +33,7 @@ class JsonUtilsTest extends FlatSpec with Matchers {
           NodeNamePredicate("Commit")
         )
       )))
-    val json = JsonUtils.toJson(pe)
+    val json = JsonUtils.toJsonStr(pe)
     // println(json)
   }
 

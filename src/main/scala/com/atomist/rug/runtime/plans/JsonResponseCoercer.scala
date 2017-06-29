@@ -18,14 +18,13 @@ class JsonResponseCoercer(jsc: JavaScriptContext, handler: ScriptObjectMirror) e
     val body = response.body match {
       case Some(bytes: Array[Byte]) => new String(bytes)
       case Some(str: String) => str
-      case Some(o) => JsonUtils.toJson(o)
+      case Some(o) => JsonUtils.toJsonStr(o)
       case agg => throw new RuntimeException(s"Could not recognize body type for coercion: $agg")
     }
     Response(response.status, response.msg, response.code, Some(toJSObject(body)))
   }
 
   private def toJSObject(body: String): AnyRef = {
-
     val bindings = new SimpleBindings()
     bindings.put("__coercion", body)
 

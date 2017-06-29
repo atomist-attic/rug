@@ -8,10 +8,12 @@ import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.RugNotFoundException
 import com.atomist.rug.kind.core.{ProjectContext, ProjectMutableView, RepoResolver}
 import com.atomist.rug.runtime.js.interop.NashornUtils
-import com.atomist.rug.runtime.js.{BaseRugContext, JavaScriptProjectOperation, LocalRugContext}
+import com.atomist.rug.runtime.js.{BaseRugContext, JavaScriptProjectOperation}
 import com.atomist.rug.test.gherkin._
+import com.atomist.source.file.FileSystemArtifactSourceIdentifier
+import com.atomist.source.git.FileSystemGitArtifactSource
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
-import com.atomist.source.git.GitRepositoryCloner
+import com.atomist.util.GitRepositoryCloner
 
 /**
   * Convenient methods for working with projects
@@ -97,7 +99,7 @@ class ProjectScenarioWorld(
         throw unknown
     }
   }
-  // for calling from nashorn which doesn't like default parameter values!
+  // For calling from nashorn which doesn't like default parameter values!
   def editWith(editor: ProjectEditor): Unit = {
     editWith(editor, null)
   }
@@ -138,13 +140,15 @@ private object ProjectGenerationContext extends BaseRugContext {
 
 private object GitRepoResolver extends RepoResolver {
 
-  private val cloner = new GitRepositoryCloner("")
+  private val Cloner = GitRepositoryCloner()
 
   override def resolveBranch(owner: String, repoName: String, branch: String): ArtifactSource = {
-    cloner.clone(owner = owner, repo = repoName, branch= Some(branch))
+    val file = Cloner.clone(repo = repoName, owner = owner, branch= Some(branch))
+    FileSystemGitArtifactSource(FileSystemArtifactSourceIdentifier(file.get))
   }
 
   override def resolveSha(owner: String, repoName: String, sha: String): ArtifactSource = {
-    cloner.clone(owner = owner, repo = repoName, sha = Some(sha))
+    val file = Cloner.clone(repo = repoName, owner = owner, sha = Some(sha))
+    FileSystemGitArtifactSource(FileSystemArtifactSourceIdentifier(file.get))
   }
 }

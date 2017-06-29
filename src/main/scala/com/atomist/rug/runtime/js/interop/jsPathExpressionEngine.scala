@@ -50,6 +50,7 @@ class jsPathExpressionEngine(
     * @param dynamicType JavaScript rest dynamic type definitions.
     * @return customized instance of this engine
     */
+  @ExportFunction(description = "Return a customized version of this path expression engine for use in a specific context, with its own microgrammar types", readOnly = false)
   def addType(dynamicType: Object): jsPathExpressionEngine = {
     val tr = new UsageSpecificTypeRegistry(typeRegistry,
       Seq(dynamicType).map(dynamicTypeDefinitionToTypeProvider)
@@ -137,6 +138,7 @@ class jsPathExpressionEngine(
     * @param root root of Tree. SafeCommittingProxy wrapping a TreeNode
     * @param pe   path expression of object
     */
+  @ExportFunction(description = "Fetch a single match", readOnly = true)
   def scalar(root: AnyRef, pe: Object): GraphNode = {
     val res = evaluateInternal(root, pe)
     val ms = res.matches
@@ -172,6 +174,7 @@ class jsPathExpressionEngine(
   /**
     * Try to cast the given node to the required type.
     */
+  @ExportFunction(description = "Try to cast the given node to the required type.", readOnly = true)
   def as(root: AnyRef, name: String): GraphNode =
     scalar(root, s"->$name")
 
@@ -181,6 +184,7 @@ class jsPathExpressionEngine(
     * @param parent parent node we want to look under
     * @param name   name of the children we want to look for
     */
+  @ExportFunction(description = "Find the children of the current node of the named type.", readOnly = true)
   def children(parent: AnyRef, name: String): Seq[GraphNode] = {
     val rootTn = toUnderlyingGraphNode(parent)
     val typ = typeRegistry.findByName(name).getOrElse(

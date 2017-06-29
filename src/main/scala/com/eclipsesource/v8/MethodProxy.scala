@@ -7,11 +7,11 @@ import com.atomist.rug.runtime.js.v8.V8JavaScriptObject
 
 /**
   * Call methods on obj from V8
-  * @param runtime
+  * @param node
   * @param obj
   * @param method
   */
-class MethodProxy(runtime: V8, obj: AnyRef, method: Method, refs: Map[Int, AnyRef]) extends JavaCallback {
+class MethodProxy(node: NodeWrapper, obj: AnyRef, method: Method) extends JavaCallback {
 
   override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
     val args = new scala.collection.mutable.ListBuffer[AnyRef]
@@ -19,19 +19,17 @@ class MethodProxy(runtime: V8, obj: AnyRef, method: Method, refs: Map[Int, AnyRe
       parameters.get(i) match {
         case o: V8Object if !o.isUndefined =>
           if(o.contains("__object_reference")){
-            val code = o.get("__object_reference").asInstanceOf[Int]
-            refs.get(code) match {
+            node.get(o) match {
               case Some(x) => args.append(x)
-              case None => throw new RuntimeException(s"Could not find $code in ${refs.mkString(",")}")
+              case None => throw new RuntimeException(s"Could not find a ref while invoking ${method.getName} on $obj")
             }
-
           }else{
-            args.append(new V8JavaScriptObject(o))
+            args.append(new V8JavaScriptObject(node, o))
           }
         case o: V8Object if o.isUndefined =>
         case x => args.append(parameters.get(i))
       }
     }
-    Proxy.ifNeccessary(runtime, method.invoke(obj, args:_*), refs)
+    Proxy.ifNeccessary(node, method.invoke(obj, args:_*))
   }
 }

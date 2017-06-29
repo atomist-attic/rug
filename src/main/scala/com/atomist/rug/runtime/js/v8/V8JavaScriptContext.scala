@@ -23,10 +23,9 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
   with LazyLogging
   with JavaScriptUtils{
 
-  private val node = NodeJS.createNodeJS()
+  private val node = new NodeWrapper(NodeJS.createNodeJS())
 
-  private val runtime = node.getRuntime
-  private val scope = new MemoryManager(runtime)
+  private val scope = new MemoryManager(node.getRuntime)
 
   val atomistContent: ArtifactSource = atomistConfig.atomistContent(rugAs)
 
@@ -54,9 +53,9 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
   override def evaluate(f: FileArtifact): Unit = {
 
     val path = root.resolve(f.path)
-    val scope = new MemoryManager(runtime)
-    val more: Seq[JavaScriptMember] =  node.require(path.toFile) match {
-      case o: V8Object => o.getKeys.map(k => JavaScriptMember(k, new V8JavaScriptObject(o.get(k))))
+    val scope = new MemoryManager(node.getRuntime)
+    val more: Seq[JavaScriptMember] =  node.node.require(path.toFile) match {
+      case o: V8Object => o.getKeys.map(k => JavaScriptMember(k, new V8JavaScriptObject(node, o.get(k))))
       case _ => Nil
     }
     exports ++= more
@@ -67,7 +66,7 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
   }
 
   override def invokeMember(jsVar: JavaScriptObject, member: String, params: Option[ParameterValues], args: Object*): AnyRef = {
-    val scope = new MemoryManager(runtime)
+//    val scope = new MemoryManager(node.getRuntime)
     val v8o = jsVar.asInstanceOf[V8JavaScriptObject].getNativeObject.asInstanceOf[V8Object]
     params match {
       case Some(pvs) => pvs.parameterValues.foreach{ kv =>
@@ -78,23 +77,26 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
       }
       case _ =>
     }
-    val refs: Map[Int, AnyRef] = args.map(a => (a.hashCode(), a)).toMap
     try{
-      v8o.executeJSFunction(member, args.map(a => Proxy.ifNeccessary(runtime, a, refs)):_*)
+      v8o.executeJSFunction(member, args.map(a => Proxy.ifNeccessary(node, a)):_*) match {
+        case x: V8Object if !x.isUndefined => new V8JavaScriptObject(node, x)
+        case _: V8Object => UNDEFINED
+        case o => o
+      }
     }finally{
-      scope.release()
+//      scope.release()
     }
   }
 
   override def parseJson(json: String): JavaScriptObject = ???
 
   override def setMember(name: String, value: AnyRef): Unit = {
-    Proxy.ifNeccessary(runtime, name, value, Map[Int, AnyRef](value.hashCode() -> value))
+    Proxy.addIfNeccessary(node, name, value)
   }
 
   override def eval(script: String): AnyRef = {
-    runtime.executeObjectScript(script) match {
-      case x: V8Object if !x.isUndefined => new V8JavaScriptObject(x)
+    node.getRuntime.executeObjectScript(script) match {
+      case x: V8Object if !x.isUndefined => new V8JavaScriptObject(node, x)
       case _: V8Object => UNDEFINED
       case o => o
     }
@@ -103,7 +105,8 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
   override def finalize(): Unit = {
     super.finalize()
     scope.release()
-    runtime.release()
+    node.getRuntime.release()
+    node.node.release()
   }
 }
 

@@ -31,7 +31,7 @@ class jsSafeCommittingProxy(
 
   override def toString: String = s"SafeCommittingProxy#$hashCode around $node"
 
-  private val typ: Typed = Typed.typeFor(node, typeRegistry)
+  private lazy val typ: Typed = Typed.typeFor(node, typeRegistry)
 
   // Members the user has added dynamically in JavaScript,
   // for example in mixins

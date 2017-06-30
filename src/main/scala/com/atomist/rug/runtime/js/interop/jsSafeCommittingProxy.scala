@@ -35,7 +35,7 @@ class jsSafeCommittingProxy(
 
   // Members the user has added dynamically in JavaScript,
   // for example in mixins
-  private var additionalMembers: Map[String, Object] = Map()
+  private lazy val additionalMembers = new scala.collection.mutable.HashMap[String,AnyRef]()
 
   //-----------------------------------------------------
   // Delegate GraphNode and TreeNode methods to backing node
@@ -76,10 +76,10 @@ class jsSafeCommittingProxy(
   override def setMember(name: String, value: Object): Unit = value match {
     case som: ScriptObjectMirror =>
       logger.debug(s"JavaScript code has added function member [$name]")
-      additionalMembers = additionalMembers ++ Map(name -> som)
+      additionalMembers.put(name, som)
     case x =>
       logger.debug(s"JavaScript code has added non-function member [$name]")
-      additionalMembers = additionalMembers ++ Map(name -> x)
+      additionalMembers.put(name, x)
   }
 
   override def getMember(name: String): AnyRef = {

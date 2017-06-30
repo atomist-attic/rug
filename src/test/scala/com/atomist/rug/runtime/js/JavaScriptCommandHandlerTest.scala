@@ -106,7 +106,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
         Seq(SimpleParameterValue("very", "cool"))
       }
     }, rugResolver = Some(resolver)), loggerOption = Some(NOPLogger.NOP_LOGGER))
-    val results = Await.result(runner.run(plan, None), 10.seconds)
+    val results = runner.run(plan, None)
     val single = PlanResultInterpreter.interpret(results)
     assert(single.status == Status.Success)
   }
@@ -169,7 +169,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
         Seq(SimpleParameterValue("very", "cool"))
       }
     }))
-    Await.result(runner.run(handlers.head.handle(null, SimpleParameterValues.Empty).get, None), 10.seconds).log.foreach {
+    runner.run(handlers.head.handle(null, SimpleParameterValues.Empty).get, None).log.foreach {
       case i:
         InstructionResult =>
         assert(i.response.status === Status.Success)
@@ -200,7 +200,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     val runner = new LocalPlanRunner(null, new LocalInstructionRunner(responseHandler, null, null, new TestSecretResolver(null) {
       override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] = Nil
     }, rugResolver = Some(resolver)), loggerOption = Some(NOPLogger.NOP_LOGGER))
-    val results = Await.result(runner.run(plan, None), 10.seconds)
+    val results = runner.run(plan, None)
     val msg = results.log(1).asInstanceOf[InstructionResult].response.body.get.asInstanceOf[Plan].local.head.body
     assert(msg.contains("Cannot find Rug Function NonExistent"))
   }
@@ -224,7 +224,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
         Seq(SimpleParameterValue("very", "cool"))
       }
     }, rugResolver = Some(resolver)), loggerOption = Some(NOPLogger.NOP_LOGGER))
-    val results = Await.result(runner.run(plan, None), 10.seconds)
+    val results = runner.run(plan, None)
     val msg = results.log.head.asInstanceOf[InstructionResult].response.body.get.asInstanceOf[RugRuntimeException].getMessage
     assert(msg.contains("uh oh"))
   }

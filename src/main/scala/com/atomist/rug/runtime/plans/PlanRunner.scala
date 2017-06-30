@@ -9,5 +9,5 @@ import scala.concurrent.Future
   * Run a plan's instructions and send its messages
   */
 trait PlanRunner {
-  def run(plan: Handlers.Plan, callbackInput: Option[Response]): Future[PlanResult]
+  def run(plan: Handlers.Plan, callbackInput: Option[Response]): PlanResult
 }

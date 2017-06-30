@@ -26,7 +26,7 @@ class PlanResultLogger(val logger: Logger) {
             logger.error("Failure running plan.", result)
             log.tail
           case result: NestedPlanRun =>
-            val planResult = Await.result(result.planResult, 5.minutes)
+            val planResult = result.planResult
             log.tail ++ planResult.log
           case _ => log.tail
         }

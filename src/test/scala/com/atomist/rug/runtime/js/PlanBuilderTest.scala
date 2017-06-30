@@ -108,7 +108,7 @@ class PlanBuilderTest extends FunSpec with Matchers with OneInstancePerTest with
         Seq(SimpleParameterValue("very", "cool"))
       }
     }, rugResolver = Some(resolver)))
-    val result = Await.result(runner.run(plan, None), 10.seconds)
+    val result = runner.run(plan, None)
     assert(PlanResultInterpreter.interpret(result).status == Success)
   }
 

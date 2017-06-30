@@ -192,7 +192,7 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     val handler = ops.commandHandlers.find(p => p.name == "LicenseAdder").get
     val plan = handler.handle(LocalRugContext(TestTreeMaterializer), SimpleParameterValues(SimpleParameterValue("license", "agpl")))
     val runner = new LocalPlanRunner(null, new LocalInstructionRunner(handler, null, null, null))
-    val response = Await.result(runner.run(plan.get, None), 120.seconds)
+    val response = runner.run(plan.get, None)
     assert(response.log.size === 1)
     response.log.foreach {
       case error: InstructionError => assert(error.error.getMessage === "Cannot find Rug Function HTTP")
@@ -258,7 +258,7 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     }))
     val actualPlan = handlers.head.handle(LocalRugContext(TestTreeMaterializer), SysEvent)
     assert(actualPlan.nonEmpty)
-    Await.result(runner.run(actualPlan.get, None), 10.seconds).log.foreach {
+    runner.run(actualPlan.get, None).log.foreach {
       case i:
         InstructionResult =>
         assert(i.response.status === Status.Success)

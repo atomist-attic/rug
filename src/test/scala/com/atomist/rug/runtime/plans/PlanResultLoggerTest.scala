@@ -19,9 +19,9 @@ class PlanResultLoggerTest extends FunSpec with Matchers with DiagrammedAssertio
   val successfulInstructionResult = InstructionResult(Edit(Detail("edit1", None, Nil, None)), Response(Success))
   val failureInstructionResult = InstructionResult(Edit(Detail("edit2", None, Nil, None)), Response(Failure))
   val errorInstructionResult = InstructionError(Edit(Detail("edit3", None, Nil, None)), new IllegalStateException("doh!"))
-  val successfulNestedPlan = NestedPlanRun(Plan(None,Nil,Nil, Nil), Future {PlanResult(Seq(successfulInstructionResult))})
-  val failureNestedPlan = NestedPlanRun(Plan(None,Nil, Nil, Nil), Future {PlanResult(Seq(failureInstructionResult))})
-  val errorNestedPlan = NestedPlanRun(Plan(None,Nil, Nil, Nil), Future {PlanResult(Seq(errorInstructionResult))})
+  val successfulNestedPlan = NestedPlanRun(Plan(None,Nil,Nil, Nil), PlanResult(Seq(successfulInstructionResult)))
+  val failureNestedPlan = NestedPlanRun(Plan(None,Nil, Nil, Nil), PlanResult(Seq(failureInstructionResult)))
+  val errorNestedPlan = NestedPlanRun(Plan(None,Nil, Nil, Nil), PlanResult(Seq(errorInstructionResult)))
 
   it ("should interpret empty plan result as success") {
     val planResult = PlanResult(Nil)

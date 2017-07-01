@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   **BREAKING** Removed all usage of Scala `Future` in `PlanRunner`
+    and corresponding APIs
 -   Updated JavaParser to 3.2.8
 -   Updated artifact-source to 1.0.0-m.5
 

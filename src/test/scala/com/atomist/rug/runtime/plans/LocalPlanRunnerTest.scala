@@ -43,7 +43,7 @@ class LocalPlanRunnerTest
   it("should run empty plan") {
     val plan = Plan(null, Nil, Nil, Nil)
 
-    val actualPlanResult = Await.result(planRunner.run(plan, None), 10.seconds)
+    val actualPlanResult = planRunner.run(plan, None)
     val expectedPlanResponse = PlanResult(Seq())
     assert(actualPlanResult == expectedPlanResponse)
 
@@ -85,11 +85,11 @@ class LocalPlanRunnerTest
       }
     }
     when(instructionRunner.run(any(), any())).thenAnswer(instructionNameAsSuccessResponseBody)
-    when(nestedPlanRunner.run(any(), any())).thenReturn(Future {
+    when(nestedPlanRunner.run(any(), any())).thenReturn(
       PlanResult(Seq(MessageDeliveryError(LocallyRenderedMessage("nested plan", "text/plain"), null)))
-    })
+    )
 
-    val actualPlanResult = Await.result(planRunner.run(plan, None), 120.seconds)
+    val actualPlanResult = planRunner.run(plan, None)
     val expectedPlanLog = Set(
       InstructionResult(Edit(Detail("edit1", None, Nil, None)), Response(Success, Some("edit1"), Some(0), None)),
       InstructionResult(Edit(Detail("edit2", None, Nil, None)), Response(Success, Some("edit2"), Some(0), None)),
@@ -97,7 +97,7 @@ class LocalPlanRunnerTest
       InstructionResult(Edit(Detail("edit4", None, Nil, None)), Response(Success, Some("edit4"), Some(0), None)),
       InstructionResult(Respond(Detail("respond1", None, Nil, None)), Response(Success, Some("respond1"), Some(0), None)),
       NestedPlanRun(Plan(None, Nil, Seq(LocallyRenderedMessage("nested plan", "text/plain")), Nil),
-        Future(PlanResult(List(MessageDeliveryError(LocallyRenderedMessage("nested plan", "text/plain"), null)))))
+        PlanResult(List(MessageDeliveryError(LocallyRenderedMessage("nested plan", "text/plain"), null))))
     )
 
     assert(makeEventsComparable(actualPlanResult.log.toSet) == makeEventsComparable(expectedPlanLog))
@@ -154,7 +154,7 @@ class LocalPlanRunnerTest
     when(instructionRunner.run(Edit(Detail("edit2", None, Nil, None)), None)).thenAnswer(failure)
     when(instructionRunner.run(Respond(Detail("respond1", None, Nil, None)), Some(Response(Failure, Some("edit2"), Some(0), None)))).thenAnswer(success)
 
-    val actualPlanResult = Await.result(planRunner.run(plan, None), 120.seconds)
+    val actualPlanResult = planRunner.run(plan, None)
     val expectedPlanLog = Set(
       InstructionResult(Respond(Detail("respond1", None, List(), None)), Response(Success, Some("respond1"), None, None)),
       InstructionResult(Edit(Detail("edit2", None, List(), None)), Response(Handled, Some("edit2"), Some(0), None))
@@ -185,7 +185,7 @@ class LocalPlanRunnerTest
     }
     when(instructionRunner.run(any(), any())).thenAnswer(instructionNameAsFailureResponseBody)
 
-    val actualPlanResult = Await.result(planRunner.run(plan, None), 120.seconds)
+    val actualPlanResult = planRunner.run(plan, None)
     val expectedPlanLog = Set(
       InstructionResult(Edit(Detail("edit2", None, Nil, None)), Response(Failure, Some("edit2"), Some(0), None))
     )
@@ -205,7 +205,7 @@ class LocalPlanRunnerTest
   val makeEventsComparable = (log: Iterable[PlanLogEvent]) => log.map {
     case InstructionResult(i, r) => (i, r)
     case NestedPlanRun(p, f) =>
-      val r = Await.result(f, 10.seconds)
+      val r = f
       (p, r)
     case InstructionError(i, e) => (i, e.getMessage)
     case MessageDeliveryError(m, e) => (m, e.getMessage)
@@ -224,7 +224,7 @@ class LocalPlanRunnerTest
     )
     when(messageDeliverer.deliver(any(), any(), any())).thenThrow(new IllegalArgumentException("Uh oh!"))
 
-    val actualPlanResult = Await.result(planRunner.run(plan, None), 10.seconds)
+    val actualPlanResult = planRunner.run(plan, None)
     val expectedPlanLog = Set(
       MessageDeliveryError(LocallyRenderedMessage("message1", "text/plain"), new IllegalArgumentException("Uh oh!"))
     )
@@ -248,7 +248,7 @@ class LocalPlanRunnerTest
     )
     when(instructionRunner.run(any(), any())).thenThrow(new IllegalArgumentException("Uh oh!"))
 
-    val actualPlanResult = Await.result(planRunner.run(plan, None), 10.seconds)
+    val actualPlanResult = planRunner.run(plan, None)
     val expectedPlanLog = Set(
       InstructionError(Edit(Detail("fail", None, Nil, None)), new IllegalArgumentException("Uh oh!"))
     )
@@ -273,7 +273,7 @@ class LocalPlanRunnerTest
     when(instructionRunner.run(any(), any())).thenReturn(Response(Success, None, None, None))
     when(nestedPlanRunner.run(any(), any())).thenThrow(new IllegalStateException("Uh oh!"))
 
-    val actualPlanResult = Await.result(planRunner.run(plan, None), 10.seconds)
+    val actualPlanResult = planRunner.run(plan, None)
     val expectedPlanLog = Set(
       InstructionResult(Edit(Detail("edit", None, Nil, None)), Response(Success, None, None, None)),
       CallbackError(Plan(None, Nil, List(LocallyRenderedMessage("fail", "text/plain")), Nil), new IllegalArgumentException("Uh oh!"))
@@ -306,7 +306,7 @@ class LocalPlanRunnerTest
       }
     }, rugResolver = Some(resolver)))
 
-    val result = Await.result(runner.run(handler.handle(null, SimpleParameterValues.Empty).get, None), 10.seconds)
+    val result = runner.run(handler.handle(null, SimpleParameterValues.Empty).get, None)
     val results = result.log.collect { case i: InstructionResult => i }
     assert(results.head.instruction.detail.name === "HandleIt")
     assert(results.head.response.status === Status.Success)

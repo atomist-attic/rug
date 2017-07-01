@@ -19,7 +19,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
 
   private val logger: Logger = loggerOption.getOrElse(LoggerFactory getLogger getClass.getName)
 
-  override def run(plan: Plan, callbackInput: Option[Response]): Future[PlanResult] = {
+  override def run(plan: Plan, callbackInput: Option[Response]): PlanResult = {
     val allMessages = plan.lifecycle ++ plan.local
     val messageLog: Seq[MessageDeliveryError] = allMessages.flatMap { message =>
       if (plan.returningRug.nonEmpty) {
@@ -39,14 +39,11 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
         None
       }
     }
-    val instructionResponseFutures: Seq[Future[Iterable[PlanLogEvent]]] = plan.instructions.map { respondable =>
-      val instruction = handleInstruction(plan, respondable, callbackInput)
-      Future {
-        instruction
-      }
+    val instructionResponseFutures: Seq[Seq[PlanLogEvent]] = plan.instructions.map { respondable =>
+      handleInstruction(plan, respondable, callbackInput)
     }
-    val futureInstructionLog: Future[Seq[PlanLogEvent]] = Future.fold(instructionResponseFutures)(Seq[PlanLogEvent]())(_ ++ _)
-    futureInstructionLog.map(instructionLogEvents => PlanResult(messageLog ++ instructionLogEvents))
+    val futureInstructionLog: Seq[PlanLogEvent] = instructionResponseFutures.fold(Seq[PlanLogEvent]())(_ ++ _)
+    PlanResult(messageLog ++ futureInstructionLog)
   }
 
   private def handleInstruction(currentPlan: Plan, plannable: Plannable, callbackInput: Option[Response]): Seq[PlanLogEvent] = {

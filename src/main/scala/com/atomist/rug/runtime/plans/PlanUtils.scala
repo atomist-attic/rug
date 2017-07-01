@@ -75,11 +75,7 @@ object PlanUtils {
         case InstructionResult(instruction, response) =>
           BabyTree(s"Received $response back from ${instructionToString(instruction)}")
         case NestedPlanRun(plan, planResult) =>
-          Await.ready(planResult, 10.seconds)
-          val result = planResult.value.get match {
-            case Failure(exception) => BabyTree(s"Future failed with ${exception.getMessage}")
-            case Success(value) => awaitAndTreeLogEvents(s"Future completed", value.log)
-          }
+          val result = awaitAndTreeLogEvents(s"Future completed", planResult.log)
           val planChild = planToTree(plan)
           BabyTree("Nested plan run", Seq(planChild, result))
       }

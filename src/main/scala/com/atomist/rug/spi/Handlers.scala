@@ -199,7 +199,7 @@ object Handlers {
 
   case class InstructionResult(instruction: Instruction, response: Response) extends PlanLogEvent
 
-  case class NestedPlanRun(plan: Plan, planResult: Future[PlanResult]) extends PlanLogEvent
+  case class NestedPlanRun(plan: Plan, planResult: PlanResult) extends PlanLogEvent
 
   case class InstructionError(instruction: Instruction, error: Throwable) extends PlanLogError
 

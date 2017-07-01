@@ -28,7 +28,7 @@ object PlanResultInterpreter {
           case _: PlanLogError => true
           case result: InstructionResult if result.response.status == Failure => true
           case result: NestedPlanRun =>
-            val planResult = Await.result(result.planResult, 5.minutes)
+            val planResult = result.planResult
             hasLogFailure(log.tail ++ planResult.log)
           case _ => hasLogFailure(log.tail)
         }

@@ -8,7 +8,10 @@ object Typed {
   def typeFor(node: GraphNode, typeRegistry: TypeRegistry): Typed = {
     val nodeTypes: Set[Typed] =
       node.nodeTags.flatMap(t => typeRegistry.findByName(t))
-    UnionType(nodeTypes)
+    nodeTypes.size match {
+      case 0 => TypeOperation.TreeNodeType
+      case _ => UnionType(nodeTypes)
+    }
   }
 
   private[spi] def trimSuffix(suffix: String, orig: String): String =
@@ -76,10 +79,10 @@ private case class UnionType(types: Set[Typed]) extends Typed {
   override def description: String = name
 
   // TODO what about duplicate names?
-  override val allOperations: Seq[TypeOperation] =
+  override lazy val allOperations: Seq[TypeOperation] =
     typesToUnion.flatMap(_.allOperations).toSeq
 
-  override val operations: Seq[TypeOperation] =
+  override lazy val operations: Seq[TypeOperation] =
     typesToUnion.flatMap(_.operations).toSeq
 
   override def toString: String =

@@ -8,8 +8,9 @@ import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.rug.{RugArchiveReader, TestUtils}
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import gherkin.ast.ScenarioDefinition
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{FlatSpec, Ignore, Matchers}
 
+@Ignore
 class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
   private lazy val alpEditorsFile = TestUtils.requiredFileInPackage(this, "AlpEditors.ts").withPath(".atomist/editors/AlpEditors.ts")

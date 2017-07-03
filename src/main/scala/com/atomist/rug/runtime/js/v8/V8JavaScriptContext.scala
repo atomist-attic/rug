@@ -55,7 +55,7 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
     val path = root.resolve(f.path)
     val scope = new MemoryManager(node.getRuntime)
     val more: Seq[JavaScriptMember] =  node.node.require(path.toFile) match {
-      case o: V8Object => o.getKeys.map(k => JavaScriptMember(k, new V8JavaScriptObject(node, o.get(k))))
+      case o: V8Object => o.getKeys.map(k => JavaScriptMember(k, new V8JavaScriptObject(node, o.get(k).asInstanceOf[V8Object])))
       case _ => Nil
     }
     exports ++= more

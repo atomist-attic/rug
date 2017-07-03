@@ -6,7 +6,7 @@ import com.eclipsesource.v8.{NodeWrapper, Proxy, V8Array, V8Function, V8Object, 
 /**
   * V8 implementation
   */
-class V8JavaScriptObject(node: NodeWrapper, obj: AnyRef) extends JavaScriptObject {
+class V8JavaScriptObject(node: NodeWrapper, obj: V8Object) extends JavaScriptObject {
 
   override def getNativeObject: AnyRef = obj
 
@@ -31,7 +31,7 @@ class V8JavaScriptObject(node: NodeWrapper, obj: AnyRef) extends JavaScriptObjec
   }
 
   override def setMember(name: String, value: AnyRef): Unit = {
-    Proxy.addIfNeccessary(node, name, value)
+    Proxy.addIfNeccessary(obj, node, name, value)
   }
 
   override def callMember(name: String, args: AnyRef*): AnyRef = ???

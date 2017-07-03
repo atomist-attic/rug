@@ -67,19 +67,18 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
 
   override def invokeMember(jsVar: JavaScriptObject, member: String, params: Option[ParameterValues], args: Object*): AnyRef = {
 //    val scope = new MemoryManager(node.getRuntime)
-    val v8o = jsVar.asInstanceOf[V8JavaScriptObject].getNativeObject.asInstanceOf[V8Object]
-    params match {
-      case Some(pvs) => pvs.parameterValues.foreach{ kv =>
-        kv.getValue match {
-          case o: String => v8o.add(kv.getName, o)
-          case x => throw new RuntimeException(s"Don't know how to deal with $x")
-        }
-      }
-      case _ =>
+
+    if (params.nonEmpty) {
+      setParameters(jsVar, params.get.parameterValues)
     }
+    val v8o = jsVar.asInstanceOf[V8JavaScriptObject].getNativeObject.asInstanceOf[V8Object]
+
     try{
       v8o.executeJSFunction(member, args.map(a => Proxy.ifNeccessary(node, a)):_*) match {
-        case x: V8Object if !x.isUndefined => new V8JavaScriptObject(node, x)
+        case x: V8Object if !x.isUndefined => node.get(x) match {
+          case Some(jvmObj) => jvmObj
+          case _ => new V8JavaScriptObject(node, x)
+        }
         case _: V8Object => UNDEFINED
         case o => o
       }

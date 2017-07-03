@@ -30,7 +30,9 @@ class V8JavaScriptObject(node: NodeWrapper, obj: AnyRef) extends JavaScriptObjec
     }
   }
 
-  override def setMember(name: String, value: AnyRef): Unit = ???
+  override def setMember(name: String, value: AnyRef): Unit = {
+    Proxy.addIfNeccessary(node, name, value)
+  }
 
   override def callMember(name: String, args: AnyRef*): AnyRef = ???
 

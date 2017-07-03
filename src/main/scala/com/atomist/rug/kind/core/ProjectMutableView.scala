@@ -567,8 +567,10 @@ class ProjectContext(ctx: RugContext) extends RugContext {
 
   override def contextRoot(): AnyRef = ctx.contextRoot()
 
+  @ExportFunction(readOnly = true, description = "Load projects from git", exposeAsProperty = true)
   override def gitProjectLoader: AnyRef = new jsGitProjectLoader(ctx.repoResolver)
 
   @ExposeAsFunction
+  @ExportFunction(readOnly = true, description = "Get an empty project")
   def emptyProject() = new ProjectMutableView(originalBackingObject = EmptyArtifactSource("!!ThisValueWillBeOverwritten"))
 }

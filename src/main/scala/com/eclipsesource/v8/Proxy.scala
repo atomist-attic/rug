@@ -2,8 +2,10 @@ package com.eclipsesource.v8
 
 import java.lang.reflect.Method
 
+import com.atomist.rug.runtime.js.interop.ExposeAsFunction
 import com.atomist.rug.spi.ExportFunction
 import org.apache.commons.lang3.ClassUtils
+import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.util.ReflectionUtils
 
 import scala.collection.JavaConverters._
@@ -125,8 +127,9 @@ object Proxy {
     * @return
     */
   def exposeAsFunction(m: Method): Boolean = {
-    m.getAnnotations.exists {
-      case o: ExportFunction => !o.exposeAsProperty()
+    (AnnotationUtils.findAnnotation(m, classOf[ExportFunction]), AnnotationUtils.findAnnotation(m, classOf[ExposeAsFunction])) match {
+      case (o: ExportFunction, null) => !o.exposeAsProperty()
+      case (null, o: ExposeAsFunction) => true
       case _ => false
     }
   }
@@ -137,7 +140,7 @@ object Proxy {
     * @return
     */
   def exposeAsProperty(m: Method): Boolean = {
-    m.getAnnotations.exists {
+    AnnotationUtils.findAnnotation(m, classOf[ExportFunction]) match {
       case o: ExportFunction => o.exposeAsProperty()
       case _ => false
     }

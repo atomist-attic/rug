@@ -190,7 +190,7 @@ object EditorTest {
       |
       |     startingPoint(defaultProject: Project, pc: ProjectContext): Project {
       |       // Test binding to this
-      |       if (this.content !== "woot") throw "this not bound";
+      |       if (this.content !== "woot") throw `this.content should be 'woot', was ${this.content}`;
       |       return pc.emptyProject();
       |     }
       |

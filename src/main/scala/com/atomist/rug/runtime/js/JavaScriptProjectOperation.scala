@@ -30,11 +30,11 @@ abstract class JavaScriptProjectOperation(
   // Visible for test
   private[js] val jsc = _jsc
 
-  override def tags: Seq[Tag] = tags(jsVar)
+  override val tags: Seq[Tag] = tags(jsVar)
 
-  override def parameters: Seq[Parameter] = parameters(jsVar)
+  override val parameters: Seq[Parameter] = parameters(jsVar)
 
-  override def name: String = name(jsVar)
+  override val name: String = name(jsVar)
 
-  override def description: String = description(jsVar)
+  override val description: String = description(jsVar)
 }

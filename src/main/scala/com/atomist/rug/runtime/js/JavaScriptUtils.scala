@@ -171,7 +171,7 @@ trait JavaScriptUtils {
         } else {
           throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($asString) is not valid: $parameter")
         }
-      parameter.setDefaultValue(rug.getMember(pName).toString)
+      parameter.setDefaultValue(asString)
     }
 
     parameter

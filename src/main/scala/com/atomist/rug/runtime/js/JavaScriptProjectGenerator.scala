@@ -66,7 +66,8 @@ class JavaScriptProjectGenerator(
         case null | UNDEFINED =>
           pmv
         case js: JavaScriptObject if js.isFunction =>
-          val userProject = jsc.invokeMember(jsVar,
+          val userProject = jsc.invokeMember(
+            jsVar,
             StartingPointFunction, Some(validated),
             pmv,
             pmv.context).asInstanceOf[ProjectMutableView]

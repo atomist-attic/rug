@@ -1,10 +1,12 @@
 package com.atomist.rug.runtime.js.nashorn
 
+import com.atomist.rug.TestUtils
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.{FileMutableView, ProjectMutableView}
 import com.atomist.rug.runtime.js.SimpleContainerGraphNode
 import com.atomist.rug.ts.Cardinality
 import com.atomist.source.{EmptyArtifactSource, StringFileArtifact}
+import com.atomist.tree.marshal.LinkedJsonGraphDeserializer
 import com.atomist.tree.{SimpleTerminalTreeNode, TreeNode}
 import jdk.nashorn.internal.runtime.ScriptRuntime
 import org.scalatest.{FlatSpec, Matchers}
@@ -87,4 +89,42 @@ class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
     assert(s.contains(classOf[ProjectMutableView].getSimpleName))
   }
 
+
+  it should "meet satisfactory benchmarks" in {
+    val withLinks = TestUtils.contentOf(this, "withLinks.json")
+    val node = LinkedJsonGraphDeserializer.fromJson(withLinks)
+
+    val build = new jsSafeCommittingProxy(node, DefaultTypeRegistry)
+
+    val st = System.currentTimeMillis()
+
+    val passes = 100
+
+    for (i <- 1 to passes) {
+      assert(build.getMember("status") === "Passed")
+      val owner = build.getMember("ON").asInstanceOf[jsSafeCommittingProxy]
+      val channel = owner.getMember("CHANNEL")
+      val push = build.getMember("TRIGGERED_BY").asInstanceOf[jsSafeCommittingProxy]
+      val commits = push.getMember("CONTAINS").asInstanceOf[NashornJavaScriptArray[_]]
+      assert(commits.lyst.size() === 1)
+    }
+    val et = System.currentTimeMillis() - st
+
+    println(s"$passes took $et milliseconds")
+    assert(et < passes * 10)
+
+    assert(node.relatedNodesNamed("status").head.asInstanceOf[TreeNode].value === "Passed")
+    val repo = node.relatedNodesNamed("ON").head
+    assert(repo.relatedNodesNamed("owner").size === 1)
+    assert(!repo.nodeTags.contains(Cardinality.One2Many))
+    assert(!node.nodeTags.contains(Cardinality.One2Many))
+
+    // Special node with cardinality
+    val contains = node.relatedNodesNamed("ONM").head
+    assert(contains.nodeTags.contains(Cardinality.One2Many))
+
+    val chatChannel = repo.relatedNodesNamed("CHANNEL").head
+    assert(chatChannel.relatedNodesNamed("name").size === 1)
+    assert(chatChannel.relatedNodesNamed("id").head.asInstanceOf[TreeNode].value === "channel-id")
+  }
 }

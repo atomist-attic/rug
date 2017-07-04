@@ -54,15 +54,15 @@ class PlanBuilder {
       case "response" | "directed" =>
         val messageId = jsMessage.getMember("id") match {
           case c: String => Option(c)
-          case _: Undefined => None
+          case UNDEFINED => None
         }
         val timestamp = jsMessage.getMember("timestamp") match {
           case c: String => Option(c)
-          case _: Undefined => None
+          case UNDEFINED => None
         }
         val ttl = jsMessage.getMember("ttl") match {
           case c: String => Option(c)
-          case _: Undefined => None
+          case UNDEFINED => None
         }
         val post = jsMessage.getMember("post") match {
           case c: String => Option(c)

@@ -2,11 +2,9 @@ package com.atomist.tree.marshal
 
 import com.atomist.rug.TestUtils
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy
 import com.atomist.rug.ts.Cardinality
 import com.atomist.tree.TreeNode
 import com.atomist.tree.utils.NodeUtils
-import com.atomist.util.lang.JavaScriptArray
 import org.scalatest.{FlatSpec, Matchers}
 
 class LinkedJsonGraphDeserializerTest extends FlatSpec with Matchers {
@@ -87,43 +85,5 @@ class LinkedJsonGraphDeserializerTest extends FlatSpec with Matchers {
     val node = LinkedJsonGraphDeserializer.fromJson(withLinks)
     val x = node.toString
     assert(x.contains("HerokuApp"))
-  }
-
-  it should "meet satisfactory benchmarks" in {
-    val withLinks = TestUtils.contentOf(this, "withLinks.json")
-    val node = LinkedJsonGraphDeserializer.fromJson(withLinks)
-
-    val build = new jsSafeCommittingProxy(node, DefaultTypeRegistry)
-
-    val st = System.currentTimeMillis()
-
-    val passes = 100
-
-    for (i <- 1 to passes) {
-      assert(build.getMember("status") === "Passed")
-      val owner = build.getMember("ON").asInstanceOf[jsSafeCommittingProxy]
-      val channel = owner.getMember("CHANNEL")
-      val push = build.getMember("TRIGGERED_BY").asInstanceOf[jsSafeCommittingProxy]
-      val commits = push.getMember("CONTAINS").asInstanceOf[JavaScriptArray[_]]
-      assert(commits.lyst.size() === 1)
-    }
-    val et = System.currentTimeMillis() - st
-
-    println(s"$passes took $et milliseconds")
-    assert(et < passes * 10)
-
-    assert(node.relatedNodesNamed("status").head.asInstanceOf[TreeNode].value === "Passed")
-    val repo = node.relatedNodesNamed("ON").head
-    assert(repo.relatedNodesNamed("owner").size === 1)
-    assert(!repo.nodeTags.contains(Cardinality.One2Many))
-    assert(!node.nodeTags.contains(Cardinality.One2Many))
-
-    // Special node with cardinality
-    val contains = node.relatedNodesNamed("ONM").head
-    assert(contains.nodeTags.contains(Cardinality.One2Many))
-
-    val chatChannel = repo.relatedNodesNamed("CHANNEL").head
-    assert(chatChannel.relatedNodesNamed("name").size === 1)
-    assert(chatChannel.relatedNodesNamed("id").head.asInstanceOf[TreeNode].value === "channel-id")
   }
 }

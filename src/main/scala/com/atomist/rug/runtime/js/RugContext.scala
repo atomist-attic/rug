@@ -2,7 +2,7 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime.js.interop.jsPathExpressionEngine
+import com.atomist.rug.runtime.js.interop.{jsGitProjectLoader, jsPathExpressionEngine}
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.{IdentityTreeMaterializer, TreeMaterializer}
 
@@ -34,6 +34,8 @@ trait RugContext extends ExecutionContext {
     *         enable JVM/JS interop
     */
   def contextRoot(): AnyRef
+
+  def gitProjectLoader: AnyRef = new jsGitProjectLoader(repoResolver)
 
 }
 

@@ -25,6 +25,7 @@ export class TransformingPathExpressionEngine implements PathExpressionEngine {
       pathExpressionEngine: m1.pathExpressionEngine,
       teamId: m1.teamId,
       contextRoot: m1.contextRoot,
+      gitProjectLoader: m1.gitProjectLoader,
     };
     return m2;
   }

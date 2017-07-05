@@ -6,6 +6,7 @@ import {
   TreeNode,
 } from "../tree/PathExpression";
 import { Parameter } from "./RugOperation";
+import { GitProjectLoader } from "./GitProjectLoader";
 
 export interface RugCoordinate {
   readonly name: string;
@@ -138,6 +139,12 @@ export interface HandlerContext {
    * of path expressions.
    */
   contextRoot: GraphNode;
+
+  /**
+   * RepoResolver to use in loading repositories.
+   */
+  gitProjectLoader: GitProjectLoader;
+
 }
 
 export enum Status {

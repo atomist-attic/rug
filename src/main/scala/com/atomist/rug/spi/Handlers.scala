@@ -5,6 +5,7 @@ import com.atomist.param.ParameterValue
 import com.atomist.rug.runtime.Rug
 import com.atomist.rug.spi.Handlers.Instruction.{Detail, NonrespondableInstruction, RespondableInstruction}
 
+import scala.annotation.meta.getter
 import scala.concurrent.Future
 
 /**

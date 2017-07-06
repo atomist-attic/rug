@@ -3,7 +3,7 @@ package com.atomist.rug.runtime.js
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.js.interop.{jsGitProjectLoader, jsPathExpressionEngine}
-import com.atomist.rug.spi.TypeRegistry
+import com.atomist.rug.spi.{ExportFunction, TypeRegistry}
 import com.atomist.tree.{IdentityTreeMaterializer, TreeMaterializer}
 
 /**
@@ -45,8 +45,10 @@ class BaseRugContext extends RugContext {
 
   override def typeRegistry: TypeRegistry = DefaultTypeRegistry
 
+
   override def treeMaterializer: TreeMaterializer = _treeMaterializer
 
+  @ExportFunction(description = "The path expression engine", exposeAsProperty = true, readOnly = true)
   override def pathExpressionEngine: jsPathExpressionEngine = new jsPathExpressionEngine(this)
 
   /**
@@ -54,6 +56,7 @@ class BaseRugContext extends RugContext {
     */
   override def teamId: String = "LOCAL_CONTEXT"
 
+  @ExportFunction(description = "The root context. Most likely a ChatTeam for now", exposeAsProperty = true, readOnly = true)
   override def contextRoot(): GraphNode = null
 }
 

@@ -1,6 +1,6 @@
 package com.eclipsesource.v8
 
-import java.lang.reflect.Method
+import java.lang.reflect.{Field, Method}
 
 import com.atomist.rug.runtime.js.interop.ExposeAsFunction
 import com.atomist.rug.spi.ExportFunction
@@ -88,6 +88,12 @@ object Proxy {
           case item: AnyRef => arr.push(Proxy(node, item))
         }
         arr
+      case l: java.util.Set[_] =>
+        val arr = new V8Array(node.getRuntime)
+        l.asScala.foreach{
+          case item: AnyRef => arr.push(Proxy(node, item))
+        }
+        arr
       case _ =>
         obj.getClass.getMethods.foreach {
           case m: Method if ReflectionUtils.isObjectMethod(m) => //don't proxy standard stuff
@@ -101,7 +107,7 @@ object Proxy {
               case _ =>
                 val callback = new V8Object(node.getRuntime)
                 callback.registerJavaMethod(new MethodProxy(node, obj,m), "get")
-
+                callback.add("configurable", true)
                 val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
                 theObject.executeJSFunction("defineProperty", v8pmv, m.getName, callback)
             }
@@ -109,6 +115,11 @@ object Proxy {
             v8pmv.registerJavaMethod(new MethodProxy(node, obj,m), m.getName)
           case _ =>
         }
+        obj.getClass.getFields.foreach(f => {
+          if(!node.alreadyProxied(obj)){
+            Proxy.addIfNeccessary(v8pmv,node, f.getName, f.get(obj))
+          }
+        })
         v8pmv
     }
   }

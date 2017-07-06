@@ -202,13 +202,19 @@ private[nashorn] class NashornJavaScriptArray[T](val toProxy: java.util.List[T])
             case _ =>
               val head = args.head.asInstanceOf[Int]
               val begin = if (head >= 0) head else lyst.size() + head
-              args.length match {
-                case 1 => new NashornJavaScriptArray[T](lyst.subList(begin, lyst.size()))
-                case _ =>
-                  val theEnd = args(1).asInstanceOf[Int]
-                  val end = if (theEnd >= 0) theEnd else lyst.size() + theEnd
-                  new NashornJavaScriptArray[T](lyst.subList(begin, end))
-              }
+              if (head >= lyst.size()) {
+                new util.ArrayList[T]()
+              } else
+                args.length match {
+                  case 1 => new NashornJavaScriptArray[T](lyst.subList(begin, lyst.size()))
+                  case _ =>
+                    val theEnd = args(1).asInstanceOf[Int]
+                    val end =
+                      if (theEnd > lyst.size()) lyst.size()
+                      else if (theEnd >= 0) theEnd
+                      else lyst.size() + theEnd
+                    new NashornJavaScriptArray[T](lyst.subList(begin, end))
+                }
           }
         }
       }

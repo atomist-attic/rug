@@ -3,10 +3,12 @@ package com.atomist.rug.kind.scala
 import com.atomist.project.edit.{NoModificationNeeded, SuccessfulModification}
 import com.atomist.rug.kind.grammar.AbstractTypeUnderFileTest
 import com.atomist.source.SimpleFileBasedArtifactSource
+import org.scalatest.Ignore
 
 /**
   * Tests for realistic Scala scenarios
   */
+@Ignore
 class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   import ScalaFileTypeTest._

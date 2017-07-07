@@ -115,9 +115,26 @@ object Proxy {
             v8pmv.registerJavaMethod(new MethodProxy(node, obj,m), m.getName)
           case _ =>
         }
+        /**
+          * Use getters for fields to so that we don't need to proxy recursively
+          */
         obj.getClass.getFields.foreach(f => {
-          if(!node.alreadyProxied(obj)){
-            Proxy.addIfNeccessary(v8pmv,node, f.getName, f.get(obj))
+          f.getType match {
+            case JString => v8pmv.add(f.getName, f.get(obj).asInstanceOf[String])
+            case JLong => v8pmv.add(f.getName, f.get(obj).asInstanceOf[Long])
+            case JInt => v8pmv.add(f.getName, f.get(obj).asInstanceOf[Int])
+            case JDouble => v8pmv.add(f.getName, f.get(obj).asInstanceOf[Double])
+            case JBoolean => v8pmv.add(f.getName, f.get(obj).asInstanceOf[Boolean])
+            case _ =>
+              val callback = new V8Object(node.getRuntime)
+              callback.registerJavaMethod(new JavaCallback {
+                override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
+                  f.get(obj)
+                }
+              }, "get")
+              callback.add("configurable", true)
+              val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
+              theObject.executeJSFunction("defineProperty", v8pmv, f.getName, callback)
           }
         })
         v8pmv

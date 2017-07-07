@@ -8,6 +8,7 @@ import com.atomist.rug.spi.Handlers.Instruction.{NonrespondableInstruction, Resp
 import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.{BadPlanException, InvalidHandlerResultException}
 import com.atomist.util.JsonUtils
+import org.springframework.util.ClassUtils
 
 /**
   * Constructs plans from Nashorn response to a Handler/handle operation
@@ -190,6 +191,7 @@ class PlanBuilder {
           SimpleParameterValue(key,
             value match {
               case s: String => s
+              case p: AnyRef if ClassUtils.isPrimitiveWrapper(p.getClass) => String.valueOf(p)
               case o: JavaScriptObject => JsonUtils.toJson(o.getNativeObject)
               case o => JsonUtils.toJson(o)
             })

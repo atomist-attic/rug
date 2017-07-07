@@ -100,4 +100,9 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object) extends JavaScriptObj
       }
     }.toMap
   }
+
+  override def toJson(): String = {
+    val json = node.getRuntime.get("JSON").asInstanceOf[V8Object]
+    json.executeJSFunction("stringify", obj).asInstanceOf[String]
+  }
 }

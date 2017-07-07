@@ -192,8 +192,8 @@ class PlanBuilder {
             value match {
               case s: String => s
               case p: AnyRef if ClassUtils.isPrimitiveWrapper(p.getClass) => String.valueOf(p)
-              case o: JavaScriptObject => JsonUtils.toJson(o.getNativeObject)
-              case o => JsonUtils.toJson(o)
+              case o: JavaScriptObject => o.toJson()
+              case o => JsonUtils.toJsonStr(o)
             })
         }.toSeq
       case _ => Nil

@@ -21,6 +21,7 @@ trait JavaScriptObject {
 
   def callMember(name: String, args: AnyRef*): AnyRef
 
+  def toJson(): String
   /**
     * Create and return a function that can be called later
     * which closes over the name

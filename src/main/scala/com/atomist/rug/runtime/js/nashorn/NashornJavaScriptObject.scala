@@ -2,8 +2,8 @@ package com.atomist.rug.runtime.js.nashorn
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime.js.interop.{JavaScriptBackedGraphNode, ScriptObjectBackedTreeNode}
 import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
+import com.atomist.util.JsonUtils
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 import jdk.nashorn.internal.runtime.Undefined
 import org.apache.commons.lang3.ClassUtils
@@ -122,4 +122,6 @@ private[nashorn] class NashornJavaScriptObject(val som: ScriptObjectMirror)
       som.callMember(fname, args:_*)
     }
   }
+
+  override def toJson(): String = JsonUtils.toJsonStr(som)
 }

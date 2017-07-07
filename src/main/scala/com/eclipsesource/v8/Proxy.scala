@@ -129,7 +129,7 @@ object Proxy {
               val callback = new V8Object(node.getRuntime)
               callback.registerJavaMethod(new JavaCallback {
                 override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
-                  f.get(obj)
+                  Proxy.ifNeccessary(node, f.get(obj))
                 }
               }, "get")
               callback.add("configurable", true)

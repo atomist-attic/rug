@@ -14,6 +14,7 @@ class JsonResponseConverter(jsc: JavaScriptEngineContext, handler: JavaScriptObj
     val body = response.body match {
       case Some(bytes: Array[Byte]) => new String(bytes)
       case Some(str: String) => str
+      case Some(o: JavaScriptObject) => o.toJson()
       case Some(o) => JsonUtils.toJsonStr(o)
       case agg => throw new RuntimeException(s"Could not recognize body type for coercion: $agg")
     }

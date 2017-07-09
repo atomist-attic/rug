@@ -5,8 +5,11 @@ import com.atomist.project.archive.RugResolver
 import com.atomist.rug.runtime.RugScopes.Scope
 import com.atomist.rug.runtime.plans.{JsonResponseConverter, NullResponseConverter, ResponseConverter}
 import com.atomist.rug.runtime.{ParameterizedRug, ResponseHandler}
+import com.atomist.rug.spi.ExportFunction
 import com.atomist.rug.spi.Handlers.{Plan, Response}
 import com.atomist.rug.{InvalidHandlerException, InvalidHandlerResultException}
+
+import scala.annotation.meta.getter
 
 /**
   * Extract response handlers from a Nashorn instance
@@ -75,6 +78,9 @@ class JavaScriptResponseHandler(jsc: JavaScriptEngineContext,
   }
 }
 
-private case class jsResponse(msg: String,
+private case class jsResponse(@(ExportFunction @getter)(description = "Response message", readOnly = true, exposeAsProperty = true)
+                               msg: String,
+                              @(ExportFunction @getter)(description = "Response code", readOnly = true, exposeAsProperty = true)
                               code: Int,
+                              @(ExportFunction @getter)(description = "Response body", readOnly = true, exposeAsProperty = true)
                               body: AnyRef)

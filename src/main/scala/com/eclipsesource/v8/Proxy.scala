@@ -3,6 +3,7 @@ package com.eclipsesource.v8
 import java.lang.reflect.{Field, Method}
 
 import com.atomist.rug.runtime.js.interop.ExposeAsFunction
+import com.atomist.rug.runtime.js.v8.V8JavaScriptObject
 import com.atomist.rug.spi.ExportFunction
 import org.apache.commons.lang3.ClassUtils
 import org.springframework.core.annotation.AnnotationUtils
@@ -15,6 +16,16 @@ import scala.collection.JavaConverters._
   */
 object Proxy {
 
+  def pushIfNeccessary(v8Array: V8Array, node: NodeWrapper, value: Any): V8Object = {
+    ifNeccessary(node, value) match {
+      case o: java.lang.Boolean => v8Array.push(o)
+      case d: java.lang.Double => v8Array.push(d)
+      case i: java.lang.Integer => v8Array.push(i)
+      case s: String => v8Array.push( s)
+      case v: V8Value => v8Array.push(v)
+      case x => throw new RuntimeException(s"Could not push object: $x")
+    }
+  }
   def addIfNeccessary(v8Object: V8Object, node: NodeWrapper, name: String, value: Any): V8Object = {
     ifNeccessary(node, value) match {
       case o: java.lang.Boolean => v8Object.add(name, o)
@@ -46,6 +57,8 @@ object Proxy {
       }
     case s: String => s
     case v: V8Value => v
+    case o: V8JavaScriptObject => o.getNativeObject
+    case Some(r: AnyRef) => Proxy(node, r)
     case r: AnyRef => Proxy(node, r)
     case x => x.asInstanceOf[AnyRef] //I think this is boxing?
   }
@@ -79,19 +92,20 @@ object Proxy {
       case o: Seq[_] =>
         val arr = new V8Array(node.getRuntime)
         o.foreach{
-          case item: AnyRef => arr.push(Proxy(node, item))
+          case item: AnyRef =>
+            Proxy.pushIfNeccessary(arr, node, item)
         }
         arr
       case l: java.util.List[_] =>
         val arr = new V8Array(node.getRuntime)
         l.asScala.foreach{
-          case item: AnyRef => arr.push(Proxy(node, item))
+          case item: AnyRef => Proxy.pushIfNeccessary(arr, node, item)
         }
         arr
-      case l: java.util.Set[_] =>
+      case l: Set[_] =>
         val arr = new V8Array(node.getRuntime)
-        l.asScala.foreach{
-          case item: AnyRef => arr.push(Proxy(node, item))
+        l.foreach{
+          case item: AnyRef => Proxy.pushIfNeccessary(arr, node, item)
         }
         arr
       case _ =>

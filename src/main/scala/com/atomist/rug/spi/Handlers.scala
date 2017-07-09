@@ -175,9 +175,13 @@ object Handlers {
                              artifact: String) {
   }
 
-  case class Response(status: Status,
+  case class Response(@(ExportFunction @getter)(description = "Response status", readOnly = true, exposeAsProperty = true)
+                       status: Status,
+                      @(ExportFunction @getter)(description = "Response message", readOnly = true, exposeAsProperty = true)
                       msg: Option[String] = None,
+                      @(ExportFunction @getter)(description = "Response code", readOnly = true, exposeAsProperty = true)
                       code: Option[Int] = None,
+                      @(ExportFunction @getter)(description = "Response body", readOnly = true, exposeAsProperty = true)
                       body: Option[AnyRef] = None) {
     def toDisplay: String = {
       val name = status.getClass.getName.split('$').last

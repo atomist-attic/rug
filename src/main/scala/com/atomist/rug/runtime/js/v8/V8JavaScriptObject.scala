@@ -34,7 +34,13 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object) extends JavaScriptObj
     Proxy.addIfNeccessary(obj, node, name, value)
   }
 
-  override def callMember(name: String, args: AnyRef*): AnyRef = ???
+  override def callMember(name: String, args: AnyRef*): AnyRef = {
+    obj.asInstanceOf[V8Object].executeJSFunction(name, args) match {
+      case u: V8Object if u.isUndefined => UNDEFINED
+      case o: V8Object => new V8JavaScriptObject(node, o)
+      case x => x
+    }
+  }
 
   /**
     * Create and return a function that can be called later

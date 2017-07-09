@@ -88,7 +88,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
     //TODO validate the plan
   }
 
-  it should "coerce responses to json if they are strings or bytes and the annotation is present" in {
+  it should "convert responses to json if they are strings or bytes and the annotation is present" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleResponseHandlerWithJsonCoercion))
     val finder = new JavaScriptResponseHandlerFinder()
     val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))

@@ -74,7 +74,8 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
     val v8o = jsVar.asInstanceOf[V8JavaScriptObject].getNativeObject.asInstanceOf[V8Object]
 
     try{
-      v8o.executeJSFunction(member, args.map(a => Proxy.ifNeccessary(node, a)):_*) match {
+      val proxied = args.map(a => Proxy.ifNeccessary(node, a))
+      v8o.executeJSFunction(member, proxied:_*) match {
         case x: V8Object if !x.isUndefined => node.get(x) match {
           case Some(jvmObj) => jvmObj
           case _ => new V8JavaScriptObject(node, x)
@@ -87,7 +88,10 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
     }
   }
 
-  override def parseJson(json: String): JavaScriptObject = ???
+  override def parseJson(jsonStr: String): JavaScriptObject = {
+    val json = node.getRuntime.get("JSON").asInstanceOf[V8Object]
+    new V8JavaScriptObject(node, json.executeJSFunction("parse", jsonStr).asInstanceOf[V8Object])
+  }
 
   override def setMember(name: String, value: AnyRef): Unit = {
     Proxy.addIfNeccessary(node, name, value)

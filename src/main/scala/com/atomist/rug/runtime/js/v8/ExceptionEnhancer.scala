@@ -23,6 +23,10 @@ private[v8] object ExceptionEnhancer {
     if (ecmaEx.getJSMessage.startsWith("Error:"))
       throw ecmaEx
 
+    if(ecmaEx.getJSMessage.equals("Unhandled Java Exception")){
+      throw ecmaEx
+    }
+
     ecmaEx.getFileName match {
       case "<eval>" | null =>
         // Can't add much useful info

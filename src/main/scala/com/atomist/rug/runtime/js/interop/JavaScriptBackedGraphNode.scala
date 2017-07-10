@@ -12,8 +12,8 @@ object JavaScriptBackedGraphNode {
     * Convert this object returned from JavaScript to a GraphNode if possible.
     * Will return AddressedGraphNode if address is known.
     */
-  def toGraphNode(nashornReturn: Object, nodeRegistry: NodeRegistry = new NodeRegistry): Option[GraphNode] = {
-    val result = nashornReturn match {
+  def toGraphNode(jsReturn: AnyRef, nodeRegistry: NodeRegistry = new NodeRegistry): Option[GraphNode] = {
+    val result = jsReturn match {
       case som: JavaScriptObject if nodeRegistry.alreadyWrapped(som).isDefined =>
         nodeRegistry.alreadyWrapped(som)
       case som: JavaScriptObject =>

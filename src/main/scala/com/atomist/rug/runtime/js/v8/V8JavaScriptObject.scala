@@ -35,7 +35,7 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object) extends JavaScriptObj
   }
 
   override def callMember(name: String, args: AnyRef*): AnyRef = {
-    obj.asInstanceOf[V8Object].executeJSFunction(name, args) match {
+    obj.asInstanceOf[V8Object].executeJSFunction(name, args:_*) match {
       case u: V8Object if u.isUndefined => UNDEFINED
       case o: V8Object => new V8JavaScriptObject(node, o)
       case x => x
@@ -69,18 +69,17 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object) extends JavaScriptObj
 
   override def isEmpty: Boolean = obj match {
     case v: V8Array => v.length() == 0
-    case x: V8Object => x.getKeys.length == 0
+    case x: V8Object => keys.isEmpty
     case _ => false
   }
 
-  override def values(): Seq[AnyRef] = obj match {
-    case x: V8Object => x.getKeys.map(p => {
-      x.get(p) match {
-        case o: V8Object => new V8JavaScriptObject(node,o)
+  override def values(): Seq[AnyRef] = {
+    keys.map(p => {
+      obj.get(p) match {
+        case o: V8Object => new V8JavaScriptObject(node, o)
         case x => x
       }
     })
-    case _ => Nil
   }
 
   override def isSeq: Boolean = {
@@ -98,17 +97,42 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object) extends JavaScriptObj
 
   override def eval(js: String): AnyRef = ???
 
-  override def entries(): Map[String, AnyRef] = obj match {
-    case x: V8Object => x.getKeys.map{ key =>
-      x.get(key) match {
-        case o: V8Object => (key, new V8JavaScriptObject(node,o))
+  override def entries(): Map[String, AnyRef] = {
+    keys.map { key =>
+      obj.get(key) match {
+        case o: V8Object => (key, new V8JavaScriptObject(node, o))
         case eh => (key, eh)
       }
     }.toMap
   }
 
+  /**
+    * Because V8 doesn't return a prototypes properties
+    * when calling getKeys
+    *
+    * @return
+    */
+  private def keys(): Seq[String] = {
+
+    val objKeys = obj.getKeys
+    val json = node.getRuntime.get("Object").asInstanceOf[V8Object]
+    val protoKeys = json.executeJSFunction("getPrototypeOf", obj) match {
+      case p: V8Object if !p.isUndefined => p.getKeys.toSeq
+      case _ => Nil
+    }
+    objKeys ++ protoKeys
+  }
+
   override def toJson(): String = {
     val json = node.getRuntime.get("JSON").asInstanceOf[V8Object]
     json.executeJSFunction("stringify", obj).asInstanceOf[String]
+  }
+
+  override def keys(all: Boolean): Iterable[String] = {
+    if(all){
+      keys()
+    }else{
+      obj.getKeys
+    }
   }
 }

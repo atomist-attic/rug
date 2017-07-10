@@ -111,7 +111,7 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
   }
 
   override def eval(script: String): AnyRef = {
-    node.getRuntime.executeObjectScript(script) match {
+    node.getRuntime.executeScript(script) match {
       case x: V8Object if !x.isUndefined => new V8JavaScriptObject(node, x)
       case _: V8Object => UNDEFINED
       case o => o
@@ -126,27 +126,4 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
   }
 }
 
-
-
-/**
-  * Use V8
-  */
-object TestV8JavaScriptContext {
-  def main(args: Array[String]) {
-    val node = NodeJS.createNodeJS()
-    val runtime = node.getRuntime
-    val o = new V8Object(runtime)
-    o.add("cool", "beans")
-    runtime.executeScript("var f = function(arg){return arg;};")
-    val res = runtime.executeJSFunction("f",o)
-    println("blah")
-//    val spring = FileSystemArtifactSource(FileSystemArtifactSourceIdentifier(new File("tmp")))
-//    val (result, elapsedTime) = time {
-//      val ctx = new V8JavaScriptEngineContext(spring)
-//      val resolver = new ArchiveRugResolver(Dependency(spring))
-//      resolver.resolvedDependencies.rugs
-//    }
-//    println(s"Loaded: ${result.allRugs.size} in $elapsedTime ms")
-  }
-}
 

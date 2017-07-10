@@ -20,8 +20,8 @@ private[v8] object ExceptionEnhancer {
   def enhanceIfPossible(rugAs: ArtifactSource, ecmaEx: V8ScriptExecutionException): Exception = {
 
 //    // Let this through. They probably threw it voluntarily.
-//    if (ecmaEx.thrown.isInstanceOf[NativeError])
-//      throw ecmaEx
+    if (ecmaEx.getJSMessage.startsWith("Error:"))
+      throw ecmaEx
 
     ecmaEx.getFileName match {
       case "<eval>" | null =>

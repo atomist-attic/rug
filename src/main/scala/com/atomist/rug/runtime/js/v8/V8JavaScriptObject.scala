@@ -35,7 +35,9 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object) extends JavaScriptObj
   }
 
   override def callMember(name: String, args: AnyRef*): AnyRef = {
-    obj.asInstanceOf[V8Object].executeJSFunction(name, args:_*) match {
+
+    val proxied = args.map(a => Proxy.ifNeccessary(node, a))
+    obj.asInstanceOf[V8Object].executeJSFunction(name, proxied:_*) match {
       case u: V8Object if u.isUndefined => UNDEFINED
       case o: V8Object => new V8JavaScriptObject(node, o)
       case x => x

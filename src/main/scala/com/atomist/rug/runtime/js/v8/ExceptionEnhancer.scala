@@ -35,7 +35,7 @@ private[v8] object ExceptionEnhancer {
 
         val message: String = ecmaEx.getJSMessage
 
-        val line = ecmaEx.getLineNumber
+        val line = Math.max(ecmaEx.getLineNumber -1, 1) // V8 line numbers are 0 based
         val col = ecmaEx.getStartColumn
         val pos = LineInputPositionImpl(f.content, line, col)
         val jsri = RuntimeErrorInfo(message,

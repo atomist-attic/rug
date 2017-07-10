@@ -8,7 +8,7 @@ import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.rug.spi.{TypeRegistry, Typed, UsageSpecificTypeRegistry}
 import com.atomist.rug.ts.{CortexTypeGenerator, DefaultTypeGeneratorConfig}
-import com.atomist.source.file.FileSystemArtifactSourceIdentifier
+import com.atomist.source.file.NamedFileSystemArtifactSourceIdentifier
 import com.atomist.source.git.FileSystemGitArtifactSource
 import com.atomist.util.GitRepositoryCloner
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -16,7 +16,6 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 object ScenarioWorld {
 
   lazy val ExtendedTypes: TypeRegistry = CortexTypeGenerator.extendedTypes(DefaultTypeGeneratorConfig.CortexJson)
-
 }
 
 /**
@@ -35,9 +34,8 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs], c
 
   def typeRegistry: TypeRegistry = tr
 
-  def registerType(t: Typed): Unit = {
+  def registerType(t: Typed): Unit =
     this.tr = new UsageSpecificTypeRegistry(this.tr, Seq(t))
-  }
 
   /**
     * Target for each test. Defaults to the world. First parameter to step functions
@@ -54,13 +52,11 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs], c
   /**
     * Abort the scenario run, for example, because a given threw an exception.
     */
-  def abort(msg: String): Unit = {
+  def abort(msg: String): Unit =
     abortedBy = Some(msg)
-  }
 
-  def put(key: String, value: Object): Unit = {
+  def put(key: String, value: Object): Unit =
     bindings = bindings + (key -> value)
-  }
 
   def get(key: String): Object =
     bindings.get(key).orNull
@@ -73,18 +69,15 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs], c
     */
   def invalidParameters: InvalidParametersException = ipe
 
-  def logInvalidParameters(ipe: InvalidParametersException): Unit = {
+  def logInvalidParameters(ipe: InvalidParametersException): Unit =
     this.ipe = ipe
-  }
 
-  protected def parameters(params: Any): ParameterValues = {
-    params match {
-      case som: ScriptObjectMirror =>
-        // The user has created a new JavaScript object, as in { foo: "bar" },
-        // to pass up as an argument to the invoked editor. Extract its properties
-        SimpleParameterValues(NashornUtils.extractProperties(som))
-      case _ => SimpleParameterValues.Empty
-    }
+  protected def parameters(params: Any): ParameterValues = params match {
+    case som: ScriptObjectMirror =>
+      // The user has created a new JavaScript object, as in { foo: "bar" },
+      // to pass up as an argument to the invoked editor. Extract its properties
+      SimpleParameterValues(NashornUtils.extractProperties(som))
+    case _ => SimpleParameterValues.Empty
   }
 
   protected case class RepoIdentification(owner: String, name: String, branch: Option[String], sha: Option[String])
@@ -93,7 +86,7 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs], c
     val rid = extractRepoId(cloneInfo)
     val cloner = new GitRepositoryCloner(oAuthToken = config.oAuthToken.getOrElse(""))
     val file = cloner.clone(rid.name, rid.owner, rid.branch, rid.sha)
-    val as = FileSystemGitArtifactSource(FileSystemArtifactSourceIdentifier(file.get))
+    val as = FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(rid.name, file.get))
     new ProjectMutableView(as)
   }
 
@@ -109,5 +102,4 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs], c
     case x =>
       throw new IllegalArgumentException(s"Required JavaScript object repo ID, not $x")
   }
-
 }

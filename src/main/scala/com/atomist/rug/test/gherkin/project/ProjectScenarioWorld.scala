@@ -10,7 +10,7 @@ import com.atomist.rug.kind.core.{ProjectContext, ProjectMutableView, RepoResolv
 import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.rug.runtime.js.{BaseRugContext, JavaScriptProjectOperation}
 import com.atomist.rug.test.gherkin._
-import com.atomist.source.file.FileSystemArtifactSourceIdentifier
+import com.atomist.source.file.NamedFileSystemArtifactSourceIdentifier
 import com.atomist.source.git.FileSystemGitArtifactSource
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
 import com.atomist.util.GitRepositoryCloner
@@ -144,11 +144,11 @@ private object GitRepoResolver extends RepoResolver {
 
   override def resolveBranch(owner: String, repoName: String, branch: String): ArtifactSource = {
     val file = Cloner.clone(repo = repoName, owner = owner, branch= Some(branch))
-    FileSystemGitArtifactSource(FileSystemArtifactSourceIdentifier(file.get))
+    FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(repoName, file.get))
   }
 
   override def resolveSha(owner: String, repoName: String, sha: String): ArtifactSource = {
     val file = Cloner.clone(repo = repoName, owner = owner, sha = Some(sha))
-    FileSystemGitArtifactSource(FileSystemArtifactSourceIdentifier(file.get))
+    FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(repoName, file.get))
   }
 }

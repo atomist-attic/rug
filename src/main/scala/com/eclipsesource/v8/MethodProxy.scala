@@ -3,6 +3,7 @@ package com.eclipsesource.v8
 import java.lang.reflect.Method
 
 import com.atomist.rug.runtime.js.v8.V8JavaScriptObject
+import com.atomist.rug.spi.MutableView
 
 
 /**
@@ -30,6 +31,13 @@ class MethodProxy(node: NodeWrapper, obj: AnyRef, method: Method) extends JavaCa
         case x => args.append(parameters.get(i))
       }
     }
-    Proxy.ifNeccessary(node, method.invoke(obj, args:_*))
+
+    val result = method.invoke(obj, args:_*)
+    obj match {
+      case c: MutableView[_] if !Proxy.readOnly(method) =>
+        c.commit()
+      case _ =>
+    }
+    Proxy.ifNeccessary(node, result)
   }
 }

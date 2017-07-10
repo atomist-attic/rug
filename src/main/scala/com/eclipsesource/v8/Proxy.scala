@@ -2,7 +2,7 @@ package com.eclipsesource.v8
 
 import java.lang.reflect.Method
 
-import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, JavaScriptBackedGraphNode, JavaScriptBackedTypeProvider, ScriptObjectBackedTreeNode}
+import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, ScriptObjectBackedTreeNode}
 import com.atomist.rug.runtime.js.v8.V8JavaScriptObject
 import com.atomist.rug.spi.ExportFunction
 import org.apache.commons.lang3.ClassUtils
@@ -13,6 +13,8 @@ import scala.collection.JavaConverters._
 
 /**
   * Create proxies for Java objects
+  *
+  * // TODO cache reflective calls for perf.
   */
 object Proxy {
 
@@ -164,6 +166,17 @@ object Proxy {
     }
   }
 
+  /**
+    * Is the read-only flag set?
+    * @param m
+    * @return
+    */
+  def readOnly(m: Method): Boolean = {
+    AnnotationUtils.findAnnotation(m, classOf[ExportFunction]) match {
+      case o: ExportFunction => o.readOnly()
+      case _ => false
+    }
+  }
   /**
     * Is method m to be exposed as a property?
     *

@@ -1,15 +1,15 @@
 package com.atomist.util.lang
 
-import java.util
 
 import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor}
 import com.atomist.rug.RugArchiveReader
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
-import org.scalatest.{FlatSpec, Ignore, Matchers}
-@Ignore
-class NashornJavaScriptArrayTest extends FlatSpec with Matchers {
+import org.scalatest.{FlatSpec, Matchers}
+
+
+class NashornJavaScriptArrayTest extends FlatSpec with Matchers with NashornTest{
 
   val EditorWithFancyListArray =
     """import {Project} from '@atomist/rug/model/Core'

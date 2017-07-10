@@ -4,11 +4,11 @@ import com.atomist.graph.GraphNode
 import com.atomist.rug.runtime.js.BaseRugContext
 import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, jsPathExpressionEngine}
 import com.atomist.tree.SimpleTerminalTreeNode
+import com.atomist.util.lang.NashornTest
 import jdk.nashorn.api.scripting.JSObject
-import org.scalatest.{FlatSpec, Ignore, Matchers}
+import org.scalatest.{FlatSpec, Matchers}
 
-@Ignore
-class jsScalaHidingProxyTest extends FlatSpec with Matchers {
+class jsScalaHidingProxyTest extends FlatSpec with Matchers with NashornTest {
 
   import com.atomist.rug.runtime.js.JavaScriptEngineTestUtils._
 

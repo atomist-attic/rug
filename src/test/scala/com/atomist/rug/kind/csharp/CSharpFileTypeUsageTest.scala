@@ -4,7 +4,6 @@ import com.atomist.project.edit.{NoModificationNeeded, SuccessfulModification}
 import com.atomist.rug.kind.grammar.AbstractTypeUnderFileTest
 import org.scalatest.Ignore
 
-@Ignore
 class CSharpFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   import CSharpFileTypeTest._

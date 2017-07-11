@@ -19,7 +19,6 @@ import { CommandPlan, EventPlan, Plan } from "../../operations/Handlers";
 import { GraphNode } from "../../tree/PathExpression";
 import { Result } from "../Result";
 import { RepoId, ScenarioWorld } from "../ScenarioWorld";
-import "./WellKnownSteps";
 
 /**
  * All handler scenario worlds expose the plan,

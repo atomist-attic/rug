@@ -11,7 +11,6 @@ import com.atomist.source.{ArtifactSource, FileArtifact}
 import com.eclipsesource.v8._
 import com.eclipsesource.v8.utils.MemoryManager
 import com.typesafe.scalalogging.LazyLogging
-import jdk.nashorn.internal.runtime.ECMAException
 
 import scala.collection.mutable.ListBuffer
 
@@ -35,6 +34,8 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
 
   // Require all the Atomist stuff
 
+  // TODO - this is could be expensive!
+
   private val root = rugAs match {
     case fs: FileSystemArtifactSource => fs.id.rootFile.toPath
     case mem =>
@@ -55,7 +56,7 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
   override def evaluate(f: FileArtifact): Unit = {
 
     val path = root.resolve(f.path)
-    val scope = new MemoryManager(node.getRuntime)
+    //val scope = new MemoryManager(node.getRuntime)
     val more: Seq[JavaScriptMember] =  node.node.require(path.toFile) match {
       case o: V8Object => o.getKeys.map(k => JavaScriptMember(k, new V8JavaScriptObject(node, o.get(k).asInstanceOf[V8Object])))
       case _ => Nil
@@ -82,11 +83,13 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
   }
   override def invokeMember(jsVar: JavaScriptObject, member: String, params: Option[ParameterValues], args: Object*): AnyRef = {
 
-    withEnhancedExceptions{
-      if (params.nonEmpty) {
-        setParameters(jsVar, params.get.parameterValues)
-      }
-      val v8o = jsVar.asInstanceOf[V8JavaScriptObject].getNativeObject.asInstanceOf[V8Object]
+    //val scope = new MemoryManager(node.getRuntime)
+    try{
+      withEnhancedExceptions{
+        if (params.nonEmpty) {
+          setParameters(jsVar, params.get.parameterValues)
+        }
+        val v8o = jsVar.asInstanceOf[V8JavaScriptObject].getNativeObject.asInstanceOf[V8Object]
 
         val proxied = args.map(a => Proxy.ifNeccessary(node, a))
         v8o.executeJSFunction(member, proxied:_*) match {
@@ -97,8 +100,10 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
           case _: V8Object => UNDEFINED
           case o => o
         }
+      }
+    }finally{
+      //scope.release()
     }
-
   }
 
   override def parseJson(jsonStr: String): JavaScriptObject = {

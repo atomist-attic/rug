@@ -19,7 +19,6 @@ import { Result } from "../Result";
 import { EditProject } from "../../operations/ProjectEditor"
 import { PopulateProject } from "../../operations/ProjectGenerator"
 import { ScenarioWorld } from "../ScenarioWorld";
-import "./WellKnownSteps";
 
 /**
  * Subinterface of ScenarioWorld specific to

@@ -44,9 +44,7 @@ trait JavaScriptObject {
 
   def entries(): Map[String, AnyRef]
 
-  def keys(all: Boolean = true): Iterable[String] = {
-    entries().keys
-  }
+  def keys(all: Boolean = true): Iterable[String]
 
 
   def extractProperties(): Map[String, AnyRef] =

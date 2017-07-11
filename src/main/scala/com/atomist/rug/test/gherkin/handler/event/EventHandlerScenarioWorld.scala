@@ -6,6 +6,7 @@ import com.atomist.rug.RugNotFoundException
 import com.atomist.rug.runtime.js.interop.JavaScriptBackedGraphNode
 import com.atomist.rug.runtime.js.{JavaScriptEventHandler, RugContext}
 import com.atomist.rug.runtime.{EventHandler, SystemEvent}
+import com.atomist.rug.spi.ExportFunction
 import com.atomist.rug.test.gherkin.{Definitions, GherkinExecutionListener, GherkinRunnerConfig, PathExpressionEvaluation}
 import com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld
 import com.atomist.tree.TreeMaterializer
@@ -34,6 +35,7 @@ class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = N
     }
   }
 
+  @ExportFunction(description = "Register a handler", readOnly = true)
   def registerHandler(name: String): EventHandler = {
     val eh = eventHandler(name)
     registeredHandlers.append(eh)
@@ -45,6 +47,7 @@ class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = N
     * (normally a cortex stub)
     * It's hopefully a JavaScriptObject
     */
+  //@ExportFunction(description = "Send and event", readOnly = true)
   def sendEvent(e: AnyRef): Unit = {
     val gn = JavaScriptBackedGraphNode.toGraphNode(e).getOrElse(
       throw new IllegalArgumentException(s"Cannot make a GraphNode out of $e")

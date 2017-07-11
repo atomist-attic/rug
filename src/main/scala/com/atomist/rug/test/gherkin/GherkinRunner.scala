@@ -2,6 +2,7 @@ package com.atomist.rug.test.gherkin
 
 import com.atomist.project.archive.{DefaultAtomistConfig, Rugs}
 import com.atomist.rug.runtime.js.JavaScriptEngineContext
+import com.atomist.source.FileArtifact
 import com.typesafe.scalalogging.LazyLogging
 
 /**
@@ -40,6 +41,15 @@ class GherkinRunner(jsc: JavaScriptEngineContext,
       jsc.evaluate(f)
     })
 
+//  /**
+//    * Ensure
+//    * @param f1
+//    * @param f2
+//    * @return
+//    */
+//  private def sortByRequire(f1: FileArtifact, f2: FileArtifact) : Boolean = {
+//
+//  }
   /**
     * Features found in this archive
     */

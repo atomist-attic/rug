@@ -6,9 +6,10 @@ import com.atomist.rug.rugdoc.TypeScriptStubClassGeneratorTest
 import com.atomist.rug.runtime.js.JavaScriptEngineTestUtils
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.marshal.LinkedJsonGraphDeserializer
+import com.atomist.util.lang.NashornTest
 import org.scalatest.{FlatSpec, Matchers}
 
-class ProxyAgainstDeserializedNodeTest extends FlatSpec with Matchers {
+class ProxyAgainstDeserializedNodeTest extends FlatSpec with Matchers with NashornTest {
 
   private val IssueNode =
     """[{"updatedAt":"2017-04-10T21:01:16Z","body":"test","createdAt":"2017-04-10T21:01:16Z",

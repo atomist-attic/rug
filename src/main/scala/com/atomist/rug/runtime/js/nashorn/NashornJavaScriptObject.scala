@@ -124,4 +124,8 @@ private[nashorn] class NashornJavaScriptObject(val som: ScriptObjectMirror)
   }
 
   override def toJson(): String = JsonUtils.toJsonStr(som)
+
+  override def keys(all: Boolean): Iterable[String] = {
+    som.getOwnKeys(all)
+  }
 }

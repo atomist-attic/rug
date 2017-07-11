@@ -13,7 +13,6 @@ import org.scalatest.{FlatSpec, Ignore, Matchers}
   * Files ending with "a," "b" etc are identical in effect from the point
   * of view of these tests
   */
-@Ignore
 class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
 
   import EventHandlerTestTargets._

@@ -1,6 +1,7 @@
 package com.atomist.rug.test.gherkin
 
 import com.atomist.rug.runtime.js.{JavaScriptEngineContext, JavaScriptObject}
+import com.atomist.rug.spi.ExportFunction
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
 
@@ -19,16 +20,19 @@ class Definitions(
 
   def rugArchive: ArtifactSource = jsc.rugAs
 
+  @ExportFunction(readOnly = true, description = "Set a precondition")
   def Given(s: String, what: JavaScriptObject): Unit = {
     logger.debug(s"Registering Given for [$s]")
     stepRegistry.put("given_" + s, what)
   }
 
+  @ExportFunction(readOnly = true, description = "Set a condition")
   def When(s: String, what: JavaScriptObject): Unit = {
     logger.debug(s"Registering When for [$s]")
     stepRegistry.put("when_" + s, what)
   }
 
+  @ExportFunction(readOnly = true, description = "Set a post condition")
   def Then(s: String, what: JavaScriptObject): Unit = {
     logger.debug(s"Registering Then for [$s]")
     stepRegistry.put("then_" + s, what)

@@ -5,8 +5,8 @@ import {
   PathExpressionEngine,
   TreeNode,
 } from "../tree/PathExpression";
-import { Parameter } from "./RugOperation";
 import { GitProjectLoader } from "./GitProjectLoader";
+import { Parameter } from "./RugOperation";
 
 export interface RugCoordinate {
   readonly name: string;
@@ -340,7 +340,8 @@ export abstract class MappedParameters {
   public static readonly GITHUB_REPOSITORY: string = "atomist://github/repository";
   public static readonly GITHUB_WEBHOOK_URL: string = "atomist://github_webhook_url";
   public static readonly GITHUB_API_URL: string = "atomist://github_api_url";
-  
+  public static readonly GITHUB_DEFAULT_REPO_VISIBILITY: string = "atomist://github/default_repo_visibility";
+
   public static readonly SLACK_CHANNEL: string = "atomist://slack/channel";
   public static readonly SLACK_CHANNEL_NAME: string = "atomist://slack/channel_name";
   public static readonly SLACK_TEAM: string = "atomist://slack/team";

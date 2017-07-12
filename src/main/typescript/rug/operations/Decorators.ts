@@ -17,11 +17,14 @@ function set_metadata(obj: any, key: string, value: any) {
 }
 
 function get_metadata(obj: any, key: string) {
-  let desc = Object.getOwnPropertyDescriptor(obj, key);
-  if ((desc == null || desc === undefined) && (obj.prototype !== undefined)) {
-    desc = Object.getOwnPropertyDescriptor(obj.prototype, key);
+  if (obj == null) {
+    return null;
   }
-  if (desc != null || desc !== undefined) {
+  let desc = Object.getOwnPropertyDescriptor(obj, key);
+  if ((desc == null || desc === undefined) && (Object.getPrototypeOf(obj) !== undefined)) {
+    desc = get_metadata(Object.getPrototypeOf(obj), key);
+  }
+  if (desc != null && desc !== undefined) {
     return desc.value;
   }
   return null;
@@ -37,14 +40,34 @@ export function Parameter(details: BaseParameter) {
 }
 
 export function declareParameter(target: any, propertyKey: string, details: BaseParameter) {
-  let params = get_metadata(target, "__parameters");
+  let params: any[] = get_metadata(target, "__parameters");
   if (params == null) {
     params = [];
+  } else {
+    // remove any that have the same name already (i.e. if folk are calling declareParameter)
+    // use a cheeky method so that we can reuse the same array
+    const found: any[] = params.filter((p) => p.name === propertyKey);
+    if (found != null && found.length > 0) {
+      const index = params.indexOf(found[0]);
+      params.splice(index, 1);
+    }
   }
   const copy: any = { ...details };
   copy.name = propertyKey;
   copy.decorated = true;
   params.push(copy);
+
+  // merge parameters from parent if it has some
+  const protoParams: any[] = get_metadata(Object.getPrototypeOf(target), "__parameters");
+  if (protoParams != null) {
+    protoParams.forEach((protoParam) => {
+      // if we don't already have a parameter with the same name
+      if (!params.some((param) => param.name === protoParam.name)) {
+        params.push(protoParam);
+      }
+    });
+  }
+
   set_metadata(target, "__parameters", params);
   return target;
 }
@@ -61,9 +84,29 @@ export function declareMappedParameter(target: any, localKey: string, foreignKey
   let params = get_metadata(target, "__mappedParameters");
   if (params == null) {
     params = [];
+  } else {
+    // remove any that have the same name already (i.e. if folk are calling declareParameter)
+    // use a cheeky method so that we can reuse the same array
+    const found: any[] = params.filter((p) => p.localKey === localKey);
+    if (found != null && found.length > 0) {
+      const index = params.indexOf(found[0]);
+      params.splice(index, 1);
+    }
   }
   const param = { localKey, foreignKey };
   params.push(param);
+
+  // merge parameters from parent if it has some
+  const protoParams: any[] = get_metadata(Object.getPrototypeOf(target), "__mappedParameters");
+  if (protoParams != null) {
+    protoParams.forEach((protoParam) => {
+      // if we don't already have a parameter with the same name
+      if (!params.some((p) => p.localKey === protoParam.localKey)) {
+        params.push(protoParam);
+      }
+    });
+  }
+
   set_metadata(target, "__mappedParameters", params);
   return target;
 }

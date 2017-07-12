@@ -2,6 +2,7 @@ package com.eclipsesource.v8
 
 import java.lang.reflect.Method
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, ScriptObjectBackedTreeNode}
 import com.atomist.rug.runtime.js.v8.V8JavaScriptObject
 import com.atomist.rug.spi.ExportFunction
@@ -58,13 +59,14 @@ object Proxy {
         case l: java.lang.Long => l.intValue().asInstanceOf[AnyRef]
         case _ => o
       }
-    case j: ScriptObjectBackedTreeNode => j.som.getNativeObject
+    case j: ScriptObjectBackedTreeNode =>
+      j.som.getNativeObject
     case s: String => s
     case v: V8Value => v
     case o: V8JavaScriptObject => o.getNativeObject
     case Some(r: AnyRef) => Proxy(node, r)
     case r: AnyRef => Proxy(node, r)
-    case x => x.asInstanceOf[AnyRef] //I think this is boxing?
+    case x => x.asInstanceOf[AnyRef]
   }
 
   // because for some reason we can't use classOf when matching!
@@ -140,6 +142,14 @@ object Proxy {
           theObject.executeJSFunction("defineProperty", v8pmv, f.getName, callback)
 
         })
+
+        obj match {
+          case n: GraphNode =>
+            // register some more stuff
+
+          case _ =>
+        }
+
         v8pmv
     }
   }

@@ -97,7 +97,10 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object) extends JavaScriptObj
     case _ => false
   }
 
-  override def eval(js: String): AnyRef = ???
+  override def eval(js: String): AnyRef = {
+    println("Omg")
+    null
+  }
 
   override def entries(): Map[String, AnyRef] = {
     keys().map { key =>

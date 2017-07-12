@@ -11,13 +11,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added 
 
+-   Parameter and MappedParameter decorated properties from super classes are now inherited
+    by sub-classes [#646][646]
+
 -   Added `GITHUB_DEFAULT_REPO_VISIBILITY` mapped parameter that determines
     repository visibility based on organization GitHub plan
-
+    
 ### Fixed
 
 -   Ensure default values for optional parameters to Rug Functions
     are used, instead of null. Primitives are converted to 0 or false
+
+[646]: https://github.com/atomist/rug/issues/646
 
 ## [1.0.0-m.5] - 2017-07-11
 

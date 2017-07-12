@@ -71,7 +71,7 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object) extends JavaScriptObj
 
   override def isEmpty: Boolean = obj match {
     case v: V8Array => v.length() == 0
-    case x: V8Object => keys.isEmpty
+    case x: V8Object => keys().isEmpty
     case _ => false
   }
 
@@ -100,7 +100,7 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object) extends JavaScriptObj
   override def eval(js: String): AnyRef = ???
 
   override def entries(): Map[String, AnyRef] = {
-    keys.map { key =>
+    keys().map { key =>
       obj.get(key) match {
         case o: V8Object => (key, new V8JavaScriptObject(node, o))
         case eh => (key, eh)
@@ -119,7 +119,12 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object) extends JavaScriptObj
     val objKeys = obj.getKeys
     val json = node.getRuntime.get("Object").asInstanceOf[V8Object]
     val protoKeys = json.executeJSFunction("getPrototypeOf", obj) match {
-      case p: V8Object if !p.isUndefined => p.getKeys.toSeq
+      case p: V8Object if !p.isUndefined =>
+        p.getKeys.filter(protoKey => {
+          json.executeJSFunction("getOwnPropertyDescriptor", p, protoKey) match {
+            case o: V8Object if  !o.isUndefined  && o.contains("get") => false
+            case _ => true
+          }}).toSeq
       case _ => Nil
     }
     objKeys ++ protoKeys

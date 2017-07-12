@@ -117,12 +117,12 @@ object Proxy {
           case m: Method if ReflectionUtils.isObjectMethod(m) => //don't proxy standard stuff
           case m: Method if exposeAsProperty(m) =>
             val callback = new V8Object(node.getRuntime)
-            callback.registerJavaMethod(new MethodProxy(node, obj, m), "get")
+            RegisterMethodProxy(callback, node, obj, m ,"get")
             callback.add("configurable", true)
             val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
             theObject.executeJSFunction("defineProperty", v8pmv, m.getName, callback)
           case m: Method if exposeAsFunction(m) =>
-            v8pmv.registerJavaMethod(new MethodProxy(node, obj, m), m.getName)
+            RegisterMethodProxy(v8pmv, node, obj, m ,m.getName)
           case _ =>
         }
         /**

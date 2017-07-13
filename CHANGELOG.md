@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   Updated typescript & typedoc used for doc generation to 2.4.1 and 0.7.1 respectively
     
+-   Added `post` property to `UpdatableMessage` to indicate if we message should be written if it
+    didn't previously existed
+    
 ### Fixed
 
 -   Ensure default values for optional parameters to Rug Functions
@@ -36,7 +39,7 @@ Milestone 5 (Summer) release
 
 ### Added
 
--   Added new `UpdatableMessage` to allow message to be re-written in
+-   Added new `UpdatableMessage` to allow messages to be re-written in
     the bot
 
 ### Changed

@@ -237,6 +237,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].messageId.get === "some-message")
     assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].timestamp.isDefined)
     assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].ttl.isDefined)
+    assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].post.get === "update_only")
   }
 
 

@@ -303,6 +303,8 @@ export class UpdatableMessage extends DirectedMessage {
   public timestamp: string = new Date().getTime().toString();
   // Time after which the message will get re-posted instead of re-written
   public ttl?: string;
+  // If message with id doesn't exist update_only wouldn't create it
+  public post?: "always" | "update_only"
 
   constructor(id: string, body: string, address: MessageAddress, contentType?: MessageMimeType) {
     super(body, address, contentType);

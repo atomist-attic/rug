@@ -25,9 +25,10 @@ class KittieFetcher implements HandleCommand {
         kind: "command",
         name: "GetKitties"
       },
-      id: "123"
+      id: "123",
     });
     message.ttl = (new Date().getTime() + (1000 * 60 * 60 * 25)).toString();
+    message.post = "update_only";
     plan.add(message);
     return plan;
   }

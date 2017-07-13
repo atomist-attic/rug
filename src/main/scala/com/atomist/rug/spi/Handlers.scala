@@ -60,7 +60,8 @@ object Handlers {
                                     instructions: Seq[Presentable] = Nil,
                                     messageId: Option[String] = None,
                                     timestamp: Option[String] = None,
-                                    ttl: Option[String] = None)
+                                    ttl: Option[String] = None,
+                                    post: Option[String] = None)
     extends Callback
       with Message {
 

@@ -1,6 +1,9 @@
 package com.atomist.tree.content.text
 
+import com.atomist.rug.spi.ExportFunction
 import com.atomist.util.lang.CodeGenerationHelper
+
+import scala.annotation.meta.getter
 
 object FormatInfo {
 
@@ -30,8 +33,9 @@ object FormatInfo {
       offs += 1
     }
     val indent: String = firstIndentedLine.map(l => findLeadingWhitespace(l)).getOrElse("")
-    val indentDepth = findLeadingWhitespace(currentLine).length /
-      { if (indent.isEmpty) 1 else indent.length }
+    val indentDepth = findLeadingWhitespace(currentLine).length / {
+      if (indent.isEmpty) 1 else indent.length
+    }
 
     PointFormatInfo(
       offs,
@@ -47,8 +51,10 @@ object FormatInfo {
   * Information about the format of a node within a file
   */
 case class FormatInfo(
-                     start: PointFormatInfo,
-                     end: PointFormatInfo
+                       @(ExportFunction@getter)(description = "Start point", readOnly = true, exposeAsProperty = true)
+                       start: PointFormatInfo,
+                       @(ExportFunction@getter)(description = "End point", readOnly = true, exposeAsProperty = true)
+                       end: PointFormatInfo
                      )
 
 /**
@@ -59,18 +65,24 @@ case class FormatInfo(
   * @param indent      indent used in the file.
   */
 case class PointFormatInfo(
-                       offset: Int,
-                       lineNumberFrom1: Int,
-                       columnNumberFrom1: Int,
-                       indentDepth: Int,
-                       indent: String
-                     )
+                            @(ExportFunction@getter)(description = "Offset", readOnly = true, exposeAsProperty = true)
+                            offset: Int,
+                            @(ExportFunction@getter)(description = "lineNumberFrom1", readOnly = true, exposeAsProperty = true)
+                            lineNumberFrom1: Int,
+                            @(ExportFunction@getter)(description = "columnNumberFrom1", readOnly = true, exposeAsProperty = true)
+                            columnNumberFrom1: Int,
+                            @(ExportFunction@getter)(description = "indentDepth", readOnly = true, exposeAsProperty = true)
+                            indentDepth: Int,
+                            @(ExportFunction@getter)(description = "indent", readOnly = true, exposeAsProperty = true)
+                            indent: String
+                          )
   extends InputPosition {
 
   private val codeGenerationHelper = new CodeGenerationHelper(indent)
 
   /**
     * Add content indented on next line. Tabs will be used as additional indents.
+    *
     * @param content content to add
     * @return indented content, including line break
     */

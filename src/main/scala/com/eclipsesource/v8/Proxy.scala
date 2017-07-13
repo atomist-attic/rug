@@ -146,7 +146,17 @@ object Proxy {
         obj match {
           case n: GraphNode =>
             // register some more stuff
-
+            n.relatedNodes.foreach(related => {
+              val callback = new V8Object(node.getRuntime)
+              callback.registerJavaMethod(new JavaCallback {
+                override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
+                  Proxy.ifNeccessary(node, related)
+                }
+              }, "get")
+              callback.add("configurable", true)
+              val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
+              theObject.executeJSFunction("defineProperty", v8pmv, related.nodeName, callback)
+            })
           case _ =>
         }
 

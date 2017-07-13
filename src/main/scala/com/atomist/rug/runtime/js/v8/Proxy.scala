@@ -1,11 +1,11 @@
-package com.eclipsesource.v8
+package com.atomist.rug.runtime.js.v8
 
 import java.lang.reflect.Method
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, ScriptObjectBackedTreeNode}
-import com.atomist.rug.runtime.js.v8.V8JavaScriptObject
 import com.atomist.rug.spi.ExportFunction
+import com.eclipsesource.v8._
 import org.apache.commons.lang3.ClassUtils
 import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.util.ReflectionUtils

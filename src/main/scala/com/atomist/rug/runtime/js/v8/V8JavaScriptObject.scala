@@ -1,7 +1,7 @@
 package com.atomist.rug.runtime.js.v8
 
 import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
-import com.eclipsesource.v8.{NodeWrapper, Proxy, V8Array, V8Function, V8Object, V8Value}
+import com.eclipsesource.v8.{V8Array, V8Function, V8Object, V8Value}
 
 /**
   * V8 implementation

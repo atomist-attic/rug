@@ -1,4 +1,6 @@
-package com.eclipsesource.v8
+package com.atomist.rug.runtime.js.v8
+
+import com.eclipsesource.v8.{NodeJS, V8, V8Object}
 
 /**
   * Wrap with some stuff with similar scope

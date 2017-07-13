@@ -1,9 +1,9 @@
-package com.eclipsesource.v8
+package com.atomist.rug.runtime.js.v8
 
 import java.lang.reflect.Method
 
-import com.atomist.rug.runtime.js.v8.V8JavaScriptObject
 import com.atomist.rug.spi.MutableView
+import com.eclipsesource.v8._
 
 object RegisterMethodProxy {
 

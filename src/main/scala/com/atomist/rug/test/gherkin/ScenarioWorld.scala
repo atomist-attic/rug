@@ -71,6 +71,7 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs], c
 
   def put(key: String, value: Object): Unit = {
     bindings = bindings + (key -> value)
+  }
 
   def get(key: String): Object =
     bindings.get(key).orNull

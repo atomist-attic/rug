@@ -6,6 +6,7 @@ import com.atomist.rug.kind.grammar.{AbstractTypeUnderFileTest, TypeUnderFile}
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.UpdatableTreeNode
 import com.atomist.tree.content.text.{PositionedTreeNode, TextTreeNodeLifecycle}
+import com.atomist.util.lang.NashornTest
 
 class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlUsageTest {
 

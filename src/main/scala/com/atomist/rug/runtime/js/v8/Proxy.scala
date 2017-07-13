@@ -4,11 +4,8 @@ import java.lang.reflect.Method
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, ScriptObjectBackedTreeNode}
-import com.atomist.rug.runtime.js.nashorn.NashornJavaScriptArray
 import com.atomist.rug.spi.ExportFunction
-import com.atomist.rug.ts.Cardinality
-import com.atomist.tree.content.text.OverwritableTextTreeNode
-import com.atomist.tree.{TerminalTreeNode, TreeNode}
+import com.atomist.tree.TreeNode
 import com.eclipsesource.v8._
 import org.apache.commons.lang3.ClassUtils
 import org.springframework.core.annotation.AnnotationUtils
@@ -123,12 +120,12 @@ object Proxy {
           case m: Method if ReflectionUtils.isObjectMethod(m) => //don't proxy standard stuff
           case m: Method if exposeAsProperty(m) =>
             val callback = new V8Object(node.getRuntime)
-            RegisterMethodProxy(callback, node, obj, m ,"get")
+            RegisterMethodProxy(callback, node, obj, m, "get")
             callback.add("configurable", true)
             val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
             theObject.executeJSFunction("defineProperty", v8pmv, m.getName, callback)
           case m: Method if exposeAsFunction(m) =>
-            RegisterMethodProxy(v8pmv, node, obj, m ,m.getName)
+            RegisterMethodProxy(v8pmv, node, obj, m, m.getName)
           case _ =>
         }
         /**
@@ -148,26 +145,26 @@ object Proxy {
         })
 
         obj match {
-          case n: GraphNode =>
+          case n: GraphNode if n.hasTag(TreeNode.Dynamic) && n.nodeName == "value" =>
+            // TODO this seems dodgy -
             // register some more stuff
-            n.relatedNodes.foreach {
-              case t: OverwritableTextTreeNode if t.nodeName == "value" =>
-                // TODO this seems dodgey!
-                RegisterMethodProxy(v8pmv, node, t, t.getClass.getMethod("value"), "value")
-              case related =>
-                val callback = new V8Object(node.getRuntime)
-                callback.registerJavaMethod(new JavaCallback {
-                  override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
-                    Proxy.ifNeccessary(node, related)
-                  }
-                }, "get")
-                callback.add("configurable", true)
-                val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
-                theObject.executeJSFunction("defineProperty", v8pmv, related.nodeName, callback)
+            RegisterMethodProxy(v8pmv, node, n, n.getClass.getMethod("value"), "value")
+          case n: GraphNode if n.hasTag(TreeNode.Dynamic) && n.nodeName != "value" =>
+            Proxy.addIfNeccessary(v8pmv, node, n.nodeName, n.relatedNodes)
+          case n: GraphNode =>
+            n.relatedNodes.foreach { related =>
+              val callback = new V8Object(node.getRuntime)
+              callback.registerJavaMethod(new JavaCallback {
+                override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
+                  Proxy.ifNeccessary(node, related)
+                }
+              }, "get")
+              callback.add("configurable", true)
+              val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
+              theObject.executeJSFunction("defineProperty", v8pmv, related.nodeName, callback)
             }
           case _ =>
         }
-
         v8pmv
     }
   }
@@ -196,6 +193,7 @@ object Proxy {
 
   /**
     * Is the read-only flag set?
+    *
     * @param m
     * @return
     */
@@ -205,6 +203,7 @@ object Proxy {
       case _ => false
     }
   }
+
   /**
     * Is method m to be exposed as a property?
     *

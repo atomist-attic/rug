@@ -1,5 +1,5 @@
 
-import { DynamicType, GraphNode, Match, PathExpression, PathExpressionEngine, TreeNode } from "./PathExpression";
+import { DynamicType, GraphNode, Match, PathExpression, PathExpressionEngine } from "./PathExpression";
 
 /**
  * Convenient superclass that wraps an existing PathExpressionEngine
@@ -8,7 +8,7 @@ import { DynamicType, GraphNode, Match, PathExpression, PathExpressionEngine, Tr
 export class TransformingPathExpressionEngine implements PathExpressionEngine {
 
   constructor(protected delegate: PathExpressionEngine,
-              private nodeTransform: (TreeNode) => TreeNode) { }
+              private nodeTransform: (GraphNode) => GraphNode) { }
 
   public addType(dt: DynamicType): this {
     this.delegate = this.delegate.addType(dt);
@@ -17,7 +17,7 @@ export class TransformingPathExpressionEngine implements PathExpressionEngine {
 
   // Unfortunately other calls don't go through this,
   // because they're in Scala
-  public evaluate<R extends TreeNode, N extends TreeNode>(root: R, expr: PathExpression<R, N> | string): Match<R, N> {
+  public evaluate<R extends GraphNode, N extends GraphNode>(root: R, expr: PathExpression<R, N> | string): Match<R, N> {
     const m1 = this.delegate.evaluate(root, expr);
     const m2 = {
       root: this.nodeTransform(m1.root) as R,
@@ -30,24 +30,24 @@ export class TransformingPathExpressionEngine implements PathExpressionEngine {
     return m2;
   }
 
-  public with<N extends TreeNode>(root: TreeNode, expr: PathExpression<GraphNode, N> | string,
-                                  f: (n: N) => void): void {
+  public with<N extends GraphNode>(root: GraphNode, expr: PathExpression<GraphNode, N> | string,
+                                   f: (n: N) => void): void {
     this.delegate.with(root, expr, (n) => {
       const transformed = this.nodeTransform(n);
       f(transformed as N);
     });
   }
 
-  public scalar<R extends TreeNode, N extends TreeNode>(root: R, expr: PathExpression<R, N> | string): N {
+  public scalar<R extends GraphNode, N extends GraphNode>(root: R, expr: PathExpression<R, N> | string): N {
     return this.nodeTransform(this.delegate.scalar<R, N>(root, expr)) as N;
   }
 
-  public as<N extends TreeNode>(root, name: string): N {
+  public as<N extends GraphNode>(root, name: string): N {
     return this.nodeTransform(this.delegate.as<N>(root, name)) as N;
   }
 
   // Find the children of the current node of this time
-  public children<N extends TreeNode>(root, name: string): N[] {
+  public children<N extends GraphNode>(root, name: string): N[] {
     return this.delegate.children<N>(root, name)
       .map((n) => this.nodeTransform(n) as N);
   }
@@ -55,8 +55,8 @@ export class TransformingPathExpressionEngine implements PathExpressionEngine {
   // -------------------------------------------------------------
   // Additional convenience methods
   // -------------------------------------------------------------
-  public withExpression<N extends TreeNode>(root: TreeNode, pe: PathExpression<any, N>,
-                                            f: (n: N) => void): void {
+  public withExpression<N extends GraphNode>(root: GraphNode, pe: PathExpression<any, N>,
+                                             f: (n: N) => void): void {
     this.with(root, pe.expression, f);
   }
 }

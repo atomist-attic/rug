@@ -9,13 +9,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/1.0.0-m.5...HEAD
 
-### Added 
+### Added
 
 -   Parameter and MappedParameter decorated properties from super classes are now inherited
     by sub-classes [#646][646]
 
 -   Added `GITHUB_DEFAULT_REPO_VISIBILITY` mapped parameter that determines
     repository visibility based on organization GitHub plan
+
+### Changed
+
+-   Updated typescript & typedoc used for doc generation to 2.4.1 and 0.7.1 respectively
     
 ### Fixed
 

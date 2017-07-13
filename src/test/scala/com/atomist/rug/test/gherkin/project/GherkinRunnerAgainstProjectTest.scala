@@ -10,6 +10,7 @@ import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, String
 import gherkin.ast.ScenarioDefinition
 import org.scalatest.{FlatSpec, Ignore, Matchers}
 
+@Ignore
 class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
   private lazy val alpEditorsFile = TestUtils.requiredFileInPackage(this, "AlpEditors.ts").withPath(".atomist/editors/AlpEditors.ts")

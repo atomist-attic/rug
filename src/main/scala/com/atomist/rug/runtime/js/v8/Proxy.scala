@@ -153,7 +153,7 @@ object Proxy {
                   Proxy.ifNeccessary(node, related)
                 }
               }, "get")
-              callback.add("configurable", true)
+              callback.add("configurable", false)
               val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
               theObject.executeJSFunction("defineProperty", v8pmv, related.nodeName, callback)
             })

@@ -4,7 +4,11 @@ import java.lang.reflect.Method
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, ScriptObjectBackedTreeNode}
+import com.atomist.rug.runtime.js.nashorn.NashornJavaScriptArray
 import com.atomist.rug.spi.ExportFunction
+import com.atomist.rug.ts.Cardinality
+import com.atomist.tree.content.text.OverwritableTextTreeNode
+import com.atomist.tree.{TerminalTreeNode, TreeNode}
 import com.eclipsesource.v8._
 import org.apache.commons.lang3.ClassUtils
 import org.springframework.core.annotation.AnnotationUtils
@@ -146,17 +150,21 @@ object Proxy {
         obj match {
           case n: GraphNode =>
             // register some more stuff
-            n.relatedNodes.foreach(related => {
-              val callback = new V8Object(node.getRuntime)
-              callback.registerJavaMethod(new JavaCallback {
-                override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
-                  Proxy.ifNeccessary(node, related)
-                }
-              }, "get")
-              callback.add("configurable", false)
-              val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
-              theObject.executeJSFunction("defineProperty", v8pmv, related.nodeName, callback)
-            })
+            n.relatedNodes.foreach {
+              case t: OverwritableTextTreeNode if t.nodeName == "value" =>
+                // TODO this seems dodgey!
+                RegisterMethodProxy(v8pmv, node, t, t.getClass.getMethod("value"), "value")
+              case related =>
+                val callback = new V8Object(node.getRuntime)
+                callback.registerJavaMethod(new JavaCallback {
+                  override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
+                    Proxy.ifNeccessary(node, related)
+                  }
+                }, "get")
+                callback.add("configurable", true)
+                val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
+                theObject.executeJSFunction("defineProperty", v8pmv, related.nodeName, callback)
+            }
           case _ =>
         }
 

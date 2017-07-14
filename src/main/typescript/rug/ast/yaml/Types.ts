@@ -287,7 +287,7 @@ export class YamlSequenceOps {
 
     constructor(private node: TextTreeNode) {
         this.items = node.value().trim().split("\n");
-        console.log("Value: " + node.value());
+        //console.log("Value: " + node.value());
     }
 
     /**

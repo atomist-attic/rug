@@ -145,23 +145,19 @@ object Proxy {
         })
 
         obj match {
-          case n: GraphNode if n.hasTag(TreeNode.Dynamic) && n.nodeName == "value" =>
-            // TODO this seems dodgy -
-            // register some more stuff
-            RegisterMethodProxy(v8pmv, node, n, n.getClass.getMethod("value"), "value")
-          case n: GraphNode if n.hasTag(TreeNode.Dynamic) && n.nodeName != "value" =>
-            Proxy.addIfNeccessary(v8pmv, node, n.nodeName, n.relatedNodes)
-          case n: GraphNode =>
-            n.relatedNodes.foreach { related =>
-              val callback = new V8Object(node.getRuntime)
-              callback.registerJavaMethod(new JavaCallback {
-                override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
-                  Proxy.ifNeccessary(node, related)
-                }
-              }, "get")
-              callback.add("configurable", true)
-              val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
-              theObject.executeJSFunction("defineProperty", v8pmv, related.nodeName, callback)
+          case n: GraphNode if n.hasTag(TreeNode.Dynamic) =>
+            if(n.nodeName != "value" && n.relatedNodes.forall(p => p.nodeName != "value")){
+              n.relatedNodes.foreach { related =>
+                val callback = new V8Object(node.getRuntime)
+                callback.registerJavaMethod(new JavaCallback {
+                  override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
+                    Proxy.ifNeccessary(node, related)
+                  }
+                }, "get")
+                callback.add("configurable", true)
+                val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
+                theObject.executeJSFunction("defineProperty", v8pmv, related.nodeName, callback)
+              }
             }
           case _ =>
         }

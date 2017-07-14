@@ -10,7 +10,7 @@ import com.atomist.rug.test.gherkin.{Failed, GherkinRunner, Passed}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource}
 import org.scalatest.{FlatSpec, Ignore, Matchers}
-@Ignore
+
 class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
 
   import CommandHandlerTestTargets._

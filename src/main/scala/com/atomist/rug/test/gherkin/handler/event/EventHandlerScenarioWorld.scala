@@ -47,7 +47,7 @@ class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = N
     * (normally a cortex stub)
     * It's hopefully a JavaScriptObject
     */
-  //@ExportFunction(description = "Send and event", readOnly = true)
+  @ExportFunction(description = "Send and event", readOnly = true)
   def sendEvent(e: AnyRef): Unit = {
     val gn = JavaScriptBackedGraphNode.toGraphNode(e).getOrElse(
       throw new IllegalArgumentException(s"Cannot make a GraphNode out of $e")

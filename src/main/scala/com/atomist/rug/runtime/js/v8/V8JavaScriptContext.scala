@@ -43,7 +43,12 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
       mem.allFiles.foreach{ memFile =>
         val fsFile = tempRoot.resolve(memFile.path)
         fsFile.getParent.toFile.mkdirs()
-        Files.copy(memFile.inputStream(), fsFile, StandardCopyOption.REPLACE_EXISTING)
+        val io = memFile.inputStream()
+        try{
+          Files.copy(io, fsFile, StandardCopyOption.REPLACE_EXISTING)
+        }finally{
+          io.close()
+        }
       }
       tempRoot
   }
@@ -57,7 +62,10 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
 
     val path = root.resolve(f.path)
     val more: Seq[JavaScriptMember] =  node.node.require(path.toFile) match {
-      case o: V8Object => o.getKeys.map(k => JavaScriptMember(k, new V8JavaScriptObject(node, o.get(k).asInstanceOf[V8Object])))
+      case o: V8Object =>
+        val mapped: Map[String, AnyRef] = o.getKeys.map(k => (k, o.get(k))).toMap
+        val objects = mapped.filter(p => p._2.isInstanceOf[V8Object])
+        objects.map(p => JavaScriptMember(p._1, new V8JavaScriptObject(node, p._2.asInstanceOf[V8Object]))).toSeq
       case _ => Nil
     }
     exports ++= more

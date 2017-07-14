@@ -3,6 +3,7 @@ package com.atomist.rug.runtime.js.v8
 import java.lang.reflect.Method
 
 import com.atomist.graph.GraphNode
+import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, ScriptObjectBackedTreeNode}
 import com.atomist.rug.spi.ExportFunction
 import com.atomist.tree.TreeNode
@@ -159,6 +160,15 @@ object Proxy {
                 theObject.executeJSFunction("defineProperty", v8pmv, related.nodeName, callback)
               }
             }
+          case _ =>
+        }
+
+        obj match {
+          case n: GraphNode =>
+            val srqlArray = new SquirrelFunction(node,n, true, DefaultTypeRegistry)
+            v8pmv.registerJavaMethod(srqlArray, "$jumpInto")
+            val srqlOne = new SquirrelFunction(node,n, false, DefaultTypeRegistry)
+            v8pmv.registerJavaMethod(srqlOne, "$jumpIntoOne")
           case _ =>
         }
         v8pmv

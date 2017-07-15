@@ -101,6 +101,7 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs], c
 
   protected case class RepoIdentification(owner: String, name: String, branch: Option[String], sha: Option[String])
 
+  @ExposeAsFunction
   def cloneRepo(cloneInfo: AnyRef): ProjectMutableView = {
     val rid = extractRepoId(cloneInfo)
     val cloner = new GitRepositoryCloner(oAuthToken = config.oAuthToken.getOrElse(""))

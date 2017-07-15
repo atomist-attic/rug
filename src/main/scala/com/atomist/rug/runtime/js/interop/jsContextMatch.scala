@@ -15,7 +15,9 @@ case class jsContextMatch(@(ExportFunction @getter)(description = "Root node of 
                           matches: Seq[GraphNode],
                           @(ExportFunction @getter)(description = "The Path Expression Engine", readOnly = true, exposeAsProperty = true)
                           pathExpressionEngine: jsPathExpressionEngine,
+                          @(ExportFunction @getter)(description = "The root context for this team", readOnly = true, exposeAsProperty = true)
                           contextRoot: AnyRef,
+                          @(ExportFunction @getter)(description = "Current team's id", readOnly = true, exposeAsProperty = true)
                           teamId: String) {
 
   override def toString: String =

@@ -26,9 +26,11 @@ object Handlers {
   case class Plan(returningRug: Option[Rug],
                   lifecycle: Seq[LifecycleMessage],
                   local: Seq[LocallyRenderedMessage],
+                  @(ExportFunction @getter)(description = "Plan instructions", readOnly = true, exposeAsProperty = true)
                   instructions: Seq[Plannable],
                   nativeObject: Option[AnyRef] = None) extends Callback {
 
+    @ExportFunction(readOnly = true, description = "Messages associated with this plan", exposeAsProperty = true)
     def messages: Seq[Message] = local ++ lifecycle
 
     override def toDisplay: String = {
@@ -54,7 +56,8 @@ object Handlers {
     * Rendering/correlation is done in the handler
     * Directed & Response messages become these.
     */
-  case class LocallyRenderedMessage(body: String,
+  case class LocallyRenderedMessage(@(ExportFunction @getter)(description = "Message body", readOnly = true, exposeAsProperty = true)
+                                     body: String,
                                     contentType: String,
                                     channelNames: Seq[String] = Nil,
                                     usernames: Seq[String] = Nil,

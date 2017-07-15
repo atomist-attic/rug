@@ -27,6 +27,7 @@ private[v8] object ExceptionEnhancer {
       throw ecmaEx
     }
 
+    ecmaEx.printStackTrace()
     ecmaEx.getFileName match {
       case "<eval>" | null =>
         // Can't add much useful info

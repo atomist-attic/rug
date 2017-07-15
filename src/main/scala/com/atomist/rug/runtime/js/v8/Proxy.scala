@@ -8,6 +8,7 @@ import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, ScriptObjectBackedT
 import com.atomist.rug.spi.ExportFunction
 import com.atomist.tree.TreeNode
 import com.eclipsesource.v8._
+import com.eclipsesource.v8.utils.MemoryManager
 import org.apache.commons.lang3.ClassUtils
 import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.util.ReflectionUtils
@@ -65,7 +66,9 @@ object Proxy {
       j.som.getNativeObject
     case s: String => s
     case v: V8Value => v
-    case o: V8JavaScriptObject => o.getNativeObject
+    case o: V8JavaScriptObject =>
+//      //o.getNativeObject.asInstanceOf[V8Object].release()
+      o.getNativeObject
     case Some(r: AnyRef) => Proxy(node, r)
     case r: AnyRef => Proxy(node, r)
     case x => x.asInstanceOf[AnyRef]
@@ -117,57 +120,69 @@ object Proxy {
         }
         arr
       case _ =>
-        obj.getClass.getMethods.foreach {
-          case m: Method if ReflectionUtils.isObjectMethod(m) => //don't proxy standard stuff
-          case m: Method if exposeAsProperty(m) =>
+        val methods = obj.getClass.getMethods.filter(m => !ReflectionUtils.isObjectMethod(m))
+
+        methods.filter(m => exposeAsProperty(m)).foreach(m => {
+          withMemoryManagement(node, {
             val callback = new V8Object(node.getRuntime)
-            RegisterMethodProxy(callback, node, obj, m, "get")
-            callback.add("configurable", true)
             val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
+            RegisterMethodProxy(callback, node, obj, "get", m)
+            callback.add("configurable", true)
             theObject.executeJSFunction("defineProperty", v8pmv, m.getName, callback)
-          case m: Method if exposeAsFunction(m) =>
-            RegisterMethodProxy(v8pmv, node, obj, m, m.getName)
-          case _ =>
-        }
+          })
+        })
+
+        // for overloaded methods in gherking stuff
+        val grouped = methods.
+          filter(m => exposeAsFunction(m)).
+          groupBy(m => m.getName)
+
+        grouped.foreach(mm => {
+            RegisterMethodProxy(v8pmv, node, obj, mm._2.head.getName, mm._2:_*)
+        })
+
         /**
           * Use getters for fields to so that we don't need to proxy recursively
           */
         obj.getClass.getFields.foreach(f => {
-          val callback = new V8Object(node.getRuntime)
-          callback.registerJavaMethod(new JavaCallback {
-            override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
-              Proxy.ifNeccessary(node, f.get(obj))
-            }
-          }, "get")
-          callback.add("configurable", true)
-          val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
-          theObject.executeJSFunction("defineProperty", v8pmv, f.getName, callback)
-
+          withMemoryManagement(node, {
+            val callback = new V8Object(node.getRuntime)
+            callback.registerJavaMethod(new JavaCallback {
+              override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
+                Proxy.ifNeccessary(node, f.get(obj))
+              }
+            }, "get")
+            callback.add("configurable", true)
+            val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
+            theObject.executeJSFunction("defineProperty", v8pmv, f.getName, callback)
+          })
         })
 
         obj match {
           case n: GraphNode if n.hasTag(TreeNode.Dynamic) =>
-            if(n.nodeName != "value" && n.relatedNodes.forall(p => p.nodeName != "value")){
-              n.relatedNodes.foreach { related =>
-                val callback = new V8Object(node.getRuntime)
-                callback.registerJavaMethod(new JavaCallback {
-                  override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
-                    Proxy.ifNeccessary(node, related)
-                  }
-                }, "get")
-                callback.add("configurable", true)
-                val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
-                theObject.executeJSFunction("defineProperty", v8pmv, related.nodeName, callback)
-              }
+            if (n.nodeName != "value" && n.relatedNodes.forall(p => p.nodeName != "value")) {
+              withMemoryManagement(node, {
+                n.relatedNodes.foreach { related =>
+                  val callback = new V8Object(node.getRuntime)
+                  callback.registerJavaMethod(new JavaCallback {
+                    override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
+                      Proxy.ifNeccessary(node, related)
+                    }
+                  }, "get")
+                  callback.add("configurable", true)
+                  val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
+                  theObject.executeJSFunction("defineProperty", v8pmv, related.nodeName, callback)
+                }
+              })
             }
           case _ =>
         }
 
         obj match {
           case n: GraphNode =>
-            val srqlArray = new SquirrelFunction(node,n, true, DefaultTypeRegistry)
+            val srqlArray = new SquirrelFunction(node, n, true, DefaultTypeRegistry)
             v8pmv.registerJavaMethod(srqlArray, "$jumpInto")
-            val srqlOne = new SquirrelFunction(node,n, false, DefaultTypeRegistry)
+            val srqlOne = new SquirrelFunction(node, n, false, DefaultTypeRegistry)
             v8pmv.registerJavaMethod(srqlOne, "$jumpIntoOne")
           case _ =>
         }
@@ -175,11 +190,18 @@ object Proxy {
     }
   }
 
-  private def isProxyable(o: Any): Boolean = {
-    o match {
-      case o: String => false
-      case o: Integer => false
-      case x => true
+  /**
+    * Release any v8 resources after execution
+    * @param node
+    * @param result
+    * @return
+    */
+  def withMemoryManagement[T](node: NodeWrapper, result: => T): T = {
+    val scope = new MemoryManager(node.getRuntime)
+    try {
+      result
+    } finally {
+      scope.release()
     }
   }
 

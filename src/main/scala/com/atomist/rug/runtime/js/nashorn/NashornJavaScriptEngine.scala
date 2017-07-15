@@ -19,7 +19,7 @@ import jdk.nashorn.internal.runtime.{ECMAException, ScriptRuntime}
 
 import scala.collection.JavaConverters._
 
-object NashornContext {
+object NashornJavaScriptEngine {
 
   /**
     * Function that can initialize a ScriptEngine before use.
@@ -55,10 +55,10 @@ object NashornContext {
   * @param initializer function to initialize the engine:
   *                          for example, binding objects or evaluating standard scripts
   */
-class NashornContext(val rugAs: ArtifactSource,
-                     val atomistConfig: AtomistConfig = DefaultAtomistConfig,
-                     bindings: Bindings = new SimpleBindings(),
-                     initializer: NashornContext.EngineInitializer = NashornContext.redirectConsoleToSysOut)
+class NashornJavaScriptEngine(val rugAs: ArtifactSource,
+                              val atomistConfig: AtomistConfig = DefaultAtomistConfig,
+                              bindings: Bindings = new SimpleBindings(),
+                              initializer: NashornJavaScriptEngine.EngineInitializer = NashornJavaScriptEngine.redirectConsoleToSysOut)
   extends LazyLogging
   with JavaScriptEngineContext
   with JavaScriptUtils{

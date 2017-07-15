@@ -552,12 +552,12 @@ class ProjectContext(ctx: RugContext) extends RugContext {
 
   override def typeRegistry: TypeRegistry = DefaultTypeRegistry
 
-  @ExportFunction(readOnly = true, exposeAsProperty = true, description="Access the path expression engine")
   override def pathExpressionEngine: jsPathExpressionEngine = ctx.pathExpressionEngine
 
   /**
     * Id of the team we're working on behalf of
     */
+
   override def teamId: String = ctx.teamId
 
   /**
@@ -567,7 +567,6 @@ class ProjectContext(ctx: RugContext) extends RugContext {
 
   override def contextRoot(): AnyRef = ctx.contextRoot()
 
-  @ExportFunction(readOnly = true, description = "Load projects from git", exposeAsProperty = true)
   override def gitProjectLoader: AnyRef = new jsGitProjectLoader(ctx.repoResolver)
 
   @ExportFunction(readOnly = true, description = "Get an empty project")

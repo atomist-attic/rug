@@ -8,7 +8,7 @@ import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, JavaScriptBackedGra
 import com.atomist.rug.runtime.js.{JavaScriptObject, RugContext, SimpleContainerGraphNode}
 import com.atomist.rug.spi.Handlers.Instruction.{Command, Edit, Generate}
 import com.atomist.rug.spi.Handlers.Plan
-import com.atomist.rug.spi.TypeRegistry
+import com.atomist.rug.spi.{ExportFunction, TypeRegistry}
 import com.atomist.rug.test.gherkin.{Definitions, GherkinExecutionListener, GherkinRunnerConfig, ScenarioWorld}
 import com.atomist.source.EmptyArtifactSource
 import com.atomist.tree.{TreeMaterializer, TreeNode}
@@ -32,17 +32,21 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
 
   private case class ProjectId(owner: String, repoName: String, sha: String)
 
+  @ExposeAsFunction
   def emptyProject(name: String): ProjectMutableView = {
     new ProjectMutableView(originalBackingObject = EmptyArtifactSource(name = name))
   }
 
+  @ExposeAsFunction
   def projectStartingWith(project: ProjectMutableView): ProjectMutableView = {
     new ProjectMutableView(originalBackingObject = project.currentBackingObject)
   }
 
+  @ExposeAsFunction
   def defineRepo(owner: String, name: String, branchOrSha: String, p: ProjectMutableView): Unit =
     repoResolver.defineRepo(owner, name, branchOrSha, p.currentBackingObject)
 
+  @ExposeAsFunction
   def defineRepo(repoIdentification: AnyRef, p: ProjectMutableView): Unit = {
     val ri = extractRepoId(repoIdentification)
     repoResolver.defineRepo(ri.owner, ri.name, ri.branch.orElse(ri.sha).getOrElse(
@@ -53,6 +57,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   /**
     * Return the editor with the given name or throw an exception
     */
+  @ExposeAsFunction
   def commandHandler(name: String): CommandHandler = {
     rugs match {
       case Some(r) =>
@@ -68,6 +73,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   /**
     * Add a node to the root context
     */
+  @ExposeAsFunction
   def addToRootContext(n: AnyRef): Unit = {
     val gn = JavaScriptBackedGraphNode.toGraphNode(n).getOrElse(
       throw new IllegalArgumentException(s"$n is not a valid GraphNode")
@@ -78,6 +84,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
     }
   }
 
+  @ExposeAsFunction
   def setRootContext(n: AnyRef): Unit = {
     rootContext = n
   }
@@ -113,7 +120,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
     */
   @ExposeAsFunction
   def plan: Any =
-    recordedPlans.values.headOption.map(exposeToJavaScript).orNull
+    recordedPlans.values.headOption.orNull
 
   /**
     * Return the plan recorded for this named handler, or null if not found
@@ -158,6 +165,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
 
     override def treeMaterializer: TreeMaterializer = _treeMaterializer
 
+    @ExportFunction(readOnly = true, exposeAsProperty = true, description="Root node for team's context")
     override def contextRoot(): AnyRef = rootContext
 
   }

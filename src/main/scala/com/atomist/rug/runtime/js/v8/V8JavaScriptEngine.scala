@@ -18,8 +18,8 @@ import scala.collection.mutable.ListBuffer
 /**
   * v8 implementation. Currently a single v8
   */
-class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
-                                val atomistConfig: AtomistConfig = DefaultAtomistConfig)
+class V8JavaScriptEngine(val rugAs: ArtifactSource,
+                         val atomistConfig: AtomistConfig = DefaultAtomistConfig)
   extends JavaScriptEngineContext
   with LazyLogging
   with JavaScriptUtils{
@@ -32,9 +32,7 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
 
   private val exports: ListBuffer[JavaScriptMember] = new ListBuffer[JavaScriptMember]()
 
-  // Require all the Atomist stuff
-
-  // TODO - this is could be expensive!
+  // Extract all the Atomist stuff
 
   private val root = rugAs match {
     case fs: FileSystemArtifactSource => fs.id.rootFile.toPath
@@ -53,13 +51,13 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
       tempRoot
   }
 
+  //eval all the atomist stuff
   atomistContent
     .filter(_ => true, atomistConfig.isJsSource)
     .allFiles.foreach(evaluate)
 
 
   override def evaluate(f: FileArtifact): Unit = {
-
     val path = root.resolve(f.path)
     val more: Seq[JavaScriptMember] =  node.node.require(path.toFile) match {
       case o: V8Object =>
@@ -90,7 +88,7 @@ class V8JavaScriptEngineContext(val rugAs: ArtifactSource,
   }
   override def invokeMember(jsVar: JavaScriptObject, member: String, params: Option[ParameterValues], args: Object*): AnyRef = {
 
-    //val scope = new MemoryManager(node.getRuntime)
+   // val scope = new MemoryManager(node.getRuntime)
     try{
       withEnhancedExceptions{
         if (params.nonEmpty) {

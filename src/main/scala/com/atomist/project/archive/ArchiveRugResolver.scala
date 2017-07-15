@@ -2,8 +2,8 @@ package com.atomist.project.archive
 
 import com.atomist.rug.DuplicateRugException
 import com.atomist.rug.runtime._
-import com.atomist.rug.runtime.js.nashorn.NashornContext
-import com.atomist.rug.runtime.js.nashorn.NashornContext.EngineInitializer
+import com.atomist.rug.runtime.js.nashorn.NashornJavaScriptEngine
+import com.atomist.rug.runtime.js.nashorn.NashornJavaScriptEngine.EngineInitializer
 import com.atomist.rug.runtime.js.{JavaScriptEngineContextFactory, _}
 import com.atomist.source.ArtifactSource
 
@@ -16,7 +16,7 @@ import com.atomist.source.ArtifactSource
   * A None means no resolution!
   */
 class ArchiveRugResolver(graph: Dependency,
-                         engineInitializer: EngineInitializer = NashornContext.redirectConsoleToSysOut) extends RugResolver {
+                         engineInitializer: EngineInitializer = NashornJavaScriptEngine.redirectConsoleToSysOut) extends RugResolver {
 
   private val finders: Seq[JavaScriptRugFinder[_ <: Rug]] = Seq(
     new JavaScriptCommandHandlerFinder(),

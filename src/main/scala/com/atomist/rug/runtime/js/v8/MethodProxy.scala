@@ -7,10 +7,12 @@ import com.eclipsesource.v8._
 
 object RegisterMethodProxy {
 
-  def apply(v8o: V8Object, node: NodeWrapper, obj: AnyRef, method: Method, name: String): Unit = {
-    method.getReturnType match {
-      case c if c.getName == "void" => v8o.registerJavaMethod(new VoidMethodProxy(node, obj, method), name) // ??
-      case _ => v8o.registerJavaMethod(new MethodProxy(node, obj, method), name)
+  def apply(v8o: V8Object, node: NodeWrapper, obj: AnyRef, name: String, methods: Method*): Unit = {
+
+    //we assume that overloaded methods have the same return type!
+    methods.head.getReturnType match {
+      case c if c.getName == "void" => v8o.registerJavaMethod(new VoidMethodProxy(node, obj, methods), name)
+      case _ => v8o.registerJavaMethod(new MethodProxy(node, obj, methods), name)
     }
   }
 }
@@ -20,11 +22,11 @@ object RegisterMethodProxy {
   *
   * @param node
   * @param obj
-  * @param method
+  * @param methods
   */
 class MethodProxy(override val node: NodeWrapper,
                   override val obj: AnyRef,
-                  override val method: Method)
+                  override val methods: Seq[Method])
   extends JavaCallback with V8Proxy {
 
   override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
@@ -36,7 +38,7 @@ class MethodProxy(override val node: NodeWrapper,
 class VoidMethodProxy(
                        override val node: NodeWrapper,
                        override val obj: AnyRef,
-                       override val method: Method)
+                       override val methods: Seq[Method])
   extends JavaVoidCallback with V8Proxy {
 
   override def invoke(receiver: V8Object, parameters: V8Array): Unit = {
@@ -49,11 +51,13 @@ trait V8Proxy {
 
   def obj: AnyRef
 
-  def method: Method
+  def methods: Seq[Method]
 
   def invokeImpl(receiver: V8Object, parameters: V8Array) : AnyRef = {
     try{
       val args = collectParams(parameters)
+      // should be OK
+      val method = methods.filter(m => m.getParameterCount == args.size).head
       val result = args.length match {
         case o if o > 0 => method.invoke(obj, args: _*)
         case _ => method.invoke(obj)
@@ -83,7 +87,7 @@ trait V8Proxy {
           if (o.contains("__object_reference")) {
             node.get(o) match {
               case Some(x) => args.append(x)
-              case None => throw new RuntimeException(s"Could not find a ref while invoking ${method.getName} on $obj")
+              case None => throw new RuntimeException(s"Could not find a ref while invoking ${methods.head.getName} on $obj")
             }
           } else {
             args.append(new V8JavaScriptObject(node, o))

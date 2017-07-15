@@ -5,7 +5,7 @@ import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.common.MissingParametersException
 import com.atomist.rug.runtime.ResponseHandler
 import com.atomist.rug.runtime.RugScopes.Scope
-import com.atomist.rug.runtime.js.nashorn.NashornContext
+import com.atomist.rug.runtime.js.nashorn.NashornJavaScriptEngine
 import com.atomist.rug.runtime.plans._
 import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.spi.Secret

@@ -35,21 +35,13 @@ class GherkinRunner(jsc: JavaScriptEngineContext,
 
   jsc.setMember(DefinitionsObjectName, definitions)
   jsc.atomistContent()
-    .filter(_ => true, DefaultAtomistConfig.isJsTest)
+    .filter(_ => true, jsc.atomistConfig.isJsTest)
     .allFiles
     .foreach(f => {
       jsc.evaluate(f)
     })
 
-//  /**
-//    * Ensure
-//    * @param f1
-//    * @param f2
-//    * @return
-//    */
-//  private def sortByRequire(f1: FileArtifact, f2: FileArtifact) : Boolean = {
-//
-//  }
+
   /**
     * Features found in this archive
     */

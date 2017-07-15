@@ -7,7 +7,7 @@ import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.util.lang.NashornTest
 import org.scalatest.{FlatSpec, Matchers}
 
-class NashornContextTest extends FlatSpec with Matchers  with NashornTest  {
+class NashornJavaScriptEngineTest extends FlatSpec with Matchers  with NashornTest  {
   val SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters: String =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
@@ -42,7 +42,7 @@ class NashornContextTest extends FlatSpec with Matchers  with NashornTest  {
     val tsf = StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters)
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val jsed = RugArchiveReader(as).editors.head.asInstanceOf[JavaScriptProjectEditor]
-    val v1 = jsed.jsc.asInstanceOf[NashornContext].cloneVar(jsed.jsVar.asInstanceOf[NashornJavaScriptObject].som)
+    val v1 = jsed.jsc.asInstanceOf[NashornJavaScriptEngine].cloneVar(jsed.jsVar.asInstanceOf[NashornJavaScriptObject].som)
     v1.setMember("__description", "dude")
     jsed.jsVar.asInstanceOf[NashornJavaScriptObject].som.get("__description") should be ("A nice little editor")
   }

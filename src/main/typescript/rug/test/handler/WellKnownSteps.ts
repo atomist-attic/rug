@@ -15,8 +15,10 @@
  */
 
 import {
-    CommandHandlerScenarioWorld, EventHandlerScenarioWorld, Given, Then, When,
+    CommandHandlerScenarioWorld, EventHandlerScenarioWorld,
 } from "./Core";
+
+import { Given, Then, When } from "./Steps";
 
 // Register well-known steps
 
@@ -45,6 +47,7 @@ Then("no handler fired", (w: EventHandlerScenarioWorld) => {
  * Valid command handler parameters.
  */
 Then("handler parameters were valid", (w: CommandHandlerScenarioWorld) => {
+    console.log("Registering params are valid then");
     return w.invalidParameters() === null;
 });
 

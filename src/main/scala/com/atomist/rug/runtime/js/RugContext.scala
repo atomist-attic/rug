@@ -14,6 +14,7 @@ import com.atomist.tree.{IdentityTreeMaterializer, TreeMaterializer}
   */
 trait RugContext extends ExecutionContext {
 
+  @ExportFunction(readOnly = true, description = "The path expression engine", exposeAsProperty = true)
   def pathExpressionEngine: jsPathExpressionEngine
 
   /**
@@ -24,6 +25,7 @@ trait RugContext extends ExecutionContext {
   /**
     * Id of the team we're working on behalf of
     */
+  @ExportFunction(readOnly = true, description = "Current team id", exposeAsProperty = true)
   def teamId: String
 
   /**
@@ -33,8 +35,10 @@ trait RugContext extends ExecutionContext {
     *         Normally a GraphNode, but detyped to
     *         enable JVM/JS interop
     */
+  @ExportFunction(readOnly = true, exposeAsProperty = true, description="Root node for team's context")
   def contextRoot(): AnyRef
 
+  @ExportFunction(readOnly = true, description = "Load projects from git", exposeAsProperty = true)
   def gitProjectLoader: AnyRef = new jsGitProjectLoader(repoResolver)
 
 }

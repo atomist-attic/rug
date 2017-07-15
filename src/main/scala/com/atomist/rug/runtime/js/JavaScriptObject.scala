@@ -28,7 +28,9 @@ trait JavaScriptObject {
     * @param name
     * @return
     */
-  def createMemberFunction(name: String): AnyRef
+  def createMemberFunction(name: String): AnyRef = {
+    throw new UnsupportedOperationException
+  }
 
   def call(thisArg: AnyRef, args: AnyRef*): AnyRef
 

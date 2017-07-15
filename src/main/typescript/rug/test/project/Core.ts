@@ -15,11 +15,12 @@
  */
 
 import { Project } from "../../model/Project";
+import { EditProject } from "../../operations/ProjectEditor";
+import { PopulateProject } from "../../operations/ProjectGenerator";
 import { Result } from "../Result";
-import { EditProject } from "../../operations/ProjectEditor"
-import { PopulateProject } from "../../operations/ProjectGenerator"
 import { ScenarioWorld } from "../ScenarioWorld";
-
+import { Given, Then, When } from "./Steps";
+import "./WellKnownSteps";
 /**
  * Subinterface of ScenarioWorld specific to
  * scenarios testing project operations
@@ -70,36 +71,6 @@ export interface ProjectScenarioWorld extends ScenarioWorld {
     editorsRun(): number;
 }
 
-// Callback for given and when steps
-type SetupCallback = (Project, ProjectScenarioWorld?, ...args) => void;
-
-type ThenCallback = (Project, ProjectScenarioWorld?, ...args) => Result | boolean | void;
-
-interface Definitions {
-
-    Given(s: string, f: SetupCallback): void;
-
-    When(s: string, f: SetupCallback): void;
-
-    Then(s: string, f: ThenCallback): void;
-
-}
-
-// Registered with Nashorn by the test runner
-declare const com_atomist_rug_test_gherkin_GherkinRunner$_definitions: Definitions;
-
-export function Given(s: string, f: SetupCallback) {
-    com_atomist_rug_test_gherkin_GherkinRunner$_definitions.Given(s, f);
-}
-
-export function When(s: string, f: SetupCallback) {
-    com_atomist_rug_test_gherkin_GherkinRunner$_definitions.When(s, f);
-}
-
-export function Then(s: string, f: ThenCallback) {
-    com_atomist_rug_test_gherkin_GherkinRunner$_definitions.Then(s, f);
-}
-
 /**
  * Convenient assertion if you are not using an assertion framework
  * such as chai
@@ -115,3 +86,5 @@ export function rugAssertEqual(a, b) {
         throw new Error(`Assertion failed: ${a} did not equal ${b}`);
     }
 }
+
+export { Given, Then, When };

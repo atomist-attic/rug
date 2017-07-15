@@ -1,6 +1,7 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param.ParameterValues
+import com.atomist.project.archive.AtomistConfig
 import com.atomist.source.{ArtifactSource, FileArtifact}
 
 /**
@@ -8,6 +9,7 @@ import com.atomist.source.{ArtifactSource, FileArtifact}
   */
 trait JavaScriptEngineContext {
   def evaluate(f: FileArtifact): Unit
+  def atomistConfig: AtomistConfig
   def members(): Seq[JavaScriptMember]
   def rugAs: ArtifactSource
   def invokeMember(jsVar: JavaScriptObject, member: String, params: Option[ParameterValues], args: Object*): AnyRef

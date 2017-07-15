@@ -6,7 +6,7 @@ import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.RugArchiveReader
 import com.atomist.rug.TestUtils.contentOf
 import com.atomist.rug.runtime.SystemEvent
-import com.atomist.rug.runtime.js.nashorn.NashornContext
+import com.atomist.rug.runtime.js.nashorn.NashornJavaScriptEngine
 import com.atomist.rug.runtime.plans._
 import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.spi.Secret

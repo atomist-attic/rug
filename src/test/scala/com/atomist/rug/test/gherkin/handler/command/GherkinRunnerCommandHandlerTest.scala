@@ -4,7 +4,7 @@ import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.{RugArchiveReader, TestUtils}
 import com.atomist.rug.TestUtils._
 import com.atomist.rug.runtime.js.JavaScriptEngineContextFactory
-import com.atomist.rug.runtime.js.nashorn.NashornContext
+import com.atomist.rug.runtime.js.nashorn.NashornJavaScriptEngine
 import com.atomist.rug.test.gherkin.handler.event.EventHandlerTestTargets
 import com.atomist.rug.test.gherkin.{Failed, GherkinRunner, Passed}
 import com.atomist.rug.ts.TypeScriptBuilder

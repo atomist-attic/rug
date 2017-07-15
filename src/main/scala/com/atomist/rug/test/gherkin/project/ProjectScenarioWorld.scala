@@ -34,6 +34,7 @@ class ProjectScenarioWorld(
   /**
     * Return the editor with the given name or throw an exception
     */
+  @ExposeAsFunction
   def editor(name: String): ProjectEditor = {
     rugs match {
       case Some(r) =>
@@ -46,6 +47,7 @@ class ProjectScenarioWorld(
     }
   }
 
+  @ExposeAsFunction
   def setProject(p: ProjectMutableView): Unit = {
     project = p
   }
@@ -54,6 +56,7 @@ class ProjectScenarioWorld(
     * Return the generator with the given name.
     * Throw an exception if it can't be found.
     */
+  @ExposeAsFunction
   def generator(name: String): ProjectGenerator = {
     rugs match {
       case Some(r) =>
@@ -70,12 +73,14 @@ class ProjectScenarioWorld(
     * Edit a project with the given editor, passed in from JavaScript.
     * We expect the JavaScript op to have been populated.
     */
+  @ExposeAsFunction
   def generateWith(generator: ProjectGenerator, projectName: String, params: Any): Unit = {
     val resultAs = generator.generate(projectName, parameters(params), new ProjectContext(ProjectGenerationContext))
     project.updateTo(resultAs)
   }
 
   // For calling from Nashorn which doesn't like default parameter values!
+  @ExposeAsFunction
   def generateWith(generator: ProjectGenerator, projectName: String): Unit = {
     generateWith(generator, projectName, null)
   }
@@ -84,6 +89,7 @@ class ProjectScenarioWorld(
     * Generate a project with the given editor, passed in from JavaScript.
     * We expect the JavaScript op to have been populated.
     */
+  @ExposeAsFunction
   def editWith(editor: ProjectEditor, params: Any): Unit = {
     import scala.util.control.Exception._
 

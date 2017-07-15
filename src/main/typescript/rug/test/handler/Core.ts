@@ -17,8 +17,9 @@
 import { Project } from "../../model/Project";
 import { CommandPlan, EventPlan, Plan } from "../../operations/Handlers";
 import { GraphNode } from "../../tree/PathExpression";
-import { Result } from "../Result";
 import { RepoId, ScenarioWorld } from "../ScenarioWorld";
+import { Given, Then, When } from "./Steps";
+import "./WellKnownSteps";
 
 /**
  * All handler scenario worlds expose the plan,
@@ -112,43 +113,6 @@ export interface EventHandlerScenarioWorld extends HandlerScenarioWorld<EventPla
     sendEvent(n: GraphNode): void;
 }
 
-// Callback for given and when steps
-type SetupCallback = (HandlerScenarioWorld, ...args) => void;
-
-type ThenCallback = (HandlerScenarioWorld?, ...args) => Result | boolean | void;
-
-interface Definitions {
-
-    Given(s: string, f: SetupCallback): void;
-
-    When(s: string, f: SetupCallback): void;
-
-    Then(s: string, f: ThenCallback): void;
-
-}
-
-// Registered with Nashorn by the test runner
-declare const com_atomist_rug_test_gherkin_GherkinRunner$_definitions: Definitions;
-
-export function Given(s: string, f: SetupCallback) {
-    com_atomist_rug_test_gherkin_GherkinRunner$_definitions.Given(s, f);
-}
-
-export function When(s: string, f: SetupCallback) {
-    com_atomist_rug_test_gherkin_GherkinRunner$_definitions.When(s, f);
-}
-
-/**
- * A Then step can return a Result object, containing a result and details,
- * a boolean indicating pass or fail, or void.
- * A successful void return is equivalent to true, while throwing an Error
- * means failure. The void return style allows idiomatic use of assertion frameworks
- * such as chai.
- */
-export function Then(s: string, f: ThenCallback) {
-    com_atomist_rug_test_gherkin_GherkinRunner$_definitions.Then(s, f);
-}
-
 /**
  * Convenient assertion if you are not using an assertion framework
  * such as chai
@@ -164,3 +128,5 @@ export function rugAssertEqual(a, b) {
         throw new Error(`Assertion failed: ${a} did not equal ${b}`);
     }
 }
+
+export { Given, Then, When };

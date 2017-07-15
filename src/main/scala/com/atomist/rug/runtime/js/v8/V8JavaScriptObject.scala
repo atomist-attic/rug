@@ -6,7 +6,8 @@ import com.eclipsesource.v8.{V8Array, V8Function, V8Object, V8Value}
 /**
   * V8 implementation
   */
-class V8JavaScriptObject(node: NodeWrapper, obj: V8Object) extends JavaScriptObject {
+class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
+  extends JavaScriptObject {
 
   override def getNativeObject: AnyRef = obj
 
@@ -44,29 +45,22 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object) extends JavaScriptObj
     }
   }
 
-  /**
-    * Create and return a function that can be called later
-    * which closes over the name
-    *
-    * @param name
-    * @return
-    */
-  override def createMemberFunction(name: String): AnyRef = ???
-
   override def call(thisArg: AnyRef, args: AnyRef*): AnyRef = {
-    obj match {
-      case o: V8Function =>
-        val params = new V8Array(o.getRuntime)
-        args.foreach(a => Proxy.ifNeccessary(node, a) match {
-          case o: java.lang.Boolean => params.push(o)
-          case d: java.lang.Double => params.push(d)
-          case i: java.lang.Integer => params.push(i)
-          case s: String => params.push(s)
-          case v: V8Value => params.push(v)
-          case x => throw new RuntimeException(s"Could not proxy object $x")
-        })
-        o.call(null, params)
-    }
+    Proxy.withMemoryManagement(node, {
+      obj match {
+        case o: V8Function =>
+          val params = new V8Array(o.getRuntime)
+          args.foreach(a => Proxy.ifNeccessary(node, a) match {
+            case o: java.lang.Boolean => params.push(o)
+            case d: java.lang.Double => params.push(d)
+            case i: java.lang.Integer => params.push(i)
+            case s: String => params.push(s)
+            case v: V8Value => params.push(v)
+            case x => throw new RuntimeException(s"Could not proxy object $x")
+          })
+          o.call(null, params)
+      }
+    })
   }
 
   override def isEmpty: Boolean = obj match {
@@ -76,7 +70,7 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object) extends JavaScriptObj
   }
 
   override def values(): Seq[AnyRef] = {
-    keys.map(p => {
+    keys().map(p => {
       obj.get(p) match {
         case o: V8Object => new V8JavaScriptObject(node, o)
         case x => x
@@ -98,8 +92,7 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object) extends JavaScriptObj
   }
 
   override def eval(js: String): AnyRef = {
-    println("Omg")
-    null
+    throw new UnsupportedOperationException
   }
 
   override def entries(): Map[String, AnyRef] = {
@@ -118,19 +111,24 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object) extends JavaScriptObj
     * @return
     */
   private def keys(): Seq[String] = {
-
-    val objKeys = obj.getKeys
-    val json = node.getRuntime.get("Object").asInstanceOf[V8Object]
-    val protoKeys = json.executeJSFunction("getPrototypeOf", obj) match {
-      case p: V8Object if !p.isUndefined =>
-        p.getKeys.filter(protoKey => {
-          json.executeJSFunction("getOwnPropertyDescriptor", p, protoKey) match {
-            case o: V8Object if  !o.isUndefined  && o.contains("get") => false
-            case _ => true
-          }}).toSeq
-      case _ => Nil
+    if(obj.isUndefined){
+      Nil
+    }else{
+      Proxy.withMemoryManagement(node, {
+        val objKeys = obj.getKeys
+        val json = node.getRuntime.get("Object").asInstanceOf[V8Object]
+        val protoKeys = json.executeJSFunction("getPrototypeOf", obj) match {
+          case p: V8Object if !p.isUndefined =>
+            p.getKeys.filter(protoKey => {
+              json.executeJSFunction("getOwnPropertyDescriptor", p, protoKey) match {
+                case o: V8Object if  !o.isUndefined  && o.contains("get") => false
+                case _ => true
+              }}).toSeq
+          case _ => Nil
+        }
+        objKeys ++ protoKeys
+      })
     }
-    objKeys ++ protoKeys
   }
 
   override def toJson(): String = {

@@ -2,8 +2,6 @@ package com.atomist.rug.runtime.js
 
 import java.util.Objects
 
-import scala.util.control.Exception.allCatch
-
 /**
   * Talk to objects in a JavaScriptEngineContext
   */
@@ -42,24 +40,17 @@ trait JavaScriptObject {
 
   def isFunction: Boolean
 
-  def eval(js: String): AnyRef
-
   def entries(): Map[String, AnyRef]
 
-  def keys(all: Boolean = true): Iterable[String]
+  def keys(all: Boolean = true): Seq[String]
 
 
-  def extractProperties(): Map[String, AnyRef] =
-    entries().filter {
-      case (_, value: JavaScriptObject) if !value.isFunction => true
-      case (_, x) if !x.isInstanceOf[JavaScriptObject] => true
-      case _ => false
-    }
+  def extractProperties(): Map[String, AnyRef]
 
   // TODO this is fragile but can't find a Nashorn method to do it
-  private def isNoArgFunction(f: JavaScriptObject): Boolean = {
-    f.isFunction && {
-      val s = f.getNativeObject.toString
+  def isNoArgFunction(): Boolean = {
+    this.isFunction && {
+      val s = this.getNativeObject.toString
       s.startsWith("function ()")
     }
   }
@@ -67,20 +58,7 @@ trait JavaScriptObject {
   /**
     * Return the current state of no-arg methods on this object
     */
-  def extractNoArgFunctionValues(): Map[String, AnyRef] = {
-    val m = entries().flatMap {
-      case (key: String, f: JavaScriptObject) if isNoArgFunction(f) =>
-        // If calling the function throws an exception, discard the value.
-        // This will happen with builder stubs that haven't been fully initialized
-        // Otherwise, use it
-        allCatch.opt(callMember(key))
-          .map(result => {
-            (key, result)
-          })
-      case _ => None
-    }
-    m
-  }
+//  def extractNoArgFunctionValues(): Map[String, AnyRef]
 
   /**
     * Return the given property of the JavaScript object or default value if not found

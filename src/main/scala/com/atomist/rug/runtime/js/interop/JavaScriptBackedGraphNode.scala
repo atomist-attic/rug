@@ -17,12 +17,12 @@ object JavaScriptBackedGraphNode {
       case som: JavaScriptObject if nodeRegistry.alreadyWrapped(som).isDefined =>
         nodeRegistry.alreadyWrapped(som)
       case som: JavaScriptObject =>
-        val relevantPropertiesAndValues: Map[String, Object] =
-          relevantPropertyValues(som)
-        relevantPropertiesAndValues.get(NodeAddressField) match {
-          case None =>
+//        val relevantPropertiesAndValues: Map[String, Object] = relevantPropertyValues(som)
+//        relevantPropertiesAndValues.get(NodeAddressField)
+        som.getMember(NodeAddressField) match {
+          case UNDEFINED =>
             Some(new JavaScriptBackedGraphNode(som, nodeRegistry))
-          case Some(address: String) =>
+          case address: String =>
             Some(new JavaScriptBackedAddressableGraphNode(som, nodeRegistry, address))
           case x =>
             val address = Objects.toString(x)
@@ -34,12 +34,12 @@ object JavaScriptBackedGraphNode {
     result
   }
 
-  private[interop] def relevantPropertyValues(som: JavaScriptObject): Map[String, Object] = {
-    (som.extractProperties() ++
-      som.extractNoArgFunctionValues())
-      // Null properties don't match path expressions, so suppress them
-      .filter(_._2 != null)
-  }
+//  private[interop] def relevantPropertyValues(som: JavaScriptObject): Map[String, Object] = {
+//    (som.extractProperties() ++
+//      som.extractNoArgFunctionValues())
+//      // Null properties don't match path expressions, so suppress them
+//      .filter(_._2 != null)
+//  }
 
   val NodeIdField = "nodeId"
   val NodeNameField = "nodeName"
@@ -85,38 +85,57 @@ class JavaScriptBackedGraphNode(val scriptObject: JavaScriptObject,
                                 nodeRegistry: NodeRegistry)
   extends GraphNode {
 
-  protected val relevantPropertiesAndValues: Map[String, AnyRef] = relevantPropertyValues(scriptObject)
+ // protected val relevantPropertiesAndValues: Map[String, AnyRef] = relevantPropertyValues(scriptObject)
 
-  val nodeId: Option[String] = relevantPropertiesAndValues.get(NodeIdField).map(id => "" + id)
+  val nodeId: Option[String] = scriptObject.getMember(NodeIdField) match {
+    case UNDEFINED => None
+    case x: String => Some(x)
+    case o: AnyRef => Some(Objects.toString(o))
+    case _ => None
+  }
+
   nodeRegistry.register(this)
 
   private val traversableEdges: Map[String, Seq[GraphNode]] =
-    relevantPropertiesAndValues.keys
+    scriptObject.keys()
       .map(key => (key, toNode(key)))
       .toMap
 
-  override def nodeName: String = relevantPropertiesAndValues.get(NodeNameField) match {
-    case None => ""
-    case Some(s: String) => s
+  override def nodeName: String = scriptObject.getMember(NodeNameField) match {
+    case UNDEFINED => ""
+    case s: String => s
+    case fn: JavaScriptObject if fn.isNoArgFunction()
+      => fn.call(scriptObject).toString
     case x => Objects.toString(x)
   }
 
   override def nodeTags: Set[String] = {
-    relevantPropertiesAndValues.get("nodeTags") match {
-      case Some(som: JavaScriptObject) if som.isSeq =>
-        som.values().map(Objects.toString(_)).toSet
+    scriptObject.getMember("nodeTags") match {
+      case som: JavaScriptObject if som.isSeq =>
+        som.values().map {
+          case o: JavaScriptObject if o.isNoArgFunction() => o.call("ohyeah").toString
+          case x => Objects.toString(x)
+        }.toSet
+      case som: JavaScriptObject if som.isNoArgFunction() =>
+        som.call(scriptObject) match {
+          case som: JavaScriptObject if som.isSeq =>
+            som.values().map {
+              case o: JavaScriptObject if o.isNoArgFunction() => o.call("ohyeah").toString
+              case x => Objects.toString(x)
+            }.toSet
+          case _ => Set()
+        }
       case _ => Set()
     }
   }
 
-  protected def propertyMap: Map[String, Any] = relevantPropertiesAndValues
-
   override lazy val relatedNodes: Seq[GraphNode] =
-    relevantPropertiesAndValues.keySet.diff(Set(NodeNameField, NodeTagsField, NodeIdField))
+    scriptObject.keys().toSet.diff(Set(NodeNameField, NodeTagsField, NodeIdField))
       .flatMap(toNode)
       .toSeq
 
-  override lazy val relatedNodeNames: Set[String] = relatedNodes.map(_.nodeName).toSet
+  override lazy val relatedNodeNames: Set[String] =
+    relatedNodes.map(_.nodeName).toSet
 
   override def relatedNodeTypes: Set[String] = relatedNodes.flatMap(_.nodeTags).toSet
 
@@ -143,18 +162,24 @@ class JavaScriptBackedGraphNode(val scriptObject: JavaScriptObject,
       }
     }
 
-    relevantPropertiesAndValues.get(key) match {
-      case None => Nil
-      case Some(s: String) => Seq(SimpleTerminalTreeNode(key, s, Set()))
-      case Some(som: JavaScriptObject) if som.isSeq =>
+    scriptObject.getMember(key) match {
+      case UNDEFINED => Nil
+      case s: String => Seq(SimpleTerminalTreeNode(key, s, Set()))
+      case fn: JavaScriptObject if fn.isNoArgFunction() =>
+        fn.call(scriptObject) match {
+          case UNDEFINED => Nil
+          case som: JavaScriptObject => Seq(nodify(som))
+          case e =>
+            val v = Objects.toString(e)
+            Seq(SimpleTerminalTreeNode(key, v, Set()))
+        }
+      case som: JavaScriptObject if som.isSeq =>
         som.values().collect {
           case s: JavaScriptObject => nodify(s)
         }
-      case Some(som: JavaScriptObject) =>
+      case som: JavaScriptObject =>
         Seq(nodify(som))
-      case Some(UNDEFINED) =>
-        Nil
-      case Some(x) =>
+      case x =>
         val v = Objects.toString(x)
         Seq(SimpleTerminalTreeNode(key, v, Set()))
     }

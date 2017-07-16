@@ -83,8 +83,6 @@ private[nashorn] class NashornJavaScriptObject(val som: ScriptObjectMirror)
     convert(som.call(thisArg, wrapped:_*))
   }
 
-  override def eval(js: String): AnyRef = convert(som.eval(js))
-
   override def getNativeObject: AnyRef = som
 
   /**
@@ -125,7 +123,33 @@ private[nashorn] class NashornJavaScriptObject(val som: ScriptObjectMirror)
 
   override def toJson(): String = JsonUtils.toJsonStr(som)
 
-  override def keys(all: Boolean): Iterable[String] = {
+  override def keys(all: Boolean): Seq[String] = {
     som.getOwnKeys(all)
   }
+
+ override def extractProperties(): Map[String, AnyRef] =
+    entries().filter {
+      case (_, value: JavaScriptObject) if !value.isFunction => true
+      case (_, x) if !x.isInstanceOf[JavaScriptObject] => true
+      case _ => false
+    }
+
+
+  /**
+    * Return the current state of no-arg methods on this object
+    */
+//  override def extractNoArgFunctionValues(): Map[String, AnyRef] = {
+//    val m = entries().flatMap {
+//      case (key: String, f: JavaScriptObject) if isNoArgFunction(f) =>
+//        // If calling the function throws an exception, discard the value.
+//        // This will happen with builder stubs that haven't been fully initialized
+//        // Otherwise, use it
+//        allCatch.opt(callMember(key))
+//          .map(result => {
+//            (key, result)
+//          })
+//      case _ => None
+//    }
+//    m
+//  }
 }

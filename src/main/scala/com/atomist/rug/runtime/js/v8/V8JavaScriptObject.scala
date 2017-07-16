@@ -58,7 +58,12 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
             case v: V8Value => params.push(v)
             case x => throw new RuntimeException(s"Could not proxy object $x")
           })
-          o.call(null, params) match {
+          val thisV8Object = thisArg match {
+            case o: V8Object => o
+            case o: JavaScriptObject => o.getNativeObject.asInstanceOf[V8Object]
+            case _ => null
+          }
+          o.call(thisV8Object, params) match {
             case x: V8Object if !x.isUndefined => node.get(x) match {
               case Some(jvmObj) => jvmObj
               case _ => new V8JavaScriptObject(node, x)
@@ -98,10 +103,6 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
     case _ => false
   }
 
-  override def eval(js: String): AnyRef = {
-    throw new UnsupportedOperationException
-  }
-
   override def entries(): Map[String, AnyRef] = {
     keys().map { key =>
       obj.get(key) match {
@@ -111,43 +112,63 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
     }.toMap
   }
 
-  /**
-    * Because V8 doesn't return a prototypes properties
-    * when calling getKeys
-    *
-    * @return
-    */
-  private def keys(): Seq[String] = {
-    if(obj.isUndefined){
-      Nil
-    }else{
-      Proxy.withMemoryManagement(node, {
-        val objKeys = obj.getKeys
-        val json = node.getRuntime.get("Object").asInstanceOf[V8Object]
-        val protoKeys = json.executeJSFunction("getPrototypeOf", obj) match {
-          case p: V8Object if !p.isUndefined =>
-            p.getKeys.filter(protoKey => {
-              json.executeJSFunction("getOwnPropertyDescriptor", p, protoKey) match {
-                case o: V8Object if  !o.isUndefined  && o.contains("get") => false
-                case _ => true
-              }}).toSeq
-          case _ => Nil
-        }
-        objKeys ++ protoKeys
-      })
-    }
-  }
-
   override def toJson(): String = {
     val json = node.getRuntime.get("JSON").asInstanceOf[V8Object]
     json.executeJSFunction("stringify", obj).asInstanceOf[String]
   }
 
-  override def keys(all: Boolean): Iterable[String] = {
-    if(all){
-      keys()
+  override def keys(all: Boolean): Seq[String] = {
+    if(obj.isUndefined){
+      Nil
     }else{
-      obj.getKeys
+      Proxy.withMemoryManagement(node, {
+        val objKeys = obj.getKeys
+        if(all && !obj.isInstanceOf[V8Array] && !obj.isInstanceOf[V8Function]){
+          val json = node.getRuntime.get("Object").asInstanceOf[V8Object]
+          val protoKeys = json.executeJSFunction("getPrototypeOf", obj) match {
+            case p: V8Object if !p.isUndefined =>
+              p.getKeys.filter(protoKey => {
+                json.executeJSFunction("getOwnPropertyDescriptor", p, protoKey) match {
+                  case o: V8Object if  !o.isUndefined  && o.contains("get") => false
+                  case _ => true
+                }}).toSeq
+            case _ => Nil
+          }
+          objKeys ++ protoKeys
+        }else{
+          objKeys
+        }
+      })
     }
   }
+
+  /**
+    * Return "fields" only
+    * @return
+    */
+  override def extractProperties(): Map[String, AnyRef] =
+    entries().filter {
+      case (_, value: JavaScriptObject) if !value.isFunction => true
+      case (_, x) if !x.isInstanceOf[JavaScriptObject] => true
+      case _ => false
+    }
+
+
+//
+//  /**
+//    * Return the current state of no-arg methods on this object
+//    */
+//  override def extractNoArgFunctionValues(): Map[String, AnyRef] = {
+//    entries().flatMap {
+//      case (key: String, f: JavaScriptObject) if isNoArgFunction(f) =>
+//        // If calling the function throws an exception, discard the value.
+//        // This will happen with builder stubs that haven't been fully initialized
+//        // Otherwise, use it
+//        allCatch.opt(callMember(key))
+//          .map(result => {
+//            (key, result)
+//          })
+//      case _ => None
+//    }
+//  }
 }

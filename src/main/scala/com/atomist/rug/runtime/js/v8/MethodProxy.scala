@@ -105,7 +105,7 @@ trait V8Proxy {
   def release(parameters: V8Array) {
     for (i <- 0 to parameters.length()) {
       parameters.get(i) match {
-        case o: Releasable => o.release()
+        case o: Releasable => // o.release()
         case _ =>
       }
     }

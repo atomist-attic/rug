@@ -201,7 +201,7 @@ object Proxy {
     try {
       result
     } finally {
-      scope.release()
+      //scope.release()
     }
   }
 

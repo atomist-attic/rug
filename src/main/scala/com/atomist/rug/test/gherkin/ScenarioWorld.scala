@@ -1,5 +1,7 @@
 package com.atomist.rug.test.gherkin
 
+import java.lang.reflect.InvocationTargetException
+
 import com.atomist.param.{ParameterValues, SimpleParameterValues}
 import com.atomist.project.archive.Rugs
 import com.atomist.project.common.InvalidParametersException
@@ -12,6 +14,7 @@ import com.atomist.rug.ts.{CortexTypeGenerator, DefaultTypeGeneratorConfig}
 import com.atomist.source.file.NamedFileSystemArtifactSourceIdentifier
 import com.atomist.source.git.FileSystemGitArtifactSource
 import com.atomist.util.GitRepositoryCloner
+import com.eclipsesource.v8.V8ScriptExecutionException
 
 import scala.util.{Failure, Success, Try}
 
@@ -61,11 +64,10 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs], c
 
   /**
     * As above
-    * @param msg
     * @param cause
     */
-  def abort(msg: String, cause: Throwable): Unit = {
-    abortedBy = Some(msg)
+  def abort(cause: Throwable): Unit = {
+    abortedBy = Some(cause.getMessage)
     abortedCause = Some(cause)
   }
 

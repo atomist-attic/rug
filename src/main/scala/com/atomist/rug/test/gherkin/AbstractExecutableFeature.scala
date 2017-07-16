@@ -1,10 +1,13 @@
 package com.atomist.rug.test.gherkin
 
+import java.lang.reflect.InvocationTargetException
+
 import com.atomist.graph.GraphNode
 import com.atomist.project.archive.Rugs
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.rug.runtime.js.nashorn.jsSafeCommittingProxy
 import com.atomist.rug.runtime.js.{JavaScriptObject, UNDEFINED}
+import com.eclipsesource.v8.V8ScriptExecutionException
 import com.typesafe.scalalogging.LazyLogging
 import gherkin.ast.{ScenarioDefinition, Step}
 
@@ -110,7 +113,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
           case Left(t) =>
             listeners.foreach(_.stepFailed(step, t))
             logger.error(t.getMessage, t)
-            world.abort(t.getMessage,t)
+            world.abort(t)
             None
           case _ =>
             None
@@ -127,7 +130,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
       case Some(som) =>
         callFunction(som, world) match {
           case Left(t) =>
-            world.abort(t.getMessage, t)
+            world.abort(t)
             listeners.foreach(_.stepFailed(step, t))
             logger.error(t.getMessage, t)
             None
@@ -141,7 +144,6 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
 
   // Call a JavaScriptObject function with appropriate error handling
   private def callFunction(sm: StepMatch, world: ScenarioWorld): Either[Throwable, Object] = {
-    import scala.util.control.Exception._
     val target = world.target
     // Only include the target if it's different from the world.
     val fixedParams: Seq[AnyRef] = target match {
@@ -150,7 +152,16 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
     }
     val args = fixedParams ++ sm.args
 
-    allCatch.either(sm.jsVar.call("apply", args:_*))
+    try{
+      Right(sm.jsVar.call("apply", args:_*))
+    }catch {
+      // TODO really needs to be in the particular JS engine
+      case v: V8ScriptExecutionException => v.getCause match {
+        case i: InvocationTargetException => Left(i.getTargetException)
+        case e => Left(e)
+      }
+      case x: Throwable => Left(x)
+    }
   }
 
 }

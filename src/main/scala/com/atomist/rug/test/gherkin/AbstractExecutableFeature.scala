@@ -158,7 +158,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
       // TODO really needs to be in the particular JS engine
       case v: V8ScriptExecutionException => v.getCause match {
         case i: InvocationTargetException => Left(i.getTargetException)
-        case e => Left(e)
+        case _ => Left(v)
       }
       case x: Throwable => Left(x)
     }

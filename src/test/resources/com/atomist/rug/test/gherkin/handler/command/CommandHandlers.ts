@@ -91,6 +91,7 @@ class GoesOffGraph implements HandleCommand {
         const findPerson = "/Commit/Person()[@name='Ebony']"
         eng.with<node.Person>(ctx.contextRoot, findPerson, peep => {
             // Deliberate error should throw exception
+            console.log(JSON.stringify(peep))
             peep.gitHubId.id
             // console.log(`Adding message with person name=${peep.name},obj=${peep}`)
             result.add(new ResponseMessage(peep.name))

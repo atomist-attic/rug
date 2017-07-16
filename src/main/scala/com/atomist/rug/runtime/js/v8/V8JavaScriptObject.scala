@@ -59,8 +59,12 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
             case x => throw new RuntimeException(s"Could not proxy object $x")
           })
           o.call(null, params) match {
-            case u: V8Object if u.isUndefined => UNDEFINED
-            case x => x
+            case x: V8Object if !x.isUndefined => node.get(x) match {
+              case Some(jvmObj) => jvmObj
+              case _ => new V8JavaScriptObject(node, x)
+            }
+            case _: V8Object => UNDEFINED
+            case o => o
           }
       }
     })

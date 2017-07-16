@@ -6,8 +6,9 @@ import com.atomist.rug.test.gherkin._
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.rug.{RugArchiveReader, TestUtils}
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.util.lang.NashornTest
 import gherkin.ast.ScenarioDefinition
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{FlatSpec, Ignore, Matchers}
 
 class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 

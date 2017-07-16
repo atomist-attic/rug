@@ -108,6 +108,7 @@ class ProjectScenarioWorld(
   }
 
   // For calling from nashorn which doesn't like default parameter values!
+  @ExposeAsFunction
   def editWith(editor: ProjectEditor): Unit = {
     editWith(editor, null)
   }

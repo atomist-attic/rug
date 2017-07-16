@@ -50,6 +50,9 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
           case "Then " if !world.aborted =>
             Some(runThen(world, step))
           case "Then " if world.aborted =>
+            if(world.abortedCause.nonEmpty){
+              world.abortedCause.get.printStackTrace()
+            }
             Some(AssertionResult(step.getText,
               Failed(s"Scenario aborted: Could not evaluate: [${world.abortMessage}]", world.abortedCause)))
           case _ =>

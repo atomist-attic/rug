@@ -20,14 +20,28 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
   }
 
   override def getMember(name: String): AnyRef = {
-    obj match {
-      case u: V8Object if u.isUndefined => UNDEFINED
-      case o: V8Object => o.get(name) match {
-        case u: V8Object if u.isUndefined => UNDEFINED
-        case x: V8Object => new V8JavaScriptObject(node, x)
+    // because obj.get is sometimes broken???!?!?!?
+    if(obj.isUndefined){
+      UNDEFINED
+    }else{
+      obj.get(name) match {
+        case o: V8Object if o.isUndefined =>
+          val obj = node.getRuntime.get("Object").asInstanceOf[V8Object]
+          obj.executeJSFunction("getPrototypeOf", obj) match {
+            case p: V8Object if !p.isUndefined =>
+              p.get(name) match {
+                case o: V8Object if !o.isUndefined => new V8JavaScriptObject(node, o)
+                case u: V8Object if u.isUndefined => UNDEFINED
+                case null => null
+                case x => x
+              }
+            case _ => UNDEFINED
+          }
+
+        case o: V8Object if !o.isUndefined => new V8JavaScriptObject(node, o)
+        case null => null
         case x => x
       }
-      case _ => UNDEFINED
     }
   }
 
@@ -112,7 +126,7 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
 
   override def values(): Seq[AnyRef] = {
     keys().map(p => {
-      obj.get(p) match {
+      getMember(p) match {
         case o: V8Object => new V8JavaScriptObject(node, o)
         case x => x
       }
@@ -151,7 +165,7 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
 
   override def entries(): Map[String, AnyRef] = {
     keys().map { key =>
-      obj.get(key) match {
+      getMember(key) match {
         case o: V8Object => (key, new V8JavaScriptObject(node, o))
         case eh => (key, eh)
       }

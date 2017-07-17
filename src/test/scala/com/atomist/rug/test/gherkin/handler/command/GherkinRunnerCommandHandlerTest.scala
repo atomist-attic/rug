@@ -1,15 +1,14 @@
 package com.atomist.rug.test.gherkin.handler.command
 
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
-import com.atomist.rug.{RugArchiveReader, TestUtils}
 import com.atomist.rug.TestUtils._
 import com.atomist.rug.runtime.js.JavaScriptEngineContextFactory
-import com.atomist.rug.runtime.js.nashorn.NashornJavaScriptEngine
 import com.atomist.rug.test.gherkin.handler.event.EventHandlerTestTargets
 import com.atomist.rug.test.gherkin.{Failed, GherkinRunner, Passed}
 import com.atomist.rug.ts.TypeScriptBuilder
+import com.atomist.rug.{RugArchiveReader, TestUtils}
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource}
-import org.scalatest.{FlatSpec, Ignore, Matchers}
+import org.scalatest.{FlatSpec, Matchers}
 
 class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
 
@@ -169,9 +168,7 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
           case Failed(msg, (Some(t))) => t.printStackTrace()
           case _ =>
         }
-
         fail(s"Unexpected: $wtf")
     }
   }
-
 }

@@ -38,7 +38,7 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
   override def callMember(name: String, args: AnyRef*): AnyRef = {
 
     val proxied = args.map(a => Proxy.ifNeccessary(node, a))
-    obj.asInstanceOf[V8Object].executeJSFunction(name, proxied:_*) match {
+    obj.asInstanceOf[V8Object].executeJSFunction(name, proxied: _*) match {
       case u: V8Object if u.isUndefined => UNDEFINED
       case o: V8Object => new V8JavaScriptObject(node, o)
       case x => x
@@ -82,22 +82,27 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
   }
 
   override def keys(all: Boolean): Seq[String] = {
-   val allkeys: Seq[String] = (obj, all) match {
+    val allkeys: Seq[String] = (obj, all) match {
       case (u, _) if u.isUndefined => Nil
       case (o, true) if !obj.isInstanceOf[V8Array] && !obj.isInstanceOf[V8Function] => {
-        val objKeys =  obj.getKeys
-
-          val json = node.getRuntime.get("Object").asInstanceOf[V8Object]
-          val protoKeys = json.executeJSFunction("getPrototypeOf", obj) match {
-            case p: V8Object if !p.isUndefined =>
-              p.getKeys.filter(protoKey => {
-                json.executeJSFunction("getOwnPropertyDescriptor", p, protoKey) match {
-                  case o: V8Object if  !o.isUndefined  && o.contains("get") => false
-                  case _ => true
-                }}).toSeq
-            case _ => Nil
-          }
-          objKeys ++ protoKeys
+        val objKeys = obj.getKeys
+        val json = node.getRuntime.get("Object").asInstanceOf[V8Object]
+        val protoKeys = json.executeJSFunction("getPrototypeOf", obj) match {
+          case p: V8Object if !p.isUndefined =>
+            p.getKeys.filter(protoKey => {
+              json.executeJSFunction("getOwnPropertyDescriptor", p, protoKey) match {
+                case o: V8Object if !o.isUndefined && o.contains("get") =>
+                  if(obj.contains(s"_$protoKey")) {
+                    true // this is one of our cheeky stub getters - we want to know about it
+                  }else{
+                    false
+                  }
+                case _ => true
+              }
+            }).toSeq
+          case _ => Nil
+        }
+        objKeys ++ protoKeys
       }
       case _ => obj.getKeys
     }
@@ -134,6 +139,7 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
 
   /**
     * Return "fields" only
+    *
     * @return
     */
   override def extractProperties(): Map[String, AnyRef] =
@@ -153,21 +159,21 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
   }
 
 
-//
-//  /**
-//    * Return the current state of no-arg methods on this object
-//    */
-//  override def extractNoArgFunctionValues(): Map[String, AnyRef] = {
-//    entries().flatMap {
-//      case (key: String, f: JavaScriptObject) if isNoArgFunction(f) =>
-//        // If calling the function throws an exception, discard the value.
-//        // This will happen with builder stubs that haven't been fully initialized
-//        // Otherwise, use it
-//        allCatch.opt(callMember(key))
-//          .map(result => {
-//            (key, result)
-//          })
-//      case _ => None
-//    }
-//  }
+  //
+  //  /**
+  //    * Return the current state of no-arg methods on this object
+  //    */
+  //  override def extractNoArgFunctionValues(): Map[String, AnyRef] = {
+  //    entries().flatMap {
+  //      case (key: String, f: JavaScriptObject) if isNoArgFunction(f) =>
+  //        // If calling the function throws an exception, discard the value.
+  //        // This will happen with builder stubs that haven't been fully initialized
+  //        // Otherwise, use it
+  //        allCatch.opt(callMember(key))
+  //          .map(result => {
+  //            (key, result)
+  //          })
+  //      case _ => None
+  //    }
+  //  }
 }

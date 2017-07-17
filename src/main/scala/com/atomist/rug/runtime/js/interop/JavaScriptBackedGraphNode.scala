@@ -163,13 +163,20 @@ class JavaScriptBackedGraphNode(val scriptObject: JavaScriptObject,
     }
 
     scriptObject.getMember(key) match {
-      case UNDEFINED => Nil
+      case UNDEFINED | null => Nil
       case s: String => Seq(SimpleTerminalTreeNode(key, s, Set()))
       case fn: JavaScriptObject if fn.isNoArgFunction() =>
         fn.call(scriptObject) match {
           case UNDEFINED => Nil
-          case som: JavaScriptObject =>
+          case som: JavaScriptObject if !som.isSeq =>
             Seq(nodify(som))
+          case som: JavaScriptObject if som.isSeq =>
+            som.values().collect {
+              case s: JavaScriptObject => nodify(s)
+              case e =>
+                val v = Objects.toString(e)
+                SimpleTerminalTreeNode(key, v, Set())
+            }
           case e =>
             val v = Objects.toString(e)
             Seq(SimpleTerminalTreeNode(key, v, Set()))
@@ -178,8 +185,10 @@ class JavaScriptBackedGraphNode(val scriptObject: JavaScriptObject,
         som.values().collect {
           case s: JavaScriptObject => nodify(s)
         }
-      case som: JavaScriptObject =>
+      case som: JavaScriptObject if !som.isFunction =>
         Seq(nodify(som))
+      case som: JavaScriptObject if som.isFunction =>
+        Nil
       case x =>
         val v = Objects.toString(x)
         Seq(SimpleTerminalTreeNode(key, v, Set()))

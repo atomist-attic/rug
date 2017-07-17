@@ -176,7 +176,7 @@ object Proxy {
                         }
                       }
                     }, "get")
-                    callback.add("configurable", false)
+                    callback.add("configurable", true)
                     val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
                     theObject.executeJSFunction("defineProperty", v8pmv, related.nodeName, callback)
                 }

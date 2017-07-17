@@ -92,9 +92,9 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
             p.getKeys.filter(protoKey => {
               json.executeJSFunction("getOwnPropertyDescriptor", p, protoKey) match {
                 case o: V8Object if !o.isUndefined && o.contains("get") =>
-                  if(obj.contains(s"_$protoKey")) {
+                  if (obj.contains(s"_$protoKey")) {
                     true // this is one of our cheeky stub getters - we want to know about it
-                  }else{
+                  } else {
                     false
                   }
                 case _ => true

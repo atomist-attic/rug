@@ -125,6 +125,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   /**
     * Return the plan recorded for this named handler, or null if not found
     */
+  @ExposeAsFunction
   def planFor(handlerName: String): Plan =
     recordedPlans.get(handlerName).orNull
 

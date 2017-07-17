@@ -96,7 +96,7 @@ class JavaScriptBackedGraphNode(val scriptObject: JavaScriptObject,
 
   nodeRegistry.register(this)
 
-  private val traversableEdges: Map[String, Seq[GraphNode]] =
+  def traversableEdges: Map[String, Seq[GraphNode]] =
     scriptObject.keys()
       .map(key => (key, toNode(key)))
       .toMap

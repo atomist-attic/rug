@@ -4,7 +4,7 @@ import java.lang.reflect.Method
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, ScriptObjectBackedTreeNode}
+import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, JavaScriptBackedGraphNode, ScriptObjectBackedTreeNode}
 import com.atomist.rug.spi.ExportFunction
 import com.atomist.tree.{TerminalTreeNode, TreeNode}
 import com.eclipsesource.v8._
@@ -67,7 +67,7 @@ object Proxy {
     case s: String => s
     case v: V8Value => v
     case o: V8JavaScriptObject =>
-//      //o.getNativeObject.asInstanceOf[V8Object].release()
+      //      //o.getNativeObject.asInstanceOf[V8Object].release()
       o.getNativeObject
     case Some(r: AnyRef) => Proxy(node, r)
     case r: AnyRef => Proxy(node, r)
@@ -138,7 +138,7 @@ object Proxy {
           groupBy(m => m.getName)
 
         grouped.foreach(mm => {
-            RegisterMethodProxy(v8pmv, node, obj, mm._2.head.getName, mm._2:_*)
+          RegisterMethodProxy(v8pmv, node, obj, mm._2.head.getName, mm._2: _*)
         })
 
         /**
@@ -162,20 +162,55 @@ object Proxy {
           case n: GraphNode if n.hasTag(TreeNode.Dynamic) =>
             if (n.nodeName != "value" && n.relatedNodes.forall(p => p.nodeName != "value")) {
               withMemoryManagement(node, {
-                n.relatedNodes.foreach { related =>
-                  val callback = new V8Object(node.getRuntime)
-                  callback.registerJavaMethod(new JavaCallback {
-                    override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
-                      related match {
-                        case t: TerminalTreeNode => Proxy.ifNeccessary(node, t.value)
-                        case _ => Proxy.ifNeccessary(node, related)
+                n.relatedNodes.foreach {
+                  case related: TerminalTreeNode =>
+                    //just make sure the value is there
+                    Proxy.addIfNeccessary(v8pmv, node, related.nodeName, related.value)
+                  case related =>
+                    val callback = new V8Object(node.getRuntime)
+                    callback.registerJavaMethod(new JavaCallback {
+                      override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
+                        related match {
+                          case t: TerminalTreeNode => Proxy.ifNeccessary(node, t.value)
+                          case _ => Proxy.ifNeccessary(node, related)
+                        }
                       }
+                    }, "get")
+                    callback.add("configurable", false)
+                    val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
+                    theObject.executeJSFunction("defineProperty", v8pmv, related.nodeName, callback)
+                }
 
+                n match {
+                  case js: JavaScriptBackedGraphNode =>
+                    js.traversableEdges.foreach {
+                      case (edge, nodes) if nodes.exists(_.isInstanceOf[TerminalTreeNode]) && !v8pmv.contains(edge) =>
+                        Proxy.addIfNeccessary(v8pmv, node, edge, nodes)
+                      case (edge, nodes) if !v8pmv.contains(edge) =>
+                        js.scriptObject.getMember(edge) match {
+                          case o: V8JavaScriptObject if !o.isFunction =>
+                            val callback = new V8Object(node.getRuntime)
+                            callback.registerJavaMethod(new JavaCallback {
+                              override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
+                                nodes match {
+                                  case Seq(t: TerminalTreeNode) => Proxy.ifNeccessary(node, t.value)
+                                  case _ =>
+                                    if(o.isSeq){
+                                      Proxy.ifNeccessary(node, nodes)
+                                    }else{
+                                      Proxy.ifNeccessary(node, nodes.head)
+                                    }
+                                }
+                              }
+                            }, "get")
+                            callback.add("configurable", true)
+                            val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
+                            theObject.executeJSFunction("defineProperty", v8pmv, edge, callback)
+                          case _ =>
+                        }
+                      case _ =>
                     }
-                  }, "get")
-                  callback.add("configurable", true)
-                  val theObject = node.getRuntime.get("Object").asInstanceOf[V8Object]
-                  theObject.executeJSFunction("defineProperty", v8pmv, related.nodeName, callback)
+                  case _ =>
                 }
               })
             }
@@ -196,6 +231,7 @@ object Proxy {
 
   /**
     * Release any v8 resources after execution
+    *
     * @param node
     * @param result
     * @return

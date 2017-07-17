@@ -41,8 +41,11 @@ object Handlers {
   trait Message extends Callback {}
 
   case class LifecycleMessage(
+                               @(ExportFunction @getter)(description = "Message node", readOnly = true, exposeAsProperty = true)
                                node: GraphNode,
+                               @(ExportFunction @getter)(description = "Message actions", readOnly = true, exposeAsProperty = true)
                                actions: Seq[Presentable],
+                               @(ExportFunction @getter)(description = "Message lifecycleid", readOnly = true, exposeAsProperty = true)
                                lifecycleId: String)
     extends Callback
       with Message {
@@ -58,11 +61,17 @@ object Handlers {
     */
   case class LocallyRenderedMessage(@(ExportFunction @getter)(description = "Message body", readOnly = true, exposeAsProperty = true)
                                      body: String,
+                                    @(ExportFunction @getter)(description = "Message contentType", readOnly = true, exposeAsProperty = true)
                                     contentType: String,
+                                    @(ExportFunction @getter)(description = "Message channel names", readOnly = true, exposeAsProperty = true)
                                     channelNames: Seq[String] = Nil,
+                                    @(ExportFunction @getter)(description = "Message usernames", readOnly = true, exposeAsProperty = true)
                                     usernames: Seq[String] = Nil,
+                                    @(ExportFunction @getter)(description = "Message instructions", readOnly = true, exposeAsProperty = true)
                                     instructions: Seq[Presentable] = Nil,
+                                    @(ExportFunction @getter)(description = "Message id", readOnly = true, exposeAsProperty = true)
                                     messageId: Option[String] = None,
+                                    @(ExportFunction @getter)(description = "Message ts", readOnly = true, exposeAsProperty = true)
                                     timestamp: Option[String] = None,
                                     ttl: Option[String] = None,
                                     post: Option[String] = None)
@@ -90,11 +99,19 @@ object Handlers {
 
   case class Nonrespondable(instruction: NonrespondableInstruction) extends Plannable
 
-  case class Presentable(instruction: Instruction, label: Option[String], id: Option[String], parameterName: Option[String])
-
+  case class Presentable(
+                          @(ExportFunction @getter)(description = "Message instruction", readOnly = true, exposeAsProperty = true)
+                          instruction: Instruction,
+                          @(ExportFunction @getter)(description = "Message label", readOnly = true, exposeAsProperty = true)
+                          label: Option[String],
+                          @(ExportFunction @getter)(description = "Message id", readOnly = true, exposeAsProperty = true)
+                          id: Option[String],
+                          @(ExportFunction @getter)(description = "Select box parameter name", readOnly = true, exposeAsProperty = true)
+                          parameterName: Option[String])
   //likely to change
 
   sealed trait Instruction {
+    @ExportFunction(description = "Message detail", readOnly = true, exposeAsProperty = true)
     def detail: Detail
 
     def toDisplay: String = {
@@ -141,7 +158,8 @@ object Handlers {
   object Instruction {
 
     // Probably makes more sense to put project_name elsewhere
-    case class Detail(name: String,
+    case class Detail(
+                       name: String,
                       coordinates: Option[MavenCoordinate],
                       parameters: Seq[ParameterValue],
                       projectName: Option[String],

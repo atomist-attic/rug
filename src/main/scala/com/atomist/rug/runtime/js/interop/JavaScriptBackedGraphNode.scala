@@ -56,18 +56,18 @@ object JavaScriptBackedGraphNode {
 private[interop] class NodeRegistry {
 
   private var reg: Map[String, JavaScriptBackedGraphNode] = Map()
-  private var somReg: Map[JavaScriptObject, JavaScriptBackedGraphNode] = Map()
+  private var somReg: Map[AnyRef, JavaScriptBackedGraphNode] = Map()
 
   def register(gn: JavaScriptBackedGraphNode): Unit = {
     gn.nodeId.foreach(id => {
       reg = reg ++ Map(id -> gn)
     })
-    somReg = somReg ++ Map(gn.scriptObject -> gn)
+    somReg = somReg ++ Map(gn.scriptObject.getNativeObject -> gn)
   }
 
   def get(id: String): Option[JavaScriptBackedGraphNode] = reg.get(id)
 
-  def alreadyWrapped(som: JavaScriptObject): Option[JavaScriptBackedGraphNode] = somReg.get(som)
+  def alreadyWrapped(som: JavaScriptObject): Option[JavaScriptBackedGraphNode] = somReg.get(som.getNativeObject)
 
   override def toString: String = s"NodeRegistry ${hashCode()}: Known ids=[${reg.keySet.mkString(",")}]"
 
@@ -168,7 +168,8 @@ class JavaScriptBackedGraphNode(val scriptObject: JavaScriptObject,
       case fn: JavaScriptObject if fn.isNoArgFunction() =>
         fn.call(scriptObject) match {
           case UNDEFINED => Nil
-          case som: JavaScriptObject => Seq(nodify(som))
+          case som: JavaScriptObject =>
+            Seq(nodify(som))
           case e =>
             val v = Objects.toString(e)
             Seq(SimpleTerminalTreeNode(key, v, Set()))

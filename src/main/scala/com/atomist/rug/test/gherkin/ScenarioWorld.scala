@@ -1,7 +1,5 @@
 package com.atomist.rug.test.gherkin
 
-import java.lang.reflect.InvocationTargetException
-
 import com.atomist.param.{ParameterValues, SimpleParameterValues}
 import com.atomist.project.archive.Rugs
 import com.atomist.project.common.InvalidParametersException
@@ -14,7 +12,6 @@ import com.atomist.rug.ts.{CortexTypeGenerator, DefaultTypeGeneratorConfig}
 import com.atomist.source.file.NamedFileSystemArtifactSourceIdentifier
 import com.atomist.source.git.FileSystemGitArtifactSource
 import com.atomist.util.GitRepositoryCloner
-import com.eclipsesource.v8.V8ScriptExecutionException
 
 import scala.util.{Failure, Success, Try}
 

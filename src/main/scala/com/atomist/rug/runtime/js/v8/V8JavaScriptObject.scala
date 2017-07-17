@@ -81,6 +81,30 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
     case _ => false
   }
 
+  override def keys(all: Boolean): Seq[String] = {
+   val allkeys: Seq[String] = (obj, all) match {
+      case (u, _) if u.isUndefined => Nil
+      case (o, true) if !obj.isInstanceOf[V8Array] && !obj.isInstanceOf[V8Function] => {
+        val objKeys =  obj.getKeys
+
+          val json = node.getRuntime.get("Object").asInstanceOf[V8Object]
+          val protoKeys = json.executeJSFunction("getPrototypeOf", obj) match {
+            case p: V8Object if !p.isUndefined =>
+              p.getKeys.filter(protoKey => {
+                json.executeJSFunction("getOwnPropertyDescriptor", p, protoKey) match {
+                  case o: V8Object if  !o.isUndefined  && o.contains("get") => false
+                  case _ => true
+                }}).toSeq
+            case _ => Nil
+          }
+          objKeys ++ protoKeys
+      }
+      case _ => obj.getKeys
+    }
+    // urgh
+    allkeys.filter(p => p != "$jumpInto" && p != "$jumpIntoOne")
+  }
+
   override def values(): Seq[AnyRef] = {
     keys().map(p => {
       obj.get(p) match {
@@ -103,43 +127,9 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
     case _ => false
   }
 
-  override def entries(): Map[String, AnyRef] = {
-    keys().map { key =>
-      obj.get(key) match {
-        case o: V8Object => (key, new V8JavaScriptObject(node, o))
-        case eh => (key, eh)
-      }
-    }.toMap
-  }
-
   override def toJson(): String = {
     val json = node.getRuntime.get("JSON").asInstanceOf[V8Object]
     json.executeJSFunction("stringify", obj).asInstanceOf[String]
-  }
-
-  override def keys(all: Boolean): Seq[String] = {
-    if(obj.isUndefined){
-      Nil
-    }else{
-      Proxy.withMemoryManagement(node, {
-        val objKeys = obj.getKeys
-        if(all && !obj.isInstanceOf[V8Array] && !obj.isInstanceOf[V8Function]){
-          val json = node.getRuntime.get("Object").asInstanceOf[V8Object]
-          val protoKeys = json.executeJSFunction("getPrototypeOf", obj) match {
-            case p: V8Object if !p.isUndefined =>
-              p.getKeys.filter(protoKey => {
-                json.executeJSFunction("getOwnPropertyDescriptor", p, protoKey) match {
-                  case o: V8Object if  !o.isUndefined  && o.contains("get") => false
-                  case _ => true
-                }}).toSeq
-            case _ => Nil
-          }
-          objKeys ++ protoKeys
-        }else{
-          objKeys
-        }
-      })
-    }
   }
 
   /**
@@ -152,6 +142,15 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
       case (_, x) if !x.isInstanceOf[JavaScriptObject] => true
       case _ => false
     }
+
+  override def entries(): Map[String, AnyRef] = {
+    keys().map { key =>
+      obj.get(key) match {
+        case o: V8Object => (key, new V8JavaScriptObject(node, o))
+        case eh => (key, eh)
+      }
+    }.toMap
+  }
 
 
 //

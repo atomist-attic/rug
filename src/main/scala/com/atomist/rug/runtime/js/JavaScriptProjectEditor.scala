@@ -25,7 +25,7 @@ class JavaScriptProjectEditorFinder
       obj.getMember("edit").asInstanceOf[JavaScriptObject].isFunction
   }
 
-  override def create(jsc: JavaScriptEngineContext, fnVar: JavaScriptObject, resolver: Option[RugResolver]): Option[JavaScriptProjectEditor] = {
+  override def create(jsc: JavaScriptEngine, fnVar: JavaScriptObject, resolver: Option[RugResolver]): Option[JavaScriptProjectEditor] = {
     Some(new JavaScriptProjectEditor(jsc, fnVar, jsc.rugAs, resolver))
   }
 }
@@ -35,7 +35,7 @@ class JavaScriptProjectEditorFinder
   */
 
 class JavaScriptProjectEditor(
-                               jsc: JavaScriptEngineContext,
+                               jsc: JavaScriptEngine,
                                jsVar: JavaScriptObject,
                                rugAs: ArtifactSource,
                                resolver: Option[RugResolver])

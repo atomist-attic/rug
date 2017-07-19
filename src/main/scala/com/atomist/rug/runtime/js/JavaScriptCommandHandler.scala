@@ -24,7 +24,7 @@ class JavaScriptCommandHandlerFinder
       obj.getMember("handle").asInstanceOf[JavaScriptObject].isFunction
   }
 
-  override def create(jsc: JavaScriptEngineContext,
+  override def create(jsc: JavaScriptEngine,
                       handler: JavaScriptObject,
                       resolver: Option[RugResolver]): Option[JavaScriptCommandHandler] = {
     Some(new JavaScriptCommandHandler(
@@ -88,7 +88,7 @@ class JavaScriptCommandHandlerFinder
 /**
   * Runs a CommandHandler in Nashorn.
   */
-class JavaScriptCommandHandler(jsc: JavaScriptEngineContext,
+class JavaScriptCommandHandler(jsc: JavaScriptEngine,
                                handler: JavaScriptObject,
                                override val name: String,
                                override val description: String,

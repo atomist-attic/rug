@@ -1,6 +1,6 @@
 package com.atomist.rug.test.gherkin
 
-import com.atomist.rug.runtime.js.{JavaScriptEngineContext, JavaScriptObject}
+import com.atomist.rug.runtime.js.{JavaScriptEngine, JavaScriptObject}
 import com.atomist.rug.spi.ExportFunction
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
@@ -13,7 +13,7 @@ import scala.util.matching.Regex.Match
   * Parses arguments using regexs.
   */
 class Definitions(
-                   val jsc: JavaScriptEngineContext)
+                   val jsc: JavaScriptEngine)
   extends LazyLogging {
 
   private val stepRegistry = new scala.collection.mutable.HashMap[String, JavaScriptObject]()

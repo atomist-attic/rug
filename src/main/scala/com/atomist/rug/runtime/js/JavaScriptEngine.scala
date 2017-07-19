@@ -7,7 +7,7 @@ import com.atomist.source.{ArtifactSource, FileArtifact}
 /**
   * A JavaScript engine implementation
   */
-trait JavaScriptEngineContext {
+trait JavaScriptEngine {
   def evaluate(f: FileArtifact): Unit
   def atomistConfig: AtomistConfig
   def members(): Seq[JavaScriptMember]

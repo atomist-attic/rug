@@ -20,7 +20,7 @@ import scala.collection.mutable.ListBuffer
   */
 class V8JavaScriptEngine(val rugAs: ArtifactSource,
                          val atomistConfig: AtomistConfig = DefaultAtomistConfig)
-  extends JavaScriptEngineContext
+  extends JavaScriptEngine
   with LazyLogging
   with JavaScriptUtils{
 
@@ -130,9 +130,9 @@ class V8JavaScriptEngine(val rugAs: ArtifactSource,
 
   override def finalize(): Unit = {
     super.finalize()
-    scope.release()
-    node.getRuntime.release()
-    node.node.release()
+//    scope.release()
+//    node.getRuntime.release()
+//    node.node.release()
   }
 }
 

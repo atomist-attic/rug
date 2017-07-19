@@ -18,7 +18,7 @@ class JavaScriptResponseHandlerFinder
   extends JavaScriptRugFinder[JavaScriptResponseHandler]
     with JavaScriptUtils {
 
-  override def create(jsc: JavaScriptEngineContext, handler: JavaScriptObject, resolver: Option[RugResolver]): Option[JavaScriptResponseHandler] = {
+  override def create(jsc: JavaScriptEngine, handler: JavaScriptObject, resolver: Option[RugResolver]): Option[JavaScriptResponseHandler] = {
     Some(new JavaScriptResponseHandler(
       jsc,
       handler,
@@ -33,7 +33,7 @@ class JavaScriptResponseHandlerFinder
   /**
     * Figure out if we need to parse json or whatever.
     */
-  def coerce(jsc: JavaScriptEngineContext, handler: JavaScriptObject): ResponseConverter = {
+  def coerce(jsc: JavaScriptEngine, handler: JavaScriptObject): ResponseConverter = {
     handler.getMember("__coercion") match {
       case "JSON" => new JsonResponseConverter(jsc, handler)
       case str: String => throw new InvalidHandlerException(s"Don't know how to coerce responses to $str")
@@ -48,7 +48,7 @@ class JavaScriptResponseHandlerFinder
   }
 }
 
-class JavaScriptResponseHandler(jsc: JavaScriptEngineContext,
+class JavaScriptResponseHandler(jsc: JavaScriptEngine,
                                 handler: JavaScriptObject,
                                 override val name: String,
                                 override val description: String,

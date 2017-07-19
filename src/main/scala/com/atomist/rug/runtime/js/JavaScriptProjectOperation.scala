@@ -16,7 +16,7 @@ import com.typesafe.scalalogging.LazyLogging
   * @param rugAs  backing artifact source for the Rug archive
   */
 abstract class JavaScriptProjectOperation(
-                                           _jsc: JavaScriptEngineContext,
+                                           _jsc: JavaScriptEngine,
                                            _jsVar: JavaScriptObject,
                                            rugAs: ArtifactSource
                                          )

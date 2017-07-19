@@ -1,7 +1,7 @@
 package com.atomist.rug.runtime.js.interop
 
 import com.atomist.graph.{AddressableGraphNode, GraphNode}
-import com.atomist.rug.runtime.js.{JavaScriptEngineContext, JavaScriptEngineTestUtils, SimpleContainerGraphNode}
+import com.atomist.rug.runtime.js.{JavaScriptEngine, JavaScriptEngineTestUtils, SimpleContainerGraphNode}
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.{PathExpression, PathExpressionEngine}
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -9,7 +9,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class JavaScriptBackedGraphNodeTest extends FlatSpec with Matchers {
 
-  def engine: JavaScriptEngineContext = JavaScriptEngineTestUtils.createEngine
+  def engine: JavaScriptEngine = JavaScriptEngineTestUtils.createEngine
 
   val pe = new PathExpressionEngine
 

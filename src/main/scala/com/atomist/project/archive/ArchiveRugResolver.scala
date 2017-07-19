@@ -2,8 +2,8 @@ package com.atomist.project.archive
 
 import com.atomist.rug.DuplicateRugException
 import com.atomist.rug.runtime._
+import com.atomist.rug.runtime.js.JavaScriptContext.EngineInitializer
 import com.atomist.rug.runtime.js.nashorn.NashornJavaScriptEngine
-import com.atomist.rug.runtime.js.nashorn.NashornJavaScriptEngine.EngineInitializer
 import com.atomist.rug.runtime.js.{JavaScriptEngineContextFactory, _}
 import com.atomist.source.ArtifactSource
 

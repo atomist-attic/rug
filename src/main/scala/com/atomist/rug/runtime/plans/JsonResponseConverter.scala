@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime.plans
 
-import com.atomist.rug.runtime.js.{JavaScriptEngineContext, JavaScriptObject}
+import com.atomist.rug.runtime.js.{JavaScriptEngine, JavaScriptObject}
 import com.atomist.rug.spi.Handlers.Response
 import com.atomist.util.JsonUtils
 
@@ -8,7 +8,7 @@ import com.atomist.util.JsonUtils
 /**
   * Convert a string or byte array to an JS Object.
   */
-class JsonResponseConverter(jsc: JavaScriptEngineContext, handler: JavaScriptObject) extends ResponseConverter {
+class JsonResponseConverter(jsc: JavaScriptEngine, handler: JavaScriptObject) extends ResponseConverter {
 
   override def convert(response: Response): Response = {
     val body = response.body match {

@@ -2,7 +2,7 @@ package com.atomist.rug.test.gherkin.handler.command
 
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.TestUtils._
-import com.atomist.rug.runtime.js.JavaScriptEngineContextFactory
+import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.test.gherkin.handler.event.EventHandlerTestTargets
 import com.atomist.rug.test.gherkin.{Failed, GherkinRunner, Passed}
 import com.atomist.rug.ts.TypeScriptBuilder
@@ -29,7 +29,7 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val as = SimpleFileBasedArtifactSource(nodesFile, Feature1File, passingFeature1Steps, handlerFile)
 
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Some(RugArchiveReader(cas)))
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader(cas)))
     val run = grt.execute()
     run.result match {
       case Passed =>
@@ -51,7 +51,7 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val as = SimpleFileBasedArtifactSource(nodesFile, Feature1File, passingFeature1Steps, handlerFile)
 
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Some(RugArchiveReader(cas)))
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader(cas)))
     val run = grt.execute()
     run.result match {
       case Failed(_, _) =>
@@ -71,7 +71,7 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val as = SimpleFileBasedArtifactSource(nodesFile, Feature1File, passingFeature1StepsFile, handlerFile)
 
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Some(RugArchiveReader(cas)))
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader(cas)))
     val run = grt.execute()
     run.result match {
       case Passed =>
@@ -96,7 +96,7 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val as = SimpleFileBasedArtifactSource(nodesFile, Feature1File, passingFeature1StepsFile, handlerFile)
 
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Some(RugArchiveReader(cas)))
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader(cas)))
     val run = grt.execute()
     //println(new TestReport(run))
     run.result match {
@@ -125,7 +125,7 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
       passingFeature1StepsFile, handlerFile)
 
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Some(RugArchiveReader(cas)))
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader(cas)))
     val run = grt.execute()
     //println(new TestReport(run))
     run.result match {
@@ -159,7 +159,7 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
       passingFeature1StepsFile, handlerFile)
 
     val cas = TypeScriptBuilder.compileWithExtendedModel(as)
-    val grt = new GherkinRunner(JavaScriptEngineContextFactory.create(cas), Some(RugArchiveReader(cas)))
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader(cas)))
     val run = grt.execute()
     run.result match {
       case Passed =>

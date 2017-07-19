@@ -23,7 +23,7 @@ class JavaScriptProjectGeneratorFinder
       obj.getMember("populate").asInstanceOf[JavaScriptObject].isFunction
   }
 
-  override def create(jsc: JavaScriptEngineContext, fnVar: JavaScriptObject, resolver: Option[RugResolver]): Option[JavaScriptProjectGenerator] = {
+  override def create(jsc: JavaScriptEngine, fnVar: JavaScriptObject, resolver: Option[RugResolver]): Option[JavaScriptProjectGenerator] = {
     val project: ArtifactSource = removeAtomistTemplateContent(jsc.rugAs)
     Some(new JavaScriptProjectGenerator(jsc, fnVar, jsc.rugAs, project, resolver))
   }
@@ -38,7 +38,7 @@ class JavaScriptProjectGeneratorFinder
   * TypeScript compilation, but need not be. Attempts to source metadata from annotations.
   */
 class JavaScriptProjectGenerator(
-                                  jsc: JavaScriptEngineContext,
+                                  jsc: JavaScriptEngine,
                                   jsVar: JavaScriptObject,
                                   rugAs: ArtifactSource,
                                   startProject: ArtifactSource,

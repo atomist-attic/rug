@@ -8,7 +8,7 @@ import com.atomist.source.ArtifactSource
   * Create JavaScriptEngineContext
   */
 object JavaScriptEngineContextFactory {
-  def create(as: ArtifactSource): JavaScriptEngineContext = {
+  def create(as: ArtifactSource): JavaScriptEngine = {
     System.getProperty("rug.javascript.engine") match {
       case "nashorn" => new NashornJavaScriptEngine(as)
       case _ => new V8JavaScriptEngine(as)

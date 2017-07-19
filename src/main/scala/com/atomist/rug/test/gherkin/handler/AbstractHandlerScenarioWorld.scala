@@ -89,6 +89,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
     rootContext = n
   }
 
+  @ExposeAsFunction
   def getRootContext: AnyRef = rootContext
 
   protected def recordPlan(handlerName: String, plan: Plan): Unit = plan match {

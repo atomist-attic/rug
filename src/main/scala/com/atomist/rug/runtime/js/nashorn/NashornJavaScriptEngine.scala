@@ -22,12 +22,6 @@ import scala.collection.JavaConverters._
 object NashornJavaScriptEngine {
 
   /**
-    * Function that can initialize a ScriptEngine before use.
-    * Typically evaluates JavaScript strings or binds objects.
-    */
-  type EngineInitializer = ScriptEngine => Unit
-
-  /**
     * JavaScript snippet to evaluate to
     */
   private val ConsoleToSysOut: String =
@@ -58,9 +52,9 @@ object NashornJavaScriptEngine {
 class NashornJavaScriptEngine(val rugAs: ArtifactSource,
                               val atomistConfig: AtomistConfig = DefaultAtomistConfig,
                               bindings: Bindings = new SimpleBindings(),
-                              initializer: NashornJavaScriptEngine.EngineInitializer = NashornJavaScriptEngine.redirectConsoleToSysOut)
+                              initializer: JavaScriptContext.EngineInitializer = NashornJavaScriptEngine.redirectConsoleToSysOut)
   extends LazyLogging
-  with JavaScriptEngineContext
+  with JavaScriptEngine
   with JavaScriptUtils{
 
   val engine: NashornScriptEngine =

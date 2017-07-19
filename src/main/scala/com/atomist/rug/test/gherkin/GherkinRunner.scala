@@ -1,8 +1,7 @@
 package com.atomist.rug.test.gherkin
 
-import com.atomist.project.archive.{DefaultAtomistConfig, Rugs}
-import com.atomist.rug.runtime.js.JavaScriptEngineContext
-import com.atomist.source.FileArtifact
+import com.atomist.project.archive.Rugs
+import com.atomist.rug.runtime.js.{JavaScriptContext, JavaScriptEngine}
 import com.typesafe.scalalogging.LazyLogging
 
 /**
@@ -21,7 +20,7 @@ case class GherkinRunnerConfig(oAuthToken: Option[String] = None)
   * @param listeners optional execution listeners
   * @param config    config to use for test running
   */
-class GherkinRunner(jsc: JavaScriptEngineContext,
+class GherkinRunner(jsc: JavaScriptContext,
                     rugs: Option[Rugs] = None,
                     listeners: Seq[GherkinExecutionListener] = Nil,
                     config: GherkinRunnerConfig = GherkinRunnerConfig())

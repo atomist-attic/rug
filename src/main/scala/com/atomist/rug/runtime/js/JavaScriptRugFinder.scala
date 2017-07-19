@@ -8,7 +8,7 @@ import com.atomist.rug.runtime.Rug
   */
 trait JavaScriptRugFinder[R <: Rug] {
 
-  def find(jsc: JavaScriptEngineContext, resolver: Option[RugResolver] = None): Seq[R] = {
+  def find(jsc: JavaScriptEngine, resolver: Option[RugResolver] = None): Seq[R] = {
     jsc.members().flatMap {
       case JavaScriptMember(_, handler) if isValidRug(handler) =>
         create(jsc, handler, resolver)
@@ -32,5 +32,5 @@ trait JavaScriptRugFinder[R <: Rug] {
 
   def isValid(obj: JavaScriptObject): Boolean
 
-  def create(jsc: JavaScriptEngineContext, jsVar: JavaScriptObject, resolver: Option[RugResolver]): Option[R]
+  def create(jsc: JavaScriptEngine, jsVar: JavaScriptObject, resolver: Option[RugResolver]): Option[R]
 }

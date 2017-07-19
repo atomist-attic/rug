@@ -115,7 +115,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   it should "extract and run a command handler" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandler))
     val finder = new JavaScriptCommandHandlerFinder()
-    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
+    val handlers = finder.find(new JavaScriptContext(rugArchive))
 
     handlers.size should be(1)
     val handler = handlers.head
@@ -134,7 +134,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   it should "throw exceptions if required parameters are not set" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandler))
     val finder = new JavaScriptCommandHandlerFinder()
-    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
+    val handlers = finder.find(new JavaScriptContext(rugArchive))
     val handler = handlers.head
     assertThrows[MissingParametersException] {
       handler.handle(LocalRugContext(TestTreeMaterializer), SimpleParameterValues.Empty)
@@ -144,14 +144,14 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   it should "set mapped properties correctly if present" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerWithMappedParams))
     val finder = new JavaScriptCommandHandlerFinder()
-    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
+    val handlers = finder.find(new JavaScriptContext(rugArchive))
     val handler = handlers.head
     handler.handle(LocalRugContext(TestTreeMaterializer), SimpleParameterValues(SimpleParameterValue("name", "el duderino")))
   }
   it should "expose the required secrets on a CommandHandler" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerHandlerWithSecrets))
     val finder = new JavaScriptCommandHandlerFinder()
-    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
+    val handlers = finder.find(new JavaScriptContext(rugArchive))
     assert(handlers.head.secrets.size === 2)
     assert(handlers.head.secrets.head === Secret("atomist/user_token", "atomist/user_token"))
     assert(handlers.head.secrets(1) === Secret("atomist/showmethemoney", "atomist/showmethemoney"))
@@ -160,7 +160,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   it should "resolve secrets from the secret resolver" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerHandlerWithSecrets))
     val finder = new JavaScriptCommandHandlerFinder()
-    val handlers = finder.find(JavaScriptEngineContextFactory.create(rugArchive))
+    val handlers = finder.find(new JavaScriptContext(rugArchive))
     val fn = DefaultRugFunctionRegistry.find("ExampleFunction").get.asInstanceOf[ExampleRugFunction]
     val runner = new LocalPlanRunner(null, new LocalInstructionRunner(fn, null, null, new TestSecretResolver(handlers.head) {
       override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] = {

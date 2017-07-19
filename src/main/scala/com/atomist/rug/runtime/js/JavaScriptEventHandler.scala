@@ -28,7 +28,7 @@ class JavaScriptEventHandlerFinder
       obj.getMember("handle").asInstanceOf[JavaScriptObject].isFunction
   }
 
-  override def create(jsc: JavaScriptEngineContext, someVar: JavaScriptObject, resolver: Option[RugResolver]): Option[JavaScriptEventHandler] = {
+  override def create(jsc: JavaScriptEngine, someVar: JavaScriptObject, resolver: Option[RugResolver]): Option[JavaScriptEventHandler] = {
     Option(someVar.getMember("__expression")).map(v => {
       val expression: String = v.asInstanceOf[String]
       new JavaScriptEventHandler(jsc, someVar, expression, name(someVar), description(someVar), tags(someVar), secrets(someVar))
@@ -45,7 +45,7 @@ object JavaScriptEventHandler {
 /**
   * An invokable JS based handler for System Events
   */
-class JavaScriptEventHandler(jsc: JavaScriptEngineContext,
+class JavaScriptEventHandler(jsc: JavaScriptEngine,
                              val handler: JavaScriptObject,
                              val pathExpressionStr: String,
                              override val name: String,

@@ -60,7 +60,6 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
   }
 
   override def call(thisArg: AnyRef, args: AnyRef*): AnyRef = {
-    Proxy.withMemoryManagement(node, {
       obj match {
         case o: V8Function =>
           val params = new V8Array(o.getRuntime)
@@ -86,7 +85,6 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
             case o => o
           }
       }
-    })
   }
 
   override def isEmpty: Boolean = obj match {
@@ -96,32 +94,34 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
   }
 
   override def keys(all: Boolean): Seq[String] = {
-    val allkeys: Seq[String] = (obj, all) match {
-      case (u, _) if u.isUndefined => Nil
-      case (o, true) if !obj.isInstanceOf[V8Array] && !obj.isInstanceOf[V8Function] => {
-        val objKeys = obj.getKeys
-        val json = node.getRuntime.get("Object").asInstanceOf[V8Object]
-        val protoKeys = json.executeJSFunction("getPrototypeOf", obj) match {
-          case p: V8Object if !p.isUndefined =>
-            p.getKeys.filter(protoKey => {
-              json.executeJSFunction("getOwnPropertyDescriptor", p, protoKey) match {
-                case o: V8Object if !o.isUndefined && o.contains("get") =>
-                  if (obj.contains(s"_$protoKey")) {
-                    true // this is one of our cheeky stub getters - we want to know about it
-                  } else {
-                    false
-                  }
-                case _ => true
-              }
-            }).toSeq
-          case _ => Nil
+    Proxy.withMemoryManagement(node, {
+      val allkeys: Seq[String] = (obj, all) match {
+        case (u, _) if u.isUndefined => Nil
+        case (o, true) if !obj.isInstanceOf[V8Array] && !obj.isInstanceOf[V8Function] => {
+          val objKeys = obj.getKeys
+          val json = node.getRuntime.get("Object").asInstanceOf[V8Object]
+          val protoKeys = json.executeJSFunction("getPrototypeOf", obj) match {
+            case p: V8Object if !p.isUndefined =>
+              p.getKeys.filter(protoKey => {
+                json.executeJSFunction("getOwnPropertyDescriptor", p, protoKey) match {
+                  case o: V8Object if !o.isUndefined && o.contains("get") =>
+                    if (obj.contains(s"_$protoKey")) {
+                      true // this is one of our cheeky stub getters - we want to know about it
+                    } else {
+                      false
+                    }
+                  case _ => true
+                }
+              }).toSeq
+            case _ => Nil
+          }
+          objKeys ++ protoKeys
         }
-        objKeys ++ protoKeys
+        case _ => obj.getKeys
       }
-      case _ => obj.getKeys
-    }
-    // urgh
-    allkeys.filter(p => p != "$jumpInto" && p != "$jumpIntoOne")
+      // urgh
+      allkeys.filter(p => p != "$jumpInto" && p != "$jumpIntoOne")
+    })
   }
 
   override def values(): Seq[AnyRef] = {
@@ -147,8 +147,10 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
   }
 
   override def toJson(): String = {
-    val json = node.getRuntime.get("JSON").asInstanceOf[V8Object]
-    json.executeJSFunction("stringify", obj).asInstanceOf[String]
+    Proxy.withMemoryManagement(node, {
+      val json = node.getRuntime.get("JSON").asInstanceOf[V8Object]
+      json.executeJSFunction("stringify", obj).asInstanceOf[String]
+    })
   }
 
   /**
@@ -171,23 +173,4 @@ class V8JavaScriptObject(node: NodeWrapper, obj: V8Object)
       }
     }.toMap
   }
-
-
-  //
-  //  /**
-  //    * Return the current state of no-arg methods on this object
-  //    */
-  //  override def extractNoArgFunctionValues(): Map[String, AnyRef] = {
-  //    entries().flatMap {
-  //      case (key: String, f: JavaScriptObject) if isNoArgFunction(f) =>
-  //        // If calling the function throws an exception, discard the value.
-  //        // This will happen with builder stubs that haven't been fully initialized
-  //        // Otherwise, use it
-  //        allCatch.opt(callMember(key))
-  //          .map(result => {
-  //            (key, result)
-  //          })
-  //      case _ => None
-  //    }
-  //  }
 }

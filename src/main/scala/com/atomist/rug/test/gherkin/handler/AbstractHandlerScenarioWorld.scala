@@ -1,5 +1,6 @@
 package com.atomist.rug.test.gherkin.handler
 
+import com.atomist.graph.GraphNode
 import com.atomist.project.archive.Rugs
 import com.atomist.rug.RugNotFoundException
 import com.atomist.rug.kind.core.{ProjectMutableView, RepoResolver}
@@ -86,7 +87,12 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
 
   @ExposeAsFunction
   def setRootContext(n: AnyRef): Unit = {
-    rootContext = n
+    rootContext = n match {
+      case o: JavaScriptObject =>  JavaScriptBackedGraphNode.toGraphNode(n).get
+      case o: GraphNode => o
+      case x =>
+        throw new RuntimeException(s"Could not set root context from $x")
+    }
   }
 
   @ExposeAsFunction

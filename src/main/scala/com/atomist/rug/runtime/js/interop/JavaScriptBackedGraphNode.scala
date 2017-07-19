@@ -62,6 +62,7 @@ private[interop] class NodeRegistry {
     gn.nodeId.foreach(id => {
       reg = reg ++ Map(id -> gn)
     })
+    // this is important as with j2v8 we do get the same hashcode for the native object, but _not_ the java object.
     somReg = somReg ++ Map(gn.scriptObject.getNativeObject -> gn)
   }
 

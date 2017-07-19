@@ -67,7 +67,9 @@ object Proxy {
     case s: String => s
     case v: V8Value => v
     case o: V8JavaScriptObject =>
-      //      //o.getNativeObject.asInstanceOf[V8Object].release()
+//      val json = node.getRuntime.get("JSON").asInstanceOf[V8Object]
+//      val asStr = json.executeJSFunction("stringify", o.getNativeObject)
+//      json.executeJSFunction("parse", asStr)
       o.getNativeObject
     case Some(r: AnyRef) => Proxy(node, r)
     case r: AnyRef => Proxy(node, r)
@@ -241,7 +243,7 @@ object Proxy {
     try {
       result
     } finally {
-      //scope.release()
+      scope.release()
     }
   }
 

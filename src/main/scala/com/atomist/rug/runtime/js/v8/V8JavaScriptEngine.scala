@@ -21,8 +21,8 @@ import scala.collection.mutable.ListBuffer
 class V8JavaScriptEngine(val rugAs: ArtifactSource,
                          val atomistConfig: AtomistConfig = DefaultAtomistConfig)
   extends JavaScriptEngine
-  with LazyLogging
-  with JavaScriptUtils{
+    with LazyLogging
+    with JavaScriptUtils {
 
   private val node = new NodeWrapper(NodeJS.createNodeJS())
 
@@ -38,13 +38,13 @@ class V8JavaScriptEngine(val rugAs: ArtifactSource,
     case fs: FileSystemArtifactSource => fs.id.rootFile.toPath
     case mem =>
       val tempRoot = Files.createTempDirectory("rug")
-      mem.allFiles.foreach{ memFile =>
+      mem.allFiles.foreach { memFile =>
         val fsFile = tempRoot.resolve(memFile.path)
         fsFile.getParent.toFile.mkdirs()
         val io = memFile.inputStream()
-        try{
+        try {
           Files.copy(io, fsFile, StandardCopyOption.REPLACE_EXISTING)
-        }finally{
+        } finally {
           io.close()
         }
       }
@@ -59,7 +59,7 @@ class V8JavaScriptEngine(val rugAs: ArtifactSource,
 
   override def evaluate(f: FileArtifact): Unit = {
     val path = root.resolve(f.path)
-    val more: Seq[JavaScriptMember] =  node.node.require(path.toFile) match {
+    val more: Seq[JavaScriptMember] = node.node.require(path.toFile) match {
       case o: V8Object =>
         val mapped: Map[String, AnyRef] = o.getKeys.map(k => (k, o.get(k))).toMap
         val objects = mapped.filter(p => p._2.isInstanceOf[V8Object])
@@ -86,29 +86,26 @@ class V8JavaScriptEngine(val rugAs: ArtifactSource,
         throw ExceptionEnhancer.enhanceIfPossible(rugAs, ecmaEx)
     }
   }
+
   override def invokeMember(jsVar: JavaScriptObject, member: String, params: Option[ParameterValues], args: Object*): AnyRef = {
-
-   // val scope = new MemoryManager(node.getRuntime)
-    try{
-      withEnhancedExceptions{
-        if (params.nonEmpty) {
-          setParameters(jsVar, params.get.parameterValues)
-        }
-        val v8o = jsVar.asInstanceOf[V8JavaScriptObject].getNativeObject.asInstanceOf[V8Object]
-
-        val proxied = args.map(a => Proxy.ifNeccessary(node, a))
-        v8o.executeJSFunction(member, proxied:_*) match {
-          case x: V8Object if !x.isUndefined => node.get(x) match {
-            case Some(jvmObj) => jvmObj
-            case _ => new V8JavaScriptObject(node, x)
-          }
-          case _: V8Object => UNDEFINED
-          case o => o
-        }
+    withEnhancedExceptions {
+      if (params.nonEmpty) {
+        setParameters(jsVar, params.get.parameterValues)
       }
-    }finally{
-      //scope.release()
+      val v8o = jsVar.asInstanceOf[V8JavaScriptObject].getNativeObject.asInstanceOf[V8Object]
+
+      val proxied = args.map(a => Proxy.ifNeccessary(node, a))
+      v8o.executeJSFunction(member, proxied: _*) match {
+        case x: V8Object if !x.isUndefined => node.get(x) match {
+          case Some(jvmObj) =>
+            jvmObj
+          case _ => new V8JavaScriptObject(node, x)
+        }
+        case _: V8Object => UNDEFINED
+        case o => o
+      }
     }
+
   }
 
   override def parseJson(jsonStr: String): JavaScriptObject = {
@@ -130,9 +127,9 @@ class V8JavaScriptEngine(val rugAs: ArtifactSource,
 
   override def finalize(): Unit = {
     super.finalize()
-//    scope.release()
-//    node.getRuntime.release()
-//    node.node.release()
+    scope.release()
+    node.getRuntime.release()
+    node.node.release()
   }
 }
 

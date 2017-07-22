@@ -80,7 +80,7 @@
         <dependency>
             <groupId>com.github.javaparser</groupId>
             <artifactId>javaparser-core</artifactId>
-            <version>3.2.11</version>
+            <version>3.2.12</version>
         </dependency>
         <dependency>
             <groupId>io.cucumber</groupId>

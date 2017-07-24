@@ -6,7 +6,8 @@ import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.js.interop.{ExposeAsFunction, JavaScriptBackedGraphNode, ScriptObjectBackedTreeNode}
 import com.atomist.rug.spi.ExportFunction
-import com.atomist.tree.{TerminalTreeNode, TreeNode}
+import com.atomist.rug.ts.Cardinality
+import com.atomist.tree.{ContainerTreeNode, TerminalTreeNode, TreeNode}
 import com.eclipsesource.v8._
 import com.eclipsesource.v8.utils.MemoryManager
 import org.apache.commons.lang3.ClassUtils
@@ -172,9 +173,13 @@ object Proxy {
                     val callback = new V8Object(node.getRuntime)
                     callback.registerJavaMethod(new JavaCallback {
                       override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
+                        val blah = related
                         related match {
                           case t: TerminalTreeNode => Proxy.ifNeccessary(node, t.value)
-                          case _ => Proxy.ifNeccessary(node, related)
+                          case c: ContainerTreeNode if c.hasTag(Cardinality.One2Many) =>
+                            Proxy.ifNeccessary(node, c.relatedNodes)
+                          case _ =>
+                            Proxy.ifNeccessary(node, related)
                         }
                       }
                     }, "get")
@@ -216,6 +221,12 @@ object Proxy {
                 }
               })
             }
+          case t: TerminalTreeNode =>
+            if(!v8pmv.contains(t.nodeName)){
+              v8pmv.add(t.nodeName, t.value)
+            }
+          case n: GraphNode =>
+
           case _ =>
         }
 

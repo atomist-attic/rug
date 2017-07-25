@@ -11,9 +11,8 @@ import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.rug.runtime.js.{BaseRugContext, JavaScriptProjectOperation}
 import com.atomist.rug.test.gherkin._
 import com.atomist.source.file.NamedFileSystemArtifactSourceIdentifier
-import com.atomist.source.git.FileSystemGitArtifactSource
+import com.atomist.source.git.{FileSystemGitArtifactSource, GitRepositoryCloner}
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
-import com.atomist.util.GitRepositoryCloner
 
 /**
   * Convenient methods for working with projects
@@ -99,6 +98,7 @@ class ProjectScenarioWorld(
         throw unknown
     }
   }
+
   // For calling from nashorn which doesn't like default parameter values!
   def editWith(editor: ProjectEditor): Unit = {
     editWith(editor, null)
@@ -126,7 +126,6 @@ class ProjectScenarioWorld(
     })
     op.validateParameters(SimpleParameterValues(paramValues))
   }
-
 }
 
 /**
@@ -142,13 +141,17 @@ private object GitRepoResolver extends RepoResolver {
 
   private val Cloner = GitRepositoryCloner()
 
-  override def resolveBranch(owner: String, repoName: String, branch: String): ArtifactSource = {
-    val file = Cloner.clone(repo = repoName, owner = owner, branch= Some(branch))
-    FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(repoName, file.get))
-  }
+  override def resolveBranch(owner: String, repoName: String, branch: String): ArtifactSource =
+    Cloner.clone(repo = repoName, owner = owner, branch = Some(branch)) match {
+      case Left(t) => throw new IllegalArgumentException("Failed to clone repo", t)
+      case Right(file) =>
+        FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(repoName, file))
+    }
 
-  override def resolveSha(owner: String, repoName: String, sha: String): ArtifactSource = {
-    val file = Cloner.clone(repo = repoName, owner = owner, sha = Some(sha))
-    FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(repoName, file.get))
-  }
+  override def resolveSha(owner: String, repoName: String, sha: String): ArtifactSource =
+    Cloner.clone(repo = repoName, owner = owner, sha = Some(sha)) match {
+      case Left(t) => throw new IllegalArgumentException("Failed to clone repo", t)
+      case Right(file) =>
+        FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(repoName, file))
+    }
 }

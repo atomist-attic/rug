@@ -9,8 +9,7 @@ import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.rug.spi.{TypeRegistry, Typed, UsageSpecificTypeRegistry}
 import com.atomist.rug.ts.{CortexTypeGenerator, DefaultTypeGeneratorConfig}
 import com.atomist.source.file.NamedFileSystemArtifactSourceIdentifier
-import com.atomist.source.git.FileSystemGitArtifactSource
-import com.atomist.util.GitRepositoryCloner
+import com.atomist.source.git.{FileSystemGitArtifactSource, GitRepositoryCloner}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 object ScenarioWorld {
@@ -86,8 +85,12 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs], c
     val rid = extractRepoId(cloneInfo)
     val cloner = new GitRepositoryCloner(oAuthToken = config.oAuthToken.getOrElse(""))
     val file = cloner.clone(rid.name, rid.owner, rid.branch, rid.sha)
-    val as = FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(rid.name, file.get))
-    new ProjectMutableView(as)
+    file match {
+      case Left(t) => throw new IllegalArgumentException("Failed to clone repo", t)
+      case Right(file) =>
+        val as = FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(rid.name, file))
+        new ProjectMutableView(as)
+    }
   }
 
   import NashornUtils._

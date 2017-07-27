@@ -84,12 +84,12 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs], c
   def cloneRepo(cloneInfo: AnyRef): ProjectMutableView = {
     val rid = extractRepoId(cloneInfo)
     val cloner = new GitRepositoryCloner(oAuthToken = config.oAuthToken.getOrElse(""))
-    val file = cloner.clone(rid.name, rid.owner, rid.branch, rid.sha)
-    file match {
-      case Left(t) => throw new IllegalArgumentException("Failed to clone repo", t)
-      case Right(file) =>
-        val as = FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(rid.name, file))
+    cloner.clone(rid.name, rid.owner, rid.branch, rid.sha) match {
+      case Some(dir) =>
+        val as = FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(rid.name, dir))
         new ProjectMutableView(as)
+      case None =>
+        throw new IllegalArgumentException("Failed to clone repo")
     }
   }
 

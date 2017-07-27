@@ -143,15 +143,17 @@ private object GitRepoResolver extends RepoResolver {
 
   override def resolveBranch(owner: String, repoName: String, branch: String): ArtifactSource =
     Cloner.clone(repo = repoName, owner = owner, branch = Some(branch)) match {
-      case Left(t) => throw new IllegalArgumentException("Failed to clone repo", t)
-      case Right(file) =>
-        FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(repoName, file))
+      case Some(dir) =>
+        FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(repoName, dir))
+      case None =>
+        throw new IllegalArgumentException("Failed to clone repo")
     }
 
   override def resolveSha(owner: String, repoName: String, sha: String): ArtifactSource =
     Cloner.clone(repo = repoName, owner = owner, sha = Some(sha)) match {
-      case Left(t) => throw new IllegalArgumentException("Failed to clone repo", t)
-      case Right(file) =>
-        FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(repoName, file))
+      case Some(dir) =>
+        FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(repoName, dir))
+      case None =>
+        throw new IllegalArgumentException("Failed to clone repo")
     }
 }

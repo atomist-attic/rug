@@ -59,7 +59,7 @@ trait V8Proxy {
       // should be OK
       val method = methods.find(m => m.getParameterCount == args.size) match {
         case Some(m) => m
-        case _ => throw new RuntimeException(s"Could not find method with matching cardinality in: ${methods.mkString(",")}")
+        case _ => throw new RuntimeException(s"Could not find method with matching cardinality (${args.size}) in: ${methods.mkString(",")}")
       }
       val result = args.length match {
         case o if o > 0 => method.invoke(obj, args: _*)

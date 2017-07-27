@@ -87,12 +87,13 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
 
   @ExposeAsFunction
   def setRootContext(n: AnyRef): Unit = {
-    rootContext = n match {
-      case o: JavaScriptObject =>  JavaScriptBackedGraphNode.toGraphNode(n).get
-      case o: GraphNode => o
-      case x =>
-        throw new RuntimeException(s"Could not set root context from $x")
-    }
+    rootContext = n
+//    match {
+//      case o: JavaScriptObject =>  JavaScriptBackedGraphNode.toGraphNode(n).get
+//      case o: GraphNode => o
+//      case x =>
+//        throw new RuntimeException(s"Could not set root context from $x")
+//    }
   }
 
   @ExposeAsFunction

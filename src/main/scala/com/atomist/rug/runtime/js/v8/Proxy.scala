@@ -71,7 +71,52 @@ object Proxy {
 //      val json = node.getRuntime.get("JSON").asInstanceOf[V8Object]
 //      val asStr = json.executeJSFunction("stringify", o.getNativeObject)
 //      json.executeJSFunction("parse", asStr)
-      o.getNativeObject
+      val copy = new V8Object(node.getRuntime)
+
+      def addEntries(original: V8Object, target: V8Object): Unit ={
+        original.getKeys.foreach(key =>
+          original.get(key) match {
+            case o: V8Object if !o.isUndefined =>
+              val another = new V8Object(node.getRuntime)
+              target.add(key, another)
+              addEntries(o, target)
+            case a: V8Array =>
+              val copy = new V8Array(node.getRuntime)
+              for (i <- 0 to a.length()) {
+                 a.get(i) match {
+                   case b: java.lang.Boolean => copy.push(b)
+                   case d: java.lang.Double => copy.push(d)
+                   case i: java.lang.Integer => copy.push(i)
+                   case s: String => copy.push(s)
+                   case v: V8Object =>
+                     val valCopy = new V8Object(node.getRuntime)
+                     addEntries(v, valCopy)
+                     copy.push(valCopy)
+                   case v: V8Value => copy.push(v)
+                 }
+
+              }
+            case f: V8Function =>
+              val callback = new V8Object(node.getRuntime)
+              callback.registerJavaMethod(new JavaCallback {
+                override def invoke(receiver: V8Object, parameters: V8Array): AnyRef = {
+                    f.call(receiver, parameters)
+                }
+              }, key)
+
+            case s: String => target.add(key, s)
+            case b: java.lang.Boolean => target.add(key, b)
+            case d: java.lang.Double => target.add(key, d)
+            case i: java.lang.Integer => target.add(key, i)
+            case _ => ???
+          }
+        )
+      }
+
+      addEntries(o.getNativeObject.asInstanceOf[V8Object], copy)
+      copy
+//      o.getNativeObject
+
     case Some(r: AnyRef) => Proxy(node, r)
     case r: AnyRef => Proxy(node, r)
     case x => x.asInstanceOf[AnyRef]

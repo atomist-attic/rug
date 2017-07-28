@@ -130,7 +130,7 @@
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
             <artifactId>scala-logging_${scala.binary.version}</artifactId>
-            <version>3.5.0</version>
+            <version>3.7.2</version>
         </dependency>
         <dependency>
             <groupId>org.scalatest</groupId>

@@ -1,10 +1,10 @@
 package com.atomist.project.common
 
 import com.atomist.param.{Parameter, ParameterValue}
-import com.atomist.source.ArtifactSourceCreationException
+import com.atomist.source.ArtifactSourceException
 
 class InvalidParametersException(msg: String)
-  extends ArtifactSourceCreationException(msg)
+  extends ArtifactSourceException(msg)
 
 class MissingParametersException(msg: String, parameters: Seq[Parameter])
   extends InvalidParametersException(msg)

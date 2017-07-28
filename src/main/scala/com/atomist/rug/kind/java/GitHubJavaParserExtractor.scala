@@ -3,7 +3,7 @@ package com.atomist.rug.kind.java
 import java.io.InputStreamReader
 import java.util.{List => JList}
 
-import com.atomist.source.{ArtifactSourceAccessException, FileArtifact}
+import com.atomist.source.{ArtifactSourceException, FileArtifact}
 import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.{JavaParser, ParseException}
 import com.typesafe.scalalogging.LazyLogging
@@ -28,7 +28,7 @@ object GitHubJavaParserExtractor extends Function[JList[FileArtifact], Seq[FileA
             FileAndCompilationUnit(f, JavaParser.parse(reader))
           } catch {
             case pex: ParseException =>
-              throw new ArtifactSourceAccessException(s"Parsing error in ${f.path},content was\n${f.content}", pex)
+              throw new ArtifactSourceException(s"Parsing error in ${f.path},content was\n${f.content}", pex)
           }
         })
       )

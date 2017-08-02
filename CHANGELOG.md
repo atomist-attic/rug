@@ -11,25 +11,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
--   Parameter and MappedParameter decorated properties from super classes are now inherited
-    by sub-classes [#646][646]
-
--   Added `GITHUB_DEFAULT_REPO_VISIBILITY` mapped parameter that determines
-    repository visibility based on organization GitHub plan
+-   Parameter and MappedParameter decorated properties from super
+    classes are now inherited by sub-classes [#646][646]
+-   Added `GITHUB_DEFAULT_REPO_VISIBILITY` mapped parameter that
+    determines repository visibility based on organization GitHub plan
+-   MappedParameters.{CORRELATION_ID,GITHUB_URL} in TypeScript
 
 ### Changed
 
 -   Updated typescript & typedoc used for doc generation to 2.4.1 and 0.7.1 respectively
-    
 -   Added `post` property to `UpdatableMessage` to indicate if we message should be written if it
     didn't previously existed
-    
+-   Leave timestamp undefined when creating UpdatableMessage [#654][654]
+-   Export LocallyRenderedMessage in TypeScript
+
 ### Fixed
 
 -   Ensure default values for optional parameters to Rug Functions
     are used, instead of null. Primitives are converted to 0 or false
 
 [646]: https://github.com/atomist/rug/issues/646
+[654]: https://github.com/atomist/rug/issues/654
 
 ## [1.0.0-m.5] - 2017-07-11
 
@@ -68,7 +70,7 @@ Milestone 4 (whiskey) release
 ### Added
 
 -   Add internal support for `Scope` on Rugs. Currently this is only used
-    on Response Handlers, and will be used to change the visibility of 
+    on Response Handlers, and will be used to change the visibility of
     auto-generated ones so they are not indexed, displayed etc by the CLI
     or Bot.
 -   Add support for @IntegrationTest decorator. TypeScript Classes with
@@ -101,11 +103,11 @@ Milestone 4 (whiskey) release
 -   Remove some more remnants of reviewers
 -   Harmonized much of the Rug loading code between project operations and
     handlers
--   RugLanguageExtensions may return a smaller interface, `ParsedNode` from 
+-   RugLanguageExtensions may return a smaller interface, `ParsedNode` from
     their parsing method `fileToRawNode`, instead of requiring `PositionedTreeNode`
 -   Removed CommonViewOperations with its deprecated `fail` and `println` methods
 -   Removed unnecessary InstantEditorFailureException as TypeScript can throw errors
-    
+
 ### Fixed
 
 -   Decorators now hide defined properties by setting `enumerable=false` [#554][554]

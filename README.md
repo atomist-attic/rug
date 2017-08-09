@@ -1,7 +1,6 @@
 # Atomist 'rug'
 
 [![Build Status](https://travis-ci.org/atomist/rug.svg?branch=master)](https://travis-ci.org/atomist/rug)
-[![Slack Status](https://join.atomist.com/badge.svg)](https://join.atomist.com/)
 
 The Rug runtime: Support for Atomist **project operations** and **handlers** (aka *rugs*). Rugs are authored in JavaScript or any language that compiles to JavaScript capable of executing in [Nashorn](https://en.wikipedia.org/wiki/Nashorn_(JavaScript_engine)). We recommend [TypeScript](http://www.typescriptlang.org/) and provide TypeScript interfaces for the Atomist project and team model.
 

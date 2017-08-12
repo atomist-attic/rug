@@ -1,48 +1,48 @@
 import {
-  GraphNode,
-  Match,
-  PathExpression,
-  PathExpressionEngine,
-  TreeNode,
+    GraphNode,
+    Match,
+    PathExpression,
+    PathExpressionEngine,
+    TreeNode,
 } from "../tree/PathExpression";
 import { GitProjectLoader } from "./GitProjectLoader";
 import { Parameter } from "./RugOperation";
 
 export interface RugCoordinate {
-  readonly name: string;
-  readonly group: string;
-  readonly artifact: string;
+    readonly name: string;
+    readonly group: string;
+    readonly artifact: string;
 }
 
 type InstructionKind = "generate" | "edit" | "execute" | "respond" | "command";
 
 export interface Instruction<T extends InstructionKind> {
-  readonly name: string | RugCoordinate;
-  readonly parameters?: {};
-  readonly kind: T;
+    readonly name: string | RugCoordinate;
+    readonly parameters?: {};
+    readonly kind: T;
 }
 
 export class EventRespondable<T extends Edit | Generate | Execute> {
-  public instruction: T;
-  public onSuccess?: EventPlan | EventMessage | Respond;
-  public onError?: EventPlan | EventMessage | Respond;
+    public instruction: T;
+    public onSuccess?: EventPlan | EventMessage | Respond;
+    public onError?: EventPlan | EventMessage | Respond;
 }
 
 export class CommandRespondable<T extends Edit | Generate | Execute | Command> {
-  public instruction: T;
-  public onSuccess?: CommandPlan | CommandMessage | Respond;
-  public onError?: CommandPlan | CommandMessage | Respond;
+    public instruction: T;
+    public onSuccess?: CommandPlan | CommandMessage | Respond;
+    public onError?: CommandPlan | CommandMessage | Respond;
 }
 
 export class Presentable<T extends InstructionKind> {
-  public instruction: Instruction<T> | PresentableGenerate | PresentableEdit;
-  public label?: string;
-  public id?: string;
+    public instruction: Instruction<T> | PresentableGenerate | PresentableEdit;
+    public label?: string;
+    public id?: string;
 }
 
 export class Identifiable<T extends InstructionKind> {
-  public instruction: Instruction<T> | PresentableGenerate | PresentableEdit;
-  public id?: string;
+    public instruction: Instruction<T> | PresentableGenerate | PresentableEdit;
+    public id?: string;
 }
 
 // Location to a project.
@@ -51,7 +51,7 @@ export class Identifiable<T extends InstructionKind> {
 interface ProjectReference { }
 
 export interface ProjectInstruction<T extends InstructionKind> extends Instruction<T> {
-  project: string | ProjectReference;
+    project: string | ProjectReference;
 }
 
 type EditorTargetKind = "direct" | "github-pull-request" | "github-branch";
@@ -59,32 +59,32 @@ type EditorTargetKind = "direct" | "github-pull-request" | "github-branch";
  * How should the `edit` be applied? PR details etc.
  */
 export interface EditorTarget<T extends EditorTargetKind> {
-  kind: T;
-  baseBranch: string;
+    kind: T;
+    baseBranch: string;
 }
 
 /**
  * Get an editor instruction to run a GitHub Pull Request
  */
 export class GitHubPullRequest implements EditorTarget<"github-pull-request"> {
-  public kind: "github-pull-request" = "github-pull-request";
-  public title?: string; // title of the PR
-  public body?: string; // body of the PR (defaults to editor changelog)
-  public headBranch?: string; // name of PR source branch (default auto-generated)
-  constructor(public baseBranch: string = "master") { }
+    public kind: "github-pull-request" = "github-pull-request";
+    public title?: string; // title of the PR
+    public body?: string; // body of the PR (defaults to editor changelog)
+    public headBranch?: string; // name of PR source branch (default auto-generated)
+    constructor(public baseBranch: string = "master") { }
 }
 
 /**
  * Get an editor instruction to run on a new GitHub branch
  */
 export class GitHubBranch implements EditorTarget<"github-branch"> {
-  public kind: "github-branch" = "github-branch";
-  constructor(public baseBranch: string = "master", public headBranch?: string) { }
+    public kind: "github-branch" = "github-branch";
+    constructor(public baseBranch: string = "master", public headBranch?: string) { }
 }
 // tslint:disable-next-line:no-empty-interface
 export interface Edit extends ProjectInstruction<"edit"> {
-  target?: EditorTarget<EditorTargetKind>;
-  commitMessage?: string;
+    target?: EditorTarget<EditorTargetKind>;
+    commitMessage?: string;
 }
 
 // extends ProjectInstruction because we need to know the project name
@@ -93,12 +93,12 @@ export interface Generate extends ProjectInstruction<"generate"> { }
 
 // because in a message, we may not know project name yet
 export interface PresentableGenerate extends Instruction<"generate"> {
-  project?: string | ProjectReference;
+    project?: string | ProjectReference;
 }
 
 // because in a message, we may not know project name yet
 export interface PresentableEdit extends Instruction<"edit"> {
-  project?: string | ProjectReference;
+    project?: string | ProjectReference;
 }
 
 // tslint:disable-next-line:no-empty-interface
@@ -109,15 +109,15 @@ export interface Respond extends Instruction<"respond"> { }
 export interface Command extends Instruction<"command"> { }
 
 export interface HandleCommand {
-  handle(ctx: HandlerContext): CommandPlan;
+    handle(ctx: HandlerContext): CommandPlan;
 }
 
 export interface HandleEvent<R extends GraphNode, M extends GraphNode> {
-  handle(root: Match<R, M>): EventPlan;
+    handle(root: Match<R, M>): EventPlan;
 }
 
 export interface HandleResponse<T> {
-  handle(response: Response<T>, ctx?: HandlerContext): EventPlan | CommandPlan;
+    handle(response: Response<T>, ctx?: HandlerContext): EventPlan | CommandPlan;
 }
 
 /**
@@ -127,36 +127,36 @@ export interface HandleResponse<T> {
  */
 export interface HandlerContext {
 
-  /**
-   * Id of the team we're working on behalf of
-   */
-  teamId: string;
+    /**
+     * Id of the team we're working on behalf of
+     */
+    teamId: string;
 
-  pathExpressionEngine: PathExpressionEngine;
+    pathExpressionEngine: PathExpressionEngine;
 
-  /**
-   * The root of this team's context. Allows execution
-   * of path expressions.
-   */
-  contextRoot: GraphNode;
+    /**
+     * The root of this team's context. Allows execution
+     * of path expressions.
+     */
+    contextRoot: GraphNode;
 
-  /**
-   * RepoResolver to use in loading repositories.
-   */
-  gitProjectLoader: GitProjectLoader;
+    /**
+     * RepoResolver to use in loading repositories.
+     */
+    gitProjectLoader: GitProjectLoader;
 
 }
 
 export enum Status {
-  failure,
-  success,
+    failure,
+    success,
 }
 
 export interface Response<T> {
-  msg: string;
-  code: number;
-  status: Status;
-  body: T;
+    msg: string;
+    code: number;
+    status: Status;
+    body: T;
 }
 
 type Respondable = EventRespondable<any> | CommandRespondable<any>;
@@ -168,18 +168,18 @@ type Respondable = EventRespondable<any> | CommandRespondable<any>;
  */
 export abstract class Plan {
 
-  public instructions: Respondable[] = [];
+    public instructions: Respondable[] = [];
 
-  public messages: PlanMessage[] = [];
+    public messages: PlanMessage[] = [];
 
-  public add?(thing: Respondable | PlanMessage): this {
-    if (thing instanceof ResponseMessage || thing instanceof DirectedMessage || thing instanceof LifecycleMessage) {
-      this.messages.push(thing);
-    } else {
-      this.instructions.push(thing);
+    public add?(thing: Respondable | PlanMessage): this {
+        if (thing instanceof ResponseMessage || thing instanceof DirectedMessage || thing instanceof LifecycleMessage) {
+            this.messages.push(thing);
+        } else {
+            this.instructions.push(thing);
+        }
+        return this;
     }
-    return this;
-  }
 }
 
 type EventMessage = LifecycleMessage | DirectedMessage;
@@ -191,13 +191,13 @@ type CommandMessage = ResponseMessage | DirectedMessage;
  */
 export class EventPlan extends Plan {
 
-  public static ofMessage(m: EventMessage): EventPlan {
-    return new EventPlan().add(m);
-  }
+    public static ofMessage(m: EventMessage): EventPlan {
+        return new EventPlan().add(m);
+    }
 
-  public add?(msg: EventMessage | EventRespondable<any>): this {
-    return super.add(msg);
-  }
+    public add?(msg: EventMessage | EventRespondable<any>): this {
+        return super.add(msg);
+    }
 }
 
 /**
@@ -205,74 +205,74 @@ export class EventPlan extends Plan {
  */
 export class CommandPlan extends Plan {
 
-  public static ofMessage(m: CommandMessage): CommandPlan {
-    return new CommandPlan().add(m);
-  }
+    public static ofMessage(m: CommandMessage): CommandPlan {
+        return new CommandPlan().add(m);
+    }
 
-  public add?(msg: CommandMessage | CommandRespondable<any>): this {
-    return super.add(msg);
-  }
+    public add?(msg: CommandMessage | CommandRespondable<any>): this {
+        return super.add(msg);
+    }
 }
 
 export type MessageMimeType = "application/x-atomist-slack+json" | "text/plain";
 
 export abstract class MessageMimeTypes {
-  public static SLACK_JSON: MessageMimeType = "application/x-atomist-slack+json";
-  public static PLAIN_TEXT: MessageMimeType = "text/plain";
+    public static SLACK_JSON: MessageMimeType = "application/x-atomist-slack+json";
+    public static PLAIN_TEXT: MessageMimeType = "text/plain";
 }
 
 type MessageKind = "response" | "lifecycle" | "directed";
 
 interface Message<T extends MessageKind> {
-  kind: T;
+    kind: T;
 }
 
-abstract class LocallyRenderedMessage<T extends MessageKind> implements Message<T> {
-  public kind: T;
+export abstract class LocallyRenderedMessage<T extends MessageKind> implements Message<T> {
+    public kind: T;
 
-  public usernames?: string[] = [];
-  public channelNames?: string[] = [];
+    public usernames?: string[] = [];
+    public channelNames?: string[] = [];
 
-  public contentType: MessageMimeType = MessageMimeTypes.PLAIN_TEXT;
-  public body: string;
-  public instructions?: Array<Identifiable<any>> = [];
+    public contentType: MessageMimeType = MessageMimeTypes.PLAIN_TEXT;
+    public body: string;
+    public instructions?: Array<Identifiable<any>> = [];
 
-  public addAddress?(address: MessageAddress): this {
-    if (address instanceof UserAddress) {
-      this.usernames.push(address.username);
-    } else {
-      this.channelNames.push(address.channelName);
+    public addAddress?(address: MessageAddress): this {
+        if (address instanceof UserAddress) {
+            this.usernames.push(address.username);
+        } else {
+            this.channelNames.push(address.channelName);
+        }
+        return this;
     }
-    return this;
-  }
 
-  public addAction?(instruction: Identifiable<any>): this {
-    this.instructions.push(instruction);
-    return this;
-  }
+    public addAction?(instruction: Identifiable<any>): this {
+        this.instructions.push(instruction);
+        return this;
+    }
 }
 
 /**
  * Represents the response to the bot from a command
  */
 export class ResponseMessage extends LocallyRenderedMessage<"response"> {
-  public kind: "response" = "response";
+    public kind: "response" = "response";
 
-  constructor(body: string, contentType?: MessageMimeType) {
-    super();
-    this.body = body;
-    if (contentType) {
-      this.contentType = contentType;
+    constructor(body: string, contentType?: MessageMimeType) {
+        super();
+        this.body = body;
+        if (contentType) {
+            this.contentType = contentType;
+        }
     }
-  }
 }
 
 export class UserAddress {
-  constructor(public username: string) { }
+    constructor(public username: string) { }
 }
 
 export class ChannelAddress {
-  constructor(public channelName: string) { }
+    constructor(public channelName: string) { }
 }
 
 export type MessageAddress = UserAddress | ChannelAddress;
@@ -282,16 +282,16 @@ export type MessageAddress = UserAddress | ChannelAddress;
  */
 export class DirectedMessage extends LocallyRenderedMessage<"directed"> {
 
-  public kind: "directed" = "directed";
+    public kind: "directed" = "directed";
 
-  constructor(body: string, address: MessageAddress, contentType?: MessageMimeType) {
-    super();
-    this.body = body;
-    if (contentType) {
-      this.contentType = contentType;
+    constructor(body: string, address: MessageAddress, contentType?: MessageMimeType) {
+        super();
+        this.body = body;
+        if (contentType) {
+            this.contentType = contentType;
+        }
+        this.addAddress(address);
     }
-    this.addAddress(address);
-  }
 }
 
 /**
@@ -299,17 +299,17 @@ export class DirectedMessage extends LocallyRenderedMessage<"directed"> {
  */
 export class UpdatableMessage extends DirectedMessage {
 
-  public id: string;
-  public timestamp: string = new Date().getTime().toString();
-  // Time after which the message will get re-posted instead of re-written
-  public ttl?: string;
-  // If message with id doesn't exist update_only wouldn't create it
-  public post?: "always" | "update_only"
+    public id: string;
+    public timestamp: string;
+    // Time after which the message will get re-posted instead of re-written
+    public ttl?: string;
+    // If message with id doesn't exist update_only wouldn't create it
+    public post?: "always" | "update_only";
 
-  constructor(id: string, body: string, address: MessageAddress, contentType?: MessageMimeType) {
-    super(body, address, contentType);
-    this.id = id;
-  }
+    constructor(id: string, body: string, address: MessageAddress, contentType?: MessageMimeType) {
+        super(body, address, contentType);
+        this.id = id;
+    }
 }
 
 /**
@@ -317,36 +317,39 @@ export class UpdatableMessage extends DirectedMessage {
  */
 export class LifecycleMessage implements Message<"lifecycle"> {
 
-  public kind: "lifecycle" = "lifecycle";
-  public node: GraphNode;
-  public instructions?: Array<Presentable<any>> = [];
-  public lifecycleId: string;
+    public kind: "lifecycle" = "lifecycle";
+    public node: GraphNode;
+    public instructions?: Array<Presentable<any>> = [];
+    public lifecycleId: string;
 
-  constructor(node: GraphNode, lifecycleId: string) {
-    this.node = node;
-    this.lifecycleId = lifecycleId;
-  }
+    constructor(node: GraphNode, lifecycleId: string) {
+        this.node = node;
+        this.lifecycleId = lifecycleId;
+    }
 
-  public addAction?(instruction: Presentable<any>): this {
-    this.instructions.push(instruction);
-    return this;
-  }
+    public addAction?(instruction: Presentable<any>): this {
+        this.instructions.push(instruction);
+        return this;
+    }
 }
 
 export type PlanMessage = ResponseMessage | DirectedMessage | LifecycleMessage;
 
 export abstract class MappedParameters {
-  // GITHUB_REPO_OWNER is deprecated; instead use GITHUB_OWNER
-  public static readonly GITHUB_REPO_OWNER: string = "atomist://github/repository/owner";
-  public static readonly GITHUB_OWNER: string = "atomist://github/repository/owner";
-  public static readonly GITHUB_REPOSITORY: string = "atomist://github/repository";
-  public static readonly GITHUB_WEBHOOK_URL: string = "atomist://github_webhook_url";
-  public static readonly GITHUB_API_URL: string = "atomist://github_api_url";
-  public static readonly GITHUB_DEFAULT_REPO_VISIBILITY: string = "atomist://github/default_repo_visibility";
+    public static readonly CORRELATION_ID: string = "atomist://correlation_id";
 
-  public static readonly SLACK_CHANNEL: string = "atomist://slack/channel";
-  public static readonly SLACK_CHANNEL_NAME: string = "atomist://slack/channel_name";
-  public static readonly SLACK_TEAM: string = "atomist://slack/team";
-  public static readonly SLACK_USER: string = "atomist://slack/user";
-  public static readonly SLACK_USER_NAME: string = "atomist://slack/user_name";
+    // GITHUB_REPO_OWNER is deprecated; instead use GITHUB_OWNER
+    public static readonly GITHUB_REPO_OWNER: string = "atomist://github/repository/owner";
+    public static readonly GITHUB_OWNER: string = "atomist://github/repository/owner";
+    public static readonly GITHUB_REPOSITORY: string = "atomist://github/repository";
+    public static readonly GITHUB_WEBHOOK_URL: string = "atomist://github_webhook_url";
+    public static readonly GITHUB_URL: string = "atomist://github_url";
+    public static readonly GITHUB_API_URL: string = "atomist://github_api_url";
+    public static readonly GITHUB_DEFAULT_REPO_VISIBILITY: string = "atomist://github/default_repo_visibility";
+
+    public static readonly SLACK_CHANNEL: string = "atomist://slack/channel";
+    public static readonly SLACK_CHANNEL_NAME: string = "atomist://slack/channel_name";
+    public static readonly SLACK_TEAM: string = "atomist://slack/team";
+    public static readonly SLACK_USER: string = "atomist://slack/user";
+    public static readonly SLACK_USER_NAME: string = "atomist://slack/user_name";
 }

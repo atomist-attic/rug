@@ -235,7 +235,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   it should "return plan with UpdatableMessage containing id and timestamp" in {
     val plan = directed(simpleCommandHandlerReturningUpdatableMessageWithMessageIdAndTimestamp)
     assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].messageId.get === "some-message")
-    assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].timestamp.isDefined)
+    assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].timestamp.isEmpty)
     assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].ttl.isDefined)
     assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].post.get === "update_only")
   }

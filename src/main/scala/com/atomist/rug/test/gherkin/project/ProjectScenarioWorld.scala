@@ -135,7 +135,7 @@ class ProjectScenarioWorld(
     val paramValues = op.jsVar.keys().map(k => {
       SimpleParameterValue(k, op.jsVar.stringProperty(k, ""))
     })
-    op.validateParameters(SimpleParameterValues(paramValues.toSeq))
+    op.validateParameters(SimpleParameterValues(paramValues))
   }
 }
 

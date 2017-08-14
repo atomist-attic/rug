@@ -10,8 +10,7 @@ import com.atomist.rug.runtime.js.interop.ExposeAsFunction
 import com.atomist.rug.spi.{TypeRegistry, Typed, UsageSpecificTypeRegistry}
 import com.atomist.rug.ts.{CortexTypeGenerator, DefaultTypeGeneratorConfig}
 import com.atomist.source.file.NamedFileSystemArtifactSourceIdentifier
-import com.atomist.source.git.FileSystemGitArtifactSource
-import com.atomist.util.GitRepositoryCloner
+import com.atomist.source.git.{FileSystemGitArtifactSource, GitRepositoryCloner}
 
 import scala.util.{Failure, Success, Try}
 

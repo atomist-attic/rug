@@ -67,7 +67,7 @@ class PlanBuilder {
         }
         val post = jsMessage.getMember("post") match {
           case c: String => Option(c)
-          case _: Undefined => None
+          case UNDEFINED => None
         }
         val messageBody = jsMessage.getMember("body") match {
           case json: JavaScriptObject =>

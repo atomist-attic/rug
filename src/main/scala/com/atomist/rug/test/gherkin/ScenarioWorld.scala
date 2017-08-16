@@ -12,6 +12,8 @@ import com.atomist.source.file.NamedFileSystemArtifactSourceIdentifier
 import com.atomist.source.git.{FileSystemGitArtifactSource, GitRepositoryCloner}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
+import scala.util.{Failure, Success, Try}
+
 object ScenarioWorld {
 
   lazy val ExtendedTypes: TypeRegistry = CortexTypeGenerator.extendedTypes(DefaultTypeGeneratorConfig.CortexJson)
@@ -84,12 +86,12 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs], c
   def cloneRepo(cloneInfo: AnyRef): ProjectMutableView = {
     val rid = extractRepoId(cloneInfo)
     val cloner = new GitRepositoryCloner(oAuthToken = config.oAuthToken.getOrElse(""))
-    cloner.clone(rid.name, rid.owner, rid.branch, rid.sha) match {
-      case Some(dir) =>
+    Try(cloner.clone(rid.name, rid.owner, rid.branch, rid.sha)) match {
+      case Success(dir) =>
         val as = FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(rid.name, dir))
         new ProjectMutableView(as)
-      case None =>
-        throw new IllegalArgumentException("Failed to clone repo")
+      case Failure(e) =>
+        throw new IllegalArgumentException("Failed to clone repo", e)
     }
   }
 

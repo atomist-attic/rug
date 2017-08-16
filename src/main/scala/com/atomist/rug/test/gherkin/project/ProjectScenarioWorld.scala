@@ -14,6 +14,8 @@ import com.atomist.source.file.NamedFileSystemArtifactSourceIdentifier
 import com.atomist.source.git.{FileSystemGitArtifactSource, GitRepositoryCloner}
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
 
+import scala.util.{Failure, Success, Try}
+
 /**
   * Convenient methods for working with projects
   */
@@ -142,18 +144,18 @@ private object GitRepoResolver extends RepoResolver {
   private val Cloner = GitRepositoryCloner()
 
   override def resolveBranch(owner: String, repoName: String, branch: String): ArtifactSource =
-    Cloner.clone(repo = repoName, owner = owner, branch = Some(branch)) match {
-      case Some(dir) =>
+    Try(Cloner.clone(repo = repoName, owner = owner, branch = Some(branch))) match {
+      case Success(dir) =>
         FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(repoName, dir))
-      case None =>
-        throw new IllegalArgumentException("Failed to clone repo")
+      case Failure(e) =>
+        throw new IllegalArgumentException("Failed to clone repo", e)
     }
 
   override def resolveSha(owner: String, repoName: String, sha: String): ArtifactSource =
-    Cloner.clone(repo = repoName, owner = owner, sha = Some(sha)) match {
-      case Some(dir) =>
+    Try(Cloner.clone(repo = repoName, owner = owner, sha = Some(sha))) match {
+      case Success(dir) =>
         FileSystemGitArtifactSource(NamedFileSystemArtifactSourceIdentifier(repoName, dir))
-      case None =>
-        throw new IllegalArgumentException("Failed to clone repo")
+      case Failure(e) =>
+        throw new IllegalArgumentException("Failed to clone repo", e)
     }
 }

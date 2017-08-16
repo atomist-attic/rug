@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Can now set `parameterName` on IdentifiableInstruction in Directed/Response Messages
+    for use in select boxes
 -   Parameter and MappedParameter decorated properties from super
     classes are now inherited by sub-classes [#646][646]
 -   Added `GITHUB_DEFAULT_REPO_VISIBILITY` mapped parameter that

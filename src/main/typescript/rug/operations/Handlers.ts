@@ -42,6 +42,7 @@ export class Presentable<T extends InstructionKind> {
 
 export class Identifiable<T extends InstructionKind> {
     public instruction: Instruction<T> | PresentableGenerate | PresentableEdit;
+    public parameterName?: string;
     public id?: string;
 }
 

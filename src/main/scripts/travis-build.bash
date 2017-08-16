@@ -31,7 +31,7 @@ function main() {
             err "failed to set timestamped project version"
             return 1
         fi
-        project_version=$(mvn help:evaluate -Dexpression=project.version | grep -v "^\[")
+        project_version=$(mvn help:evaluate -Dexpression=project.version | grep -E '^[0-9]+\.[0-9]+\.[0-9](-([0-9]{14}|SNAPSHOT))?$' | tail -n 1)
         if [[ $? != 0 || ! $project_version ]]; then
             err "failed to parse project version"
             return 1

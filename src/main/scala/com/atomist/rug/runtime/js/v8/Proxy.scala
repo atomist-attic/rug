@@ -113,9 +113,9 @@ object Proxy {
         )
       }
 
-      addEntries(o.getNativeObject.asInstanceOf[V8Object], copy)
-      copy
-//      o.getNativeObject
+//      addEntries(o.getNativeObject.asInstanceOf[V8Object], copy)
+//      copy
+      o.getNativeObject
 
     case Some(r: AnyRef) => Proxy(node, r)
     case r: AnyRef => Proxy(node, r)

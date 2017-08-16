@@ -165,4 +165,16 @@ class PlanBuilderTest extends FunSpec with Matchers with OneInstancePerTest with
     val target6 = plan6.instructions.head.instruction.detail.editorTarget.get.asInstanceOf[GitHubBranch]
     assert(target6.commitMessage.contains("woot"))
   }
+
+  val messageWithParameterNameAndId = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "MessageWithParameterNameAndId.ts"))
+
+  it ("should extract IdentifiableInstruction id and parameter") {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(messageWithParameterNameAndId))
+    val rugs = RugArchiveReader(rugArchive)
+    val com = rugs.commandHandlers.head
+    val plan = com.handle(null,SimpleParameterValues.Empty).get
+    assert(plan.local.head.instructions.head.id.contains("someid"))
+    assert(plan.local.head.instructions.head.parameterName.contains("paramName"))
+  }
 }

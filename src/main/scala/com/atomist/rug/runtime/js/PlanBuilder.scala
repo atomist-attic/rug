@@ -142,7 +142,13 @@ class PlanBuilder {
       case x: String => Some(x)
       case _ => None
     }
-    Presentable(instruction, label, id)
+
+    val parameterName = jsPresentable.getMember("parameterName") match {
+      case x: String => Some(x)
+      case _ => None
+    }
+
+    Presentable(instruction, label, id, parameterName)
   }
 
   def constructRespondable(jsRespondable: ScriptObjectMirror, returningRug: Option[Rug]): Plannable = {

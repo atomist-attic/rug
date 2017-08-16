@@ -86,7 +86,7 @@ object Handlers {
 
   case class Nonrespondable(instruction: NonrespondableInstruction) extends Plannable
 
-  case class Presentable(instruction: Instruction, label: Option[String], id: Option[String])
+  case class Presentable(instruction: Instruction, label: Option[String], id: Option[String], parameterName: Option[String])
 
   //likely to change
 

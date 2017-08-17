@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+-   Slice with out-of-bounds numbers works OK in JS, so we should allow
+    them here instead of failing with exceptions.
 -   Ensure default values for optional parameters to Rug Functions
     are used, instead of null. Primitives are converted to 0 or false
 

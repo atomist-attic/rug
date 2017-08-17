@@ -202,13 +202,19 @@ class JavaScriptArray[T](val toProxy: java.util.List[T])
             case _ =>
               val head = args.head.asInstanceOf[Int]
               val begin = if (head >= 0) head else lyst.size() + head
-              args.length match {
-                case 1 => new JavaScriptArray[T](lyst.subList(begin, lyst.size()))
-                case _ =>
-                  val theEnd = args(1).asInstanceOf[Int]
-                  val end = if (theEnd >= 0) theEnd else lyst.size() + theEnd
-                  new JavaScriptArray[T](lyst.subList(begin, end))
-              }
+              if (head >= lyst.size()) {
+                new util.ArrayList[T]()
+              } else
+                args.length match {
+                  case 1 => new JavaScriptArray[T](lyst.subList(begin, lyst.size()))
+                  case _ =>
+                    val theEnd = args(1).asInstanceOf[Int]
+                    val end =
+                      if (theEnd > lyst.size()) lyst.size()
+                      else if (theEnd >= 0) theEnd
+                      else lyst.size() + theEnd
+                    new JavaScriptArray[T](lyst.subList(begin, end))
+                }
           }
         }
       }
@@ -361,7 +367,7 @@ class JavaScriptArray[T](val toProxy: java.util.List[T])
         override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
           val map = args.head.asInstanceOf[ScriptObjectMirror]
           val res = new JavaScriptArray[AnyRef](new util.ArrayList[AnyRef]())
-          for(i <- 0 until lyst.size()){
+          for (i <- 0 until lyst.size()) {
             val thisArg = if (args.length > 1) args(1) else thiz
             res.add(map.call(thisArg, lyst.get(i).asInstanceOf[Object], i.asInstanceOf[Integer], lyst))
           }

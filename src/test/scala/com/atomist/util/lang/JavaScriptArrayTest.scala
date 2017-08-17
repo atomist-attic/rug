@@ -109,6 +109,17 @@ class JavaScriptArrayTest extends FlatSpec with Matchers {
       |       if(sliced4[0] != "is" || sliced4[2] != "good") {
       |          throw new Error("Negative end slice failed")
       |       }
+      |
+      |       let sliced5: string[] = this.lyst.slice(10)
+      |       if(sliced5.length !== 0) {
+      |          throw new Error("Begin past end slice failed")
+      |       }
+      |
+      |       let sliced6: string[] = this.lyst.slice(0, 10)
+      |       if(sliced6.length !== this.lyst.length) {
+      |          throw new Error("end past end slice failed")
+      |       }
+      |
       |       let sorted: string[] = this.lyst.sort()
       |
       |       if(sorted[0] != "a" || sorted[4] != "movie"){

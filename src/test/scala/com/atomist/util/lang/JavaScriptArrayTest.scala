@@ -93,32 +93,38 @@ class JavaScriptArrayTest extends FlatSpec with Matchers {
       |       if(sliced[0] != "is" || sliced[3] != "movie") {
       |          throw new Error("Simple slice failed")
       |       }
+      |       sliced.map(a => a + 1); // make sure this method exists
       |
       |       let sliced2: string[] = this.lyst.slice(-1)
       |       if(sliced2[0] != "movie") {
       |          throw new Error("Simple negative slice failed")
       |       }
+      |       sliced2.map(a => a + 1); // make sure this method exists
       |
       |       let sliced3: string[] = this.lyst.slice(1,4)
       |       if(sliced3[0] != "is" || sliced3[2] != "good") {
       |          console.log(sliced3.toString())
       |          throw new Error("End slice failed")
       |       }
+      |       sliced3.map(a => a + 1); // make sure this method exists
       |
       |       let sliced4: string[] = this.lyst.slice(1,-1)
       |       if(sliced4[0] != "is" || sliced4[2] != "good") {
       |          throw new Error("Negative end slice failed")
       |       }
+      |       sliced4.map(a => a + 1); // make sure this method exists
       |
       |       let sliced5: string[] = this.lyst.slice(10)
       |       if(sliced5.length !== 0) {
       |          throw new Error("Begin past end slice failed")
       |       }
+      |       sliced5.map(a => a + 1); // make sure this method exists
       |
       |       let sliced6: string[] = this.lyst.slice(0, 10)
       |       if(sliced6.length !== this.lyst.length) {
       |          throw new Error("end past end slice failed")
       |       }
+      |       sliced6.map(a => a + 1); // make sure this method exists
       |
       |       let sorted: string[] = this.lyst.sort()
       |

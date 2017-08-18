@@ -203,7 +203,7 @@ class JavaScriptArray[T](val toProxy: java.util.List[T])
               val head = args.head.asInstanceOf[Int]
               val begin = if (head >= 0) head else lyst.size() + head
               if (head >= lyst.size()) {
-                new util.ArrayList[T]()
+                new JavaScriptArray[T](new util.ArrayList[T]())
               } else
                 args.length match {
                   case 1 => new JavaScriptArray[T](lyst.subList(begin, lyst.size()))

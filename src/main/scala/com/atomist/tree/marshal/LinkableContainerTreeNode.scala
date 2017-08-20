@@ -31,9 +31,7 @@ private class LinkableContainerTreeNode(
   // to call toString on our child nodes
   override def toString: String = {
     getClass.getSimpleName + s": (${nodeTags.mkString(",")}); " +
-      childNodeNames.map(childName => {
-        childName + ":[" + childNodeNames.mkString(",") + "]"
-      }).mkString("; ")
+      childNodeNames.mkString("; ")
   }
 }
 

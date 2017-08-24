@@ -89,23 +89,24 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
 
     def comment(indent: String): String = {
       val builder = new StringBuilder(s"$indent/**\n")
-      val deprecationMessage = if (deprecated) "DEPRECATED - " else ""
-      builder ++= s"$indent  * $deprecationMessage${description.getOrElse("")}\n"
-      builder ++= s"$indent  * \n"
+      val deprecationMessage = if (deprecated) " DEPRECATED -" else ""
+      val descriptionMessage = if (description.isDefined) s" ${description.get}" else ""
+      builder ++= s"$indent *$deprecationMessage$descriptionMessage\n"
+      builder ++= s"$indent *\n"
 
       if (exposeAsProperty) {
-        builder ++= s"$indent  * @property {$returnType} $name\n"
+        builder ++= s"$indent * @property {$returnType} $name\n"
       } else {
         if (params.nonEmpty) {
           for (p <- params)
-            yield builder ++= s"$indent  * ${p.comment}\n"
+            yield builder ++= s"$indent * ${p.comment}\n"
         }
 
         if (returnType != "void")
-          builder ++= s"$indent  * @returns {$returnType}\n"
+          builder ++= s"$indent * @returns {$returnType}\n"
       }
 
-      builder ++= s"$indent  */\n"
+      builder ++= s"$indent */\n"
       builder.toString
     }
 
@@ -225,11 +226,9 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       output ++= config.imports
       output ++= t.specificImports
       output ++= getImports(generatedTypes, t)
+      output ++= s"\nexport { ${t.name} };"
       output ++= config.separator
-      output ++= s"export { ${t.name} };"
-      output ++= config.separator
-      output ++= t.toString
-      output ++= config.separator
+      output ++= t.toString + "\n"
       tsClassOrInterfaces += StringFileArtifact(s"$path${t.name}.ts", output.toString())
       alreadyGenerated += t
     }
@@ -294,7 +293,4 @@ object TypeGenerationConfig {
        |import { ProjectContext } from "@atomist/rug/operations/ProjectEditor";
        |""".stripMargin
 
-  val TestStubImports: String =
-    """|import { GraphNode } from "@atomist/rug/tree/PathExpression";
-       |""".stripMargin
 }

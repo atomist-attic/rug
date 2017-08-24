@@ -25,11 +25,7 @@ object TypeScriptStubClassGeneratorTest {
       override def edit(f: FileArtifact): FileArtifact =
       f.withContent(f.content
         .replace(TypeGenerationConfig.DefaultImports,
-          TypeScriptInterfaceGeneratorTest.InterfaceTestImports)
-        .replace(TypeGenerationConfig.TestStubImports,
-          s"""
-             |interface GraphNode {}
-        """.stripMargin))
+          TypeScriptInterfaceGeneratorTest.InterfaceTestImports))
     }
 
   def compile(output: ArtifactSource): ArtifactSource = {

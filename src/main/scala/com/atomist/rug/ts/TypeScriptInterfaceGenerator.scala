@@ -50,7 +50,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
         output ++= s"\ninterface $name extends ${parent.mkString(", ")} {${config.separator}"
 
       output ++= methods.map(_.toString).mkString(config.separator)
-      output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}"
+      output ++= s"${if (methods.isEmpty) "" else config.separator}}"
       output.toString
     }
   }

@@ -15,7 +15,7 @@ class TypeScriptGenerationHelper(indent: String = "    ")
     * Convert the block to a JsDoc style comment.
     */
   def toJsDoc(block: String): String = {
-    s"""|/*
+    s"""|/**
         | * ${block.replace("\n", "\n * ")}
         | */""".stripMargin
   }

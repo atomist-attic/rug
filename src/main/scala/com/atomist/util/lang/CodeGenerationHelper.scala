@@ -16,7 +16,7 @@ class CodeGenerationHelper(indent: String = "    ") {
     */
   def indented(block: String, n: Int): String = {
     val padding = Array.fill[String](n)(indent).mkString("")
-    padding + block.replace("\n", s"\n$padding")
+    padding + block.replaceAll("\n(?!\n)", s"\n$padding")
   }
 
   /**

@@ -10,9 +10,8 @@ import scala.collection.mutable.ListBuffer
 private object TypeScriptStubClassGenerator {
 
   val DefaultTypedocBoilerplate: String =
-    """
-      |Generated class exposing Atomist Cortex.
-      |Fluent builder style class for use in testing and query by example.""".stripMargin
+    """|Generated class exposing Atomist Cortex.
+       |Fluent builder style class for use in testing and query by example.""".stripMargin
 
   val GraphNodeMethodImplementationDoc: String =
     "Implementation of GraphNode interface method.\nFor infrastructure, not user use"
@@ -24,7 +23,7 @@ private object TypeScriptStubClassGenerator {
   * @param typeRegistry registry of known Rug Types.
   */
 class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
-                                   config: TypeGenerationConfig = TypeGenerationConfig(imports = TypeGenerationConfig.TestStubImports),
+                                   config: TypeGenerationConfig = TypeGenerationConfig(imports = ""),
                                    override val tags: Seq[Tag] = Nil,
                                    val root: String = "GraphNode")
   extends AbstractTypeScriptGenerator(typeRegistry, config, tags) {
@@ -49,12 +48,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
       output ++= helper.toJsDoc(description + "\n" + DefaultTypedocBoilerplate)
       output ++= s"\nclass $name "
       val implementation = s"implements $interfaceModuleImport.$name"
-      output ++= (if (parent.head == root) {
-        implementation
-      }
-      else
-        s"extends ${parent.mkString(", ")} $implementation"
-        )
+      output ++= (if (parent.head == root) implementation else s"extends ${parent.mkString(", ")} $implementation")
       output ++= s" {${config.separator}"
 
       // Output private variables
@@ -69,7 +63,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
       output ++= graphNodeImpl(name)
       output ++= config.separator
       output ++= methods.map(_.toString).mkString(config.separator)
-      output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}"
+      output ++= s"${if (methods.isEmpty) "" else config.separator}}"
       output.toString
     }
   }
@@ -82,12 +76,12 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
           |private _nodeTags = [ "$name", "-dynamic" ];
           |
           |${helper.toJsDoc(GraphNodeMethodImplementationDoc)}
-          |nodeName(): string {
+          |public nodeName(): string {
           |${indent}return this._nodeName;
           |}
           |
           |${helper.toJsDoc(GraphNodeMethodImplementationDoc)}
-          |nodeTags(): string[] {
+          |public nodeTags(): string[] {
           |${indent}return this._nodeTags;
           |}""".stripMargin, 1)
   }
@@ -114,20 +108,23 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
 
           val core = if (exposeAsProperty) {
             helper.indented(
-              s"""${comment("")}get $name(): $returnType {
-              |${indent}if (this.$fieldName === undefined) {
-              |$indent${indent}throw new Error(`Please use the relevant builder method to set property [$name] on stub [$typeName] before accessing it. It's probably called [with${upperize(name)}]`)
-              |$indent}
-              |${indent}return this.$fieldName;
-              |}
-            """.stripMargin, 1)
+              s"""|${comment("")}get $name(): $returnType {
+                  |${indent}if (this.$fieldName === undefined) {
+                  |$indent${indent}throw new Error(`Please use the relevant builder method to set property [$name] on stub ` +
+                  |$indent$indent$indent`[$typeName] before accessing it. It's probably called [with${upperize(name)}]`);
+                  |$indent}
+                  |${indent}return this.$fieldName;
+                  |}""".stripMargin, 1)
           }
           else {
-            s"""|${comment("")}$indent$name(${params.mkString(", ")}): $returnType {
-                |$indent${indent}if (this.$fieldName} === undefined)
-                |$indent$indent${indent}throw new Error(`Please use the relevant builder method to set property [$name] on stub [$typeName] before accessing it. It's probably called [with${upperize(name)}]`)
-                |$indent$indent${indent}return this.${toFieldName(this)};
-                |$indent}""".stripMargin
+            helper.indented(
+              s"""|${comment("")}public $name(${params.mkString(", ")}): $returnType {
+                  |${indent}if (this.$fieldName} === undefined) {
+                  |$indent${indent}throw new Error(`Please use the relevant builder method to set property [$name] on stub ` +
+                  |$indent$indent$indent`[$typeName]` before accessing it. It's probably called [with${upperize(name)}]`);
+                  |$indent}
+                  |$indent${indent}return this.${toFieldName(this)};
+                  |}""".stripMargin, 1)
           }
           val builderMethod =
             // Rely on type inference in return types, as this increases
@@ -136,26 +133,25 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
               // It's an array type. Create an "addX" method to add the value to the array,
               // initializing it if necessary
               helper.indented(
-                s"""|
-                    |${helper.toJsDoc(s"Fluent builder method to add an element to the $name array")}
-                    |add${upperize(name)}(...$name: $underlyingType[]) {
-                    |${indent}if (this.$fieldName === undefined)
+                s"""|${helper.toJsDoc(s"Fluent builder method to add an element to the $name array")}
+                    |public add${upperize(name)}(...${name}_: $underlyingType[]) {
+                    |${indent}if (this.$fieldName === undefined) {
                     |$indent${indent}this.$fieldName = [];
-                    |${indent}this.$fieldName = this.$fieldName.concat($name);
+                    |$indent}
+                    |${indent}this.$fieldName = this.$fieldName.concat(${name}_);
                     |${indent}return this;
                     |}""".stripMargin, 1)
             }
             else {
               // It's a scalar. Create a "withX" method to set the value
               helper.indented(
-                s"""|
-                    |${helper.toJsDoc(s"Fluent builder method to set the $name property")}
-                    |with${upperize(name)}($name: $returnType) {
-                    |${indent}this.$fieldName = $name;
+                s"""|${helper.toJsDoc(s"Fluent builder method to set the $name property")}
+                    |public with${upperize(name)}(${name}_: $returnType) {
+                    |${indent}this.$fieldName = ${name}_;
                     |${indent}return this;
                     |}""".stripMargin, 1)
             }
-          core + builderMethod
+          core + config.separator + builderMethod
       }
     }
   }

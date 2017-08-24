@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/1.0.0-m.6...HEAD
 
+### Changed
+
+-   Avoid TypeScript keywords in function parameter names [#664][664]
+    and clean up generated TypeScript
+
+[664]: https://github.com/atomist/rug/issues/664
+
 ## [1.0.0-m.6] - 2017-08-17
 
 [1.0.0-m.6]: https://github.com/atomist/rug/compare/1.0.0-m.5...1.0.0-m.6

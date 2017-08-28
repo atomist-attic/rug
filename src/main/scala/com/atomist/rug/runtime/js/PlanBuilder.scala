@@ -27,7 +27,6 @@ object ConstructPlan {
 class PlanBuilder {
 
   def constructPlan(jsPlan: ScriptObjectMirror, returningRug: Option[Rug]): Plan = {
-
     val jsMessages = jsPlan.getMember("messages") match {
       case o: ScriptObjectMirror => o.values().toArray.toList
       case _ => Nil
@@ -51,7 +50,6 @@ class PlanBuilder {
   }
 
   def constructMessage(jsMessage: ScriptObjectMirror): Message = {
-
     jsMessage.getMember("kind") match {
       case "response" | "directed" =>
         val messageId = jsMessage.getMember("id") match {
@@ -194,7 +192,7 @@ class PlanBuilder {
           SimpleParameterValue(name,
             value match {
               case s: String => s
-              case o => JsonUtils.toJsonStr(o)
+              case obj => JsonUtils.toJsonStr(obj)
             })
         }
       case _ => Nil

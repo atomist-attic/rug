@@ -33,9 +33,9 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
       |  name: string = "dude"
       |
       |  handle(response: Response<String>) {
-      |    if(this.name != "his dudeness") throw new Error("Not on the rug, man!");
+      |    if (this.name != "his dudeness") throw new Error("Not on the rug, man!");
       |    let results = response.body;
-      |    if(results != "woot") {
+      |    if (results != "woot") {
       |       throw new Error("This will not stand");
       |    }
       |    return new CommandPlan().add(new DirectedMessage("https://www.youtube.com/watch?v=fNodQpGVVyg", new UserAddress("bob")));
@@ -63,7 +63,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
        |    if (stringed === "Thing null")
        |      throw new Error("Response is evaluating to null default string");
        |
-       |    if(results.yaml != "is more annoying than json") { throw new Error("Rats: " + results.yaml)}
+       |    if (results.yaml != "is more annoying than json") { throw new Error("Rats: " + results.yaml) }
        |    results.reasons.map(reason => reason.main.length)
        |    return new CommandPlan();
        |  }

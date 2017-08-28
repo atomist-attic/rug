@@ -40,7 +40,7 @@ object JavaScriptProjectOperationTest {
        |    content: string = "http://t.co"
        |
        |    edit(project: Project) {
-       |       if(this.content != "http://t.co"){
+       |       if (this.content != "http://t.co"){
        |          throw new Error("Content was not as expected");
        |       }
        |    }
@@ -61,7 +61,7 @@ object JavaScriptProjectOperationTest {
        |    content: string
        |
        |    edit(project: Project) {
-       |       if(this.content != "http://t.co"){
+       |       if (this.content != "http://t.co"){
        |          throw new Error("Content was not as expected");
        |       }
        |    }

@@ -72,11 +72,11 @@ class PlanBuilderTest extends FunSpec with Matchers with OneInstancePerTest with
         |
         |  handle(response: Response<string>) : CommandPlan {
         |
-        |    if(this.one != null) {
+        |    if (this.one != null) {
         |       throw new Error("One is not null: " + this.one)
         |    }
         |
-        |    if(this.two != undefined) {
+        |    if (this.two != undefined) {
         |       throw new Error("Two is not undefined: " + this.two)
         |    }
         |    return new CommandPlan();

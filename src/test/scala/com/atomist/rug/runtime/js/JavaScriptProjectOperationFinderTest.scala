@@ -46,10 +46,10 @@ class JavaScriptProjectOperationFinderTest  extends FlatSpec with Matchers {
        |    nope: boolean
        |
        |    edit(project: Project) {
-       |       if(this.amount != 10) {
+       |       if (this.amount != 10) {
        |          throw new Error("Number should be 10!");
        |       }
-       |       if(this.content != "woot") {
+       |       if (this.content != "woot") {
        |          throw new Error("Name should be woot");
        |       }
        |    }

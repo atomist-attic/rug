@@ -9,10 +9,11 @@ import com.atomist.rug.spi.MappedParameterizedRug
   */
 trait MappedParameterSupport
   extends ParameterizedSupport
-  with MappedParameterizedRug{
+    with MappedParameterizedRug {
 
   /**
     * Validate normal params first, then secrets!
+    *
     * @param poa arguments to validate
     */
   override def validateParameters(poa: ParameterValues): Unit = {
@@ -22,7 +23,7 @@ trait MappedParameterSupport
     val mapped = poa.parameterValueMap
 
     mappedParameters.foreach { s =>
-      if(!mapped.contains(s.localKey)){
+      if (!mapped.contains(s.localKey)) {
         throw new MissingSecretException(s"$name invocation is missing mapped parameter '${s.foreignKey}' on field '${s.localKey}'")
       }
     }

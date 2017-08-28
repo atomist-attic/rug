@@ -1,6 +1,6 @@
 package com.atomist.project.archive
 
-import com.atomist.rug.{BadRugSyntaxException, DuplicateRugException}
+import com.atomist.rug.DuplicateRugException
 import com.atomist.rug.runtime._
 import com.atomist.rug.runtime.js.JavaScriptContext.{EngineInitializer, redirectConsoleToSysOut}
 import com.atomist.rug.runtime.js._
@@ -30,10 +30,10 @@ class ArchiveRugResolver(graph: Dependency,
   private def find(as: ArtifactSource, resolver: RugResolver): Seq[Rug] = {
     val jsc = new JavaScriptContext(as, initializer = engineInitializer)
     val found = finders.flatMap(finder => finder.find(jsc, Some(resolver)))
-    val grouped = found.groupBy(_.name).collect{case x if x._2.size > 1 => x._1}
-    if(grouped.nonEmpty){
+    val grouped = found.groupBy(_.name).collect { case x if x._2.size > 1 => x._1 }
+    if (grouped.nonEmpty) {
       throw new DuplicateRugException(s"The following rugs have duplicates in the archive: ${grouped.mkString(", ")}", found)
-    }else{
+    } else {
       found
     }
   }
@@ -112,7 +112,7 @@ class ArchiveRugResolver(graph: Dependency,
     resolved.resolvedRugs.find(r => r == root) match {
       case Some(_) => Some(resolved)
       case _ =>
-        val matched = resolved.dependencies.map(findRug(root, _)).flatten
+        val matched = resolved.dependencies.flatMap(findRug(root, _))
         if (matched.isEmpty) {
           None
         }

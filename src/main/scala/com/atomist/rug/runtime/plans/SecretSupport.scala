@@ -9,10 +9,11 @@ import com.atomist.rug.spi.SecretAwareRug
   */
 trait SecretSupport
   extends SecretAwareRug
-  with ParameterizedSupport{
+    with ParameterizedSupport {
 
   /**
     * Validate normal params first, then secrets!
+    *
     * @param poa arguments to validate
     */
   override def validateParameters(poa: ParameterValues): Unit = {
@@ -22,7 +23,7 @@ trait SecretSupport
     val mapped = poa.parameterValueMap
 
     secrets.foreach { s =>
-      if(!mapped.contains(s.name)){
+      if (!mapped.contains(s.name)) {
         throw new MissingSecretException(s"$name invocation is missing secret parameter '${s.name}' referring to '${s.path}'")
       }
     }

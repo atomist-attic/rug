@@ -75,7 +75,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
           case Right(rsom: ScriptObjectMirror) =>
             val result = NashornUtils.stringProperty(rsom, "result", "false") == "true"
             AssertionResult(step.getText, Result(result, NashornUtils.stringProperty(rsom, "message", "Detailed information unavailable")))
-          case Right(r) if ScriptObjectMirror.isUndefined(r) =>
+          case Right(res) if ScriptObjectMirror.isUndefined(res) =>
             // Returning void (which will be undefined) is truthy
             // This enables use of frameworks such as as chai
             AssertionResult(step.getText, Result(f = true, stepMatch.jsVar.toString))

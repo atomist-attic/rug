@@ -70,8 +70,8 @@ object EditorTest {
        |
        |    edit(project: Project)  {
        |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-       |        if(this.name !== "Not reserved") throw new Error("Darn - name is reserved it seems");
-       |        if(this.description !== "Not reserved") throw new Error("Darn - description is reserved it seems");
+       |        if (this.name !== "Not reserved") throw new Error("Darn - name is reserved it seems");
+       |        if (this.description !== "Not reserved") throw new Error("Darn - description is reserved it seems");
        |    }
        |}
        |export let myeditor = new SimpleEditor()
@@ -168,7 +168,7 @@ object EditorTest {
       |
       |     populate(project: Project) {
       |        let len: number = this.content.length;
-      |        if(project.name != "woot"){
+      |        if (project.name != "woot"){
       |           throw Error(`Project name should be woot, but was ${project.name}`)
       |        }
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
@@ -196,7 +196,7 @@ object EditorTest {
       |
       |     populate(project: Project) {
       |        let len: number = this.content.length;
-      |        if(project.name != "woot"){
+      |        if (project.name != "woot"){
       |           throw Error(`Project name should be woot, but was ${project.name}`)
       |        }
       |        if (project.totalFileCount != 0) throw "I got files";
@@ -224,7 +224,7 @@ object EditorTest {
       |
       |     populate(project: Project) {
       |        let len: number = this.content.length;
-      |        if(project.name != "woot"){
+      |        if (project.name != "woot"){
       |           throw Error(`Project name should be woot, but was ${project.name}`)
       |        }
       |        if (!project.findFile("1")) throw "I got no expected file from git";

@@ -64,6 +64,7 @@ class ProjectMutableView(
   import ProjectMutableView._
 
   @ExportFunction(readOnly = true, description = "Node content")
+  @Deprecated
   override def value: String = s"project:[$name]"
 
   override def toString: String =
@@ -99,9 +100,11 @@ class ProjectMutableView(
   @ExportFunction(readOnly = true,
     exposeAsProperty = true,
     description = "The total number of files in this project")
+  @Deprecated
   def fileCount: Int = currentBackingObject.totalFileCount
 
   @ExportFunction(readOnly = true, description = "Create a directory")
+  @Deprecated
   def addDirectory(@ExportFunctionParameterDescription(name = "name",
     description = "The name of the directory being added")
                    name: String,
@@ -112,6 +115,7 @@ class ProjectMutableView(
   }
 
   @ExportFunction(readOnly = true, description = "Create a directory")
+  @Deprecated
   def addDirectoryAndIntermediates(
                                     @ExportFunctionParameterDescription(name = "directoryPath",
                                       description = "The path under which the directory and any missing intermediate directories will be created")
@@ -123,12 +127,14 @@ class ProjectMutableView(
   }
 
   @ExportFunction(readOnly = true, description = "Deletes a directory with the given path")
+  @Deprecated
   def deleteDirectory(@ExportFunctionParameterDescription(name = "path",
     description = "The path to use")
                       path: String): Unit = updateTo(currentBackingObject.filter(!_.path.equals(path), _ => true))
 
   @ExportFunction(readOnly = true,
     description = "Does a file with the given path exist and have the expected content?")
+  @Deprecated
   def fileHasContent(@ExportFunctionParameterDescription(name = "path",
     description = "The path to use")
                      path: String,
@@ -139,6 +145,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = true,
     description = "The number of files directly in this directory")
+  @Deprecated
   def countFilesInDirectory(@ExportFunctionParameterDescription(name = "path",
     description = "The path to use")
                             path: String): Int = {
@@ -150,6 +157,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = true,
     description = "Does a file with the given path exist and have the expected content?")
+  @Deprecated
   def fileContains(@ExportFunctionParameterDescription(name = "path",
     description = "The path to use")
                    path: String,
@@ -160,6 +168,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = false,
     description = "Replace all occurrences of the given string literal in this project. Use with care!")
+  @Deprecated
   def replace(@ExportFunctionParameterDescription(name = "literal",
     description = "The string to look for")
               literal: String,
@@ -171,6 +180,7 @@ class ProjectMutableView(
     updateTo(currentBackingObject ✎ fe)
   }
 
+  /* called by FileMutableView children */
   def updateFile(oldFile: FileArtifact, newFile: FileArtifact): Unit = {
     val fe = SimpleFileEditor(f => f.path.equals(oldFile.path), f => newFile)
     updateTo(currentBackingObject ✎ fe)
@@ -178,6 +188,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = false,
     description = "Replace all occurrences of the given regular expression in this project")
+  @Deprecated
   def regexpReplace(@ExportFunctionParameterDescription(name = "regexp",
     description = "The regular expression to search for")
                     regexp: String,
@@ -194,6 +205,7 @@ class ProjectMutableView(
     * @param regexp regexp
     * @param replacement replacement for the regexp
     */
+  @Deprecated
   def regexpReplaceWithFilter(
                                filter: FileArtifact => Boolean,
                                regexp: String,
@@ -207,6 +219,7 @@ class ProjectMutableView(
     description =
       """Globally replace all occurrences of the given string literal in file paths in this project""",
     example = """`replace "com/foo/bar" "com/foo/baz"` """)
+  @Deprecated
   def replaceInPath(@ExportFunctionParameterDescription(name = "literal",
     description = "The string to search for")
                     literal: String,
@@ -220,12 +233,17 @@ class ProjectMutableView(
   @ExportFunction(readOnly = false,
     description = "Move the contents of this project under the given path, preserving its present path under that",
     example = """`moveUnder "src/main/java"` moves this file under the `src/main/java` directory """)
+  @Deprecated
   def moveUnder(@ExportFunctionParameterDescription(name = "path",
     description = "The root path to move the file to")
                 path: String): Unit = {
     val moved = currentBackingObject withPathAbove path
     updateTo(moved)
   }
+
+  // TODO: add move
+
+  // TODO: copy declarations of fileExists and directoryExists up from superclass
 
   @ExportFunction(readOnly = false, description = "Add the given file to the project. Path can contain /s. Content is a literal string")
   def addFile(@ExportFunctionParameterDescription(name = "path", description = "The path to use") path: String,
@@ -234,6 +252,7 @@ class ProjectMutableView(
     addFile(path, content, FileArtifact.DefaultMode)
 
   @ExportFunction(readOnly = false, description = "Add the given executable file to the project. Path can contain /s. Content is a literal string")
+  @Deprecated
   def addExecutableFile(@ExportFunctionParameterDescription(name = "path", description = "The path to use") path: String,
                         @ExportFunctionParameterDescription(name = "content",
                           description = "The content to be placed in the new file") content: String): Unit =
@@ -271,6 +290,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = false,
     description = "Copy the given file in the target project. It is not an error if it doesn't exist")
+  @Deprecated
   def copyFile(@ExportFunctionParameterDescription(name = "sourcePath",
     description = "Source path")
                sourcePath: String,
@@ -287,6 +307,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = false,
     description = "Copy the given file in the target project. Fail the editor if it isn't found or if the destination already exists")
+  @Deprecated
   def copyFileOrFail(@ExportFunctionParameterDescription(name = "sourcePath",
     description = "Source path")
                      sourcePath: String,
@@ -307,6 +328,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = false,
     description = "Copy the given file from the editor's backing archive to the same path in project being edited. Fail the editor if it isn't found or if the destination already exists")
+  @Deprecated
   def copyEditorBackingFileOrFail(@ExportFunctionParameterDescription(name = "sourcePath", description = "Source path") sourcePath: String): Unit =
     copyEditorBackingFileOrFailToDestination(sourcePath, sourcePath)
 
@@ -328,6 +350,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = false,
     description = "Copy the given files from the editor's backing archive under the given path. Take the relative paths and place under new destination path")
+  @Deprecated
   def copyEditorBackingFilesWithNewRelativePath(@ExportFunctionParameterDescription(name = "sourcePath",
     description = "Source directory")
                                                 sourceDir: String,
@@ -343,6 +366,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = false,
     description = "Copy the given files from the editor's backing archive under the given directory into the same directory in the project being edited.")
+  @Deprecated
   def copyEditorBackingFilesPreservingPath(@ExportFunctionParameterDescription(name = "sourcePath",
     description = "Source directory")
                                            sourceDir: String
@@ -356,6 +380,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = false,
     description = "Copy the given files from the editor's backing archive project to the project being edited. Doesn't copy Atomist content.")
+  @Deprecated
   def copyEditorBackingProject(): Unit = {
     val underDir = rugAs.filter(_ => true, f => !f.path.startsWith(atomistConfig.atomistRoot))
     updateTo(currentBackingObject + underDir)
@@ -363,6 +388,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = false,
     description = "Copy the given file from the editor's backing archive. Fail the editor if it isn't found or if the destination already exists")
+  @Deprecated
   def copyEditorBackingFilesOrFail(@ExportFunctionParameterDescription(name = "sourcePath",
     description = "Source directory")
                                    sourceDir: String,
@@ -404,6 +430,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = false,
     description = "Merge templates from the specified directory in the backing archive, under /.atomist/templates, to the given output path in the project being edited.")
+  @Deprecated
   def mergeTemplates(@ExportFunctionParameterDescription(name = "templatesPath",
     description = "Source template path where content will be used to merge into target project")
                      templatesPath: String,
@@ -482,6 +509,7 @@ class ProjectMutableView(
   }
 
   @ExportFunction(readOnly = true, description = "Return a new Project View based on the original backing object (normally the .atomist/ directory)")
+  @Deprecated
   def backingArchiveProject(): ProjectMutableView = {
     new ProjectMutableView(EmptyArtifactSource.apply(), rugAs, atomistConfig, creator)
   }
@@ -513,6 +541,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = true,
     description = "Return the path expression to this point in the given file")
+  @Deprecated
   def pathTo(path: String, kind: String, lineFrom1: Int, colFrom1: Int): String = {
     val nodeO = nodeAt(path, kind, lineFrom1, colFrom1)
     nodeO.collect {

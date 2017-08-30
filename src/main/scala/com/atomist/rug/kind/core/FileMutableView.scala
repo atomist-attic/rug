@@ -24,6 +24,7 @@ class FileMutableView(
 
   @ExportFunction(readOnly = true,
     description = "Node content")
+  @Deprecated
   override def value: String = currentBackingObject.path
 
   @ExportFunction(readOnly = true,
@@ -64,6 +65,7 @@ class FileMutableView(
     currentBackingObject.content.contains(what)
 
   @ExportFunction(readOnly = true, description = "Does the file content contain a match for the given regex")
+  @Deprecated
   def containsMatch(@ExportFunctionParameterDescription(name = "regexp",
     description = "The regular expression to look for in the file's content")
                     regexp: String): Boolean = {
@@ -74,6 +76,7 @@ class FileMutableView(
   @ExportFunction(readOnly = true,
     description = "Return the first match for the given regex, or the empty string if not found. " +
       "Call containsMatch first to check presence.")
+  @Deprecated
   def firstMatch(@ExportFunctionParameterDescription(name = "regexp",
     description = "The regular expression to search for")
                  regexp: String): String = {
@@ -83,6 +86,7 @@ class FileMutableView(
 
   @ExportFunction(readOnly = true,
     description = "Return all matches for the given regexp in this file")
+  @Deprecated
   def findMatches(@ExportFunctionParameterDescription(name = "regexp",
     description = "The regular expression to search for")
                   regexp: String): java.util.List[String] = {
@@ -92,6 +96,7 @@ class FileMutableView(
 
   @ExportFunction(readOnly = false,
     description = "Replace all occurrences of the given regexp in this file")
+  @Deprecated
   def regexpReplace(@ExportFunctionParameterDescription(name = "regexp",
     description = "The regular expression to search for")
                     regexp: String,
@@ -105,6 +110,7 @@ class FileMutableView(
 
   @ExportFunction(readOnly = false,
     description = "Replace all instances of the given literal string in this file")
+  @Deprecated
   def replace(@ExportFunctionParameterDescription(name = "literal",
     description = "The string to search for")
               literal: String,
@@ -117,6 +123,7 @@ class FileMutableView(
   }
 
   @ExportFunction(readOnly = false, description = "Append the given content to the file")
+  @Deprecated
   def append(@ExportFunctionParameterDescription(name = "literal",
     description = "The string to append")
              literal: String): Unit = {
@@ -126,6 +133,7 @@ class FileMutableView(
   }
 
   @ExportFunction(readOnly = false, description = "Prepend the given content to the file")
+  @Deprecated
   def prepend(@ExportFunctionParameterDescription(name = "literal",
     description = "The string to prepend to the file") literal: String): Unit = {
     val newContent = literal + currentBackingObject.content
